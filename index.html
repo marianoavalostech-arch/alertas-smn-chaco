@@ -113,27 +113,6 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <div class="captura" id="bannerCaptura" hidden></div>
 
-  <section aria-labelledby="t-smn">
-    <h2 id="t-smn">Alertas oficiales del SMN</h2>
-    <div id="smn"><p class="nodisp">Cargando…</p></div>
-  </section>
-
-  <section aria-labelledby="t-sem">
-    <h2 id="t-sem">Riesgo por localidad</h2>
-    <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura del río.</span></li></ul>
-    <details>
-      <summary>¿Cómo se decide el color?</summary>
-      <ul>
-        <li><b>Rojo:</b> se esperan 100 mm o más en 7 días, o 70 mm o más en un solo día, o ya llovieron 80 mm y vienen otros 60.</li>
-        <li><b>Amarillo:</b> se esperan 50 mm o más en 7 días, o 35 mm o más en un día, o ya llovieron 60 mm, o entre lo caído y lo que viene suman 90 mm.</li>
-        <li><b>Verde:</b> nada de lo anterior.</li>
-        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si la Administración Provincial del Agua (APA) tiene una alerta vigente. Vale para islas y costa fuera de las defensas.</li>
-        <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
-        <li>Los umbrales de lluvia son orientativos de este prototipo y no están validados por ningún organismo. Los niveles del río son los oficiales del INA.</li>
-      </ul>
-    </details>
-  </section>
-
   <section aria-labelledby="t-mapa">
     <h2 id="t-mapa">Mapa de la provincia</h2>
     <div class="mapa-barra">
@@ -154,7 +133,28 @@ footer{font-size:.85rem;color:var(--muted)}
       <span><i style="background:var(--gris);opacity:.5"></i>Sin datos</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button">Pintar toda la provincia según la lluvia</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Todos los municipios se pintan con la misma regla, que solo mira la lluvia. Los seis puntos marcados son las localidades del semáforo de arriba; el Gran Resistencia comparte el color de Resistencia. El mapa no muestra el estado del río. La alerta oficial del SMN de cada municipio aparece en su detalle, al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
+    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Todos los municipios se pintan con la misma regla, que solo mira la lluvia. Los seis puntos marcados son las localidades del semáforo de más abajo; el Gran Resistencia comparte el color de Resistencia. El mapa no muestra el estado del río. La alerta oficial del SMN de cada municipio aparece en su detalle, al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
+  </section>
+
+  <section aria-labelledby="t-smn">
+    <h2 id="t-smn">Alertas oficiales del SMN</h2>
+    <div id="smn"><p class="nodisp">Cargando…</p></div>
+  </section>
+
+  <section aria-labelledby="t-sem">
+    <h2 id="t-sem">Riesgo por localidad</h2>
+    <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura del río.</span></li></ul>
+    <details>
+      <summary>¿Cómo se decide el color?</summary>
+      <ul>
+        <li><b>Rojo:</b> se esperan 100 mm o más en 7 días, o 70 mm o más en un solo día, o ya llovieron 80 mm y vienen otros 60.</li>
+        <li><b>Amarillo:</b> se esperan 50 mm o más en 7 días, o 35 mm o más en un día, o ya llovieron 60 mm, o entre lo caído y lo que viene suman 90 mm.</li>
+        <li><b>Verde:</b> nada de lo anterior.</li>
+        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si la Administración Provincial del Agua (APA) tiene una alerta vigente. Vale para islas y costa fuera de las defensas.</li>
+        <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
+        <li>Los umbrales de lluvia son orientativos de este prototipo y no están validados por ningún organismo. Los niveles del río son los oficiales del INA.</li>
+      </ul>
+    </details>
   </section>
 
   <section aria-labelledby="t-rio">
