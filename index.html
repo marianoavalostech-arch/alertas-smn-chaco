@@ -1,5 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
-<title>Alerta Niño Chaco</title>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alerta Niño Chaco</title><meta name="description" content="Panel informativo sobre El Niño en el Chaco: alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio."><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 :root{
@@ -424,13 +423,17 @@ const SMN_URL='https://script.google.com/macros/s/AKfycbwCmRXbp0zTNVfDDLMmRGwaKp
 let SMN=SMN_SNAP,SMN_VIVO=false;
 const fDiaLargo=s=>new Intl.DateTimeFormat('es-AR',{weekday:'long',timeZone:'UTC'}).format(new Date(s+'T12:00:00Z'))+' '+fDia(s);
 const smnVigente=()=>SMN.fechas.length&&SMN.fechas[SMN.fechas.length-1]>=hoy;
-function smnDe(i){   // alertas vigentes del municipio i: [{dia,ev,niv,fr}]
-  return (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy).map(a=>{const l=a.slice(2).map(v=>v||0),niv=Math.max(...l);
-    return {dia:a[0],ev:a[1],niv,fr:SMN_FR.filter((_,k)=>l[k]>=3)}}).filter(a=>a.niv>=3);
+function smnDe(i){   // alertas vigentes del municipio i, una por cada nivel: [{dia,ev,niv,fr}]
+  const out=[];
+  (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy).forEach(a=>{const l=a.slice(2).map(v=>v||0);
+    [5,4,3].forEach(niv=>{const fr=SMN_FR.filter((_,k)=>l[k]===niv);if(fr.length)out.push({dia:a[0],ev:a[1],niv,fr})})});
+  return out;
 }
 const smnTxt=a=>'Alerta '+(SMN_NIV[a.niv]||['','nivel '+a.niv])[1]+' por '+(SMN_EV[a.ev]||'otro fenómeno');
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
-const smnMeta=()=>SMN_VIVO?'<p class="meta"><span class="estado vivo">Al día</span>Leído del canal oficial del SMN el '+fFechaHora(new Date(SMN.capturado))+'. Se renueva cada hora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
+const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
+const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta"><span class="estado falla">Sin renovar</span>La última lectura del canal del SMN es del '+fFechaHora(new Date(SMN.capturado))+' y debería renovarse cada hora. Puede estar desactualizada: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas en el SMN</a>.</p>'
+  :SMN_VIVO?'<p class="meta"><span class="estado vivo">Al día</span>Leído del canal oficial del SMN el '+fFechaHora(new Date(SMN.capturado))+'. Se renueva cada hora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
   :'<p class="meta"><span class="estado">Informe guardado</span>Emitido por el SMN el '+fFechaHora(new Date(SMN.emitido))+'. Guardado acá el '+fFechaHora(new Date(SMN.capturado))+'. Puede haber cambiado: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas al día en el SMN</a>.</p>';
 function pintarSMN(){
   const el=$('smn');
