@@ -52,6 +52,10 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 .grande{font-size:2.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .grande small{font-size:1rem;font-weight:600;color:var(--muted)}
 .fila{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline}
+.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:0}
+.datos div{background:var(--bg);border-radius:10px;padding:8px 10px}
+.datos dt{font-size:.8rem;color:var(--muted)}
+.datos dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
 svg{display:block;width:100%;height:auto}
 svg text{fill:var(--muted);font-family:var(--font);font-size:11px}
 /* lluvia */
@@ -116,10 +120,11 @@ footer{font-size:.85rem;color:var(--muted)}
     <details>
       <summary>¿Cómo se decide el color?</summary>
       <ul>
-        <li><b>Rojo:</b> se esperan 100 mm o más en 7 días, o 70 mm o más en un solo día, o ya llovieron 80 mm y vienen otros 60. En Resistencia, también si el río llega al nivel de evacuación.</li>
-        <li><b>Amarillo:</b> se esperan 50 mm o más en 7 días, o 35 mm o más en un día, o ya llovieron 60 mm, o entre lo caído y lo que viene suman 90 mm. En Resistencia, también si el río llega al nivel de alerta, o está a menos de 50 cm y creciendo.</li>
+        <li><b>Rojo:</b> se esperan 100 mm o más en 7 días, o 70 mm o más en un solo día, o ya llovieron 80 mm y vienen otros 60.</li>
+        <li><b>Amarillo:</b> se esperan 50 mm o más en 7 días, o 35 mm o más en un día, o ya llovieron 60 mm, o entre lo caído y lo que viene suman 90 mm.</li>
         <li><b>Verde:</b> nada de lo anterior.</li>
-        <li>Vale siempre el peor de los dos (lluvia o río). El Niño no cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
+        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si la Administración Provincial del Agua (APA) tiene una alerta vigente. Vale para islas y costa fuera de las defensas.</li>
+        <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
         <li>Son valores orientativos de este prototipo. No están validados por ningún organismo.</li>
       </ul>
     </details>
@@ -171,13 +176,13 @@ footer{font-size:.85rem;color:var(--muted)}
   <section aria-labelledby="t-fuentes">
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
-      <li><b>Altura del río:</b> lecturas de Prefectura Naval Argentina, publicadas por el Instituto Nacional del Agua (INA).</li>
+      <li><b>Altura del río:</b> lecturas de Prefectura Naval Argentina, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) de Barranqueras son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro.</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 69 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Si esa consulta falla, se muestra el último informe guardado, con su fecha.</li>
-      <li><b>No incluido todavía:</b> la Administración Provincial del Agua del Chaco no ofrece hoy una consulta abierta desde el navegador.</li>
+<li><b>Alerta de la APA:</b> la Administración Provincial del Agua del Chaco no ofrece una consulta abierta desde el navegador, así que su alerta se carga a mano, con la fecha, y puede quedar atrasada.</li>
     </ul>
   </section>
 
@@ -217,8 +222,13 @@ const URLS={
 // Cada fuente se normaliza a la misma forma que la captura guardada.
 const NORM={
  lluvia:j=>{if(!Array.isArray(j)||j.length!==LOCS.length)throw new Error('formato');return {dias:j[0].daily.time,mm:j.map(x=>x.daily.precipitation_sum.map(v=>v==null?0:Number(v)))}},
- rio:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>r.valor!=null);if(!rows.length)throw new Error('sin lecturas');
-   return {obs:rows.map(r=>[diaAR(new Date(r.timestart)),Number(r.valor)]),act:rows[rows.length-1].timeupdate||null}},
+ // Se ordena por fecha, se descartan valores imposibles y queda una lectura por día (la última de cada día).
+ rio:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>r.valor!=null&&r.timestart&&Number(r.valor)>-3&&Number(r.valor)<12)
+     .sort((a,b)=>new Date(a.timestart)-new Date(b.timestart));
+   if(!rows.length)throw new Error('sin lecturas');
+   const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Number(r.valor)));
+   const u=rows[rows.length-1];
+   return {obs:[...m],act:u.timeupdate||null,hora:u.timestart}},
  caudal:j=>({dias:j.daily.time,q:j.daily.river_discharge.map(Number)})
 };
 const D={};   // D[k]={datos,vivo,t,error}
@@ -236,11 +246,14 @@ function meta(k,fuente,extra){
 
 /* ---------- cálculo ---------- */
 const NIVEL={alerta:6.0,evac:6.5};
+const diasEntre=(a,b)=>Math.round((new Date(b+'T12:00:00Z')-new Date(a+'T12:00:00Z'))/864e5);
 function resumenRio(){
-  const d=D.rio.datos;if(!d)return null;
+  const d=D.rio.datos;if(!d||!d.obs.length)return null;
   const o=d.obs,ult=o[o.length-1],h=ult[1];
-  const ref=o.length>3?o[o.length-4][1]:o[0][1];
-  return {h,dia:ult[0],d3:h-ref,falta:NIVEL.alerta-h};
+  // Cambio respecto de la lectura de hace n días según la fecha (no según la posición), tolerando hasta 2 días de hueco.
+  const hace=n=>{const lim=masDias(ult[0],-n);let p=null;for(const q of o)if(q[0]<=lim)p=q;return p&&diasEntre(p[0],ult[0])<=n+2?h-p[1]:null};
+  let im=0;o.forEach((p,i)=>{if(p[1]>=o[im][1])im=i});
+  return {h,dia:ult[0],d1:hace(1),d3:hace(3),d7:hace(7),falta:NIVEL.alerta-h,pico:o[im],atraso:Math.max(0,diasEntre(ult[0],hoy))};
 }
 function resumenLluvia(i){
   const d=D.lluvia.datos;if(!d)return null;
@@ -255,7 +268,7 @@ function sumarLluvia(dias,mm,ref){
 // Mismos umbrales de lluvia para los municipios con seguimiento y para la estimación del resto.
 const nivelLluvia=ll=>(ll.viene>=100||ll.max>=70||(ll.cayo>=80&&ll.viene>=60))?2:(ll.viene>=50||ll.max>=35||ll.cayo>=60||ll.cayo+ll.viene>=90)?1:0;
 function riesgo(loc,i){
-  const ll=resumenLluvia(i),r=loc.rio?resumenRio():null;
+  const ll=resumenLluvia(i),r=null;
   let nivel=0;const por=[],falta=[];
   if(ll){
     nivel=nivelLluvia(ll);
@@ -263,18 +276,30 @@ function riesgo(loc,i){
     if(ll.max>=35)t+=', con '+nf(ll.max)+' mm en un solo día ('+fDia(ll.maxDia)+')';
     por.push(t+'.');
   }else falta.push('lluvias');
-  if(loc.rio){
-    if(r){
-      let nr=0;
-      if(r.h>=NIVEL.evac)nr=2;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))nr=1;
-      nivel=Math.max(nivel,nr);
-      por.push(r.h>=NIVEL.evac?'El Paraná superó el nivel de evacuación.':r.h>=NIVEL.alerta?'El Paraná superó el nivel de alerta.'
-        :'El Paraná está en '+nf(r.h,2)+' m, a '+nf(r.falta,2)+' m del nivel de alerta.');
-    }else falta.push('altura del río');
-  }
   if(!ll&&!r)return {c:'gris',et:'Sin datos',por:'No hay datos disponibles para calcular el riesgo.'};
   return {c:['verde','amarillo','rojo'][nivel],et:['Verde','Amarillo','Rojo'][nivel],
     por:por.join(' ')+(falta.length?' Falta el dato de '+falta.join(' y ')+', así que el color puede quedar corto.':'')};
+}
+
+// Alerta de la APA: se carga a mano (la APA no tiene consulta automática). Deja de mostrarse después de 'vence'.
+const APA={nivel:1,fecha:'2026-10-04',vence:'2026-10-15',
+ texto:'La Administración Provincial del Agua (APA) declaró alerta amarilla por la creciente del Paraná: prevé que se acerque a 5,50 m en Barranqueras durante la primera quincena de octubre.',
+ zonas:'Isla del Cerrito, Puerto Vilelas, Isla Soto, Colonia Tacuarí y otras zonas bajas de la costa'};
+const apaVigente=()=>APA&&hoy>=APA.fecha&&hoy<=APA.vence?APA:null;
+// Renglón propio del río: vale para la zona ribereña, fuera de las defensas del Gran Resistencia.
+function riesgoRio(){
+  const r=resumenRio(),a=apaVigente();
+  if(!r&&!a)return {c:'gris',et:'Sin datos',por:'No hay lectura de la altura del río.'};
+  let n=a?a.nivel:0;const por=[];
+  if(r){
+    if(r.h>=NIVEL.evac)n=2;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))n=Math.max(n,1);
+    por.push(r.h>=NIVEL.evac?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).'
+      :r.h>=NIVEL.alerta?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
+      :'El Paraná está en '+nf(r.h,2)+' m en Barranqueras, a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.');
+    if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
+  }else por.push('Falta la lectura de la altura del río.');
+  if(a)por.push('Alerta '+['','amarilla','roja'][a.nivel]+' de la APA desde el '+fDia(a.fecha)+'.');
+  return {c:['verde','amarillo','rojo'][n],et:['Verde','Amarillo','Rojo'][n],por:por.join(' ')};
 }
 
 /* ---------- pantalla ---------- */
@@ -283,7 +308,10 @@ function pintarSemaforo(){
   const R=LOCS.map(riesgo);
   $('sem').innerHTML=LOCS.map((l,i)=>'<li class="'+R[i].c+'" data-j="'+i+'"><span class="luz" aria-hidden="true">'+({verde:'✓',amarillo:'!',rojo:'!!',gris:'?'})[R[i].c]+'</span>'
     +'<span><b>'+l.n+'</b>'+(l.sub?' '+l.sub:'')+'<span class="nivel">'+R[i].et+'</span></span><span class="por">'+R[i].por+'</span>'
-    +'<button class="vermapa" type="button">Ver en el mapa</button></li>').join('');
+    +'<button class="vermapa" type="button">Ver en el mapa</button></li>').join('')
+    +(q=>'<li class="'+q.c+'"><span class="luz" aria-hidden="true">'+({verde:'✓',amarillo:'!',rojo:'!!',gris:'?'})[q.c]+'</span>'
+    +'<span><b>Zona ribereña del Paraná</b> islas y costa fuera de las defensas<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'
+    +'<a class="vermapa" href="#t-rio">Ver el río</a></li>')(riesgoRio());
   colorearMapa(R);
 }
 
@@ -502,23 +530,30 @@ function pintarRio(){
   const r=resumenRio();
   if(!r){$('rio').innerHTML=meta('rio','el INA');return}
   const o=D.rio.datos.obs;
-  const tend=r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
+  const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
   const sit=r.h>=NIVEL.evac?'Superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).':r.h>=NIVEL.alerta?'Superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
     :'Le faltan '+nf(r.falta,2)+' m para el nivel de alerta ('+nf(NIVEL.alerta,2)+' m) y '+nf(NIVEL.evac-r.h,2)+' m para el de evacuación ('+nf(NIVEL.evac,2)+' m).';
-  // gráfico
-  const W=340,H=170,L=30,Rt=44,T=10,B=22,vals=o.map(p=>p[1]);
+  const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+'). El río puede haber cambiado desde entonces.</p>':'';
+  const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
+  const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(r.pico[1],2)+' m ('+fDia(r.pico[0])+')']]
+    .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
+  // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
+  const W=340,H=170,L=30,Rt=44,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
   const lo=Math.floor(Math.min(...vals)-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4);
-  const x=i=>L+(W-L-Rt)*i/Math.max(1,o.length-1),y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
+  const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/span,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
   let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+='<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
+  // marcas de fecha cada 7 días, contando hacia atrás desde la última lectura
+  let ejes='';for(let k=0;k*7<=span;k++){const dia=masDias(o[n][0],-k*7),fin=k===0,ini=span-k*7<3;
+    ejes+='<line x1="'+x(dia)+'" x2="'+x(dia)+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(dia)+'" y="'+(H-5)+'" text-anchor="'+(fin?'end':ini?'start':'middle')+'">'+fDia(dia)+'</text>'}
   const ref=(v,c,t)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="2" stroke-dasharray="5 4"/><text x="'+(W-Rt+4)+'" y="'+(y(v)+4)+'" style="fill:var(--'+c+');font-weight:700">'+t+'</text>';
-  const linea=o.map((p,i)=>x(i).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
-  const n=o.length-1;
-  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río en los últimos '+o.length+' días, comparada con los niveles de alerta y evacuación">'+g
+  const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
+  const puntos=o.map(p=>'<circle cx="'+x(p[0]).toFixed(1)+'" cy="'+y(p[1]).toFixed(1)+'" r="6" fill="transparent"><title>'+fDia(p[0])+': '+nf(p[1],2)+' m</title></circle>').join('');
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.">'+g
    +ref(NIVEL.alerta,'amarillo','Alerta')+ref(NIVEL.evac,'rojo','Evac.')
-   +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(n)+','+y(lo)+'" fill="var(--water-soft)"/>'
+   +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
-   +'<circle cx="'+x(n)+'" cy="'+y(r.h)+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
-   +'<text x="'+L+'" y="'+(H-5)+'">'+fDia(o[0][0])+'</text><text x="'+x(n)+'" y="'+(H-5)+'" text-anchor="end">'+fDia(o[n][0])+'</text></svg>';
+   +'<circle cx="'+x(o[n][0])+'" cy="'+y(r.h)+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
+   +ejes+puntos+'</svg>';
   let caudal='';
   const c=D.caudal&&D.caudal.datos;
   if(c){
@@ -530,8 +565,12 @@ function pintarRio(){
         +meta('caudal','GloFAS, vía Open-Meteo');}
   }else if(D.caudal)caudal=meta('caudal','el caudal previsto (GloFAS, vía Open-Meteo)');
   $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
-   +'<p>'+sit+'</p>'+svg
-   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+fDia(r.dia)+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
+   +(a=>a?'<div class="aviso" role="note"><strong>Alerta '+['','amarilla','roja'][a.nivel]+' de la APA</strong>'+a.texto+' Zonas nombradas: '+a.zonas+'. <span class="meta">Cargado a mano; alerta del '+fDia(a.fecha)+'.</span></div>':'')(apaVigente())
+   +viejo+'<p>'+sit+'</p>'
+   +'<p class="meta">Estos dos niveles son los que publica el INA para el puerto de Barranqueras y valen para la zona ribereña: islas, parajes costeros y sectores de Barranqueras y Puerto Vilelas que están fuera de las defensas. La ciudad dentro de las defensas está protegida hasta unos 9,50 m; ahí, con el río alto, el riesgo es que la lluvia tarde en desagotar.</p>'
+   +stats+svg
+   +'<p class="meta">En computadora, pasá el mouse por la línea para ver la altura de cada día.</p>'
+   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +caudal;
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
 }
