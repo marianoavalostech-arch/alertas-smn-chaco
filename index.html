@@ -82,6 +82,7 @@ footer{font-size:.85rem;color:var(--muted)}
 #mapa svg{cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 #mapa svg.arrastra{cursor:grabbing}
 #mapa path.mun{cursor:pointer;stroke:var(--card);stroke-width:1;stroke-linejoin:round;vector-effect:non-scaling-stroke;transition:fill .25s,fill-opacity .25s}
+#mapa .tx,#mapa .sm{stroke:none;pointer-events:none}
 #mapa .ov{fill:none;pointer-events:none;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 #mTip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-150%);z-index:2}
 .leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
@@ -138,10 +139,21 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mapa"></div>
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda" aria-hidden="true">
-      <span><i style="background:var(--verde)"></i>Verde</span><span><i style="background:var(--amarillo)"></i>Amarillo</span><span><i style="background:var(--rojo)"></i>Rojo</span><span><i style="background:var(--land)"></i>Sin consultar</span>
+      <span><i style="background:var(--verde)"></i>Verde: sin riesgo a la vista</span>
+      <span><i style="background:radial-gradient(circle,var(--ink) 0 1.6px,transparent 2px) var(--amarillo)"></i>Amarillo (con puntos): atención</span>
+      <span><i style="background:linear-gradient(45deg,transparent 40%,var(--ink) 40% 60%,transparent 60%),linear-gradient(-45deg,transparent 40%,var(--ink) 40% 60%,transparent 60%),var(--rojo)"></i>Rojo (con cruces): riesgo alto</span>
+      <span><i style="background:var(--gris);opacity:.6"></i>Sin datos</span>
+      <span><i style="background:var(--land)"></i>Sin consultar</span>
+      <span><i style="background:repeating-linear-gradient(45deg,var(--amarillo) 0 3px,var(--ink) 3px 4px,transparent 4px 7px)"></i>Rayas: alerta oficial del SMN</span>
+    </div>
+    <div class="leyenda" aria-hidden="true">
+      <span><i style="background:var(--verde);opacity:.85"></i>Color fuerte: municipio con seguimiento</span>
+      <span><i style="background:var(--verde);opacity:.45"></i>Color suave: estimación solo por lluvia</span>
+    </div>
+    <div class="fila"><label class="meta"><input type="checkbox" id="mSMN" checked> Mostrar las alertas del SMN sobre el mapa</label>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button">Pintar toda la provincia según la lluvia</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Con color fuerte están los seis municipios con seguimiento (y el Gran Resistencia, que comparte el semáforo de Resistencia). El resto se puede pintar con una estimación que solo mira la lluvia. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
+    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Con color fuerte están los seis municipios con seguimiento (y el Gran Resistencia, que comparte el semáforo de Resistencia). El resto se pinta solo, con color suave, usando una estimación que solo mira la lluvia. Los puntos (amarillo) y las cruces (rojo) repiten el color para quien no distingue bien los colores. Las rayas marcan los municipios con alerta oficial del SMN; el color de la raya es el nivel de la alerta. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
   </section>
 
   <section aria-labelledby="t-rio">
@@ -289,12 +301,17 @@ const sinTildes=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(
 const MON={},GRANI={};
 LOCS.forEach((l,j)=>{const i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));if(i>=0)MON[i]=j});
 GRAN.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)GRANI[i]=true});
+const TRAMAS='<defs>'
+ +'<pattern id="pAma" class="pt" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.3" fill="var(--ink)" fill-opacity=".6"/></pattern>'
+ +'<pattern id="pRoj" class="pt" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M2 2L7 7M7 2L2 7" stroke="var(--ink)" stroke-opacity=".7" stroke-width="1.3"/></pattern>'
+ +[[3,'var(--amarillo)'],[4,'#d9730d'],[5,'var(--rojo)']].map(t=>'<pattern id="pS'+t[0]+'" class="pt" data-r="1" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="2.6" height="16" fill="'+t[1]+'"/><rect x="2.6" width="1" height="16" fill="var(--ink)"/></pattern>').join('')+'</defs>';
 const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false};
 
 function armarMapa(){
   const caja=$('mapa'),borde='paint-order:stroke;stroke:var(--card);stroke-linejoin:round;';
   caja.innerHTML='<svg viewBox="20 0 530 474" role="img" aria-label="Mapa interactivo del Chaco con sus '+GEO.mun.length+' municipios. Con teclado, usá el buscador de arriba para elegir un municipio.">'
-   +'<g transform="scale(.1)">'+GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
+   +'<g transform="scale(.1)">'+TRAMAS+GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
+   +GEO.mun.map(m=>'<path class="tx" fill="none" d="'+m[1]+'"/><path class="sm" fill="none" d="'+m[1]+'"/>').join('')
    +'<path class="ov" d="'+GEO.prov+'" stroke="var(--muted)" stroke-width="1.5"/>'
    +'<path class="ov" id="mHover" stroke="var(--ink)" stroke-width="2"/><path class="ov" id="mSel" stroke="var(--ink)" stroke-width="3.5"/></g>'
    +'<g pointer-events="none">'
@@ -305,7 +322,7 @@ function armarMapa(){
      +'<text x="'+l.dx+'" y="'+l.dy+'" text-anchor="'+l.a+'" style="'+borde+'fill:var(--ink);font-size:21px;font-weight:700;stroke-width:4px">'+l.n+'</text></g>').join('')
    +'</g></svg><div id="mTip" hidden></div>';
   const svg=M.svg=caja.querySelector('svg');
-  M.paths=[...svg.querySelectorAll('path.mun')];M.puntos=[...svg.querySelectorAll('.pto')];
+  M.paths=[...svg.querySelectorAll('path.mun')];M.puntos=[...svg.querySelectorAll('.pto')];M.tx=[...svg.querySelectorAll('path.tx')];M.sm=[...svg.querySelectorAll('path.sm')];M.pats=[...svg.querySelectorAll('pattern')];$('mSMN').onchange=tramasSMN;
   M.hov=svg.querySelector('#mHover');M.selP=svg.querySelector('#mSel');
   M.cajas=M.paths.map(p=>{let b={x:0,y:0,width:0,height:0};try{b=p.getBBox()}catch(_){}return {x:b.x/10,y:b.y/10,w:b.width/10,h:b.height/10}});
   M.fijos=[...svg.querySelectorAll('.fx')].map(el=>{const f={el,x:+el.dataset.x,y:+el.dataset.y};
@@ -355,6 +372,8 @@ function aplicar(v){
   const z=v.w/BASE.w,k=z*Math.min(1.5,Math.max(1,480/(M.svg.clientWidth||480)));
   // Nombres y puntos mantienen su tamaño en pantalla; un nombre aparece cuando entra dentro de su municipio.
   M.fijos.forEach(f=>{f.el.setAttribute('transform','translate('+f.x+' '+f.y+') scale('+(f.tw?k:z)+')');if(f.tw)f.el.style.display=(f.w/k>f.tw&&f.h/k>16)?'':'none'});
+  // Las tramas (puntos, cruces, rayas) mantienen su tamaño en pantalla.
+  const tr=v.w/(M.svg.getBoundingClientRect().width||530)*10;M.pats.forEach(p=>p.setAttribute('patternTransform','scale('+tr+')'+(p.dataset.r?' rotate(45)':'')));
   M.svg.style.touchAction=z>.99?'pan-y':'none';
   $('zMenos').disabled=$('zTodo').disabled=z>.99;$('zMas').disabled=z<1/ZMAX+.001;
 }
@@ -381,6 +400,7 @@ function colorDe(i){
   if(MON[i]!=null&&M.R[MON[i]])return {c:M.R[MON[i]].c,tipo:'seg',j:MON[i]};
   if(GRANI[i]&&M.R[0])return {c:M.R[0].c,tipo:'gran',j:0};
   if(M.est[i])return {c:M.est[i].c,tipo:'est'};
+  if(M.todos==='error')return {c:'gris',tipo:null};
   return {c:null,tipo:null};
 }
 function sobre(e){
@@ -458,16 +478,24 @@ function smnInfo(i){
 function cargarSMN(){
   const vale=j=>j&&Array.isArray(j.areas)&&j.areas.length===GEO.mun.length&&j.alertas&&Array.isArray(j.fechas)&&j.fechas.length;
   const archivo=()=>fetch('alertas-smn.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
-    if(vale(j)&&new Date(j.emitido)>new Date(SMN.emitido)){SMN=j;pintarSMN();pintarInfo()}}).catch(()=>{});
+    if(vale(j)&&new Date(j.emitido)>new Date(SMN.emitido)){SMN=j;pintarSMN();pintarInfo();tramasSMN()}}).catch(()=>{});
   if(!SMN_URL)return archivo();
-  getJSON(SMN_URL).then(j=>{if(!vale(j))throw new Error('formato');SMN=j;SMN_VIVO=true;pintarSMN();pintarInfo()}).catch(archivo);
+  getJSON(SMN_URL).then(j=>{if(!vale(j))throw new Error('formato');SMN=j;SMN_VIVO=true;pintarSMN();pintarInfo();tramasSMN()}).catch(archivo);
 }
 function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
-  M.paths.forEach((p,i)=>{const k=colorDe(i),hay=k.c&&k.c!=='gris';
-    p.setAttribute('fill','var(--'+(hay?k.c:'land')+')');p.setAttribute('fill-opacity',!hay?1:k.tipo==='est'?.3:.62)});
+  // Fuerte = con seguimiento; suave = estimación por lluvia; gris = sin datos. La trama repite el nivel sin depender del color.
+  M.paths.forEach((p,i)=>{const k=colorDe(i);
+    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:k.tipo==='est'?.45:.85);
+    M.tx[i].setAttribute('fill',k.c==='amarillo'?'url(#pAma)':k.c==='rojo'?'url(#pRoj)':'none')});
   M.puntos.forEach((p,j)=>p.setAttribute('fill','var(--'+(M.R[j]?M.R[j].c:'gris')+')'));
-  pintarInfo();
+  tramasSMN();pintarInfo();
+  if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
+}
+// Rayas sobre los municipios con alerta oficial vigente, del color del nivel más alto.
+function tramasSMN(){
+  if(!M.ok)return;const ver=$('mSMN').checked&&smnVigente();
+  M.sm.forEach((p,i)=>{const n=ver?Math.max(0,...smnDe(i).map(a=>a.niv)):0;p.setAttribute('fill',n?'url(#pS'+n+')':'none');p.setAttribute('fill-opacity',.8)});
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
 async function cargarTodos(){
