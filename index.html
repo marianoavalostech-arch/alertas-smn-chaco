@@ -129,7 +129,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li><b>Verde:</b> nada de lo anterior.</li>
         <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si la Administración Provincial del Agua (APA) tiene una alerta vigente. Vale para islas y costa fuera de las defensas.</li>
         <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
-        <li>Son valores orientativos de este prototipo. No están validados por ningún organismo.</li>
+        <li>Los umbrales de lluvia son orientativos de este prototipo y no están validados por ningún organismo. Los niveles del río son los oficiales del INA.</li>
       </ul>
     </details>
   </section>
@@ -147,19 +147,14 @@ footer{font-size:.85rem;color:var(--muted)}
     </div>
     <div id="mapa"></div>
     <div id="mInfo" aria-live="polite"></div>
-    <div class="leyenda" aria-hidden="true">
-      <span><i style="background:var(--verde)"></i>Verde: sin riesgo a la vista</span>
-      <span><i style="background:var(--amarillo)"></i>Amarillo: atención</span>
-      <span><i style="background:var(--rojo)"></i>Rojo: riesgo alto</span>
-      <span><i style="background:var(--gris);opacity:.6"></i>Sin datos</span>
-      <span><i style="background:var(--land)"></i>Sin consultar</span>
-    </div>
-    <div class="leyenda" aria-hidden="true">
-      <span><i style="background:var(--verde);opacity:.85"></i>Color fuerte: municipio con seguimiento</span>
-      <span><i style="background:var(--verde);opacity:.45"></i>Color suave: estimación solo por lluvia</span>
+    <div class="leyenda">
+      <span><i style="background:var(--verde);opacity:.7"></i>Verde: sin riesgo de lluvia a la vista</span>
+      <span><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: atención</span>
+      <span><i style="background:var(--rojo);opacity:.7"></i>Rojo: riesgo alto</span>
+      <span><i style="background:var(--gris);opacity:.5"></i>Sin datos</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button">Pintar toda la provincia según la lluvia</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Con color fuerte están los seis municipios con seguimiento (y el Gran Resistencia, que comparte el semáforo de Resistencia). El resto se pinta solo, con color suave, usando una estimación que solo mira la lluvia. La alerta oficial del SMN de cada municipio aparece en su detalle, al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
+    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Todos los municipios se pintan con la misma regla, que solo mira la lluvia. Los seis puntos marcados son las localidades del semáforo de arriba; el Gran Resistencia comparte el color de Resistencia. El mapa no muestra el estado del río. La alerta oficial del SMN de cada municipio aparece en su detalle, al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
   </section>
 
   <section aria-labelledby="t-rio">
@@ -168,7 +163,7 @@ footer{font-size:.85rem;color:var(--muted)}
   </section>
 
   <section aria-labelledby="t-lluvia">
-    <h2 id="t-lluvia">Lluvias: últimos 7 días y próximos 7</h2>
+    <h2 id="t-lluvia">Lluvias: últimos 7 días y pronóstico a 7 días</h2>
     <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
@@ -217,12 +212,12 @@ async function getJSON(u){
   try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}
   finally{clearTimeout(t)}
 }
-const hoy=diaAR(new Date());
-const URLS={
+let hoy=diaAR(new Date());   // se recalcula en cada renovación
+const URLS=()=>({
  lluvia:'https://api.open-meteo.com/v1/forecast?latitude='+LOCS.map(l=>l.lat)+'&longitude='+LOCS.map(l=>l.lon)+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba',
  rio:'https://alerta.ina.gob.ar/a5/obs/puntual/series/20/observaciones?timestart='+masDias(hoy,-30)+'&timeend='+masDias(hoy,2)+'&format=json',
  caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30'
-};
+});
 // Cada fuente se normaliza a la misma forma que la captura guardada.
 const NORM={
  lluvia:j=>{if(!Array.isArray(j)||j.length!==LOCS.length)throw new Error('formato');return {dias:j[0].daily.time,mm:j.map(x=>x.daily.precipitation_sum.map(v=>v==null?0:Number(v)))}},
@@ -237,13 +232,14 @@ const NORM={
 };
 const D={};   // D[k]={datos,vivo,t,error}
 async function cargar(k){
-  try{D[k]={datos:NORM[k](await getJSON(URLS[k])),vivo:true,t:new Date()}}
-  catch(e){D[k]=SNAP[k]?{datos:SNAP[k],vivo:false,t:new Date(SNAP.capturado),error:true}:{datos:null,error:true}}
+  try{D[k]={datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()}}
+  catch(e){if(D[k]&&D[k].vivo&&Date.now()-D[k].t<6*36e5)return;   // si falla una renovación, se conserva la última consulta buena (hasta 6 horas)
+    D[k]=SNAP[k]?{datos:SNAP[k],vivo:false,t:new Date(SNAP.capturado),error:true}:{datos:null,error:true}}
 }
-function meta(k,fuente,extra){
+function meta(k,fuente,extra,etq){
   const d=D[k];
   if(!d.datos)return '<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
-  const e=d.vivo?'<span class="estado vivo">En vivo</span>Consultado el '+fFechaHora(d.t)
+  const e=d.vivo?'<span class="estado vivo">'+(etq||'En vivo')+'</span>Consultado el '+fFechaHora(d.t)
                :'<span class="estado">Captura guardada</span>Datos reales guardados el '+fFechaHora(d.t)+(LISTO?'. No se pudo consultar la fuente ahora':'. Buscando datos nuevos…');
   return '<p class="meta">'+e+'. Fuente: '+fuente+'.'+(extra?' '+extra:'')+'</p>';
 }
@@ -272,17 +268,17 @@ function sumarLluvia(dias,mm,ref){
 // Mismos umbrales de lluvia para los municipios con seguimiento y para la estimación del resto.
 const nivelLluvia=ll=>(ll.viene>=100||ll.max>=70||(ll.cayo>=80&&ll.viene>=60))?2:(ll.viene>=50||ll.max>=35||ll.cayo>=60||ll.cayo+ll.viene>=90)?1:0;
 function riesgo(loc,i){
-  const ll=resumenLluvia(i),r=null;
-  let nivel=0;const por=[],falta=[];
+  const ll=resumenLluvia(i);
+  let nivel=0;const por=[];
   if(ll){
     nivel=nivelLluvia(ll);
-    let t='Llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '+nf(ll.viene)+' mm en los próximos 7';
+    let t='Llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '+nf(ll.viene)+' mm entre hoy y los 6 días siguientes';
     if(ll.max>=35)t+=', con '+nf(ll.max)+' mm en un solo día ('+fDia(ll.maxDia)+')';
     por.push(t+'.');
-  }else falta.push('lluvias');
-  if(!ll&&!r)return {c:'gris',et:'Sin datos',por:'No hay datos disponibles para calcular el riesgo.'};
+  }
+  if(!ll)return {c:'gris',et:'Sin datos',por:'No hay datos disponibles para calcular el riesgo.'};
   return {c:['verde','amarillo','rojo'][nivel],et:['Verde','Amarillo','Rojo'][nivel],
-    por:por.join(' ')+(falta.length?' Falta el dato de '+falta.join(' y ')+', así que el color puede quedar corto.':'')};
+    por:por.join(' ')};
 }
 
 // Alerta de la APA: se carga a mano (la APA no tiene consulta automática). Deja de mostrarse después de 'vence'.
@@ -442,11 +438,11 @@ function pintarInfo(){
   const el=$('mInfo'),i=M.sel;
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
-  if(k.tipo==='seg')h='<p><span class="estado">Con seguimiento</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
+  if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
   else if(k.tipo==='gran')h='<p><span class="estado">Gran Resistencia</span><b>'+M.R[0].et+'</b></p><p>Forma parte del Gran Resistencia y comparte su semáforo. '+M.R[0].por+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
-    h='<p><span class="estado">Estimación por lluvia</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm en los próximos 7'
-     +(s.max>=35?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.</p><p class="meta">Calculado solo con la lluvia en el centro del municipio. No tiene seguimiento permanente y no mira ríos ni arroyos.</p>'}
+    h='<p><span class="estado">Estimación por lluvia</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm entre hoy y los 6 días siguientes'
+     +(s.max>=35?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.</p><p class="meta">Calculado solo con la lluvia en el centro del municipio. No mira ríos ni arroyos.</p>'}
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
@@ -454,7 +450,7 @@ function pintarInfo(){
 }
 
 /* ---------- alertas oficiales del SMN ---------- */
-// No se pueden pedir en vivo desde el navegador. Se usa el informe guardado acá, o el archivo alertas-smn.json si está publicado al lado y es más nuevo.
+// Se leen del script de Google (SMN_URL). Si falla: el archivo alertas-smn.json si es más nuevo, o el informe guardado acá.
 const SMN_SNAP={"emitido":"2026-10-06T06:10:11-03:00","capturado":"2026-10-06T16:49:00Z","fechas":["2026-10-06","2026-10-07","2026-10-08","2026-10-09"],"areas":[793,792,792,793,793,793,793,793,793,793,792,793,792,793,791,793,793,793,794,793,792,794,793,793,793,793,792,793,792,791,793,793,792,792,793,792,792,793,792,793,793,792,791,793,792,792,794,794,793,793,793,791,793,793,793,792,817,792,792,793,792,793,793,793,794,791,793,793,791],"alertas":{"791":[],"792":[["2026-10-07",41,1,1,1,3],["2026-10-08",41,3,3,1,1]],"793":[["2026-10-07",41,1,1,1,3],["2026-10-08",41,3,3,1,1]],"794":[],"817":[["2026-10-08",41,1,3,1,1]]}};
 const SMN_EV={41:'tormentas',37:'lluvias',42:'nevadas',39:'viento',47:'viento zonda'};
 const SMN_NIV={3:['amarillo','amarilla'],4:['naranja','naranja'],5:['rojo','roja']};
@@ -506,9 +502,9 @@ function cargarSMN(){
 }
 function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
-  // Fuerte = con seguimiento; suave = estimación por lluvia; gris = sin datos.
+  // Mismo tono para todos los municipios (todos se calculan solo con lluvia); gris = sin datos.
   M.paths.forEach((p,i)=>{const k=colorDe(i);
-    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:k.tipo==='est'?.45:.85);});
+    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);});
   M.puntos.forEach((p,j)=>p.setAttribute('fill','var(--'+(M.R[j]?M.R[j].c:'gris')+')'));
   pintarInfo();
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
@@ -522,11 +518,12 @@ async function cargarTodos(){
     const j=await getJSON('https://api.open-meteo.com/v1/forecast?latitude='+GEO.mun.map(m=>m[2])+'&longitude='+GEO.mun.map(m=>m[3])+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba');
     if(!Array.isArray(j)||j.length!==GEO.mun.length)throw new Error('formato');
     j.forEach((x,i)=>{const ll=sumarLluvia(x.daily.time,x.daily.precipitation_sum.map(v=>v==null?0:Number(v)),hoy);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}});
-    M.todos='ok';b.textContent='Actualizar la lluvia de toda la provincia';
+    M.todos='ok';M.tEst=new Date();b.textContent='Actualizar la lluvia de toda la provincia';
     e.innerHTML='<span class="estado vivo">En vivo</span>Consultado el '+fFechaHora(new Date())+'. Fuente: Open-Meteo.';
   }catch(err){
     M.todos='error';b.textContent='Reintentar: pintar toda la provincia';
-    e.innerHTML='<span class="estado falla">No disponible</span>No se pudo consultar Open-Meteo ahora.';
+    e.innerHTML=M.tEst?'<span class="estado falla">Sin renovar</span>No se pudo consultar Open-Meteo ahora. El mapa muestra la lluvia consultada el '+fFechaHora(M.tEst)+'.'
+      :'<span class="estado falla">No disponible</span>No se pudo consultar Open-Meteo ahora.';
   }
   b.disabled=false;$('mCarga').hidden=true;colorearMapa();
 }
@@ -591,7 +588,7 @@ function pintarRio(){
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(a=>a&&a.prev?'<span><i style="border-color:var(--muted);border-top-style:dotted"></i>Previsto por la APA hasta el '+fDia(a.vence)+': '+nf(a.prev,2)+' m</span>':'')(apaVigente())+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
-   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
+   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.','Conectado')
    +caudal;
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
 }
@@ -604,7 +601,7 @@ function pintarLluvia(){
     return '<tr><td>'+l.n+'</td><td>'+nf(s.cayo)+' mm</td><td><b>'+nf(s.viene)+' mm</b></td><td class="barras"><svg viewBox="0 0 102 28" aria-hidden="true">'+b+'</svg></td></tr>'}).join('');
   $('lluvia').innerHTML='<div class="tabla"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
    +'<p class="meta" style="margin-top:10px">Barras grises: del '+fDia(d.dias[0])+' al '+fDia(masDias(ref,-1))+'. Barras azules: pronóstico del '+fDia(ref)+' al '+fDia(d.dias[d.dias.length-1])+'.</p>'
-   +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro.');
+   +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro. Lo que se espera incluye el día de hoy completo.');
 }
 function pintarNino(){
   const o=SNAP.oni,u=o[o.length-1],v=u[2];
@@ -630,6 +627,17 @@ pintarNino();pintarSMN();cargarSMN();
 ['lluvia','rio','caudal'].forEach(k=>{D[k]=SNAP[k]?{datos:SNAP[k],vivo:false,t:new Date(SNAP.capturado)}:{datos:null}});
 pintar();
 Promise.all(['lluvia','rio','caudal'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar()});
+// Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
+let ULT=Date.now();
+function renovar(){
+  if(document.hidden||!LISTO)return;
+  ULT=Date.now();hoy=diaAR(new Date());
+  pintarSMN();cargarSMN();
+  Promise.all(['lluvia','rio','caudal'].map(cargar)).then(pintar);
+  cargarTodos();
+}
+setInterval(renovar,30*60e3);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-ULT>10*60e3)renovar()});
 </script>
 
 </body></html>
