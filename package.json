@@ -1,7 +1,0 @@
-{
-  "name": "alerta-nino-chaco",
-  "private": true,
-  "description": "Sitio Alerta Niño Chaco y robot que renueva las alertas del SMN",
-  "scripts": { "smn": "node actualizar-smn.js" },
-  "dependencies": { "playwright": "^1.47.0" }
-}
