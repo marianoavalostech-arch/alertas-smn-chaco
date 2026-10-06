@@ -57,6 +57,10 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 .datos dt{font-size:.8rem;color:var(--muted)}
 .datos dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
 svg{display:block;width:100%;height:auto}
+.leyRio{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.88rem;max-width:580px}
+.leyRio span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.leyRio i{display:inline-block;width:22px;border-top:3px dashed}
+#rio svg{max-width:580px;touch-action:pan-y;cursor:crosshair}
 svg text{fill:var(--muted);font-family:var(--font);font-size:11px}
 /* lluvia */
 .tabla{overflow-x:auto}
@@ -282,7 +286,7 @@ function riesgo(loc,i){
 }
 
 // Alerta de la APA: se carga a mano (la APA no tiene consulta automática). Deja de mostrarse después de 'vence'.
-const APA={nivel:1,fecha:'2026-10-04',vence:'2026-10-15',
+const APA={nivel:1,fecha:'2026-10-04',vence:'2026-10-15',prev:5.5,
  texto:'La Administración Provincial del Agua (APA) declaró alerta amarilla por la creciente del Paraná: prevé que se acerque a 5,50 m en Barranqueras durante la primera quincena de octubre.',
  zonas:'Isla del Cerrito, Puerto Vilelas, Isla Soto, Colonia Tacuarí y otras zonas bajas de la costa'};
 const apaVigente=()=>APA&&hoy>=APA.fecha&&hoy<=APA.vence?APA:null;
@@ -526,34 +530,49 @@ async function cargarTodos(){
   }
   b.disabled=false;$('mCarga').hidden=true;colorearMapa();
 }
+let RIOG=null;
+// Lectura del gráfico con el dedo o el mouse: marca la lectura más cercana y la dice en texto.
+function leerRio(e){
+  const sv=e.target.closest&&e.target.closest('#rio svg');if(!sv||!RIOG)return;
+  const b=sv.getBoundingClientRect(),vx=(e.clientX-b.left)/b.width*RIOG.W;
+  let p=RIOG.pts[0];RIOG.pts.forEach(q=>{if(Math.abs(q[0]-vx)<Math.abs(p[0]-vx))p=q});
+  const m=sv.querySelector('#rioMarca');m.setAttribute('visibility','visible');
+  m.querySelector('line').setAttribute('x1',p[0]);m.querySelector('line').setAttribute('x2',p[0]);
+  m.querySelector('circle').setAttribute('cx',p[0]);m.querySelector('circle').setAttribute('cy',p[1]);
+  $('rioLee').innerHTML='<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>, a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
+}
+['pointermove','pointerdown'].forEach(t=>$('rio').addEventListener(t,leerRio));
 function pintarRio(){
   const r=resumenRio();
   if(!r){$('rio').innerHTML=meta('rio','el INA');return}
   const o=D.rio.datos.obs;
+  let pk=o[0];o.forEach(p=>{if(p[1]>=pk[1])pk=p});
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
   const sit=r.h>=NIVEL.evac?'Superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).':r.h>=NIVEL.alerta?'Superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
     :'Le faltan '+nf(r.falta,2)+' m para el nivel de alerta ('+nf(NIVEL.alerta,2)+' m) y '+nf(NIVEL.evac-r.h,2)+' m para el de evacuación ('+nf(NIVEL.evac,2)+' m).';
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+'). El río puede haber cambiado desde entonces.</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
-  const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(r.pico[1],2)+' m ('+fDia(r.pico[0])+')']]
+  const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
-  const W=340,H=170,L=30,Rt=44,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
+  const W=340,H=170,L=30,Rt=46,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
   const lo=Math.floor(Math.min(...vals)-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4);
   const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/span,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
-  let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+='<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
+  let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+=(m===NIVEL.alerta||m===NIVEL.evac?'':'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/>')+'<text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
   // marcas de fecha cada 7 días, contando hacia atrás desde la última lectura
-  let ejes='';for(let k=0;k*7<=span;k++){const dia=masDias(o[n][0],-k*7),fin=k===0,ini=span-k*7<3;
+  const paso=span<=45?7:span<=120?21:61;let ejes='';for(let k=0;k*paso<=span;k++){const dia=masDias(o[n][0],-k*paso),fin=k===0,ini=span-k*paso<paso/2;if(ini&&k>0&&span-k*paso>0)continue;
     ejes+='<line x1="'+x(dia)+'" x2="'+x(dia)+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(dia)+'" y="'+(H-5)+'" text-anchor="'+(fin?'end':ini?'start':'middle')+'">'+fDia(dia)+'</text>'}
-  const ref=(v,c,t)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="2" stroke-dasharray="5 4"/><text x="'+(W-Rt+4)+'" y="'+(y(v)+4)+'" style="fill:var(--'+c+');font-weight:700">'+t+'</text>';
+  const ref=(v,c)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="1.5" stroke-dasharray="5 4"/>';
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
-  const puntos=o.map(p=>'<circle cx="'+x(p[0]).toFixed(1)+'" cy="'+y(p[1]).toFixed(1)+'" r="6" fill="transparent"><title>'+fDia(p[0])+': '+nf(p[1],2)+' m</title></circle>').join('');
+  RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]])};
   const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.">'+g
-   +ref(NIVEL.alerta,'amarillo','Alerta')+ref(NIVEL.evac,'rojo','Evac.')
+   +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')
+   +(a=>a&&a.prev?'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(a.prev)+'" y2="'+y(a.prev)+'" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="2 3"/>':'')(apaVigente())
    +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
-   +'<circle cx="'+x(o[n][0])+'" cy="'+y(r.h)+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
-   +ejes+puntos+'</svg>';
+   +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
+   +'<text x="'+(x(o[n][0])+8)+'" y="'+(y(o[n][1])+4)+'" style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
+   +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   let caudal='';
   const c=D.caudal&&D.caudal.datos;
   if(c){
@@ -569,7 +588,9 @@ function pintarRio(){
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Estos dos niveles son los que publica el INA para el puerto de Barranqueras y valen para la zona ribereña: islas, parajes costeros y sectores de Barranqueras y Puerto Vilelas que están fuera de las defensas. La ciudad dentro de las defensas está protegida hasta unos 9,50 m; ahí, con el río alto, el riesgo es que la lluvia tarde en desagotar.</p>'
    +stats+svg
-   +'<p class="meta">En computadora, pasá el mouse por la línea para ver la altura de cada día.</p>'
+   +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
+   +(a=>a&&a.prev?'<span><i style="border-color:var(--muted);border-top-style:dotted"></i>Previsto por la APA hasta el '+fDia(a.vence)+': '+nf(a.prev,2)+' m</span>':'')(apaVigente())+'</div>'
+   +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +caudal;
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
