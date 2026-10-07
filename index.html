@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alerta Niño Chaco</title><meta name="description" content="Panel informativo sobre El Niño en el Chaco: alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Alerta Niño Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco, en palabras simples."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiempo y Ríos del Chaco</title><meta name="description" content="Panel informativo sobre El Niño en el Chaco: alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Tiempo y Ríos del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 :root{
@@ -24,6 +24,7 @@ p{margin:0}
 a{color:var(--water)}
 a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
 header p{color:var(--muted);margin-top:4px}
+header{text-align:center}
 .aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
 .aviso strong{display:block}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
@@ -86,6 +87,10 @@ footer{font-size:.85rem;color:var(--muted)}
 #mapa path.mun{cursor:pointer;stroke:var(--card);stroke-width:1;stroke-linejoin:round;vector-effect:non-scaling-stroke;transition:fill .25s,fill-opacity .25s}
 #mCarga{position:absolute;left:8px;top:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 10px;font-size:.85rem;font-weight:600;z-index:1}
 #mapa .ov{fill:none;pointer-events:none;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+#mapa .rio{fill:none;pointer-events:none;stroke:var(--water);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+#mapa .rioT{fill:none;stroke:var(--water);stroke-opacity:0;stroke-width:28;stroke-linecap:round;stroke-linejoin:round;pointer-events:stroke;cursor:pointer;vector-effect:non-scaling-stroke}
+#mapa .rioT:hover{stroke-opacity:.25}
+#mapa g[data-rio]{pointer-events:auto;cursor:pointer}
 #mTip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-150%);z-index:2}
 .leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
 .leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
@@ -95,8 +100,8 @@ footer{font-size:.85rem;color:var(--muted)}
 
 <div class="wrap">
   <header>
-    <h1>Alerta Niño Chaco</h1>
-    <p>Río, lluvias y riesgo de inundación en el Chaco, en un solo lugar y en palabras simples.</p>
+    <h1>Tiempo y Ríos del Chaco</h1>
+    <p>Río, lluvias y riesgo de inundación en el Chaco, en un solo lugar.</p>
   </header>
 
   <div class="aviso" role="note">
@@ -367,6 +372,11 @@ function pintarSemaforo(){
 // Las formas vienen en décimas de unidad (por eso el scale(.1)); la vista se mueve cambiando el viewBox.
 const PX=lon=>(lon+63.7)*100,PY=lat=>(-24-lat)*112;
 const BASE={x:20,y:0,w:530,h:474},ZMAX=14;
+// Los ríos se dibujan con tramos del contorno provincial: el Bermejo es el límite norte; el Paraguay y el Paraná, el límite este.
+const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
+  for(let i=0;i<n.length;i+=2){x=i?x+n[i]:n[i];y=i?y+n[i+1]:n[i+1];P.push(x+' '+y)}
+  const t=(a,b)=>'M'+P.slice(a,b+1).join('L');
+  return {bermejo:t(0,1112),paraguay:t(1112,1189),parana:t(1189,1241)}})();
 const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
 const ETQ={verde:'Verde',amarillo:'Amarillo',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -380,13 +390,19 @@ const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,
 function armarMapa(){
   const caja=$('mapa'),borde='paint-order:stroke;stroke:var(--card);stroke-linejoin:round;';
   caja.innerHTML='<svg viewBox="20 0 530 474" role="img" aria-label="Mapa interactivo del Chaco con sus '+GEO.mun.length+' municipios. Con teclado, usá el buscador de arriba para elegir un municipio.">'
-   +'<g transform="scale(.1)">'+GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
+   +'<g transform="scale(.1)">'
+   // La zona sensible de los ríos va debajo de los municipios: así solo se toca del lado de afuera y no le saca lugar a ninguno.
+   +'<path class="rioT" data-rio="Río Paraguay" d="'+RIOS.paraguay+'"/><path class="rioT" data-rio="Río Paraná" d="'+RIOS.parana+'"/>'
+   +GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
    +'<path class="ov" d="'+GEO.prov+'" stroke="var(--muted)" stroke-width="1.5"/>'
+   +'<path class="rio" d="'+RIOS.bermejo+'"/><path class="rio" d="'+RIOS.paraguay+'"/><path class="rio" d="'+RIOS.parana+'"/>'
+   +'<path class="ov" d="M5400 2500L5335 3185" stroke="var(--water)" stroke-width="1.2"/>'
    +'<path class="ov" id="mHover" stroke="var(--ink)" stroke-width="2"/><path class="ov" id="mSel" stroke="var(--ink)" stroke-width="3.5"/></g>'
    +'<g pointer-events="none">'
    +GEO.mun.map((m,i)=>MON[i]!=null?'':'<g class="fx" data-i="'+i+'" data-x="'+PX(m[3])+'" data-y="'+PY(m[2])+'"><text text-anchor="middle" dy=".35em" style="'+borde+'fill:var(--ink);font-size:12px;font-weight:600;stroke-width:3px">'+esc(m[0])+'</text></g>').join('')
-   +'<g class="fx" data-x="544" data-y="468"><text text-anchor="end" style="fill:var(--water);font-size:17px">Río Paraná →</text></g>'
-   +'<g class="fx" data-x="330" data-y="118"><text style="fill:var(--water);font-size:17px">Río Bermejo</text></g>'
+   +'<g class="fx" data-rio="Río Paraná" data-x="544" data-y="470"><text text-anchor="end" style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Paraná</text></g>'
+   +'<g class="fx" data-rio="Río Paraguay" data-x="546" data-y="244"><text text-anchor="end" style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Paraguay</text></g>'
+   +'<g class="fx" data-x="330" data-y="118"><text style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Bermejo</text></g>'
    +LOCS.map(l=>'<g class="fx" data-x="'+PX(l.lon)+'" data-y="'+PY(l.lat)+'"><circle class="pto" r="9" stroke="var(--card)" stroke-width="2.5"/>'
      +'<text x="'+l.dx+'" y="'+l.dy+'" text-anchor="'+l.a+'" style="'+borde+'fill:var(--ink);font-size:21px;font-weight:700;stroke-width:4px">'+l.n+'</text></g>').join('')
    +'</g></svg><div id="mCarga" hidden>Pintando el mapa con la lluvia de cada municipio…</div><div id="mTip" hidden></div>';
@@ -417,7 +433,9 @@ function armarMapa(){
   });
   svg.addEventListener('pointerup',soltar);svg.addEventListener('pointercancel',soltar);
   svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){M.activo=false;sobre(null)}});
-  svg.addEventListener('click',e=>{if(M.movio){M.movio=false;return}const t=e.target.closest('[data-m]');elegir(t?+t.dataset.m:-1)});
+  svg.addEventListener('click',e=>{if(M.movio){M.movio=false;return}
+    if(e.target.closest('[data-rio]')){$('t-rio').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
+    const t=e.target.closest('[data-m]');elegir(t?+t.dataset.m:-1)});
   svg.addEventListener('dblclick',e=>{e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(2,c[0],c[1],true)});
   svg.addEventListener('wheel',e=>{if(!e.ctrlKey&&!M.activo)return;e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(Math.exp(-e.deltaY*(e.ctrlKey?.01:.002)),c[0],c[1])},{passive:false});
   $('zMas').onclick=()=>zoom(1.7,null,null,true);
@@ -477,11 +495,12 @@ function colorDe(i){
   return k;
 }
 function sobre(e){
-  const t=e&&e.target.closest?e.target.closest('[data-m]'):null,tip=$('mTip');
-  if(!t){M.hov.setAttribute('d','');tip.hidden=true;return}
-  const i=+t.dataset.m,k=colorDe(i),r=$('mapa').getBoundingClientRect();
-  M.hov.setAttribute('d',GEO.mun[i][1]);
-  tip.textContent=GEO.mun[i][0]+(k.c?' · '+ETQ[k.c]:'');tip.hidden=false;
+  const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
+  if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}
+  const r=$('mapa').getBoundingClientRect();
+  if(rio){M.hov.setAttribute('d','');tip.textContent=rio.dataset.rio+' · ver la altura del Paraná'}
+  else{const i=+t.dataset.m,k=colorDe(i);M.hov.setAttribute('d',GEO.mun[i][1]);tip.textContent=GEO.mun[i][0]+(k.c?' · '+ETQ[k.c]:'')}
+  tip.hidden=false;
   tip.style.left=Math.min(r.width-70,Math.max(70,e.clientX-r.left))+'px';tip.style.top=Math.max(34,e.clientY-r.top)+'px';
 }
 function elegir(i,enf){
