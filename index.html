@@ -96,6 +96,8 @@ footer{font-size:.85rem;color:var(--muted)}
 .leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 #mInfo{border-left:5px solid var(--gris);background:var(--bg);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.95rem;min-height:3.2em}
 .smnChip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.98rem;line-height:1.2;padding:4px 11px 4px 8px;border-radius:99px;border:2px solid var(--line);background:var(--card);color:var(--ink);margin:0 8px 2px 0;vertical-align:middle;white-space:nowrap}
+.smnGrupo ul{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
+.smnChip.n0{border-color:var(--muted)}
 .smnChip .ico{font-size:1.15em}
 .smnChip{white-space:normal}.smnChip .con{font-weight:500;font-size:.9em}
 .smnChip small{font-weight:600;font-size:.78em;text-transform:uppercase;letter-spacing:.04em;padding-left:7px;border-left:2px solid currentColor;margin-left:1px}
@@ -594,13 +596,13 @@ function smnDe(i){   // alertas vigentes del municipio i, una por cada nivel: [{
 }
 const smnTxt=a=>'Alerta '+(SMN_NIV[a.niv]||['','nivel '+a.niv])[1]+' por '+(SMN_EV[a.ev]||'otro fenómeno');
 // Etiqueta visible del tipo de alerta: ícono, fenómeno y nivel.
-const smnChip=a=>{const f=SMN_EV[a.ev]||'otro fenómeno';return '<span class="smnChip n'+a.niv+'"><span class="ico" aria-hidden="true">'+(SMN_ICO[a.ev]||'⚠️')+'</span>'+f.charAt(0).toUpperCase()+f.slice(1)+(a.x?'<span class="con">con posible '+['','granizo','ráfagas','granizo y ráfagas'][a.x&3]+'</span>':'')+'<small>'+(SMN_NIV[a.niv]?'alerta '+SMN_NIV[a.niv][1]:'nivel '+a.niv)+'</small></span>'};
+const smnChip=a=>{const f=SMN_EV[a.ev]||'otro fenómeno';return '<span class="smnChip n'+a.niv+'"><span class="ico" aria-hidden="true">'+(SMN_ICO[a.ev]||'⚠️')+'</span>'+f.charAt(0).toUpperCase()+f.slice(1)+(a.x?'<span class="con">con posible '+['','granizo','ráfagas','granizo y ráfagas'][a.x&3]+'</span>':'')+(a.niv?'<small>'+(SMN_NIV[a.niv]?'alerta '+SMN_NIV[a.niv][1]:'nivel '+a.niv)+'</small>':'')+'</span>'};
 // Franja de arriba: aparece solo si hay alertas vigentes para el Chaco.
 function pintarBanda(G){
   const bd=$('smnBanda');
   if(!G||!G.size){bd.hidden=true;bd.innerHTML='';return}
   const tipos=new Map(),mun=new Set();let max=3;
-  [...G.values()].forEach(g=>{const k=g.a.ev+'|'+g.a.niv;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:g.a.niv,x:0});tipos.get(k).x|=g.a.x;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
+  [...G.values()].forEach(g=>{const k=g.a.ev;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:0,x:0});const t=tipos.get(k);t.x|=g.a.x;if(g.a.niv>t.niv)t.niv=g.a.niv;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
   const n=mun.size,T=GEO.mun.length;
   bd.className='n'+max;
   bd.innerHTML='<b>Alertas del SMN vigentes:</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
@@ -624,10 +626,15 @@ function pintarSMN(){
     :(Date.now()-new Date(SMN.capturado))/36e5>6
     ?'<p><b>No figuran alertas para el Chaco en el último informe leído, pero está sin renovar.</b> Puede haber alertas nuevas: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">confirmalo en el SMN</a>.</p>'
     :'<p><b>Sin alertas del SMN para el Chaco</b> '+rango+'.</p>';
-  else h='<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">'+[...G.values()].sort((x,y)=>x.a.dia<y.a.dia?-1:x.a.dia>y.a.dia?1:y.a.niv-x.a.niv).map(g=>{
-    const n=g.mun.length,todos=n===GEO.mun.length;
-    return '<li>'+smnChip(g.a)+'<b>'+fDiaLargo(g.a.dia)+'</b>'+(g.a.fr.length?' ('+g.a.fr.join(', ')+')':'')+'. '
-      +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul>';
+  else{
+    // Un bloque por fenómeno: la etiqueta una sola vez y debajo cada día y horario con su nivel.
+    const F=new Map();
+    [...G.values()].sort((x,y)=>x.a.dia<y.a.dia?-1:x.a.dia>y.a.dia?1:y.a.niv-x.a.niv).forEach(g=>{if(!F.has(g.a.ev))F.set(g.a.ev,{x:0,max:0,l:[]});const f=F.get(g.a.ev);f.x|=g.a.x;if(g.a.niv>f.max)f.max=g.a.niv;f.l.push(g)});
+    h=[...F.entries()].sort((x,y)=>y[1].max-x[1].max).map(([ev,f])=>'<div class="smnGrupo">'+smnChip({ev,niv:0,x:f.x})
+      +'<ul>'+f.l.map(g=>{const n=g.mun.length,todos=n===GEO.mun.length;
+        return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+'. '
+          +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul></div>').join('');
+  }
   el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'. El SMN alerta por zonas; a cada municipio se le asigna la que corresponde a su punto central. Estas alertas son el piso del color en el mapa y en el semáforo: con alerta amarilla o naranja un municipio no baja de amarillo; con roja, queda en rojo.</p>';
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
