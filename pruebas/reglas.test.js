@@ -118,7 +118,7 @@ prueba('script: alerta CAP con la corrección de 3 horas y franjas', () => {
   const j = gs.armar([c], '2026-10-07', new Date('2026-10-07T13:00:00Z'));
   // 15 a 21 rotulado -03:00 son en realidad las 12 a 18 de Argentina: solo la tarde
   assert.deepStrictEqual(JSON.parse(JSON.stringify(j.alertas[0])), [['2026-10-07', 41, 0, 0, 4, 0]]);
-  assert.strictEqual(j.areas.length, 69);
+  assert.strictEqual(j.areas.length, 70);
 });
 
 prueba('script: tabla ONI de la NOAA', () => {
@@ -148,7 +148,7 @@ prueba('script: si una fuente falla queda la copia anterior y las demás siguen'
     : url.indexOf('noaa') >= 0 ? { codigo: 200, texto: 'no es la tabla' }
     : { codigo: 200, texto: lluvia(url.split('latitude=')[1].split('&')[0].split(',').length) };
   const d = JSON.parse(JSON.stringify(gs.leerExtras('2026-10-07', new Date('2026-10-07T12:00:00Z'), { rio: { obs: [['2026-10-06', 4.6]], t: 'antes' } }, pedir)));
-  assert.strictEqual(d.lluvia.mm.length, 6); assert.strictEqual(d.municipios.mm.length, 69);
+  assert.strictEqual(d.lluvia.mm.length, 6); assert.strictEqual(d.municipios.mm.length, 70);
   assert.strictEqual(d.lluvia.mm[0][0], 0);
   assert.strictEqual(d.rio.t, 'antes'); assert.ok(d.errores.rio); assert.ok(d.errores.oni); assert.strictEqual(d.oni, undefined);
   assert.strictEqual(d.caudal.t, '2026-10-07T12:00:00.000Z');
