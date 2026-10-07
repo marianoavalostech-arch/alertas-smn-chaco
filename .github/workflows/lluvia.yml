@@ -1,0 +1,38 @@
+# Robot de la lluvia: cada media hora pide la lluvia a Open-Meteo y deja lluvia.json en la rama "datos".
+# El sitio lee ese archivo. Netlify solo publica la rama main, así que esto no publica ni gasta créditos.
+name: Lluvia
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: lluvia
+jobs:
+  lluvia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Consultar la lluvia
+        id: consulta
+        continue-on-error: true
+        run: |
+          mkdir salida
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/lluvia.json" -o anterior.json || true
+          node robot/lluvia.js anterior.json salida/lluvia.json
+      - name: Guardar en la rama datos
+        run: |
+          cd salida
+          test -s lluvia.json
+          git init -q -b datos
+          git config user.name "robot-lluvia"
+          git config user.email "robot-lluvia@users.noreply.github.com"
+          git add lluvia.json
+          git commit -q -m "Lluvia [skip ci] [skip netlify]"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" datos
+      - name: Marcar la corrida si Open-Meteo no respondió
+        if: steps.consulta.outcome == 'failure'
+        run: exit 1

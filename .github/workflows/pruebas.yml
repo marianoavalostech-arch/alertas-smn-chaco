@@ -1,6 +1,9 @@
 # Corre las pruebas en cada subida. No publica nada ni gasta créditos de Netlify.
 name: Pruebas
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
 jobs:
   pruebas:
     runs-on: ubuntu-latest

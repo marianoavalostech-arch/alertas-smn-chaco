@@ -183,4 +183,18 @@ prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo dem
   assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.caudal);
 });
 
-console.log('\n' + ok + ' pruebas bien.');
+(async () => {
+  // Robot de la lluvia, con Open-Meteo simulado: los municipios fallan y queda la copia anterior
+  const { armar } = require('../robot/lluvia.js'), real = global.fetch;
+  const dia = Array.from({ length: 14 }, (_, i) => '2026-10-' + String(i + 1).padStart(2, '0'));
+  global.fetch = async url => { const n = url.split('latitude=')[1].split('&')[0].split(',').length;
+    return n > 6 ? { ok: false, status: 429 } : { ok: true, json: async () => Array.from({ length: n }, () => ({ daily: { time: dia, precipitation_sum: dia.map(() => 2) } })) }; };
+  const r = await armar({ datos: { municipios: { t: 'antes' } } }, new Date('2026-10-08T12:00:00Z'), 1);
+  global.fetch = real;
+  prueba('robot de la lluvia: mismo formato que la copia del servidor, y si falla queda lo anterior', () => {
+    assert.strictEqual(r.bien, 1); assert.strictEqual(r.salida.datos.errores.municipios, 'HTTP 429');
+    assert.strictEqual(r.salida.datos.municipios.t, 'antes');
+    assert.ok(S(`hoy='2026-10-08';var real=Date.now;Date.now=()=>new Date('2026-10-08T12:30:00Z').getTime();var x=delServidor('lluvia',${JSON.stringify(r.salida)});Date.now=real;x`));
+  });
+  console.log('\n' + ok + ' pruebas bien.');
+})();

@@ -177,7 +177,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del río:</b> lecturas de Prefectura Naval Argentina, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) de Barranqueras son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro.</li>
+      <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro. Se consultan cada media hora, más o menos, y todos los visitantes ven la misma copia, con la hora de esa consulta.</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
@@ -253,7 +253,10 @@ const MEM={
 };
 // Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, caudal y ONI.
 // Así la mayoría de las visitas no le pide nada a Open-Meteo ni al INA.
-let SRV=null,SRV_P=Promise.resolve(null);
+let SRV=null,SRV_P=Promise.resolve(null),LLU_P=Promise.resolve(null);
+// Lluvia: la arma un robot de GitHub cada media hora (robot/lluvia.js) y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
+// Open-Meteo rechaza los pedidos que salen de Google, por eso la lluvia no viene en la copia del script.
+const LLUVIA_URL='https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/lluvia.json';
 const espera=ms=>new Promise(r=>setTimeout(r,ms));
 // Si el script de Google todavía no conoce a El Espinillo (trae un municipio menos), le toca lo de Villa Río Bermejito, de donde se separó.
 function completar(j){
@@ -264,6 +267,7 @@ function completar(j){
 }
 function pedirServidor(){
   SRV_P=SMN_URL?getJSON(SMN_URL).then(j=>{SRV=completar(j);return SRV}).catch(()=>null):Promise.resolve(null);
+  LLU_P=LLUVIA_URL?getJSON(LLUVIA_URL+'?'+Math.floor(Date.now()/3e5)).catch(()=>null):Promise.resolve(null);
 }
 // Dato del servidor: solo si tiene la forma esperada y menos de 2 horas. Si no, se consulta la fuente directamente.
 function delServidor(k,j){
@@ -273,11 +277,22 @@ function delServidor(k,j){
   if((k==='lluvia'||k==='municipios')&&d.dias.indexOf(hoy)!==7)return null;
   return d;
 }
+const esLluvia=k=>k==='lluvia'||k==='municipios';
+// Copia compartida de un dato: la lluvia sale primero del robot de GitHub; lo demás (y la lluvia, si el robot falla), del script de Google.
+async function copia(k){
+  return (esLluvia(k)&&delServidor(k,await Promise.race([LLU_P,espera(4000)])))||delServidor(k,await Promise.race([SRV_P,espera(4000)]));
+}
+// Si no hay copia compartida, antes de consultar la fuente se mira lo guardado en este dispositivo:
+// con menos de 30 minutos se usa eso, así abrir la página varias veces no repite consultas.
+function reciente(k){
+  const g=MEM.leer(k);
+  return g&&Date.now()-new Date(g.t)<30*60e3&&(!esLluvia(k)||g.datos.dias.indexOf(hoy)===7)?g:null;
+}
 const D={};   // D[k]={datos,vivo,t,error}
 async function cargar(k){
   try{
-    const sv=delServidor(k,await Promise.race([SRV_P,espera(4000)]));
-    const nuevo=sv?{datos:sv,vivo:true,t:new Date(sv.t)}:{datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
+    const sv=await copia(k),g=sv?null:reciente(k);
+    const nuevo=sv?{datos:sv,vivo:true,t:new Date(sv.t)}:g?{datos:g.datos,vivo:true,t:new Date(g.t)}:{datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
     if(!FORMA[k](nuevo.datos))throw new Error('formato');
     D[k]=nuevo;
     MEM.guardar(k,D[k].datos,D[k].t);
@@ -290,7 +305,7 @@ async function cargar(k){
 function meta(k,fuente,extra,etq){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
-  const e=d.vivo?'<span class="estado vivo">'+(etq||'En vivo')+'</span>Consultado el '+fFechaHora(d.t)
+  const e=d.vivo?'<span class="estado vivo">'+(etq||'En vivo')+'</span>Última actualización: '+fFechaHora(d.t)
                :'<span class="estado">Datos guardados</span>Son de la última consulta que funcionó en este dispositivo, el '+fFechaHora(d.t)+(LISTO?'. No se pudo consultar la fuente ahora':'. Buscando datos nuevos…');
   return '<p class="meta">'+e+'. Fuente: '+fuente+'.'+(extra?' '+extra:'')+'</p>';
 }
@@ -613,7 +628,8 @@ async function cargarTodos(){
   const b=$('mTodos'),e=$('mEstado');
   M.todos='cargando';b.disabled=true;b.textContent='Consultando…';e.textContent='';$('mCarga').hidden=false;pintarInfo();
   try{
-    let d=delServidor('municipios',await Promise.race([SRV_P,espera(4000)]));const t=d?new Date(d.t):new Date();
+    let d=await copia('municipios'),t=d?new Date(d.t):new Date();
+    if(!d){const g=reciente('municipios');if(g){d=g.datos;t=new Date(g.t)}}
     if(!d){
       const j=await getJSON('https://api.open-meteo.com/v1/forecast?latitude='+GEO.mun.map(m=>m[2])+'&longitude='+GEO.mun.map(m=>m[3])+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba');
       if(!Array.isArray(j)||j.length!==GEO.mun.length)throw new Error('formato');
@@ -622,7 +638,7 @@ async function cargarTodos(){
     }
     estimar(d);MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
     M.todos='ok';M.tEst=t;b.textContent='Actualizar la lluvia de toda la provincia';
-    e.innerHTML='<span class="estado vivo">En vivo</span>Consultado el '+fFechaHora(t)+'. Fuente: Open-Meteo.';
+    e.innerHTML='<span class="estado vivo">En vivo</span>Última actualización: '+fFechaHora(t)+'. Fuente: Open-Meteo.';
   }catch(err){
     M.todos='error';b.textContent='Reintentar: pintar toda la provincia';
     e.innerHTML=M.tEst?'<span class="estado falla">Sin renovar</span>No se pudo consultar Open-Meteo ahora. El mapa muestra la lluvia consultada el '+fFechaHora(M.tEst)+'.'
