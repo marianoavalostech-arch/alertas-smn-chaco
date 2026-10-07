@@ -1,0 +1,12 @@
+# Corre las pruebas en cada subida. No publica nada ni gasta créditos de Netlify.
+name: Pruebas
+on: [push, pull_request]
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node pruebas/reglas.test.js

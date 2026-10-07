@@ -150,6 +150,7 @@ function normLluvia(j, n) {
   var mm = j.map(function (x) {
     var v = x.daily.precipitation_sum;
     if (!Array.isArray(v) || v.length !== dias.length) throw new Error('formato');
+    if (v.filter(function (y) { return y == null; }).length > 3) throw new Error('faltan datos');
     return v.map(function (y) { return y == null ? 0 : Number(y); });
   });
   return { dias: dias, mm: mm };
@@ -223,7 +224,8 @@ function pedirUrl(url) {
   return { codigo: r.getResponseCode(), texto: r.getContentText() };
 }
 
-function actualizar() {
+// Lee el canal del SMN y arma las alertas. Da error si el canal no responde bien.
+function leerSmn(hoy, ahora) {
   var r = UrlFetchApp.fetch(FEED, { muteHttpExceptions: true });
   if (r.getResponseCode() !== 200) throw new Error('El canal del SMN respondió ' + r.getResponseCode());
   var texto = r.getContentText();
@@ -235,15 +237,30 @@ function actualizar() {
   }
   // Si falló más de la cuarta parte, no se pisa el dato anterior: podría faltar justo una alerta del Chaco.
   if (urls.length && fallas > urls.length / 4) throw new Error('No se pudieron leer ' + fallas + ' de ' + urls.length + ' alertas.');
-  var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var datos = armar(caps, hoy, ahora);
   datos.leidas = urls.length; datos.fallas = fallas;
-  // Copia horaria de las demás fuentes. Nada de esto puede impedir que se guarden las alertas.
-  var previo = {};
-  try { previo = JSON.parse(leerGuardado() || '{}').datos || {}; } catch (e) {}
-  try { datos.datos = leerExtras(hoy, ahora, previo, pedirUrl); } catch (e) { datos.datos = previo; }
-  guardar(JSON.stringify(datos));
   return datos;
+}
+
+// Junta las alertas con la copia horaria de las demás fuentes. Ninguna de las dos partes impide guardar la otra:
+// si el canal del SMN falla, quedan las alertas anteriores (con su hora de lectura) y lluvia, río, caudal y ONI se renuevan igual.
+// leer(hoy, ahora) devuelve las alertas o da error; pedir(url) devuelve { codigo, texto }.
+function juntar(anterior, hoy, ahora, leer, pedir) {
+  var falla = null, datos;
+  anterior = anterior || {};
+  try { datos = leer(hoy, ahora); } catch (e) { falla = e; datos = anterior; delete datos.error; }
+  var previo = anterior.datos || {};
+  try { datos.datos = leerExtras(hoy, ahora, previo, pedir); } catch (e) { datos.datos = previo; }
+  return { datos: datos, falla: falla };
+}
+
+function actualizar() {
+  var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd'), anterior = {};
+  try { anterior = JSON.parse(leerGuardado() || '{}'); } catch (e) {}
+  var r = juntar(anterior, hoy, ahora, leerSmn, pedirUrl);
+  guardar(JSON.stringify(r.datos));
+  if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
+  return r.datos;
 }
 
 function guardar(json) {

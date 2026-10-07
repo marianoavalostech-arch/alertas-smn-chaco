@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiempo y Ríos del Chaco</title><meta name="description" content="Panel informativo sobre El Niño en el Chaco: alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Tiempo y Ríos del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiempo y Ríos del Chaco</title><meta name="description" content="Río, lluvias y riesgo de inundación en el Chaco: alertas oficiales del SMN, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Tiempo y Ríos del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=2"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 :root{
@@ -223,8 +223,10 @@ const URLS=()=>({
  caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30'
 });
 // Cada fuente se normaliza a la misma forma que la captura guardada.
+// Lluvia de un punto. Un día suelto sin dato cuenta como 0; si faltan más de 3, no se usa (no se puede decir que no llovió).
+const mmDe=x=>{const v=x.daily.precipitation_sum;if(!Array.isArray(v)||v.filter(y=>y==null).length>3)throw new Error('faltan datos');return v.map(y=>y==null?0:Number(y))};
 const NORM={
- lluvia:j=>{if(!Array.isArray(j)||j.length!==LOCS.length)throw new Error('formato');return {dias:j[0].daily.time,mm:j.map(x=>x.daily.precipitation_sum.map(v=>v==null?0:Number(v)))}},
+ lluvia:j=>{if(!Array.isArray(j)||j.length!==LOCS.length)throw new Error('formato');return {dias:j[0].daily.time,mm:j.map(mmDe)}},
  // Se ordena por fecha, se descartan valores imposibles y queda una lectura por día (la última de cada día).
  rio:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>r.valor!=null&&r.timestart&&Number(r.valor)>-3&&Number(r.valor)<12)
      .sort((a,b)=>new Date(a.timestart)-new Date(b.timestart));
@@ -235,16 +237,18 @@ const NORM={
  caudal:j=>({dias:j.daily.time,q:j.daily.river_discharge.map(Number)})
 };
 // Forma esperada de cada dato, venga del servidor o de lo guardado en el dispositivo.
-const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length);
+const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(v=>typeof v==='number'));
+const esFecha=v=>v==null||!isNaN(new Date(v));
 const FORMA={
  lluvia:d=>filas(d,LOCS.length),
  municipios:d=>filas(d,GEO.mun.length),
- rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&typeof p[0]==='string'&&isFinite(p[1])),
- caudal:d=>Array.isArray(d.dias)&&Array.isArray(d.q)&&d.q.length===d.dias.length
+ rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
+ caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&Array.isArray(d.q)&&d.q.length===d.dias.length
 };
 // Última consulta buena de cada fuente, guardada en este dispositivo. Reemplaza a la captura fija que traía la página.
 const MEM={
   leer(k){try{const j=JSON.parse(localStorage.getItem('anc:'+k));return j&&j.datos&&!isNaN(new Date(j.t))&&(!FORMA[k]||FORMA[k](j.datos))?j:null}catch(e){return null}},
+  borrar(k){try{localStorage.removeItem('anc:'+k)}catch(e){}},
   guardar(k,datos,t){try{localStorage.setItem('anc:'+k,JSON.stringify({t:new Date(t).toISOString(),datos}))}catch(e){}}
 };
 // Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, caudal y ONI.
@@ -265,13 +269,17 @@ function pedirServidor(){
 function delServidor(k,j){
   const d=j&&j.datos&&j.datos[k];
   if(!d||isNaN(new Date(d.t))||Date.now()-new Date(d.t)>2*36e5||!FORMA[k](d))return null;
+  // La lluvia del servidor tiene que estar armada hoy: pasada la medianoche, la de ayer cuenta mal los días.
+  if((k==='lluvia'||k==='municipios')&&d.dias.indexOf(hoy)!==7)return null;
   return d;
 }
 const D={};   // D[k]={datos,vivo,t,error}
 async function cargar(k){
   try{
     const sv=delServidor(k,await Promise.race([SRV_P,espera(4000)]));
-    D[k]=sv?{datos:sv,vivo:true,t:new Date(sv.t)}:{datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
+    const nuevo=sv?{datos:sv,vivo:true,t:new Date(sv.t)}:{datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
+    if(!FORMA[k](nuevo.datos))throw new Error('formato');
+    D[k]=nuevo;
     MEM.guardar(k,D[k].datos,D[k].t);
   }catch(e){
     if(D[k]&&D[k].vivo&&Date.now()-D[k].t<6*36e5)return;   // si falla una renovación, se conserva la última consulta buena (hasta 6 horas)
@@ -522,7 +530,7 @@ function pintarInfo(){
   if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
   else if(k.tipo==='gran')h='<p><span class="estado">Gran Resistencia</span><b>'+M.R[0].et+'</b></p><p>Forma parte del Gran Resistencia y comparte su semáforo. '+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
-    h='<p><span class="estado">Estimación por lluvia</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm entre hoy y los 6 días siguientes'
+    h='<p><span class="estado">Estimación por lluvia</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
      +(s.max>=35?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN. No mira ríos ni arroyos.</p>'}
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
@@ -566,7 +574,8 @@ function pintarSMN(){
   GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{const k=a.dia+'|'+a.ev+'|'+a.niv+'|'+a.fr.join(', ');if(!G.has(k))G.set(k,{a,mun:[]});G.get(k).mun.push(m[0])}));
   const fs=SMN.fechas.filter(d=>d>=hoy),rango='entre el '+fDia(fs[0])+' y el '+fDia(fs[fs.length-1]);
   let h;
-  if(!G.size)h=(Date.now()-new Date(SMN.capturado))/36e5>6
+  if(!G.size)h=SMN.leidas===0?'<p><b>No se pudo confirmar si hay alertas.</b> En la última lectura el canal del SMN no listó ninguna alerta para todo el país, y eso puede ser una falla del canal. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Confirmalo en el SMN</a>.</p>'
+    :(Date.now()-new Date(SMN.capturado))/36e5>6
     ?'<p><b>No figuran alertas para el Chaco en el último informe leído, pero está sin renovar.</b> Puede haber alertas nuevas: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">confirmalo en el SMN</a>.</p>'
     :'<p><b>Sin alertas del SMN para el Chaco</b> '+rango+'.</p>';
   else h='<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">'+[...G.values()].sort((x,y)=>x.a.dia<y.a.dia?-1:x.a.dia>y.a.dia?1:y.a.niv-x.a.niv).map(g=>{
@@ -579,12 +588,13 @@ function pintarSMN(){
 function smnInfo(i){
   if(!smnVigente())return '';
   const a=smnDe(i);
+  if(!a.length&&SMN.leidas===0)return '<p style="margin-top:8px"><span class="estado">SMN</span>No se pudo confirmar si hay alertas oficiales: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">consultá el SMN</a>.</p>';
   return '<p style="margin-top:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnPunto(x)+smnTxt(x)+' el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
 }
 function cargarSMN(){
   SRV_P.then(j=>{
-    if(smnVale(j)){SMN=j;SMN_VIVO=true;MEM.guardar('smn',{emitido:j.emitido,capturado:j.capturado,fechas:j.fechas,areas:j.areas,alertas:j.alertas},new Date())}
-    SMN_LISTO=true;pintarSMN();pintarNino();if(D.lluvia)pintarSemaforo();
+    if(smnVale(j)){SMN=j;SMN_VIVO=true;MEM.guardar('smn',{emitido:j.emitido,capturado:j.capturado,fechas:j.fechas,areas:j.areas,alertas:j.alertas,leidas:j.leidas},new Date())}
+    SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarNino);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
   });
 }
 function colorearMapa(R){
@@ -597,7 +607,7 @@ function colorearMapa(R){
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
-const estimar=d=>d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),hoy);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}});
+const estimar=d=>{M.estFin=d.dias[d.dias.length-1];d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),hoy);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
 async function cargarTodos(){
   if(M.todos==='cargando')return;
   const b=$('mTodos'),e=$('mEstado');
@@ -607,7 +617,7 @@ async function cargarTodos(){
     if(!d){
       const j=await getJSON('https://api.open-meteo.com/v1/forecast?latitude='+GEO.mun.map(m=>m[2])+'&longitude='+GEO.mun.map(m=>m[3])+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba');
       if(!Array.isArray(j)||j.length!==GEO.mun.length)throw new Error('formato');
-      d={dias:j[0].daily.time,mm:j.map(x=>x.daily.precipitation_sum.map(v=>v==null?0:Number(v)))};
+      d={dias:j[0].daily.time,mm:j.map(mmDe)};
       if(!FORMA.municipios(d))throw new Error('formato');
     }
     estimar(d);MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
@@ -618,7 +628,7 @@ async function cargarTodos(){
     e.innerHTML=M.tEst?'<span class="estado falla">Sin renovar</span>No se pudo consultar Open-Meteo ahora. El mapa muestra la lluvia consultada el '+fFechaHora(M.tEst)+'.'
       :'<span class="estado falla">No disponible</span>No se pudo consultar Open-Meteo ahora.';
   }
-  b.disabled=false;$('mCarga').hidden=true;colorearMapa();
+  b.disabled=false;$('mCarga').hidden=true;seguro(()=>colorearMapa(),['municipios','smn']);
 }
 let RIOG=null;
 // Lectura del gráfico con el dedo o el mouse: marca la lectura más cercana y la dice en texto.
@@ -667,7 +677,7 @@ function pintarRio(){
   const c=D.caudal&&D.caudal.datos;
   if(c){
     const ref0=D.caudal.vivo?hoy:diaAR(D.caudal.t),i0=c.dias.indexOf(ref0);
-    if(i0>=0){let im=i0;for(let i=i0;i<Math.min(c.dias.length,i0+15);i++)if(c.q[i]>c.q[im])im=i;
+    if(i0>=0&&c.q[i0]>0){let im=i0;for(let i=i0;i<Math.min(c.dias.length,i0+15);i++)if(c.q[i]>c.q[im])im=i;
       const pc=(c.q[im]/c.q[i0]-1)*100,red=v=>nf(Math.round(v/100)*100);
       caudal='<p><b>Qué puede pasar en dos semanas:</b> '+(pc>5?'el modelo europeo GloFAS calcula que el caudal del Paraná en esta zona subiría de '+red(c.q[i0])+' a unos '+red(c.q[im])+' m³ por segundo hacia el '+fDia(c.dias[im])+' (+'+nf(pc)+' %).'
         :'el modelo europeo GloFAS no calcula una suba importante del caudal en los próximos 15 días.')+' Es una estimación automática, no un pronóstico oficial.</p>'
@@ -725,9 +735,23 @@ function pintarBanner(){
   b.hidden=false;
   b.innerHTML='<b>'+(horas>36?'Atención: estos datos no son de hoy.':'Estás viendo datos guardados.')+'</b> No se pudieron consultar las fuentes ahora. Se muestran los de la última consulta que funcionó en este dispositivo, del '+fFechaHora(t)+(horas>36?'. Por ser viejos, no se usan para calcular el color del semáforo.':', y el semáforo está calculado con ellos.');
 }
-function pintar(){pintarSemaforo();if(D.rio)pintarRio();if(D.lluvia)pintarLluvia();pintarBanner()}
+// Cada sección se pinta por separado. Si un dato inesperado rompe una, las demás siguen;
+// lo guardado de esa fuente se borra para que no vuelva a fallar al recargar, y se pinta de nuevo sin ese dato.
+function seguro(f,ks){
+  try{f();return}catch(e){console.error(e)}
+  (ks||[]).forEach(k=>{MEM.borrar(k);if(D[k])D[k]={datos:null,error:true};
+    if(k==='municipios'){M.est={};M.tEst=0}
+    if(k==='smn'){SMN=SMN_VACIO;SMN_VIVO=false}});
+  try{f()}catch(e){console.error(e)}
+}
+function pintar(){
+  seguro(()=>{if(D.rio)pintarRio()},['rio','caudal']);
+  seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
+  seguro(pintarSemaforo,['lluvia','rio','municipios','smn']);
+  seguro(pintarBanner);
+}
 
-pedirServidor();pintarNino();pintarSMN();cargarSMN();
+pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','caudal'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos);M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
@@ -738,7 +762,7 @@ let ULT=Date.now();
 function renovar(){
   if(document.hidden||!LISTO)return;
   ULT=Date.now();hoy=diaAR(new Date());
-  pedirServidor();pintarSMN();cargarSMN();
+  pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
   Promise.all(['lluvia','rio','caudal'].map(cargar)).then(pintar);
   cargarTodos();
 }

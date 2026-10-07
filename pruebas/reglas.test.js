@@ -93,6 +93,25 @@ prueba('El Niño: el dato del servidor no puede ser más viejo que el cargado a 
   assert.strictEqual(S('oniServidor()'), null);
 });
 
+prueba('datos raros: no pasan la revisión de forma y no traban la página', () => {
+  assert.ok(S(`FORMA.rio({obs:[['2026-10-06',4.27]],hora:'2026-10-06T12:00:00Z',act:null})`));
+  assert.strictEqual(S(`FORMA.rio({obs:[['2026-10-06',4.27]],hora:'basura'})`), false);
+  assert.strictEqual(S(`FORMA.rio({obs:[['ayer',4.27]]})`), false);
+  assert.strictEqual(S(`FORMA.rio({obs:[['2026-10-06','4']]})`), false);
+  // Una sección que falla no corta a las demás, y el dato que la rompió se descarta
+  S(`D.rio={datos:{obs:[['2026-10-06',4.27]]},vivo:true,t:new Date()};var pasos=0;seguro(()=>{pasos++;if(D.rio.datos)throw new Error('x')},['rio'])`);
+  assert.strictEqual(S('pasos'), 2); assert.strictEqual(S('D.rio.datos'), null);
+});
+
+prueba('lluvia: la copia del servidor tiene que ser de hoy, y no se inventa un cero si faltan datos', () => {
+  const dias = h => Array.from({ length: 14 }, (_, i) => S(`masDias('${h}',${i - 7})`));
+  const copia = h => S(`hoy='2026-10-07';delServidor('lluvia',{datos:{lluvia:{t:new Date().toISOString(),dias:${JSON.stringify(dias(h))},mm:LOCS.map(()=>Array(14).fill(1))}}})`);
+  assert.ok(copia('2026-10-07'));
+  assert.strictEqual(copia('2026-10-06'), null);
+  assert.strictEqual(S(`mmDe({daily:{precipitation_sum:[1,null,2]}})`)[1], 0);
+  assert.throws(() => S(`mmDe({daily:{precipitation_sum:[null,null,null,null,1]}})`));
+});
+
 /* ---------- script de Google ---------- */
 const gs = vm.createContext({ console, JSON, Math, Date, Number, String, Array, Error, RegExp, isFinite, isNaN });
 vm.runInContext(fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8'), gs);
@@ -152,6 +171,16 @@ prueba('script: si una fuente falla queda la copia anterior y las demás siguen'
   assert.strictEqual(d.lluvia.mm[0][0], 0);
   assert.strictEqual(d.rio.t, 'antes'); assert.ok(d.errores.rio); assert.ok(d.errores.oni); assert.strictEqual(d.oni, undefined);
   assert.strictEqual(d.caudal.t, '2026-10-07T12:00:00.000Z');
+});
+
+prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo demás se renueva', () => {
+  const pedir = url => url.indexOf('flood-api') >= 0 ? { codigo: 200, texto: '{"daily":{"time":["2026-10-07"],"river_discharge":[17000]}}' } : { codigo: 500, texto: '' };
+  const antes = { capturado: 'antes', alertas: { 0: [] }, datos: { rio: { t: 'antes' } } };
+  const r = gs.juntar(antes, '2026-10-07', new Date('2026-10-07T12:00:00Z'), () => { throw new Error('canal caído'); }, pedir);
+  assert.ok(r.falla); assert.strictEqual(r.datos.capturado, 'antes');
+  assert.strictEqual(r.datos.datos.caudal.t, '2026-10-07T12:00:00.000Z'); assert.strictEqual(r.datos.datos.rio.t, 'antes');
+  const b = gs.juntar(antes, '2026-10-07', new Date('2026-10-07T12:00:00Z'), () => ({ capturado: 'ahora', leidas: 3 }), pedir);
+  assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.caudal);
 });
 
 console.log('\n' + ok + ' pruebas bien.');
