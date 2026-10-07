@@ -2,3 +2,12 @@
 [build]
   publish = "."
   command = ""
+
+# Cabeceras de seguridad. No limitan a qué fuentes de datos se conecta la página.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
