@@ -95,6 +95,19 @@ footer{font-size:.85rem;color:var(--muted)}
 .leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
 .leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 #mInfo{border-left:5px solid var(--gris);background:var(--bg);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.95rem;min-height:3.2em}
+.smnChip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.98rem;line-height:1.2;padding:4px 11px 4px 8px;border-radius:99px;border:2px solid var(--line);background:var(--card);color:var(--ink);margin:0 8px 2px 0;vertical-align:middle;white-space:nowrap}
+.smnChip .ico{font-size:1.15em}
+.smnChip{white-space:normal}.smnChip .con{font-weight:500;font-size:.9em}
+.smnChip small{font-weight:600;font-size:.78em;text-transform:uppercase;letter-spacing:.04em;padding-left:7px;border-left:2px solid currentColor;margin-left:1px}
+.smnChip.n3{border-color:var(--amarillo)}.smnChip.n3 small{color:var(--amarillo)}
+.smnChip.n4{border-color:#d9730d}.smnChip.n4 small{color:#d9730d}
+.smnChip.n5{border-color:var(--rojo);background:var(--rojo-bg)}.smnChip.n5 small{color:var(--rojo)}
+#smnBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+#smnBanda[hidden]{display:none}
+#smnBanda.n4{border-color:#d9730d}#smnBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
+#smnBanda b{font-size:1.02rem}
+#mapa path.mun[data-smn]{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3}
+.leyenda i.punteado{background:none;border:1.6px dashed var(--ink)}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.rojo{border-color:var(--rojo)}
 </style>
 
@@ -109,6 +122,8 @@ footer{font-size:.85rem;color:var(--muted)}
     No reemplaza los alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 o a Defensa Civil (103).
     <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver alertas oficiales del SMN</a>
   </div>
+
+  <div id="smnBanda" role="status" hidden></div>
 
   <div class="captura" id="bannerCaptura" hidden></div>
 
@@ -130,6 +145,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <span><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: atención</span>
       <span><i style="background:var(--rojo);opacity:.7"></i>Rojo: riesgo alto</span>
       <span><i style="background:var(--gris);opacity:.5"></i>Sin datos</span>
+      <span><i class="punteado"></i>Borde punteado: alerta del SMN vigente</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button">Pintar toda la provincia según la lluvia</button><span class="meta" id="mEstado"></span></div>
     <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Todos los municipios se pintan con la misma regla: la lluvia caída y prevista, y además la alerta oficial del SMN, que nunca deja el color por debajo de lo que ella indica. Los seis puntos marcados son las localidades del semáforo de más abajo; el Gran Resistencia comparte el color de Resistencia. El mapa no muestra el estado del río. El detalle de la alerta del SMN de cada municipio aparece al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
@@ -181,7 +197,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
-      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
+      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
 <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
       <li><b>Alerta de la APA:</b> la Administración Provincial del Agua del Chaco no ofrece una consulta abierta desde el navegador, así que su alerta se carga a mano, con la fecha, y puede quedar atrasada.</li>
     </ul>
@@ -556,7 +572,8 @@ function pintarInfo(){
 
 /* ---------- alertas oficiales del SMN ---------- */
 // Se leen del script de Google (SMN_URL). Si falla, se usa el último informe leído en este dispositivo.
-const SMN_EV={41:'tormentas',37:'lluvias',42:'nevadas',39:'viento',47:'viento zonda'};
+const SMN_EV={41:'tormentas',37:'lluvias',42:'nevadas',39:'viento',47:'viento zonda',101:'calor extremo',102:'frío extremo',103:'niebla',104:'humo',105:'polvo'};
+const SMN_ICO={41:'⛈️',37:'🌧️',42:'❄️',39:'💨',47:'💨',101:'🌡️',102:'🥶',103:'🌫️',104:'🌫️',105:'🌫️'};
 const SMN_NIV={3:['amarillo','amarilla'],4:['naranja','naranja'],5:['rojo','roja']};
 const SMN_FR=['madrugada','mañana','tarde','noche'];
 const SMN_COL={amarillo:'var(--amarillo)',naranja:'#d9730d',rojo:'var(--rojo)'};
@@ -571,11 +588,25 @@ const smnVigente=()=>SMN.fechas.length&&SMN.fechas[SMN.fechas.length-1]>=hoy;
 function smnDe(i){   // alertas vigentes del municipio i, una por cada nivel: [{dia,ev,niv,fr}]
   const out=[],h=horaAR();
   // De las alertas de hoy no cuentan las franjas que ya terminaron (cada franja dura 6 horas).
-  (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy).forEach(a=>{const l=a.slice(2).map((v,k)=>a[0]===hoy&&(k+1)*6<=h?0:(v||0));
-    [5,4,3].forEach(niv=>{const fr=SMN_FR.filter((_,k)=>l[k]===niv);if(fr.length)out.push({dia:a[0],ev:a[1],niv,fr})})});
+  (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy).forEach(a=>{const l=a.slice(2,6).map((v,k)=>a[0]===hoy&&(k+1)*6<=h?0:(v||0));
+    [5,4,3].forEach(niv=>{const fr=SMN_FR.filter((_,k)=>l[k]===niv);if(fr.length)out.push({dia:a[0],ev:a[1],niv,fr,x:a[6]||0})})});
   return out;
 }
 const smnTxt=a=>'Alerta '+(SMN_NIV[a.niv]||['','nivel '+a.niv])[1]+' por '+(SMN_EV[a.ev]||'otro fenómeno');
+// Etiqueta visible del tipo de alerta: ícono, fenómeno y nivel.
+const smnChip=a=>{const f=SMN_EV[a.ev]||'otro fenómeno';return '<span class="smnChip n'+a.niv+'"><span class="ico" aria-hidden="true">'+(SMN_ICO[a.ev]||'⚠️')+'</span>'+f.charAt(0).toUpperCase()+f.slice(1)+(a.x?'<span class="con">con posible '+['','granizo','ráfagas','granizo y ráfagas'][a.x&3]+'</span>':'')+'<small>'+(SMN_NIV[a.niv]?'alerta '+SMN_NIV[a.niv][1]:'nivel '+a.niv)+'</small></span>'};
+// Franja de arriba: aparece solo si hay alertas vigentes para el Chaco.
+function pintarBanda(G){
+  const bd=$('smnBanda');
+  if(!G||!G.size){bd.hidden=true;bd.innerHTML='';return}
+  const tipos=new Map(),mun=new Set();let max=3;
+  [...G.values()].forEach(g=>{const k=g.a.ev+'|'+g.a.niv;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:g.a.niv,x:0});tipos.get(k).x|=g.a.x;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
+  const n=mun.size,T=GEO.mun.length;
+  bd.className='n'+max;
+  bd.innerHTML='<b>Alertas del SMN vigentes:</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
+    +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'. <a href="#t-smn">Ver días y horarios</a></span>';
+  bd.hidden=false;
+}
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
 const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta"><span class="estado falla">Sin renovar</span>La última lectura del canal del SMN es del '+fFechaHora(new Date(SMN.capturado))+' y debería renovarse cada hora. Puede estar desactualizada: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas en el SMN</a>.</p>'
@@ -583,19 +614,19 @@ const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta"><span class="estado fall
   :'<p class="meta"><span class="estado">Informe guardado</span>Emitido por el SMN el '+fFechaHora(new Date(SMN.emitido))+'. Guardado acá el '+fFechaHora(new Date(SMN.capturado))+'. Puede haber cambiado: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas al día en el SMN</a>.</p>';
 function pintarSMN(){
   const el=$('smn');
-  if(!smnVigente()){el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
+  if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
     :'<p><span class="estado falla">Sin informe vigente</span>El último informe guardado es del '+fFechaHora(new Date(SMN.emitido))+' y ya venció. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultá las alertas en el SMN</a>.</p>';return}
   const G=new Map();
-  GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{const k=a.dia+'|'+a.ev+'|'+a.niv+'|'+a.fr.join(', ');if(!G.has(k))G.set(k,{a,mun:[]});G.get(k).mun.push(m[0])}));
+  GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{const k=a.dia+'|'+a.ev+'|'+a.niv+'|'+a.x+'|'+a.fr.join(', ');if(!G.has(k))G.set(k,{a,mun:[]});G.get(k).mun.push(m[0])}));
   const fs=SMN.fechas.filter(d=>d>=hoy),rango='entre el '+fDia(fs[0])+' y el '+fDia(fs[fs.length-1]);
-  let h;
+  let h;pintarBanda(G);
   if(!G.size)h=SMN.leidas===0?'<p><b>No se pudo confirmar si hay alertas.</b> En la última lectura el canal del SMN no listó ninguna alerta para todo el país, y eso puede ser una falla del canal. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Confirmalo en el SMN</a>.</p>'
     :(Date.now()-new Date(SMN.capturado))/36e5>6
     ?'<p><b>No figuran alertas para el Chaco en el último informe leído, pero está sin renovar.</b> Puede haber alertas nuevas: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">confirmalo en el SMN</a>.</p>'
     :'<p><b>Sin alertas del SMN para el Chaco</b> '+rango+'.</p>';
   else h='<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px">'+[...G.values()].sort((x,y)=>x.a.dia<y.a.dia?-1:x.a.dia>y.a.dia?1:y.a.niv-x.a.niv).map(g=>{
     const n=g.mun.length,todos=n===GEO.mun.length;
-    return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+': '+smnTxt(g.a).toLowerCase()+'</b>'+(g.a.fr.length?' ('+g.a.fr.join(', ')+')':'')+'. '
+    return '<li>'+smnChip(g.a)+'<b>'+fDiaLargo(g.a.dia)+'</b>'+(g.a.fr.length?' ('+g.a.fr.join(', ')+')':'')+'. '
       +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul>';
   el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'. El SMN alerta por zonas; a cada municipio se le asigna la que corresponde a su punto central. Estas alertas son el piso del color en el mapa y en el semáforo: con alerta amarilla o naranja un municipio no baja de amarillo; con roja, queda en rojo.</p>';
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
@@ -604,7 +635,7 @@ function smnInfo(i){
   if(!smnVigente())return '';
   const a=smnDe(i);
   if(!a.length&&SMN.leidas===0)return '<p style="margin-top:8px"><span class="estado">SMN</span>No se pudo confirmar si hay alertas oficiales: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">consultá el SMN</a>.</p>';
-  return '<p style="margin-top:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnPunto(x)+smnTxt(x)+' el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
+  return '<p style="margin-top:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnChip(x)+'el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
 }
 function cargarSMN(){
   SRV_P.then(j=>{
@@ -616,7 +647,8 @@ function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
   // Mismo tono para todos los municipios (todos se calculan solo con lluvia); gris = sin datos.
   M.paths.forEach((p,i)=>{const k=colorDe(i);
-    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);});
+    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
+    if(smnVigente()&&smnDe(i).length)p.setAttribute('data-smn','1');else p.removeAttribute('data-smn');});
   M.puntos.forEach((p,j)=>p.setAttribute('fill','var(--'+(M.R[j]?M.R[j].c:'gris')+')'));
   pintarInfo();
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez

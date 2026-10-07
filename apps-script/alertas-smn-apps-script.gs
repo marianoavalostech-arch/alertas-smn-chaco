@@ -39,6 +39,12 @@ function idEvento(nombre) {
   if (n.indexOf('lluvia') >= 0) return 37;
   if (n.indexOf('nev') >= 0) return 42;
   if (n.indexOf('viento') >= 0) return 39;
+  // Números propios (el SMN no los publica): los mismos que SMN_EV en el sitio.
+  if (n.indexOf('calor') >= 0) return 101;
+  if (/fr\S{1,3}o\b/.test(n)) return 102;
+  if (n.indexOf('niebla') >= 0 || n.indexOf('neblina') >= 0) return 103;
+  if (n.indexOf('humo') >= 0) return 104;
+  if (n.indexOf('polvo') >= 0) return 105;
   return 0;
 }
 
@@ -67,7 +73,10 @@ function leerCap(xml) {
   // La hora de emisión viene con el mismo corrimiento que las demás.
   var env = new Date(etiqueta(xml, 'sent'));
   var enviado = isNaN(env) ? '' : new Date(env.getTime() - AJUSTE_H * 3600000).toISOString();
-  return { ev: idEvento(etiqueta(xml, 'event')), nivel: nivel, desde: desde, hasta: hasta, enviado: enviado, poligonos: poligonos };
+  // Lo que el SMN nombra en la descripción: 1 = granizo, 2 = ráfagas (se suman).
+  var desc = etiqueta(xml, 'description').toLowerCase();
+  var extra = (desc.indexOf('granizo') >= 0 ? 1 : 0) + (/r\S{1,3}faga/.test(desc) ? 2 : 0);   // la á puede llegar mal leída
+  return { ev: idEvento(etiqueta(xml, 'event')), extra: extra, nivel: nivel, desde: desde, hasta: hasta, enviado: enviado, poligonos: poligonos };
 }
 
 function dentro(pt, pol) {
@@ -109,8 +118,8 @@ function armar(caps, hoy, ahora) {
       tocados.forEach(function (m) {
         var lista = alertas[m], prev = null;
         for (var q = 0; q < lista.length; q++) if (lista[q][0] === dia && lista[q][1] === c.ev) prev = lista[q];
-        if (!prev) lista.push([dia, c.ev].concat(niveles));
-        else for (k = 0; k < 4; k++) prev[2 + k] = Math.max(prev[2 + k], niveles[k]);
+        if (!prev) lista.push([dia, c.ev].concat(niveles, [c.extra || 0]));
+        else { for (k = 0; k < 4; k++) prev[2 + k] = Math.max(prev[2 + k], niveles[k]); prev[6] = (prev[6] || 0) | (c.extra || 0); }
       });
     });
   });

@@ -136,7 +136,11 @@ prueba('script: alerta CAP con la corrección de 3 horas y franjas', () => {
   assert.strictEqual(c.nivel, 4); assert.strictEqual(c.ev, 41);
   const j = gs.armar([c], '2026-10-07', new Date('2026-10-07T13:00:00Z'));
   // 15 a 21 rotulado -03:00 son en realidad las 12 a 18 de Argentina: solo la tarde
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(j.alertas[0])), [['2026-10-07', 41, 0, 0, 4, 0]]);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(j.alertas[0])), [['2026-10-07', 41, 0, 0, 4, 0, 0]]);
+  // Si la descripción nombra granizo y ráfagas, queda anotado (1 + 2) en el último lugar.
+  const c2 = gs.leerCap(xml.replace('<event>', '<description>Tormentas con granizo de diversos tamaños y ráfagas intensas.</description><event>'));
+  assert.strictEqual(c2.extra, 3);
+  assert.strictEqual(gs.armar([c, c2], '2026-10-07', new Date('2026-10-07T13:00:00Z')).alertas[0][0][6], 3);
   assert.strictEqual(j.areas.length, 70);
 });
 
