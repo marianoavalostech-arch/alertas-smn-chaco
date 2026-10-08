@@ -111,6 +111,14 @@ footer{font-size:.85rem;color:var(--muted)}
 #smnBanda b{font-size:1.02rem}
 #mapa path.mun[data-smn]{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3}
 .leyenda i.punteado{background:none;border:1.6px dashed var(--ink)}
+/* foco: al elegir un municipio o un color de la leyenda, el resto del mapa se apaga (mismo color, más claro) */
+#mapa svg.foco path.mun:not(.on){fill-opacity:.18;stroke-opacity:.4}
+#mapa svg.foco path.mun.on{fill-opacity:.95}
+.ley{font:inherit;color:inherit;text-align:left;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-height:36px;cursor:pointer}
+.ley:hover{border-color:var(--water)}
+.ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
+.cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
+.irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--water);text-decoration:underline;cursor:pointer}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.rojo{border-color:var(--rojo)}
 </style>
 
@@ -144,14 +152,14 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mapa"></div>
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
-      <span><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</span>
-      <span><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</span>
-      <span><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte o alerta roja del SMN</span>
-      <span><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</span>
+      <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</button>
+      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</button>
+      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte o alerta roja del SMN</button>
+      <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</button>
       <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle. El mapa no muestra el estado del río.</p>
+    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El mapa no muestra el estado del río.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -466,7 +474,7 @@ const MON={},GRANI={};
 const MUNI=LOCS.map(l=>GEO.mun.findIndex(m=>m[0]===(l.mun||l.n)));   // municipio de cada localidad del semáforo
 MUNI.forEach((i,j)=>{if(i>=0)MON[i]=j});
 GRAN.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)GRANI[i]=true});
-const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false};
+const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false,filtro:'',antes:null};
 
 function armarMapa(){
   const caja=$('mapa'),borde='paint-order:stroke;stroke:var(--card);stroke-linejoin:round;';
@@ -516,7 +524,8 @@ function armarMapa(){
   svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){M.activo=false;sobre(null)}});
   svg.addEventListener('click',e=>{if(M.movio){M.movio=false;return}
     if(e.target.closest('[data-rio]')){$('t-rio').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
-    const t=e.target.closest('[data-m]');elegir(t?+t.dataset.m:-1)});
+    if(e.detail>1)return;   // el segundo toque de un doble toque solo acerca
+    const t=e.target.closest('[data-m]'),i=t?+t.dataset.m:-1;elegir(i===M.sel?-1:i,i!==M.sel)});
   svg.addEventListener('dblclick',e=>{e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(2,c[0],c[1],true)});
   svg.addEventListener('wheel',e=>{if(!e.ctrlKey&&!M.activo)return;e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(Math.exp(-e.deltaY*(e.ctrlKey?.01:.002)),c[0],c[1])},{passive:false});
   $('zMas').onclick=()=>zoom(1.7,null,null,true);
@@ -525,11 +534,16 @@ function armarMapa(){
   $('mTodos').onclick=cargarTodos;
   const buscar=()=>{const q=sinTildes($('mBuscar').value);if(!q)return;const N=GEO.mun.map(m=>sinTildes(m[0]));
     let i=N.indexOf(q);if(i<0)i=N.findIndex(n=>n.startsWith(q));if(i<0)i=N.findIndex(n=>n.includes(q));
-    if(i>=0){$('mBuscar').value=GEO.mun[i][0];elegir(i,true)}else{M.sel=-1;M.selP.setAttribute('d','');$('mInfo').className='';$('mInfo').innerHTML='<span class="nodisp">No hay ningún municipio del Chaco con ese nombre.</span>'}};
+    if(i>=0){$('mBuscar').value=GEO.mun[i][0];elegir(i,true)}else{elegir(-1);$('mInfo').innerHTML='<span class="nodisp">No hay ningún municipio del Chaco con ese nombre.</span>'}};
   $('mBuscar').addEventListener('change',buscar);
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
   $('sem').addEventListener('click',e=>{const li=e.target.closest('li[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
     if(i>=0){elegir(i,true);$('t-mapa').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}});
+  document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
+  const soltarFoco=()=>{if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
+  $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]');
+    if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
   addEventListener('resize',()=>aplicar(M.vb));
   M.ok=true;aplicar({...BASE});
 }
@@ -585,12 +599,32 @@ function sobre(e){
   tip.style.left=Math.min(r.width-70,Math.max(70,e.clientX-r.left))+'px';tip.style.top=Math.max(34,e.clientY-r.top)+'px';
 }
 function elegir(i,enf){
+  const habia=M.sel>=0;
+  if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
-  pintarInfo();if(enf&&i>=0)enfocar(i);
+  resaltar();pintarInfo();
+  if(enf&&i>=0)enfocar(i);else if(i<0&&habia&&M.antes){ponerVista(M.antes,true);M.antes=null}
+}
+// Con un municipio elegido o un color de la leyenda activo, el resto se apaga: conserva su color, más claro.
+const enFiltro=i=>!!M.filtro&&(colorDe(i).c||'gris')===M.filtro;
+function resaltar(){
+  const hay=!!M.filtro||M.sel>=0;M.svg.classList.toggle('foco',hay);
+  M.paths.forEach((p,i)=>p.classList.toggle('on',hay&&(i===M.sel||enFiltro(i))));
+}
+function filtrar(c){
+  M.filtro=M.filtro===c?'':c;
+  document.querySelectorAll('.ley').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===M.filtro));
+  if(M.sel>=0){M.antes=null;elegir(-1)}else{resaltar();pintarInfo()}
+  if(M.filtro)ponerVista({...BASE},true);
 }
 function pintarInfo(){
   const el=$('mInfo'),i=M.sel;
+  const x='<button class="btn cerrar" type="button" data-cerrar aria-label="'+(i<0?'Quitar el filtro de color':'Quitar la selección')+'">✕</button>';
+  if(i<0&&M.filtro){const f=M.filtro,L=GEO.mun.map((m,j)=>j).filter(enFiltro).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es')),en=f==='gris'?'sin datos':'en '+ETQ[f].toLowerCase();
+    el.className=f==='gris'?'':f;
+    el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+(L.length?L.length+(L.length===1?' municipio ':' municipios ')+en:'Ningún municipio '+en+' ahora')+'</b>'+x+'</div>'
+     +(L.length?'<div>'+L.map(j=>'<button class="irmun" type="button" data-ir="'+j+'">'+esc(GEO.mun[j][0])+'</button>').join('')+'</div>':'');return}
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
   if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
@@ -602,7 +636,7 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between"><b style="font-size:1.08rem">'+esc(m[0])+'</b><span class="meta">Superficie: '+nf(m[4])+' km²</span></div>'+h+smnInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+smnInfo(i);
 }
 
 /* ---------- alertas oficiales del SMN ---------- */
@@ -691,7 +725,7 @@ function colorearMapa(R){
     p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
     if(smnVigente()&&smnDe(i).length)p.setAttribute('data-smn','1');else p.removeAttribute('data-smn');});
   M.puntos.forEach((p,j)=>p.setAttribute('fill','var(--'+(M.R[j]?M.R[j].c:'gris')+')'));
-  pintarInfo();
+  resaltar();pintarInfo();
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
