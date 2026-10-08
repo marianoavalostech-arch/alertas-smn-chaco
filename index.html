@@ -64,6 +64,7 @@ th,td{white-space:nowrap;text-align:right;padding:8px 6px;border-bottom:1px soli
 th:first-child,td:first-child{text-align:left}
 th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
 td.barras{min-width:96px;padding-block:4px}
+.regla th,.regla td{white-space:normal;text-align:left;vertical-align:top}
 details{font-size:.95rem}
 summary{cursor:pointer;font-weight:700}
 details ul,.fuentes{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
@@ -143,14 +144,14 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mapa"></div>
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
-      <span><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte prevista ni alerta del SMN</span>
-      <span><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: atención</span>
-      <span><i style="background:var(--rojo);opacity:.7"></i>Rojo: riesgo alto</span>
-      <span><i style="background:var(--gris);opacity:.5"></i>Sin datos</span>
-      <span><i class="punteado"></i>Borde punteado: alerta del SMN vigente</span>
+      <span><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</span>
+      <span><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</span>
+      <span><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte o alerta roja del SMN</span>
+      <span><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</span>
+      <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
-    <div class="fila"><button class="btn" id="mTodos" type="button">Pintar toda la provincia según la lluvia</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle. Para acercar: los botones, doble clic, pellizcar con dos dedos, o hacer clic en el mapa y usar la rueda del mouse. Todos los municipios se pintan con la misma regla: la lluvia caída y prevista, y además la alerta oficial del SMN, que nunca deja el color por debajo de lo que ella indica. Los seis puntos marcados son las localidades del semáforo de más abajo; el Gran Resistencia comparte el color de Resistencia. El mapa no muestra el estado del río. El detalle de la alerta del SMN de cada municipio aparece al tocarlo. Límites municipales: Instituto Geográfico Nacional, con una precisión de unos 100 metros.</p>
+    <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
+    <p class="meta">Tocá un municipio para ver su detalle. El mapa no muestra el estado del río.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -163,15 +164,14 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura del río.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
+      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista en 7 días</th><th>En un solo día</th><th>Con lo ya caído</th></tr></thead><tbody>
+        <tr><td><b>Rojo</b></td><td>100 mm o más</td><td>70 mm o más</td><td>cayeron 80 mm y vienen 60</td></tr>
+        <tr><td><b>Amarillo</b></td><td>50 mm o más</td><td>35 mm o más</td><td>cayeron 60 mm, o suman 90 con lo que viene</td></tr>
+      </tbody></table></div>
       <ul>
-        <li><b>Rojo:</b> se esperan 100 mm o más en 7 días, o 70 mm o más en un solo día, o ya llovieron 80 mm y vienen otros 60.</li>
-        <li><b>Amarillo:</b> se esperan 50 mm o más en 7 días, o 35 mm o más en un día, o ya llovieron 60 mm, o entre lo caído y lo que viene suman 90 mm.</li>
-        <li><b>Verde:</b> nada de lo anterior.</li>
-        <li><b>Alerta oficial del SMN:</b> si el municipio tiene una alerta amarilla o naranja vigente, su color es amarillo como mínimo; si la alerta es roja, es rojo. El texto de cada localidad avisa cuando el color viene de la alerta.</li>
-        <li><b>Gris (sin datos):</b> si no se pudo consultar la lluvia y lo guardado tiene más de un día y medio, o si la última lectura del río tiene 4 días o más, no se calcula el color.</li>
-        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si el pronóstico del INA prevé que pueda llegar a ese nivel en los próximos días (se mira el valor más alto del rango previsto). Vale para islas y costa fuera de las defensas.</li>
-        <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
-        <li>Los umbrales de lluvia son orientativos de este prototipo y no están validados por ningún organismo. Los niveles del río son los oficiales del INA.</li>
+        <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
+        <li>La zona ribereña solo mira el río: amarillo desde 6,00 m, rojo desde 6,50 m en Barranqueras.</li>
+        <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo.</li>
       </ul>
     </details>
   </section>
@@ -195,10 +195,10 @@ footer{font-size:.85rem;color:var(--muted)}
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del río:</b> lecturas de Prefectura Naval Argentina, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) de Barranqueras son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro. Un robot las consulta una vez por hora y todos los visitantes ven esa misma copia, con la hora de la consulta. La página nunca le pide la lluvia a Open-Meteo por su cuenta: si la copia se atrasa, se muestra la última que hay, con la fecha y hora de su actualización.</li>
+      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora.</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
-      <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
+      <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
 <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
       <li><b>Pronóstico del río:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
@@ -669,7 +669,7 @@ function pintarSMN(){
         return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
           +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul></div>').join('');
   }
-  el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'. El SMN alerta por zonas; a cada municipio se le asigna la que corresponde a su punto central. Estas alertas son el piso del color en el mapa y en el semáforo: con alerta amarilla o naranja un municipio no baja de amarillo; con roja, queda en rojo.</p>';
+  el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'.</p>';
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
 function smnInfo(i){
@@ -699,20 +699,20 @@ const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];d.mm.forEach((mm,i)
 async function cargarTodos(){
   if(M.todos==='cargando')return;
   const b=$('mTodos'),e=$('mEstado');
-  M.todos='cargando';b.disabled=true;b.textContent='Consultando…';e.textContent='';$('mCarga').hidden=false;pintarInfo();
+  M.todos='cargando';b.hidden=true;e.textContent='';$('mCarga').hidden=false;pintarInfo();
   try{
     let d=await copia('municipios'),t=d?new Date(d.t):new Date();
     if(!d){const g=reciente('municipios');if(g){d=g.datos;t=new Date(g.t)}}
     if(!d){d=await copiaVieja('municipios');if(!d)throw new Error('sin copia');t=new Date(d.t)}   // nunca se consulta Open-Meteo desde acá
     estimar(d,diaAR(t));MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
-    M.todos='ok';M.tEst=t;b.textContent='Actualizar la lluvia de toda la provincia';
+    M.todos='ok';M.tEst=t;
     e.innerHTML='Última actualización: '+fFechaHora(t)+'. Fuente: Open-Meteo.';
   }catch(err){
-    M.todos='error';b.textContent='Reintentar: pintar toda la provincia';
+    M.todos='error';b.hidden=false;
     e.innerHTML=M.tEst?'Última actualización: '+fFechaHora(M.tEst)+'. Fuente: Open-Meteo.'
       :'<span class="estado falla">No disponible</span>Todavía no hay una copia de la lluvia de toda la provincia.';
   }
-  b.disabled=false;$('mCarga').hidden=true;seguro(()=>colorearMapa(),['municipios','smn']);
+  $('mCarga').hidden=true;seguro(()=>colorearMapa(),['municipios','smn']);
 }
 let RIOG=null;
 // Lectura del gráfico con el dedo o el mouse: marca la lectura más cercana y la dice en texto.
@@ -778,7 +778,7 @@ function pintarRio(){
    +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.</div>'
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.</p>')
    +viejo+'<p>'+sit+'</p>'
-   +'<p class="meta">Estos dos niveles son los que publica el INA para el puerto de Barranqueras y valen para la zona ribereña: islas, parajes costeros y sectores de Barranqueras y Puerto Vilelas que están fuera de las defensas. La ciudad dentro de las defensas está protegida hasta unos 9,50 m; ahí, con el río alto, el riesgo es que la lluvia tarde en desagotar.</p>'
+   +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
    +stats+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
