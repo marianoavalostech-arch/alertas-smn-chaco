@@ -200,5 +200,48 @@ prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo dem
     assert.strictEqual(r.salida.datos.municipios.t, 'antes');
     assert.ok(S(`hoy='2026-10-08';var real=Date.now;Date.now=()=>new Date('2026-10-08T12:30:00Z').getTime();var x=delServidor('lluvia',${JSON.stringify(r.salida)});Date.now=real;x`));
   });
+
+  // La página nunca le pide la lluvia a Open-Meteo: usa la copia del robot aunque esté atrasada
+  S(`var llamadas=[];fetch=u=>{llamadas.push(String(u));return Promise.reject(new Error('sin red'))};
+     var copiaRobot=h=>{const t=new Date(Date.now()-h*36e5),d0=diaAR(t),dias=Array.from({length:14},(_,i)=>masDias(d0,i-7));
+       return {datos:{lluvia:{t:t.toISOString(),dias,mm:LOCS.map(()=>Array(14).fill(1))}}}};`);
+  S(`hoy=diaAR(new Date(Date.now()-3*36e5));LLU_P=Promise.resolve(copiaRobot(3));SRV_P=Promise.resolve(null);delete D.lluvia`);
+  await S(`cargar('lluvia')`);
+  const atrasada = S(`({vivo:D.lluvia.vivo,robot:!!D.lluvia.robot,horas:Math.round((Date.now()-D.lluvia.t)/36e5)})`);
+  S(`hoy=masDias(diaAR(new Date()),1);LLU_P=Promise.resolve(copiaRobot(0));delete D.lluvia`);
+  await S(`cargar('lluvia')`);
+  const deAyer = S(`({vivo:D.lluvia.vivo,robot:!!D.lluvia.robot})`);
+  S(`hoy=diaAR(new Date());LLU_P=Promise.resolve(null);delete D.lluvia;M.todos=null`);
+  await S(`cargar('lluvia')`);
+  const sinCopia = S(`({datos:D.lluvia.datos,error:!!D.lluvia.error})`);
+  await S(`cargarTodos()`);
+  prueba('lluvia: nunca se consulta Open-Meteo desde la página, y la copia atrasada se usa con su hora', () => {
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(atrasada)), { vivo: true, robot: false, horas: 3 });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(deAyer)), { vivo: false, robot: true });
+    assert.strictEqual(sinCopia.datos, null); assert.ok(sinCopia.error);
+    assert.strictEqual(S(`M.todos`), 'error');
+    assert.deepStrictEqual(S(`llamadas.filter(u=>u.includes('api.open-meteo.com'))`).length, 0);
+  });
+
+  // Script: lanza el robot con la clave guardada, la clave sobrevive al guardado y no sale por la dirección pública
+  const props = { GITHUB_TOKEN: 'clave-de-prueba' }, pedidos = [];
+  gs.PropertiesService = { getScriptProperties: () => ({
+    getProperty: k => props[k] == null ? null : props[k], getProperties: () => Object.assign({}, props),
+    setProperties: (o, borrar) => { if (borrar) for (const k in props) delete props[k]; Object.assign(props, o); } }) };
+  gs.UrlFetchApp = { fetch: (u, o) => { pedidos.push({ u, o }); return { getResponseCode: () => 204, getContentText: () => '' }; } };
+  gs.ContentService = { createTextOutput: t => ({ setMimeType: () => t }), MimeType: {} };
+  const lanzado = vm.runInContext('lanzarRobot()', gs);
+  vm.runInContext(`guardar(JSON.stringify({a:1}))`, gs);
+  const publico = vm.runInContext('doGet()', gs);
+  delete props.GITHUB_TOKEN;
+  const sinClave = vm.runInContext('lanzarRobot()', gs);
+  prueba('script: lanza el robot de la lluvia y no pierde ni muestra la clave', () => {
+    assert.strictEqual(lanzado, 'bien'); assert.strictEqual(pedidos.length, 1);
+    assert.ok(pedidos[0].u.endsWith('/actions/workflows/lluvia.yml/dispatches'));
+    assert.strictEqual(pedidos[0].o.headers.Authorization, 'Bearer clave-de-prueba');
+    assert.strictEqual(JSON.parse(pedidos[0].o.payload).ref, 'main');
+    assert.strictEqual(publico, '{"a":1}'); assert.ok(!publico.includes('clave'));
+    assert.strictEqual(sinClave, 'sin clave'); assert.strictEqual(pedidos.length, 1);
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

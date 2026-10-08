@@ -195,7 +195,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del río:</b> lecturas de Prefectura Naval Argentina, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) de Barranqueras son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro. Se consultan cada media hora, más o menos, y todos los visitantes ven la misma copia, con la hora de esa consulta.</li>
+      <li><b>Lluvias:</b> Open-Meteo. Lo caído es una estimación por modelo, no una medición con pluviómetro. Un robot las consulta una vez por hora y todos los visitantes ven esa misma copia, con la hora de la consulta. La página nunca le pide la lluvia a Open-Meteo por su cuenta: si la copia se atrasa, se muestra la última que hay, con la fecha y hora de su actualización.</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
@@ -236,7 +236,6 @@ async function getJSON(u){
 }
 let hoy=diaAR(new Date());   // se recalcula en cada renovación
 const URLS=()=>({
- lluvia:'https://api.open-meteo.com/v1/forecast?latitude='+LOCS.map(l=>l.lat)+'&longitude='+LOCS.map(l=>l.lon)+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba',
  rio:'https://alerta.ina.gob.ar/a5/obs/puntual/series/20/observaciones?timestart='+masDias(hoy,-30)+'&timeend='+masDias(hoy,2)+'&format=json',
  caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30'
 });
@@ -272,7 +271,7 @@ const MEM={
 // Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, caudal y ONI.
 // Así la mayoría de las visitas no le pide nada a Open-Meteo ni al INA.
 let SRV=null,SRV_P=Promise.resolve(null),LLU_P=Promise.resolve(null);
-// Lluvia: la arma un robot de GitHub cada media hora (robot/lluvia.js) y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
+// Lluvia: la arma un robot de GitHub (robot/lluvia.js), que lanza el script de Google cada hora, y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
 // Open-Meteo rechaza los pedidos que salen de Google, por eso la lluvia no viene en la copia del script.
 const LLUVIA_URL='https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/lluvia.json';
 const espera=ms=>new Promise(r=>setTimeout(r,ms));
@@ -300,6 +299,18 @@ const esLluvia=k=>k==='lluvia'||k==='municipios';
 async function copia(k){
   return (esLluvia(k)&&delServidor(k,await Promise.race([LLU_P,espera(4000)])))||delServidor(k,await Promise.race([SRV_P,espera(4000)]));
 }
+// Lluvia: la página nunca le pide la lluvia a Open-Meteo (con muchas visitas desde una misma red, Open-Meteo bloquea).
+// Si no hay copia de menos de 2 horas, se usa la última que dejó el robot o el script, aunque sea más vieja, siempre que esté completa.
+function ultimaLluvia(k,...js){
+  let mejor=null;
+  js.forEach(j=>{const d=j&&j.datos&&j.datos[k];
+    if(d&&!isNaN(new Date(d.t))&&FORMA[k](d)&&d.dias.indexOf(diaAR(new Date(d.t)))===7&&(!mejor||new Date(d.t)>new Date(mejor.t)))mejor=d});
+  return mejor;
+}
+async function copiaVieja(k){
+  const [a,b]=await Promise.all([Promise.race([LLU_P,espera(4000)]),Promise.race([SRV_P,espera(4000)])]);
+  return ultimaLluvia(k,a,b);
+}
 // Si no hay copia compartida, antes de consultar la fuente se mira lo guardado en este dispositivo:
 // con menos de 30 minutos se usa eso, así abrir la página varias veces no repite consultas.
 function reciente(k){
@@ -310,7 +321,16 @@ const D={};   // D[k]={datos,vivo,t,error}
 async function cargar(k){
   try{
     const sv=await copia(k),g=sv?null:reciente(k);
-    const nuevo=sv?{datos:sv,vivo:true,t:new Date(sv.t)}:g?{datos:g.datos,vivo:true,t:new Date(g.t)}:{datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
+    let nuevo;
+    if(sv)nuevo={datos:sv,vivo:true,t:new Date(sv.t)};
+    else if(g)nuevo={datos:g.datos,vivo:true,t:new Date(g.t)};
+    else if(esLluvia(k)){
+      // Copia atrasada: si es de hoy se usa como al día (con su hora); si es de otro día, como dato guardado.
+      const v=await copiaVieja(k);if(!v)throw new Error('sin copia');
+      const deHoy=v.dias.indexOf(hoy)===7;
+      nuevo={datos:v,vivo:deHoy,t:new Date(v.t),robot:!deHoy};
+    }
+    else nuevo={datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
     if(!FORMA[k](nuevo.datos))throw new Error('formato');
     D[k]=nuevo;
     MEM.guardar(k,D[k].datos,D[k].t);
@@ -323,8 +343,7 @@ async function cargar(k){
 function meta(k,fuente,extra,etq){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
-  const e=d.vivo?'<span class="estado vivo">'+(etq||'En vivo')+'</span>Última actualización: '+fFechaHora(d.t)
-               :'<span class="estado">Datos guardados</span>Son de la última consulta que funcionó en este dispositivo, el '+fFechaHora(d.t)+(LISTO?'. No se pudo consultar la fuente ahora':'. Buscando datos nuevos…');
+  const e='Última actualización: '+fFechaHora(d.t);
   return '<p class="meta">'+e+'. Fuente: '+fuente+'.'+(extra?' '+extra:'')+'</p>';
 }
 
@@ -612,9 +631,9 @@ function pintarBanda(G){
 }
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
-const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta"><span class="estado falla">Sin renovar</span>La última lectura del canal del SMN es del '+fFechaHora(new Date(SMN.capturado))+' y debería renovarse cada hora. Puede estar desactualizada: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas en el SMN</a>.</p>'
-  :SMN_VIVO?'<p class="meta"><span class="estado vivo">Al día</span>Leído del canal oficial del SMN el '+fFechaHora(new Date(SMN.capturado))+'. Se renueva cada hora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
-  :'<p class="meta"><span class="estado">Informe guardado</span>Emitido por el SMN el '+fFechaHora(new Date(SMN.emitido))+'. Guardado acá el '+fFechaHora(new Date(SMN.capturado))+'. Puede haber cambiado: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">ver las alertas al día en el SMN</a>.</p>';
+const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
+  :SMN_VIVO?'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
+  :'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
 function pintarSMN(){
   const el=$('smn');
   if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
@@ -662,7 +681,7 @@ function colorearMapa(R){
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
-const estimar=d=>{M.estFin=d.dias[d.dias.length-1];d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),hoy);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
+const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),ref);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
 async function cargarTodos(){
   if(M.todos==='cargando')return;
   const b=$('mTodos'),e=$('mEstado');
@@ -670,19 +689,14 @@ async function cargarTodos(){
   try{
     let d=await copia('municipios'),t=d?new Date(d.t):new Date();
     if(!d){const g=reciente('municipios');if(g){d=g.datos;t=new Date(g.t)}}
-    if(!d){
-      const j=await getJSON('https://api.open-meteo.com/v1/forecast?latitude='+GEO.mun.map(m=>m[2])+'&longitude='+GEO.mun.map(m=>m[3])+'&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba');
-      if(!Array.isArray(j)||j.length!==GEO.mun.length)throw new Error('formato');
-      d={dias:j[0].daily.time,mm:j.map(mmDe)};
-      if(!FORMA.municipios(d))throw new Error('formato');
-    }
-    estimar(d);MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
+    if(!d){d=await copiaVieja('municipios');if(!d)throw new Error('sin copia');t=new Date(d.t)}   // nunca se consulta Open-Meteo desde acá
+    estimar(d,diaAR(t));MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
     M.todos='ok';M.tEst=t;b.textContent='Actualizar la lluvia de toda la provincia';
-    e.innerHTML='<span class="estado vivo">En vivo</span>Última actualización: '+fFechaHora(t)+'. Fuente: Open-Meteo.';
+    e.innerHTML='Última actualización: '+fFechaHora(t)+'. Fuente: Open-Meteo.';
   }catch(err){
     M.todos='error';b.textContent='Reintentar: pintar toda la provincia';
-    e.innerHTML=M.tEst?'<span class="estado falla">Sin renovar</span>No se pudo consultar Open-Meteo ahora. El mapa muestra la lluvia consultada el '+fFechaHora(M.tEst)+'.'
-      :'<span class="estado falla">No disponible</span>No se pudo consultar Open-Meteo ahora.';
+    e.innerHTML=M.tEst?'Última actualización: '+fFechaHora(M.tEst)+'. Fuente: Open-Meteo.'
+      :'<span class="estado falla">No disponible</span>Todavía no hay una copia de la lluvia de toda la provincia.';
   }
   b.disabled=false;$('mCarga').hidden=true;seguro(()=>colorearMapa(),['municipios','smn']);
 }
@@ -779,9 +793,9 @@ function pintarNino(){
   $('nino').innerHTML='<p style="font-size:1.1rem"><b>'+f+'.</b> '+(v>=0.5?'En el trimestre '+u[1]+', el Pacífico ecuatorial estuvo en promedio '+nf(v,1)+' °C más caliente de lo normal. En el Chaco, El Niño suele traer más lluvia que lo habitual en primavera y verano.':'')+'</p>'
    +'<p class="meta" style="margin:10px 0 6px">Cuánto más caliente estuvo el Pacífico, por trimestre (índice ONI). Desde +0,5 °C se considera El Niño.</p>'
    +'<div class="onis">'+o.map(p=>'<span>'+p[1]+': '+(p[2]>0?'+':'')+nf(p[2],1)+' °C</span>').join('')+'</div>'
-   +'<p class="meta" style="margin-top:10px">'+(sv?'<span class="estado vivo">Al día</span>Leído de la tabla ONI de la NOAA el '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'. La NOAA lo actualiza una vez por mes.'
-     :'<span class="estado">Carga manual</span>Dato de la tabla ONI de la NOAA, cargado a mano el '+fDia(ONI_CARGA)+'. Último trimestre cargado: '+u[1]+' '+u[0]+'. La NOAA lo actualiza una vez por mes y no permite consultarlo directo desde el navegador.'
-       +(diasEntre(ONI_CARGA,hoy)>40?' <b>Hace más de 40 días que no se actualiza acá: la NOAA puede haber publicado un trimestre más nuevo.</b>':''))+' Para sus avisos la NOAA hoy usa una variante de este índice (RONI), con valores algo distintos. Fuente: NOAA, Climate Prediction Center.</p>';
+   +'<p class="meta" style="margin-top:10px">'+(sv?'Última actualización: '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
+     :'Última actualización: '+fDia(ONI_CARGA)+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
+       )+' Para sus avisos la NOAA hoy usa una variante de este índice (RONI), con valores algo distintos. Fuente: NOAA, Climate Prediction Center.</p>';
 }
 function pintarBanner(){
   const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos);
@@ -789,7 +803,7 @@ function pintarBanner(){
   if(!LISTO||!viejos.length){b.hidden=true;return}
   const t=new Date(Math.min(...viejos.map(k=>D[k].t))),horas=(Date.now()-t)/36e5;
   b.hidden=false;
-  b.innerHTML='<b>'+(horas>36?'Atención: estos datos no son de hoy.':'Estás viendo datos guardados.')+'</b> No se pudieron consultar las fuentes ahora. Se muestran los de la última consulta que funcionó en este dispositivo, del '+fFechaHora(t)+(horas>36?'. Por ser viejos, no se usan para calcular el color del semáforo.':', y el semáforo está calculado con ellos.');
+  b.innerHTML='<b>'+(horas>36?'Atención: estos datos no son de hoy.':'Estás viendo datos guardados.')+'</b> No hay datos más nuevos. Se muestran los de '+(viejos.some(k=>D[k].robot)?'la última copia disponible':'la última consulta que funcionó en este dispositivo')+', del '+fFechaHora(t)+(horas>36?'. Por ser viejos, no se usan para calcular el color del semáforo.':', y el semáforo está calculado con ellos.');
 }
 // Cada sección se pinta por separado. Si un dato inesperado rompe una, las demás siguen;
 // lo guardado de esa fuente se borra para que no vuelva a fallar al recargar, y se pinta de nuevo sin ese dato.
@@ -810,7 +824,7 @@ function pintar(){
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','caudal'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
-(g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos);M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
+(g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
 Promise.all(['lluvia','rio','caudal'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar()});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.

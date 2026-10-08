@@ -1,4 +1,5 @@
-# Robot de la lluvia: cada media hora pide la lluvia a Open-Meteo y deja lluvia.json en la rama "datos".
+# Robot de la lluvia: pide la lluvia a Open-Meteo y deja lluvia.json en la rama "datos".
+# Lo lanza el script de Google en cada renovación (cada hora). El horario de abajo queda de respaldo: GitHub lo cumple muy poco.
 # El sitio lee ese archivo. Netlify solo publica la rama main, así que esto no publica ni gasta créditos.
 name: Lluvia
 on:

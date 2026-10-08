@@ -9,6 +9,11 @@
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
  *
+ * Robot de la lluvia: Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la consulta un robot en GitHub.
+ * El horario propio de GitHub falla mucho, por eso este script lo lanza en cada renovación (lanzarRobot).
+ * Necesita una clave de GitHub guardada en Configuración del proyecto > Propiedades del script, con el nombre GITHUB_TOKEN.
+ * Sin esa clave no lanza nada y el resto funciona igual. Para probarla: ejecutar probarRobot().
+ *
  * Uso:
  *  1. Ejecutar una vez la función instalar(): hace la primera lectura y programa la renovación cada hora.
  *  2. Implementar > Nueva implementación > Aplicación web > Acceso: "Cualquier persona".
@@ -19,6 +24,7 @@ var FEED = 'https://ssl.smn.gob.ar/CAP/AR.php';
 var AJUSTE_H = 3;                   // corrección horaria del canal (ver leerCap)
 var DIAS = 4;                       // hoy y los tres días siguientes
 var TZ = 'America/Argentina/Buenos_Aires';
+var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del sitio, donde vive el robot de la lluvia
 
 // Punto central de cada municipio [lat, lon], en el mismo orden que GEO.mun en el mapa.
 var CENTROS = [[-26.58,-60.73],[-27.48,-58.92],[-27.87,-59.18],[-26.85,-60.8],[-26.8,-59.44],[-27.64,-59.96],[-27.12,-61.31],[-27.88,-61.54],[-26.57,-59.62],[-27.01,-60.13],[-27.31,-58.85],[-26.92,-59.41],[-27.29,-59.13],[-26.7,-59.62],[-26.44,-60.91],[-27.75,-60.89],[-26.85,-61.07],[-27.69,-59.57],[-24.65,-61.65],[-27.8,-60.45],[-27.42,-59.05],[-25.04,-61.99],[-27.41,-61.63],[-27.41,-61.47],[-27.27,-61.37],[-26.52,-59.28],[-26.82,-58.73],[-27.62,-61.33],[-27.3,-58.68],[-25.92,-60.66],[-27.17,-60.68],[-26.73,-58.94],[-27.1,-59.49],[-26.99,-58.85],[-27.08,-60.62],[-27.07,-59.33],[-27.23,-59.19],[-26.42,-59.68],[-27.26,-59.47],[-26.94,-61.26],[-26.62,-59.78],[-27.12,-58.68],[-26.04,-61.47],[-26.68,-59.97],[-27.11,-59.23],[-27.09,-59.02],[-25.48,-61.04],[-24.99,-61.55],[-26.68,-60.63],[-26.64,-59.04],[-26.02,-59.97],[-26.4,-61.14],[-27.04,-59.77],[-26.18,-59.68],[-26.79,-60.46],[-26.89,-58.52],[-26.71,-58.64],[-27.38,-59.3],[-27.71,-58.91],[-26.66,-60.17],[-27.59,-59.14],[-27.61,-60.35],[-27.34,-60.7],[-27.85,-61.12],[-25.33,-62.58],[-26.32,-60.45],[-27.68,-60.76],[-27.26,-60.37],[-25.69,-60.32],[-25.35,-60.61]];
@@ -265,8 +271,11 @@ function juntar(anterior, hoy, ahora, leer, pedir) {
 
 function actualizar() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd'), anterior = {};
+  var robot;
+  try { robot = lanzarRobot(); } catch (e) { robot = String(e.message || e); }   // nunca frena la renovación
   try { anterior = JSON.parse(leerGuardado() || '{}'); } catch (e) {}
   var r = juntar(anterior, hoy, ahora, leerSmn, pedirUrl);
+  r.datos.robot = { t: ahora.toISOString(), estado: robot };
   guardar(JSON.stringify(r.datos));
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
   return r.datos;
@@ -274,6 +283,8 @@ function actualizar() {
 
 function guardar(json) {
   var p = PropertiesService.getScriptProperties(), n = Math.ceil(json.length / 8000), todo = { partes: String(n) };
+  var clave = p.getProperty('GITHUB_TOKEN');
+  if (clave) todo.GITHUB_TOKEN = clave;   // setProperties(..., true) borra todo lo demás: la clave se vuelve a escribir
   for (var i = 0; i < n; i++) todo['p' + i] = json.substr(i * 8000, 8000);
   p.setProperties(todo, true);
 }
@@ -282,6 +293,26 @@ function leerGuardado() {
   var p = PropertiesService.getScriptProperties().getProperties(), n = Number(p.partes || 0), s = '';
   for (var i = 0; i < n; i++) s += p['p' + i] || '';
   return s;
+}
+
+// Le pide a GitHub que ejecute ya el robot de la lluvia (.github/workflows/lluvia.yml).
+// Devuelve 'bien', 'sin clave' o el error de GitHub. La clave nunca sale de este script.
+function lanzarRobot() {
+  var clave = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!clave) return 'sin clave';
+  var r = UrlFetchApp.fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/lluvia.yml/dispatches', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + clave, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+    payload: JSON.stringify({ ref: 'main' })
+  });
+  var c = r.getResponseCode();
+  return c === 204 ? 'bien' : 'GitHub respondió ' + c + ': ' + r.getContentText().slice(0, 200);
+}
+
+// Prueba de la clave: lanza el robot una vez y muestra qué respondió GitHub.
+// Si dice 'bien', en un par de minutos aparece una corrida nueva en GitHub, pestaña Actions, tarea "Lluvia".
+function probarRobot() {
+  Logger.log('Robot de la lluvia: ' + lanzarRobot());
 }
 
 // Dirección pública: devuelve el último resultado guardado.
