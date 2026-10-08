@@ -1,4 +1,4 @@
-// Robot de la lluvia: lo corre GitHub cada media hora (.github/workflows/lluvia.yml).
+// Robot de la lluvia: lo corre GitHub (.github/workflows/lluvia.yml), lanzado cada hora por el script de Google.
 // Pide a Open-Meteo la lluvia de las 6 localidades y de los 70 municipios y escribe lluvia.json,
 // con la misma forma que la copia del script de Google: { datos: { lluvia, municipios, errores } }.
 // Uso: node robot/lluvia.js anterior.json lluvia.json

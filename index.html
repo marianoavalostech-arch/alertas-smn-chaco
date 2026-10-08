@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiempo y Ríos del Chaco</title><meta name="description" content="Río, lluvias y riesgo de inundación en el Chaco: alertas oficiales del SMN, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Tiempo y Ríos del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=2"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tiempo y Ríos del Chaco</title><meta name="description" content="Río, lluvias y riesgo de inundación en el Chaco: alertas oficiales del SMN, altura del río Paraná y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Tiempo y Ríos del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura del río Paraná y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=2"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 :root{
@@ -121,6 +121,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--water);text-decoration:underline;cursor:pointer}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.rojo{border-color:var(--rojo)}
 </style>
+</head><body>
 
 <div class="wrap">
   <header>
@@ -167,6 +168,28 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="smn"><p class="nodisp">Cargando…</p></div>
   </section>
 
+  <section aria-labelledby="t-hacer">
+    <h2 id="t-hacer">Qué hacer ante una alerta</h2>
+    <ul class="fuentes">
+      <li><b>Amarilla: informate.</b> Para el SMN son "posibles fenómenos meteorológicos con capacidad de daño y riesgo de interrupción momentánea de las actividades cotidianas".</li>
+      <li><b>Naranja: preparate.</b> Se esperan "fenómenos meteorológicos peligrosos para la sociedad, la vida, los bienes y el ambiente".</li>
+      <li><b>Roja: seguí las instrucciones oficiales.</b> Se esperan "fenómenos meteorológicos excepcionales con potencial de provocar emergencias o desastres".</li>
+    </ul>
+    <details>
+      <summary>Cuidados con tormentas y lluvias fuertes</summary>
+      <ul>
+        <li>Quedate en un lugar cerrado y evitá salir o viajar si no hace falta.</li>
+        <li>No saques la basura y retirá lo que impida que el agua escurra.</li>
+        <li>Alejate de árboles, postes y cables caídos.</li>
+        <li>No cruces calles, caminos ni puentes cubiertos de agua, ni a pie ni en vehículo.</li>
+        <li>Desconectá los aparatos eléctricos. Si entra agua a tu casa, cortá la luz.</li>
+        <li>Tené a mano linterna, radio, teléfono cargado, documentos y agua potable.</li>
+        <li>Ante una emergencia llamá al 911 o a Defensa Civil (103).</li>
+      </ul>
+    </details>
+    <p class="meta">Significado de cada color según el SMN. Los cuidados son las recomendaciones generales del SMN y de Defensa Civil. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las recomendaciones del SMN</a>.</p>
+  </section>
+
   <section aria-labelledby="t-sem">
     <h2 id="t-sem">Riesgo por localidad</h2>
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura del río.</span></li></ul>
@@ -207,10 +230,17 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
-      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
+      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
 <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
       <li><b>Pronóstico del río:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
     </ul>
+  </section>
+
+  <section aria-labelledby="t-acerca">
+    <h2 id="t-acerca">Acerca de este sitio</h2>
+    <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
+    <p><b>¿Viste un error?</b> Avisá en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA y Open-Meteo.</p>
   </section>
 
   <footer>Prototipo. Los horarios están en hora de Argentina.</footer>
@@ -278,7 +308,7 @@ const FORMA={
  lluvia:d=>filas(d,LOCS.length),
  municipios:d=>filas(d,GEO.mun.length),
  rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
- caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&Array.isArray(d.q)&&d.q.length===d.dias.length,
+ caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.q)&&d.q.length===d.dias.length&&d.q.every(v=>typeof v==='number'&&isFinite(v)),
  prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v)))
 };
 // Última consulta buena de cada fuente, guardada en este dispositivo. Reemplaza a la captura fija que traía la página.
@@ -359,7 +389,7 @@ async function cargar(k){
     D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t),error:true}:{datos:null,error:true};
   }
 }
-function meta(k,fuente,extra,etq){
+function meta(k,fuente,extra){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
   const e='Última actualización: '+fFechaHora(d.t);
@@ -679,9 +709,8 @@ function pintarBanda(G){
 }
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
-const smnMeta=()=>SMN_VIVO&&smnViejo()?'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
-  :SMN_VIVO?'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>'
-  :'<p class="meta">Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
+// Con más de 3 horas sin renovar se avisa: puede haber alertas nuevas que todavía no se leyeron.
+const smnMeta=()=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
 function pintarSMN(){
   const el=$('smn');
   if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
@@ -817,12 +846,17 @@ function pintarRio(){
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
-   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.','Conectado')
+   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')
    +caudal;
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
+}
+// Aviso si la lluvia lleva más de 24 horas sin renovarse (lo normal es una copia nueva por hora). El motivo le llega por correo a quien mantiene el sitio.
+function lluviaAtraso(){
+  const d=D.lluvia;if(!d||!d.datos||Date.now()-d.t<=24*36e5)return '';
+  return '<div class="aviso" role="note"><strong>La lluvia está sin renovar desde el '+fFechaHora(d.t)+'.</strong>Los números de abajo pueden no reflejar lo que pasó desde entonces.</div>';
 }
 function pintarLluvia(){
   const d=D.lluvia.datos;
@@ -831,7 +865,7 @@ function pintarLluvia(){
   const filas=LOCS.map((l,i)=>{const s=resumenLluvia(i);
     const b=d.dias.map((dia,j)=>{const h=Math.max(1,26*d.mm[i][j]/tope);return '<rect x="'+(j*7+(dia>=ref?4:0))+'" y="'+(28-h)+'" width="5" height="'+h+'" fill="var(--'+(dia>=ref?'water':'gris')+')"><title>'+fDia(dia)+': '+nf(d.mm[i][j],1)+' mm</title></rect>'}).join('');
     return '<tr><td>'+l.n+'</td><td>'+nf(s.cayo)+' mm</td><td><b>'+nf(s.viene)+' mm</b></td><td class="barras"><svg viewBox="0 0 102 28" aria-hidden="true">'+b+'</svg></td></tr>'}).join('');
-  $('lluvia').innerHTML='<div class="tabla"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
    +'<p class="meta" style="margin-top:10px">Barras grises: del '+fDia(d.dias[0])+' al '+fDia(masDias(ref,-1))+'. Barras azules: pronóstico del '+fDia(ref)+' al '+fDia(d.dias[d.dias.length-1])+'.</p>'
    +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro. Lo que se espera incluye el día de hoy completo.');
 }

@@ -13,6 +13,12 @@
  * El horario propio de GitHub falla mucho, por eso este script lo lanza en cada renovación (lanzarRobot).
  * Necesita una clave de GitHub guardada en Configuración del proyecto > Propiedades del script, con el nombre GITHUB_TOKEN.
  * Sin esa clave no lanza nada y el resto funciona igual. Para probarla: ejecutar probarRobot().
+ * Si la lluvia lleva más de 24 horas sin renovarse, el script manda un correo a la cuenta dueña del script, una sola vez por caída.
+ * Para dar el permiso de enviar correo y probarlo: ejecutar probarCorreo().
+ *
+ * Control de las horas: el canal del SMN rotula las horas de vigencia como hora argentina, pero vienen en UTC, y por eso se corrigen 3 horas.
+ * En cada lectura el script revisa si eso sigue siendo así (controlAjuste). Si el SMN arregla su canal, deja de corregir solo,
+ * sin tocar nada. Lo que decidió queda publicado en "ajuste" (horas: 3 o 0).
  *
  * Uso:
  *  1. Ejecutar una vez la función instalar(): hace la primera lectura y programa la renovación cada hora.
@@ -21,13 +27,18 @@
  */
 
 var FEED = 'https://ssl.smn.gob.ar/CAP/AR.php';
-var AJUSTE_H = 3;                   // corrección horaria del canal (ver leerCap)
+var AJUSTE_H = 3;                   // corrección horaria del canal mientras venga corrido (ver leerCap y controlAjuste)
 var DIAS = 4;                       // hoy y los tres días siguientes
 var TZ = 'America/Argentina/Buenos_Aires';
 var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del sitio, donde vive el robot de la lluvia
+var HORAS_AVISO = 24;               // horas sin lluvia nueva para mandar el correo de aviso
 
 // Punto central de cada municipio [lat, lon], en el mismo orden que GEO.mun en el mapa.
 var CENTROS = [[-26.58,-60.73],[-27.48,-58.92],[-27.87,-59.18],[-26.85,-60.8],[-26.8,-59.44],[-27.64,-59.96],[-27.12,-61.31],[-27.88,-61.54],[-26.57,-59.62],[-27.01,-60.13],[-27.31,-58.85],[-26.92,-59.41],[-27.29,-59.13],[-26.7,-59.62],[-26.44,-60.91],[-27.75,-60.89],[-26.85,-61.07],[-27.69,-59.57],[-24.65,-61.65],[-27.8,-60.45],[-27.42,-59.05],[-25.04,-61.99],[-27.41,-61.63],[-27.41,-61.47],[-27.27,-61.37],[-26.52,-59.28],[-26.82,-58.73],[-27.62,-61.33],[-27.3,-58.68],[-25.92,-60.66],[-27.17,-60.68],[-26.73,-58.94],[-27.1,-59.49],[-26.99,-58.85],[-27.08,-60.62],[-27.07,-59.33],[-27.23,-59.19],[-26.42,-59.68],[-27.26,-59.47],[-26.94,-61.26],[-26.62,-59.78],[-27.12,-58.68],[-26.04,-61.47],[-26.68,-59.97],[-27.11,-59.23],[-27.09,-59.02],[-25.48,-61.04],[-24.99,-61.55],[-26.68,-60.63],[-26.64,-59.04],[-26.02,-59.97],[-26.4,-61.14],[-27.04,-59.77],[-26.18,-59.68],[-26.79,-60.46],[-26.89,-58.52],[-26.71,-58.64],[-27.38,-59.3],[-27.71,-58.91],[-26.66,-60.17],[-27.59,-59.14],[-27.61,-60.35],[-27.34,-60.7],[-27.85,-61.12],[-25.33,-62.58],[-26.32,-60.45],[-27.68,-60.76],[-27.26,-60.37],[-25.69,-60.32],[-25.35,-60.61]];
+
+// Puntos interiores de cada municipio [lat, lon], además del central, para saber si una alerta lo toca aunque no cubra su centro.
+// Los genera herramientas/puntos.js a partir de los límites del mapa. Los municipios chicos no tienen: usan solo el punto central.
+var PUNTOS = [[[-26.6,-60.8],[-26.6,-60.7],[-26.5,-60.7]],[],[[-27.9,-59.3],[-27.9,-59.2],[-27.9,-59],[-27.8,-59.3],[-27.8,-59.2]],[[-27,-60.7],[-26.8,-60.9],[-26.8,-60.8],[-26.8,-60.7]],[[-26.8,-59.5]],[[-27.9,-60.1],[-27.9,-60],[-27.9,-59.9],[-27.9,-59.8],[-27.8,-60.1],[-27.8,-60],[-27.8,-59.9],[-27.8,-59.8],[-27.7,-60.1],[-27.7,-60],[-27.7,-59.9],[-27.7,-59.8],[-27.6,-60.1],[-27.6,-60],[-27.6,-59.9],[-27.6,-59.8],[-27.5,-60.1],[-27.5,-60],[-27.5,-59.9],[-27.5,-59.8],[-27.4,-60.1],[-27.4,-60],[-27.4,-59.9],[-27.4,-59.8]],[[-27.3,-61.1],[-27.3,-61],[-27.2,-61.2],[-27.1,-61.4],[-27.1,-61.3],[-27,-61.5],[-26.9,-61.6]],[[-27.9,-61.6],[-27.9,-61.5],[-27.9,-61.4],[-27.8,-61.6]],[],[],[[-27.3,-58.9],[-27.3,-58.8]],[[-26.9,-59.5],[-26.9,-59.4],[-26.9,-59.3]],[[-27.3,-59.1]],[],[[-26.6,-61],[-26.5,-60.9],[-26.4,-60.9]],[[-27.7,-60.9]],[[-27,-60.9],[-26.9,-61.1],[-26.9,-61],[-26.8,-61.2],[-26.8,-61.1],[-26.7,-61.2],[-26.7,-61.1]],[[-27.9,-59.6],[-27.9,-59.5],[-27.8,-59.6],[-27.8,-59.5],[-27.7,-59.6],[-27.7,-59.5],[-27.6,-59.6],[-27.6,-59.5],[-27.5,-59.6]],[[-25.2,-61],[-25.1,-61.1],[-25.1,-61],[-25.1,-60.9],[-25,-61.2],[-25,-61.1],[-25,-61],[-24.9,-61.3],[-24.9,-61.2],[-24.9,-61.1],[-24.8,-61.6],[-24.8,-61.5],[-24.8,-61.4],[-24.8,-61.3],[-24.8,-61.2],[-24.7,-61.8],[-24.7,-61.7],[-24.7,-61.6],[-24.7,-61.5],[-24.7,-61.4],[-24.7,-61.3],[-24.6,-62],[-24.6,-61.9],[-24.6,-61.8],[-24.6,-61.7],[-24.6,-61.6],[-24.5,-62.2],[-24.5,-62.1],[-24.5,-62],[-24.5,-61.9],[-24.5,-61.8],[-24.5,-61.7],[-24.5,-61.6],[-24.4,-62.2],[-24.4,-62.1],[-24.4,-62],[-24.4,-61.9],[-24.4,-61.8],[-24.3,-62.3],[-24.3,-62.2],[-24.3,-62.1],[-24.3,-62],[-24.2,-62.3],[-24.2,-62.2]],[[-27.9,-60.5],[-27.9,-60.4],[-27.9,-60.3],[-27.8,-60.5],[-27.8,-60.4],[-27.8,-60.3]],[],[[-25.4,-62.1],[-25.4,-62],[-25.4,-61.9],[-25.4,-61.8],[-25.4,-61.7],[-25.4,-61.6],[-25.4,-61.5],[-25.3,-62.1],[-25.3,-62],[-25.3,-61.9],[-25.3,-61.8],[-25.3,-61.7],[-25.3,-61.6],[-25.3,-61.5],[-25.2,-62.1],[-25.2,-62],[-25.2,-61.9],[-25.2,-61.8],[-25.2,-61.7],[-25.2,-61.6],[-25.2,-61.5],[-25.2,-61.4],[-25.1,-62.1],[-25.1,-62],[-25.1,-61.9],[-25.1,-61.8],[-25.1,-61.7],[-25,-62.1],[-25,-62],[-24.9,-62.1],[-24.9,-62],[-24.8,-62.2],[-24.8,-62.1],[-24.8,-62],[-24.7,-62.5],[-24.7,-62.4],[-24.7,-62.3],[-24.7,-62.2],[-24.7,-62.1],[-24.6,-62.4],[-24.6,-62.3]],[[-27.4,-61.6],[-27.3,-61.6]],[],[[-27.4,-61.3],[-27.4,-61.2],[-27.4,-61.1],[-27.3,-61.4],[-27.3,-61.3],[-27.2,-61.5],[-27.2,-61.4]],[[-26.7,-59.4],[-26.7,-59.3],[-26.6,-59.5],[-26.6,-59.4],[-26.6,-59.3],[-26.6,-59.2],[-26.5,-59.5],[-26.5,-59.4],[-26.5,-59.3],[-26.5,-59.2],[-26.5,-59.1],[-26.4,-59.5],[-26.4,-59.4],[-26.4,-59.3],[-26.4,-59.2],[-26.4,-59.1]],[[-26.9,-58.7],[-26.8,-58.8],[-26.8,-58.7]],[[-27.7,-61.5],[-27.7,-61.4],[-27.7,-61.3],[-27.6,-61.5],[-27.6,-61.4],[-27.6,-61.3],[-27.6,-61.2]],[],[[-26,-61.1],[-26,-61],[-26,-60.9],[-26,-60.8],[-26,-60.7],[-26,-60.6],[-26,-60.5],[-26,-60.4],[-26,-60.3],[-26,-60.2],[-25.9,-61.1],[-25.9,-61],[-25.9,-60.9],[-25.9,-60.8],[-25.9,-60.7],[-25.9,-60.6],[-25.9,-60.5],[-25.9,-60.4],[-25.9,-60.3],[-25.9,-60.2],[-25.8,-61.1],[-25.8,-61],[-25.8,-60.6],[-25.7,-60.6]],[],[[-26.8,-59.1],[-26.8,-59],[-26.7,-58.9],[-26.6,-58.8]],[[-27.1,-59.5]],[[-27.1,-58.8],[-27,-58.9],[-27,-58.8],[-26.9,-58.9]],[[-27.1,-60.6]],[],[],[[-26.4,-59.7],[-26.4,-59.6]],[[-27.3,-59.5]],[[-27.2,-61],[-27.1,-61.1],[-27.1,-61],[-27,-61.2],[-27,-61.1],[-26.9,-61.4],[-26.9,-61.3],[-26.8,-61.5],[-26.8,-61.4],[-26.7,-61.6],[-26.7,-61.5],[-26.7,-61.4]],[[-26.6,-59.8]],[[-27.2,-58.7],[-27.1,-58.7]],[[-26.6,-61.6],[-26.6,-61.5],[-26.5,-61.6],[-26.5,-61.5],[-26.4,-61.6],[-26.4,-61.5],[-26.4,-61.4],[-26.3,-61.6],[-26.3,-61.5],[-26.3,-61.4],[-26.2,-61.6],[-26.2,-61.5],[-26.2,-61.4],[-26.2,-61.3],[-26.2,-61.2],[-26.1,-61.6],[-26.1,-61.5],[-26.1,-61.4],[-26.1,-61.3],[-26,-61.6],[-26,-61.5],[-26,-61.4],[-26,-61.3],[-25.9,-61.6],[-25.9,-61.5],[-25.9,-61.4],[-25.9,-61.3],[-25.8,-61.6],[-25.8,-61.5],[-25.8,-61.4],[-25.8,-61.3],[-25.7,-61.6],[-25.7,-61.5],[-25.7,-61.4],[-25.7,-61.3],[-25.6,-61.6],[-25.6,-61.5],[-25.6,-61.4]],[[-27.2,-60.1],[-27.1,-60.2],[-26.9,-60.1],[-26.9,-60],[-26.8,-60.1],[-26.8,-60],[-26.7,-60],[-26.7,-59.9],[-26.6,-59.9],[-26.5,-59.9],[-26.4,-59.9]],[[-27.2,-59.3],[-27.1,-59.2],[-27,-59.2]],[[-27.2,-59],[-27.1,-59],[-27,-59]],[[-25.7,-61],[-25.7,-60.9],[-25.7,-60.8],[-25.6,-61.1],[-25.6,-61],[-25.6,-60.9],[-25.6,-60.8],[-25.5,-61.3],[-25.5,-61.2],[-25.5,-61.1],[-25.5,-61],[-25.5,-60.9],[-25.5,-60.8],[-25.4,-61.3],[-25.4,-61.2],[-25.4,-61.1],[-25.4,-61],[-25.4,-60.9],[-25.4,-60.8],[-25.3,-61.3],[-25.3,-61.2],[-25.3,-61.1],[-25.2,-61.3],[-25.2,-61.2]],[[-25.1,-61.5],[-25.1,-61.4],[-25.1,-61.3],[-25,-61.5],[-25,-61.4],[-24.9,-61.8],[-24.9,-61.7],[-24.9,-61.6]],[],[[-26.7,-59.1],[-26.6,-59]],[[-26.2,-60],[-26.1,-60],[-26.1,-59.9],[-26,-60],[-26,-59.9],[-25.9,-60],[-25.9,-59.9],[-25.8,-60]],[[-26.6,-61.3],[-26.6,-61.2],[-26.5,-61.3],[-26.5,-61.2],[-26.5,-61.1],[-26.4,-61.2],[-26.4,-61.1],[-26.3,-61],[-26.2,-61.1],[-26.2,-61]],[[-27.2,-59.9],[-27.2,-59.8],[-27.2,-59.7],[-27.2,-59.6],[-27.1,-59.9],[-27.1,-59.8],[-27.1,-59.7],[-27.1,-59.6],[-27,-59.9],[-27,-59.8],[-27,-59.7],[-26.9,-59.8],[-26.9,-59.7],[-26.8,-59.8]],[[-26.2,-59.8],[-26.2,-59.7],[-26.2,-59.6],[-26.2,-59.5]],[[-26.9,-60.6],[-26.9,-60.5],[-26.9,-60.4],[-26.8,-60.5],[-26.8,-60.4],[-26.7,-60.5],[-26.7,-60.4],[-26.6,-60.5]],[[-26.9,-58.5]],[],[[-27.4,-59.4],[-27.4,-59.3],[-27.4,-59.1]],[[-27.8,-58.9],[-27.7,-58.9]],[[-27,-60.3],[-26.9,-60.3],[-26.8,-60.2],[-26.7,-60.2],[-26.6,-60.1],[-26.5,-60.1],[-26.4,-60.1]],[[-27.8,-59.1],[-27.7,-59.2],[-27.7,-59.1],[-27.6,-59.3],[-27.6,-59.2],[-27.6,-59.1],[-27.5,-59.3],[-27.5,-59.2],[-27.5,-59.1]],[[-27.6,-60.4],[-27.6,-60.3]],[[-27.4,-60.8],[-27.4,-60.7],[-27.4,-60.6],[-27.3,-60.7],[-27.3,-60.6]],[[-27.9,-61.3],[-27.9,-61.2],[-27.9,-61.1],[-27.9,-61],[-27.8,-61.2],[-27.8,-61.1]],[[-25.6,-63.3],[-25.6,-63.2],[-25.6,-63.1],[-25.6,-63],[-25.6,-62.9],[-25.6,-62.8],[-25.6,-62.7],[-25.6,-62.6],[-25.6,-62.5],[-25.6,-62.4],[-25.6,-62.3],[-25.6,-62.2],[-25.6,-62.1],[-25.6,-62],[-25.6,-61.9],[-25.6,-61.8],[-25.5,-63.2],[-25.5,-63.1],[-25.5,-63],[-25.5,-62.9],[-25.5,-62.8],[-25.5,-62.7],[-25.5,-62.6],[-25.5,-62.5],[-25.5,-62.4],[-25.5,-62.3],[-25.4,-63.1],[-25.4,-63],[-25.4,-62.9],[-25.4,-62.8],[-25.4,-62.7],[-25.4,-62.6],[-25.4,-62.5],[-25.4,-62.4],[-25.4,-62.3],[-25.3,-63],[-25.3,-62.9],[-25.3,-62.8],[-25.3,-62.7],[-25.3,-62.6],[-25.3,-62.5],[-25.3,-62.4],[-25.3,-62.3],[-25.2,-62.9],[-25.2,-62.8],[-25.2,-62.7],[-25.2,-62.6],[-25.2,-62.5],[-25.2,-62.4],[-25.2,-62.3],[-25.1,-62.9],[-25.1,-62.8],[-25.1,-62.7],[-25.1,-62.6],[-25.1,-62.5],[-25.1,-62.4],[-25.1,-62.3],[-25,-62.8],[-25,-62.7],[-25,-62.6],[-25,-62.5],[-25,-62.4],[-25,-62.3],[-24.9,-62.7],[-24.9,-62.6],[-24.9,-62.5],[-24.9,-62.4],[-24.9,-62.3]],[[-26.5,-60.4],[-26.5,-60.3],[-26.4,-60.7],[-26.4,-60.6],[-26.4,-60.5],[-26.4,-60.4],[-26.4,-60.3],[-26.3,-60.7],[-26.3,-60.6],[-26.3,-60.5],[-26.3,-60.4],[-26.3,-60.3],[-26.2,-60.7],[-26.2,-60.6],[-26.2,-60.5],[-26.2,-60.4],[-26.2,-60.3],[-26.2,-60.2]],[[-27.9,-60.7],[-27.8,-60.7],[-27.7,-60.7],[-27.6,-60.8],[-27.6,-60.7],[-27.5,-60.9]],[[-27.4,-60.4],[-27.4,-60.3],[-27.3,-60.4],[-27.3,-60.3],[-27.2,-60.4],[-27.2,-60.3],[-27.1,-60.4]],[[-25.7,-60.5],[-25.7,-60.4],[-25.7,-60.3],[-25.7,-60.2],[-25.6,-60.3]],[[-25.6,-60.5],[-25.5,-60.5],[-25.5,-60.4],[-25.4,-60.6],[-25.4,-60.5],[-25.4,-60.4],[-25.3,-60.8],[-25.3,-60.7],[-25.3,-60.6],[-25.3,-60.5],[-25.2,-60.9],[-25.2,-60.8],[-25.2,-60.7]]];
 
 // Localidades del semáforo [lat, lon], en el mismo orden que LOCS en el sitio.
 var LOCS = [[-27.45,-58.99],[-26.79,-60.44],[-27.57,-60.71],[-25.95,-60.62],[-27.21,-61.19],[-27.09,-61.08]];
@@ -59,8 +70,9 @@ function etiqueta(xml, tag) {
   return m ? m[1].replace(/<!\[CDATA\[|\]\]>/g, '').trim() : '';
 }
 
-// Devuelve los datos útiles de un mensaje CAP, o null si no sirve.
-function leerCap(xml) {
+// Devuelve los datos útiles de un mensaje CAP, o null si no sirve. horas = corrección a aplicar (si falta, AJUSTE_H).
+function leerCap(xml, horas) {
+  if (horas == null) horas = AJUSTE_H;
   var estado = etiqueta(xml, 'status'), tipo = etiqueta(xml, 'msgType');
   if (estado && estado !== 'Actual') return null;
   if (tipo === 'Cancel') return null;
@@ -69,7 +81,7 @@ function leerCap(xml) {
   var hasta = new Date(etiqueta(xml, 'expires'));
   if (isNaN(desde) || isNaN(hasta)) return null;
   // El canal rotula las horas como -03:00 pero corresponden a UTC: se corrigen 3 horas (verificado contra el mapa del SMN el 6/10/2026).
-  desde = new Date(desde.getTime() - AJUSTE_H * 3600000); hasta = new Date(hasta.getTime() - AJUSTE_H * 3600000);
+  desde = new Date(desde.getTime() - horas * 3600000); hasta = new Date(hasta.getTime() - horas * 3600000);
   var poligonos = [], re = /<(?:\w+:)?polygon[^>]*>([\s\S]*?)<\/(?:\w+:)?polygon>/g, m;
   while ((m = re.exec(xml))) {
     var pts = m[1].trim().split(/\s+/).map(function (p) { var c = p.split(','); return [Number(c[0]), Number(c[1])]; })
@@ -78,11 +90,41 @@ function leerCap(xml) {
   }
   // La hora de emisión viene con el mismo corrimiento que las demás.
   var env = new Date(etiqueta(xml, 'sent'));
-  var enviado = isNaN(env) ? '' : new Date(env.getTime() - AJUSTE_H * 3600000).toISOString();
+  var enviado = isNaN(env) ? '' : new Date(env.getTime() - horas * 3600000).toISOString();
   // Lo que el SMN nombra en la descripción: 1 = granizo, 2 = ráfagas (se suman).
   var desc = etiqueta(xml, 'description').toLowerCase();
   var extra = (desc.indexOf('granizo') >= 0 ? 1 : 0) + (/r\S{1,3}faga/.test(desc) ? 2 : 0);   // la á puede llegar mal leída
   return { ev: idEvento(etiqueta(xml, 'event')), extra: extra, nivel: nivel, desde: desde, hasta: hasta, enviado: enviado, poligonos: poligonos };
+}
+
+// Control de la corrección de 3 horas. El SMN da sus alertas por franjas de 6 horas (0, 6, 12 y 18, hora argentina):
+// corregido 3 horas, el comienzo de cada alerta tiene que caer en una de esas horas. Si la mayoría cae 3 horas antes (21, 3, 9 o 15),
+// el canal ya viene con la hora bien y no hay que corregir. Con menos de 3 casos claros no se decide: sigue lo que se venía usando.
+// caps = alertas leídas con la corrección de 3 horas; previo = horas usadas en la lectura anterior. Devuelve { alineadas, corridas, horas }.
+function controlAjuste(caps, previo) {
+  var alineadas = 0, corridas = 0;
+  caps.forEach(function (c) {
+    if (!c || c.desde.getTime() % 3600000) return;          // solo comienzos en hora justa
+    var h = (c.desde.getUTCHours() + 21) % 24;              // hora argentina
+    if (h % 6 === 0) alineadas++; else if (h % 6 === 3) corridas++;
+  });
+  var horas = corridas >= 3 && corridas > alineadas ? 0 : alineadas >= 3 && alineadas > corridas ? AJUSTE_H : (previo === 0 ? 0 : AJUSTE_H);
+  return { alineadas: alineadas, corridas: corridas, horas: horas };
+}
+
+// Lee las alertas, decide la corrección horaria y arma el resultado con esa corrección.
+function armarConAjuste(xmls, hoy, ahora, previo) {
+  var caps = xmls.map(function (x) { return leerCap(x, AJUSTE_H); }), ajuste = controlAjuste(caps, previo);
+  if (ajuste.horas !== AJUSTE_H) caps = xmls.map(function (x) { return leerCap(x, ajuste.horas); });
+  var datos = armar(caps, hoy, ahora);
+  datos.ajuste = ajuste;
+  return datos;
+}
+
+// Un municipio entra en una alerta si la zona alertada cubre su punto central o alguno de sus puntos interiores.
+function tocaMunicipio(m, poligonos) {
+  var pts = [CENTROS[m]].concat(PUNTOS[m] || []);
+  return poligonos.some(function (p) { return pts.some(function (q) { return dentro(q, p); }); });
 }
 
 function dentro(pt, pol) {
@@ -108,7 +150,7 @@ function armar(caps, hoy, ahora) {
     if (!c || c.nivel < 3 || !c.poligonos.length) return;
     var tocados = [];
     for (var m = 0; m < CENTROS.length; m++) {
-      if (c.poligonos.some(function (p) { return dentro(CENTROS[m], p); })) tocados.push(m);
+      if (tocaMunicipio(m, c.poligonos)) tocados.push(m);
     }
     if (!tocados.length) return;
     if (c.enviado && (!emitido || new Date(c.enviado) > new Date(emitido))) emitido = c.enviado;
@@ -149,7 +191,7 @@ function enlacesDelCanal(texto) {
 function urlLluvia(pts) {
   return 'https://api.open-meteo.com/v1/forecast?latitude=' + pts.map(function (p) { return p[0]; }).join(',') +
     '&longitude=' + pts.map(function (p) { return p[1]; }).join(',') +
-    '&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FCordoba';
+    '&daily=precipitation_sum&past_days=7&forecast_days=7&timezone=America%2FArgentina%2FBuenos_Aires';
 }
 
 // Día en hora de Argentina (UTC-3, sin horario de verano) de una fecha con hora.
@@ -252,11 +294,25 @@ function leerExtras(hoy, ahora, previo, pedir) {
   return out;
 }
 
+// Qué hacer con el correo de aviso de la lluvia. t = hora de la última copia; avisado = si ya se mandó el correo por esta caída.
+// Devuelve 'avisar' (mandar el correo), 'limpiar' (la lluvia volvió: se puede volver a avisar la próxima vez) o ''.
+function decidirAviso(t, ahora, avisado) {
+  var d = new Date(t);
+  if (isNaN(d)) return '';
+  var viejo = ahora - d > HORAS_AVISO * 3600000;
+  return viejo && !avisado ? 'avisar' : !viejo && avisado ? 'limpiar' : '';
+}
+
 /* ---------- parte que usa los servicios de Google ---------- */
 
 function pedirUrl(url) {
   var r = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
   return { codigo: r.getResponseCode(), texto: r.getContentText() };
+}
+
+// Corrección usada en la lectura anterior (para cuando no hay casos suficientes para decidir).
+function horasPrevias() {
+  try { return JSON.parse(leerGuardado() || '{}').ajuste.horas; } catch (e) { return null; }
 }
 
 // Lee el canal del SMN y arma las alertas. Da error si el canal no responde bien.
@@ -265,15 +321,16 @@ function leerSmn(hoy, ahora) {
   if (r.getResponseCode() !== 200) throw new Error('El canal del SMN respondió ' + r.getResponseCode());
   var texto = r.getContentText();
   if (texto.indexOf('CAP') < 0) throw new Error('El canal del SMN no devolvió un listado de alertas.');
-  var urls = enlacesDelCanal(texto), caps = [], fallas = 0;
+  var urls = enlacesDelCanal(texto), xmls = [], fallas = 0;
   for (var i = 0; i < urls.length; i += 40) {
     var tanda = UrlFetchApp.fetchAll(urls.slice(i, i + 40).map(function (u) { return { url: u, muteHttpExceptions: true }; }));
-    tanda.forEach(function (x) { if (x.getResponseCode() === 200) caps.push(leerCap(x.getContentText())); else fallas++; });
+    tanda.forEach(function (x) { if (x.getResponseCode() === 200) xmls.push(x.getContentText()); else fallas++; });
   }
   // Si falló más de la cuarta parte, no se pisa el dato anterior: podría faltar justo una alerta del Chaco.
   if (urls.length && fallas > urls.length / 4) throw new Error('No se pudieron leer ' + fallas + ' de ' + urls.length + ' alertas.');
-  var datos = armar(caps, hoy, ahora);
+  var datos = armarConAjuste(xmls, hoy, ahora, horasPrevias());
   datos.leidas = urls.length; datos.fallas = fallas;
+  if (datos.ajuste.horas !== AJUSTE_H) console.warn('El canal del SMN ya no viene corrido: las horas se usan sin corregir.');
   return datos;
 }
 
@@ -296,17 +353,19 @@ function actualizar() {
   try { anterior = JSON.parse(leerGuardado() || '{}'); } catch (e) {}
   var r = juntar(anterior, hoy, ahora, leerSmn, pedirUrl);
   r.datos.robot = { t: ahora.toISOString(), estado: robot };
+  try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
   guardar(JSON.stringify(r.datos));
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
   return r.datos;
 }
 
+// Guarda el resultado en partes (p0, p1, ...). Solo toca esas propiedades: la clave de GitHub queda como está.
 function guardar(json) {
   var p = PropertiesService.getScriptProperties(), n = Math.ceil(json.length / 8000), todo = { partes: String(n) };
-  var clave = p.getProperty('GITHUB_TOKEN');
-  if (clave) todo.GITHUB_TOKEN = clave;   // setProperties(..., true) borra todo lo demás: la clave se vuelve a escribir
+  var antes = Number(p.getProperty('partes') || 0);
   for (var i = 0; i < n; i++) todo['p' + i] = json.substr(i * 8000, 8000);
-  p.setProperties(todo, true);
+  p.setProperties(todo, false);
+  for (i = n; i < antes; i++) p.deleteProperty('p' + i);   // partes que sobran de un guardado más largo
 }
 
 function leerGuardado() {
@@ -329,6 +388,31 @@ function lanzarRobot() {
   return c === 204 ? 'bien' : 'GitHub respondió ' + c + ': ' + r.getContentText().slice(0, 200);
 }
 
+// Mira la copia de la lluvia que deja el robot. Si lleva más de HORAS_AVISO horas sin renovarse, manda un correo (uno solo por caída).
+function avisarLluvia(ahora, robot) {
+  var r = UrlFetchApp.fetch('https://raw.githubusercontent.com/' + REPO + '/datos/lluvia.json', { muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) return '';
+  var t = JSON.parse(r.getContentText()).datos.lluvia.t, p = PropertiesService.getScriptProperties();
+  var que = decidirAviso(t, ahora, p.getProperty('avisoLluvia') === '1');
+  if (que === 'limpiar') p.deleteProperty('avisoLluvia');
+  if (que === 'avisar') {
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Tiempo y Ríos del Chaco: la lluvia no se renueva',
+      'La última copia de la lluvia es del ' + Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm') + ' h (hora argentina): lleva más de ' + HORAS_AVISO + ' horas sin renovarse.\n\n' +
+      'Estado del robot al lanzarlo: ' + robot + '\n\n' +
+      'Qué mirar: en GitHub, pestaña Actions, tarea "Lluvia". Si el estado no dice "bien", revisar la clave GITHUB_TOKEN en las propiedades del script.\n' +
+      'https://github.com/' + REPO + '/actions\n\nEste correo se manda una sola vez. Cuando la lluvia vuelva a renovarse, el aviso queda listo para la próxima.');
+    p.setProperty('avisoLluvia', '1');
+  }
+  return que;
+}
+
+// Da el permiso de enviar correo (Google lo pide la primera vez) y manda uno de prueba a la cuenta dueña del script.
+function probarCorreo() {
+  var a = Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail(a, 'Tiempo y Ríos del Chaco: correo de prueba', 'Si llegó este correo, el aviso de la lluvia sin renovar va a funcionar.');
+  Logger.log('Correo de prueba enviado a ' + a);
+}
+
 // Prueba de la clave: lanza el robot una vez y muestra qué respondió GitHub.
 // Si dice 'bien', en un par de minutos aparece una corrida nueva en GitHub, pestaña Actions, tarea "Lluvia".
 function probarRobot() {
@@ -348,7 +432,7 @@ function instalar() {
   ScriptApp.newTrigger('actualizar').timeBased().everyHours(1).create();
   var d = actualizar(), con = 0;
   for (var k in d.alertas) if (d.alertas[k].length) con++;
-  Logger.log('Listo. Alertas leídas: ' + d.leidas + ' (fallaron ' + d.fallas + '). Municipios del Chaco con alerta: ' + con + ' de ' + CENTROS.length + '. Emitido: ' + d.emitido);
+  Logger.log('Listo. Alertas leídas: ' + d.leidas + ' (fallaron ' + d.fallas + '). Municipios del Chaco con alerta: ' + con + ' de ' + CENTROS.length + '. Emitido: ' + d.emitido + '. Corrección de horas en uso: ' + d.ajuste.horas);
 }
 
 // Diagnóstico: muestra qué responde el canal del SMN a los servidores de Google.

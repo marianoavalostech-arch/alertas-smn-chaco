@@ -14,8 +14,9 @@ const nada = new Proxy(function () {}, {
 });
 const html = fs.readFileSync(path.join(raiz, 'index.html'), 'utf8');
 const codigo = /<script>\n([\s\S]*)<\/script>/.exec(html)[1];
+const elementos = {};   // elementos de la página que una prueba quiere mirar
 const sitio = vm.createContext({
-  document: { getElementById: () => nada, addEventListener() {}, hidden: false },
+  document: { getElementById: id => elementos[id] || nada, querySelectorAll: () => [], addEventListener() {}, hidden: false },
   addEventListener() {}, matchMedia: () => ({ matches: false }), performance: { now: () => 0 },
   requestAnimationFrame() {}, cancelAnimationFrame() {}, setInterval() {}, setTimeout() {}, clearTimeout() {},
   fetch: () => Promise.reject(new Error('sin red')), localStorage: { getItem: () => null, setItem() {} },
@@ -123,6 +124,13 @@ prueba('lluvia: la copia del servidor tiene que ser de hoy, y no se inventa un c
   assert.throws(() => S(`mmDe({daily:{precipitation_sum:[null,null,null,null,1]}})`));
 });
 
+prueba('SMN: si el informe lleva más de 3 horas sin renovar, se avisa', () => {
+  const m = h => S(`SMN={capturado:new Date(Date.now()-${h}*36e5).toISOString()};smnMeta()`);
+  assert.ok(!m(1).includes('sin renovar'));
+  assert.ok(m(5).includes('sin renovar'));
+  S('SMN=SMN_VACIO');
+});
+
 /* ---------- script de Google ---------- */
 const gs = vm.createContext({ console, JSON, Math, Date, Number, String, Array, Error, RegExp, isFinite, isNaN });
 vm.runInContext(fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8'), gs);
@@ -217,6 +225,77 @@ prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo dem
   assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.caudal);
 });
 
+prueba('script: una alerta que no cubre el centro del municipio igual lo alcanza por sus puntos interiores', () => {
+  const { puntos, leerGeo, anillos, dentro } = require('../herramientas/puntos.js'), mun = leerGeo().mun;
+  const P = JSON.parse(JSON.stringify(vm.runInContext('PUNTOS', gs)));
+  assert.deepStrictEqual(P, puntos(mun));   // si cambia el mapa hay que volver a generar los puntos
+  P.forEach((pts, i) => pts.forEach(q => assert.ok(anillos(mun[i][1]).some(a => dentro(q, a)), 'punto fuera de ' + mun[i][0])));
+  // Un cuadro chico alrededor de un punto interior, lejos del centro
+  const m = P.findIndex((pts, i) => pts.some(q => Math.abs(q[0] - gs.CENTROS[i][0]) > 0.15)), q = P[m].find(q => Math.abs(q[0] - gs.CENTROS[m][0]) > 0.15);
+  const cuadro = [[q[0] - .02, q[1] - .02], [q[0] - .02, q[1] + .02], [q[0] + .02, q[1] + .02], [q[0] + .02, q[1] - .02]];
+  assert.strictEqual(gs.dentro(gs.CENTROS[m], cuadro), false);
+  assert.strictEqual(gs.tocaMunicipio(m, [cuadro]), true);
+  assert.strictEqual(gs.tocaMunicipio(m, [[[-10, -10], [-10, -9], [-9, -9]]]), false);
+});
+
+prueba('script: la corrección de 3 horas del canal del SMN se decide sola', () => {
+  const xml = (onset, expires) => '<alert><status>Actual</status><sent>2026-10-08T08:55:55-03:00</sent><info><event>Tormentas</event><severity>Severe</severity>' +
+    `<onset>2026-10-08T${onset}-03:00</onset><expires>2026-10-08T${expires}-03:00</expires><area><polygon>-20,-70 -20,-50 -35,-50 -35,-70</polygon></area></info></alert>`;
+  const armar = (xmls, previo) => JSON.parse(JSON.stringify(gs.armarConAjuste(xmls, '2026-10-08', new Date('2026-10-08T13:00:00Z'), previo)));
+  // Como viene hoy el canal: 15 a 21 rotulado -03:00 son las 12 a 18 de Argentina. Se corrige: solo la tarde.
+  const hoy = armar([xml('15:00:00', '20:59:59'), xml('15:00:00', '20:59:59'), xml('09:00:00', '14:59:59')]);
+  assert.deepStrictEqual(hoy.ajuste, { alineadas: 3, corridas: 0, horas: 3 });
+  assert.deepStrictEqual(hoy.alertas[0][0].slice(2, 6), [0, 4, 4, 0]);
+  // Si el SMN arregla el canal, las mismas alertas llegan rotuladas 12 a 18 y 6 a 12: se dejan como vienen y el resultado es el mismo.
+  const arreglado = armar([xml('12:00:00', '17:59:59'), xml('12:00:00', '17:59:59'), xml('06:00:00', '11:59:59')]);
+  assert.deepStrictEqual(arreglado.ajuste, { alineadas: 0, corridas: 3, horas: 0 });
+  assert.deepStrictEqual(arreglado.alertas, hoy.alertas);
+  // Con pocos casos no se decide: sigue lo que se venía usando.
+  assert.strictEqual(armar([xml('12:00:00', '17:59:59')]).ajuste.horas, 3);
+  assert.strictEqual(armar([xml('12:00:00', '17:59:59')], 0).ajuste.horas, 0);
+  assert.strictEqual(armar([], 0).ajuste.horas, 0);
+  assert.strictEqual(armar([xml('13:20:00', '17:59:59')]).ajuste.alineadas, 0);   // comienzos fuera de hora justa no cuentan
+  // Y vuelve a corregir si el canal vuelve a venir corrido.
+  assert.strictEqual(armar([xml('15:00:00', '20:59:59'), xml('21:00:00', '23:59:59'), xml('09:00:00', '14:59:59')], 0).ajuste.horas, 3);
+});
+
+prueba('sitio y script: lo que está escrito dos veces coincide', () => {
+  // Lectura del río
+  const crudo = [{ timestart: '2026-10-06T03:00:00.000Z', valor: 4.5 }, { timestart: '2026-10-05T15:00:00.000Z', valor: 4.4 },
+    { timestart: '2026-10-06T15:00:00.000Z', valor: 4.6, timeupdate: '2026-10-06T16:00:00.000Z' }, { timestart: '2026-10-07T01:00:00.000Z', valor: 4.7 }, { timestart: '2026-10-07T12:00:00.000Z', valor: 99 }];
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.rio(${JSON.stringify(crudo)})`))), JSON.parse(JSON.stringify(gs.normRio(crudo))));
+  // Direcciones de las fuentes
+  const u = S(`hoy='2026-10-07';URLS()`), f = {}; gs.fuentesExtra('2026-10-07').forEach(x => { f[x.k] = x.url; });
+  ['rio', 'prono', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  // Números de fenómeno
+  ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
+    .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
+  // Tabla "¿Cómo se decide el color?": los números del texto son los umbrales del cálculo
+  const fila = c => new RegExp('<td><b>' + c + '</b></td><td>(\\d+) mm o más</td><td>(\\d+) mm o más</td><td>([^<]+)</td>').exec(html);
+  const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
+  const [, r7, r1, rc] = fila('Rojo'), [, a7, a1, ac] = fila('Amarillo'), nums = t => t.match(/\d+/g).map(Number);
+  assert.strictEqual(n(0, +r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 1);
+  assert.strictEqual(n(0, 0, +r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 1);
+  assert.strictEqual(n(...nums(rc), 0), 2); assert.strictEqual(n(nums(rc)[0] - 1, nums(rc)[1], 0), 1);
+  assert.strictEqual(n(0, +a7, 0), 1); assert.strictEqual(n(0, a7 - 1, 0), 0);
+  assert.strictEqual(n(0, 0, +a1), 1); assert.strictEqual(n(0, 0, a1 - 1), 0);
+  assert.strictEqual(n(nums(ac)[0], 0, 0), 1); assert.strictEqual(n(nums(ac)[0] - 1, 0, 0), 0);
+  assert.strictEqual(n(nums(ac)[1] - 45, 45, 0), 1); assert.strictEqual(n(nums(ac)[1] - 46, 45, 0), 0);
+});
+
+prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo', () => {
+  const lluvia = h => S(`D.lluvia={datos:{},vivo:true,t:new Date(Date.now()-${h}*36e5)};lluviaAtraso()`);
+  assert.strictEqual(lluvia(5), ''); assert.strictEqual(lluvia(23), '');
+  assert.ok(lluvia(25).includes('sin renovar desde')); assert.ok(!/robot|clave|GitHub/i.test(lluvia(25)));
+  S(`delete D.lluvia`);
+  const ahora = new Date('2026-10-08T12:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
+  assert.strictEqual(gs.decidirAviso(hace(2), ahora, false), '');
+  assert.strictEqual(gs.decidirAviso(hace(25), ahora, false), 'avisar');
+  assert.strictEqual(gs.decidirAviso(hace(30), ahora, true), '');          // ya se avisó: no se repite
+  assert.strictEqual(gs.decidirAviso(hace(1), ahora, true), 'limpiar');    // volvió la lluvia
+  assert.strictEqual(gs.decidirAviso('basura', ahora, false), '');
+});
+
 (async () => {
   // Robot de la lluvia, con Open-Meteo simulado: los municipios fallan y queda la copia anterior
   const { armar } = require('../robot/lluvia.js'), real = global.fetch;
@@ -257,20 +336,37 @@ prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo dem
   const props = { GITHUB_TOKEN: 'clave-de-prueba' }, pedidos = [];
   gs.PropertiesService = { getScriptProperties: () => ({
     getProperty: k => props[k] == null ? null : props[k], getProperties: () => Object.assign({}, props),
-    setProperties: (o, borrar) => { if (borrar) for (const k in props) delete props[k]; Object.assign(props, o); } }) };
+    setProperties: (o, borrar) => { if (borrar) for (const k in props) delete props[k]; Object.assign(props, o); },
+    deleteProperty: k => { delete props[k]; }, setProperty: (k, v) => { props[k] = v; } }) };
   gs.UrlFetchApp = { fetch: (u, o) => { pedidos.push({ u, o }); return { getResponseCode: () => 204, getContentText: () => '' }; } };
   gs.ContentService = { createTextOutput: t => ({ setMimeType: () => t }), MimeType: {} };
   const lanzado = vm.runInContext('lanzarRobot()', gs);
-  vm.runInContext(`guardar(JSON.stringify({a:1}))`, gs);
+  vm.runInContext(`guardar('x'.repeat(20000)); guardar(JSON.stringify({a:1}))`, gs);   // el segundo guardado es más corto: no deben quedar partes del primero
   const publico = vm.runInContext('doGet()', gs);
   delete props.GITHUB_TOKEN;
   const sinClave = vm.runInContext('lanzarRobot()', gs);
+  // Correo de aviso: uno solo por caída, y otra vez disponible cuando la lluvia vuelve
+  const correos = []; let copiaT = '2026-10-06T12:00:00Z';
+  gs.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 200, getContentText: () => JSON.stringify({ datos: { lluvia: { t: copiaT } } }) }) };
+  gs.MailApp = { sendEmail: (a, asunto, texto) => correos.push({ a, asunto, texto }) };
+  gs.Session = { getEffectiveUser: () => ({ getEmail: () => 'yo@ejemplo.com' }) };
+  gs.Utilities = { formatDate: () => '6/10 09:00' };
+  const dia8 = "new Date('2026-10-08T12:00:00Z')";
+  const pasos = [vm.runInContext(`avisarLluvia(${dia8},'sin clave')`, gs), vm.runInContext(`avisarLluvia(${dia8},'sin clave')`, gs)];
+  copiaT = '2026-10-08T11:00:00Z'; pasos.push(vm.runInContext(`avisarLluvia(${dia8},'bien')`, gs));
+  copiaT = '2026-10-06T12:00:00Z'; pasos.push(vm.runInContext(`avisarLluvia(${dia8},'bien')`, gs));
+  delete props.avisoLluvia;
+  prueba('script: correo cuando la lluvia no se renueva, una sola vez por caída', () => {
+    assert.deepStrictEqual(pasos, ['avisar', '', 'limpiar', 'avisar']); assert.strictEqual(correos.length, 2);
+    assert.strictEqual(correos[0].a, 'yo@ejemplo.com'); assert.ok(correos[0].texto.includes('sin clave'));
+  });
   prueba('script: lanza el robot de la lluvia y no pierde ni muestra la clave', () => {
     assert.strictEqual(lanzado, 'bien'); assert.strictEqual(pedidos.length, 1);
     assert.ok(pedidos[0].u.endsWith('/actions/workflows/lluvia.yml/dispatches'));
     assert.strictEqual(pedidos[0].o.headers.Authorization, 'Bearer clave-de-prueba');
     assert.strictEqual(JSON.parse(pedidos[0].o.payload).ref, 'main');
     assert.strictEqual(publico, '{"a":1}'); assert.ok(!publico.includes('clave'));
+    assert.deepStrictEqual(Object.keys(props).sort(), ['p0', 'partes']);
     assert.strictEqual(sinClave, 'sin clave'); assert.strictEqual(pedidos.length, 1);
   });
   console.log('\n' + ok + ' pruebas bien.');
