@@ -44,18 +44,29 @@ prueba('suma de lluvia: lo caído es antes de hoy, lo que viene incluye hoy', ()
   assert.strictEqual(r.max, 40); assert.strictEqual(r.maxDia, '2026-10-08');
 });
 
-prueba('río: colores según altura, tendencia y alerta de la APA', () => {
-  const rio = (hoy, obs) => S(`hoy='${hoy}';LISTO=true;D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};riesgoRio()`);
-  // Fuera de las fechas de la alerta de la APA cargada (y de sus 30 días de aviso)
+prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
+  const rio = (hoy, obs, prono) => S(`hoy='${hoy}';LISTO=true;D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};
+    D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};riesgoRio()`);
+  // Sin pronóstico
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 4.0], ['2027-03-10', 4.0]]).c, 'verde');
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.5], ['2027-03-10', 5.7]]).c, 'amarillo');   // cerca y creciendo
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.7], ['2027-03-10', 5.7]]).c, 'verde');      // cerca pero estable
   assert.strictEqual(rio('2027-03-10', [['2027-03-10', 6.1]]).c, 'amarillo');
   assert.strictEqual(rio('2027-03-10', [['2027-03-10', 6.5]]).c, 'rojo');
   assert.strictEqual(rio('2027-03-10', [['2027-03-06', 6.6]]).c, 'gris');                             // lectura de hace 4 días
-  // Con la alerta de la APA vigente no baja de amarillo
-  const a = S('APA');
-  assert.strictEqual(rio(a.fecha, [[a.fecha, 3.0]]).c, 'amarillo');
+  // Con pronóstico: cuenta el valor más alto del rango, solo en fechas que faltan y si no es viejo
+  const p = (emitido, filas) => ({ emitido: emitido + 'T03:00:00.000Z', p: filas });
+  const bajo = [['2026-10-08', 4.4]];
+  const real = p('2026-10-06', [['2026-10-06', 4.27, 4.27, 4.27], ['2026-10-13', 4.9, 5.34, 5.7], ['2026-10-20', 5.2, 5.55, 6]]);
+  assert.strictEqual(rio('2026-10-08', bajo, real).c, 'amarillo');                                     // el máximo toca 6,00 m
+  assert.ok(rio('2026-10-08', bajo, real).por.includes('20/10'));
+  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 4.9, 5.34, 5.7], ['2026-10-20', 5.2, 5.55, 5.99]])).c, 'verde');
+  assert.strictEqual(rio('2026-10-12', [['2026-10-12', 4.4]], p('2026-10-09', [['2026-10-10', 5, 6.2, 6.4], ['2026-10-20', 5, 5.5, 5.9]])).c, 'verde');   // la fecha alta ya pasó
+  assert.strictEqual(rio('2026-10-15', [['2026-10-15', 4.4]], p('2026-10-06', [['2026-10-20', 5.2, 6.2, 6.4]])).c, 'verde');   // pronóstico de hace 9 días: no se usa
+  assert.strictEqual(rio('2026-10-08', [['2026-10-03', 4.0]], real).c, 'amarillo');                    // lectura vieja, pero el pronóstico avisa
+  assert.strictEqual(rio('2026-10-08', [['2026-10-08', 6.6]], real).c, 'rojo');                        // el rojo sale solo de la lectura
+  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'amarillo');   // el pronóstico solo llega a amarillo
+  S(`D.prono={datos:null}`);
 });
 
 prueba('SMN: piso del color y franjas que ya pasaron', () => {
@@ -164,6 +175,24 @@ prueba('script: río, una lectura por día en hora de Argentina', () => {
   assert.throws(() => gs.normRio([]));
 });
 
+prueba('pronóstico del INA: el script y el sitio lo leen igual', () => {
+  const f = (dia, valor, qualifier) => ({ timestart: dia + 'T03:00:00.000Z', timeend: dia + 'T03:00:00.000Z', valor, qualifier });
+  const crudo = { id: 1, forecast_date: '2026-10-06T03:00:00.000Z', cal_id: 289, series: [{ series_id: 3523, pronosticos: [
+    f('2026-10-20', 5.55, 'medio'), f('2026-10-13', 5.7, 'superior'), f('2026-10-13', 4.9, 'inferior'), f('2026-10-13', 5.34, 'medio'),
+    f('2026-10-20', 6, 'superior'), f('2026-10-27', 99, 'medio'), f('2026-10-27', 5.8, 'superior'), f('2026-11-03', 5.1, 'medio')] }] };
+  const g = JSON.parse(JSON.stringify(gs.normProno(crudo)));
+  assert.strictEqual(g.emitido, '2026-10-06T03:00:00.000Z');
+  // ordenado por fecha; sin mínimo o máximo se usa el valor central; un valor imposible descarta esa fecha
+  assert.deepStrictEqual(g.p, [['2026-10-13', 4.9, 5.34, 5.7], ['2026-10-20', 5.55, 5.55, 6], ['2026-11-03', 5.1, 5.1, 5.1]]);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.prono(${JSON.stringify(crudo)})`))), g);
+  assert.ok(S(`FORMA.prono(${JSON.stringify(g)})`));
+  assert.strictEqual(S(`FORMA.prono({emitido:'2026-10-06T03:00:00.000Z',p:[['2026-10-13',4.9,'5.34',5.7]]})`), false);
+  assert.strictEqual(S(`FORMA.prono({p:[['2026-10-13',4.9,5.34,5.7]]})`), false);
+  assert.throws(() => gs.normProno({ forecast_date: '2026-10-06T03:00:00.000Z', series: [] }));
+  assert.throws(() => gs.normProno({ series: [{ pronosticos: [f('2026-10-13', 5, 'medio')] }] }));
+  assert.throws(() => S(`NORM.prono({message:'error'})`));
+});
+
 prueba('script: si una fuente falla queda la copia anterior y las demás siguen', () => {
   const lluvia = n => JSON.stringify(Array.from({ length: n }, () => ({ daily: { time: ['2026-10-07'], precipitation_sum: [null] } })));
   const pedir = url => url.indexOf('ina.gob.ar') >= 0 ? { codigo: 500, texto: '' }
@@ -174,6 +203,7 @@ prueba('script: si una fuente falla queda la copia anterior y las demás siguen'
   assert.strictEqual(d.lluvia.mm.length, 6); assert.strictEqual(d.municipios.mm.length, 70);
   assert.strictEqual(d.lluvia.mm[0][0], 0);
   assert.strictEqual(d.rio.t, 'antes'); assert.ok(d.errores.rio); assert.ok(d.errores.oni); assert.strictEqual(d.oni, undefined);
+  assert.ok(d.errores.prono); assert.strictEqual(d.prono, undefined);
   assert.strictEqual(d.caudal.t, '2026-10-07T12:00:00.000Z');
 });
 

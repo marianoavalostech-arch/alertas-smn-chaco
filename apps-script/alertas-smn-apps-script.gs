@@ -4,7 +4,7 @@
  * Lee el canal oficial de alertas del Servicio Meteorológico Nacional (formato CAP),
  * se queda con las que tocan a los municipios del Chaco y publica el resultado como JSON.
  *
- * Además guarda una copia horaria de los otros datos del sitio (lluvia, río, caudal y ONI), en "datos".
+ * Además guarda una copia horaria de los otros datos del sitio (lluvia, río, pronóstico del río, caudal y ONI), en "datos".
  * El sitio usa esa copia si tiene menos de 2 horas; si no, consulta cada fuente directamente.
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
@@ -186,6 +186,25 @@ function normRio(j) {
   return { obs: obs, act: u.timeupdate || null, hora: u.timestart };
 }
 
+// Pronóstico del INA para Barranqueras: por cada fecha, [día, mínimo, valor más probable, máximo] del rango previsto.
+function normProno(j) {
+  var q = { inferior: 1, medio: 2, superior: 3 }, pos = {}, filas = [];
+  ((j && j.series) || []).forEach(function (s) {
+    (s.pronosticos || []).forEach(function (p) {
+      var v = Number(p.valor), dia = diaAR(p.timestart);
+      if (p.valor == null || !(v > -3 && v < 12) || !dia) return;
+      if (pos[dia] == null) { pos[dia] = filas.length; filas.push([dia, null, null, null]); }
+      filas[pos[dia]][q[p.qualifier] || 2] = v;
+    });
+  });
+  var p = filas.filter(function (r) { return r[2] != null; }).map(function (r) {
+    var a = r[1] == null ? r[2] : r[1], c = r[3] == null ? r[2] : r[3];
+    return [r[0], Math.min(a, r[2], c), r[2], Math.max(a, r[2], c)];
+  }).sort(function (a, b) { return a[0] < b[0] ? -1 : 1; });
+  if (!p.length || !j.forecast_date || isNaN(new Date(j.forecast_date))) throw new Error('sin pronóstico');
+  return { emitido: j.forecast_date, p: p };
+}
+
 function normCaudal(j) {
   var dias = j.daily.time, q = j.daily.river_discharge;
   if (!Array.isArray(dias) || !Array.isArray(q) || q.length !== dias.length) throw new Error('formato');
@@ -207,6 +226,7 @@ function fuentesExtra(hoy) {
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
     { k: 'municipios', url: urlLluvia(CENTROS), leer: json(function (j) { return normLluvia(j, CENTROS.length); }) },
     { k: 'rio', url: 'https://alerta.ina.gob.ar/a5/obs/puntual/series/20/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json', leer: json(normRio) },
+    { k: 'prono', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true', leer: json(normProno) },
     { k: 'caudal', url: 'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30', leer: json(normCaudal) },
     { k: 'oni', url: 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt', leer: leerOni }
   ];
@@ -343,9 +363,10 @@ function diagnostico() {
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var d = leerExtras(hoy, ahora, {}, pedirUrl);
-  ['lluvia', 'municipios', 'rio', 'caudal', 'oni'].forEach(function (k) {
+  ['lluvia', 'municipios', 'rio', 'prono', 'caudal', 'oni'].forEach(function (k) {
     Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + d.errores[k]));
   });
   if (d.rio) Logger.log('Última lectura del río: ' + JSON.stringify(d.rio.obs[d.rio.obs.length - 1]));
+  if (d.prono) Logger.log('Pronóstico del río (emitido ' + d.prono.emitido + '): ' + JSON.stringify(d.prono.p));
   if (d.oni) Logger.log('ONI: ' + JSON.stringify(d.oni.v));
 }

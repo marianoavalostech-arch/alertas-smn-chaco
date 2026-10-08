@@ -169,7 +169,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li><b>Verde:</b> nada de lo anterior.</li>
         <li><b>Alerta oficial del SMN:</b> si el municipio tiene una alerta amarilla o naranja vigente, su color es amarillo como mínimo; si la alerta es roja, es rojo. El texto de cada localidad avisa cuando el color viene de la alerta.</li>
         <li><b>Gris (sin datos):</b> si no se pudo consultar la lluvia y lo guardado tiene más de un día y medio, o si la última lectura del río tiene 4 días o más, no se calcula el color.</li>
-        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si la Administración Provincial del Agua (APA) tiene una alerta vigente. Vale para islas y costa fuera de las defensas.</li>
+        <li><b>Zona ribereña del Paraná:</b> tiene su propio renglón y solo mira el río. Rojo si el Paraná llega al nivel de evacuación en Barranqueras (6,50 m). Amarillo si llega al nivel de alerta (6,00 m), si está a menos de 50 cm y creciendo, o si el pronóstico del INA prevé que pueda llegar a ese nivel en los próximos días (se mira el valor más alto del rango previsto). Vale para islas y costa fuera de las defensas.</li>
         <li>El río no cambia el color de Resistencia: las defensas del Gran Resistencia están hechas para soportar hasta 9,50 m en Barranqueras. Dentro de las defensas el riesgo es la lluvia. El Niño tampoco cambia el color: afecta a toda la provincia por igual y se muestra aparte.</li>
         <li>Los umbrales de lluvia son orientativos de este prototipo y no están validados por ningún organismo. Los niveles del río son los oficiales del INA.</li>
       </ul>
@@ -201,7 +201,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
 <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
-      <li><b>Alerta de la APA:</b> la Administración Provincial del Agua del Chaco no ofrece una consulta abierta desde el navegador, así que su alerta se carga a mano, con la fecha, y puede quedar atrasada.</li>
+      <li><b>Pronóstico del río:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
     </ul>
   </section>
 
@@ -237,7 +237,8 @@ async function getJSON(u){
 let hoy=diaAR(new Date());   // se recalcula en cada renovación
 const URLS=()=>({
  rio:'https://alerta.ina.gob.ar/a5/obs/puntual/series/20/observaciones?timestart='+masDias(hoy,-30)+'&timeend='+masDias(hoy,2)+'&format=json',
- caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30'
+ caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30',
+ prono:'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true'
 });
 // Cada fuente se normaliza a la misma forma que la captura guardada.
 // Lluvia de un punto. Un día suelto sin dato cuenta como 0; si faltan más de 3, no se usa (no se puede decir que no llovió).
@@ -251,7 +252,16 @@ const NORM={
    const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Number(r.valor)));
    const u=rows[rows.length-1];
    return {obs:[...m],act:u.timeupdate||null,hora:u.timestart}},
- caudal:j=>({dias:j.daily.time,q:j.daily.river_discharge.map(Number)})
+ caudal:j=>({dias:j.daily.time,q:j.daily.river_discharge.map(Number)}),
+ // Pronóstico del INA para Barranqueras: por cada fecha, mínimo, valor más probable y máximo del rango.
+ prono:j=>{const q={inferior:1,medio:2,superior:3},m=new Map();
+   ((j&&j.series)||[]).forEach(s=>(s.pronosticos||[]).forEach(p=>{const v=Number(p.valor),t=new Date(p.timestart);
+     if(p.valor==null||!(v>-3&&v<12)||isNaN(t))return;
+     const dia=diaAR(t);if(!m.has(dia))m.set(dia,[dia,null,null,null]);m.get(dia)[q[p.qualifier]||2]=v}));
+   const p=[...m.values()].filter(r=>r[2]!=null).map(r=>{const a=r[1]==null?r[2]:r[1],c=r[3]==null?r[2]:r[3];return [r[0],Math.min(a,r[2],c),r[2],Math.max(a,r[2],c)]})
+     .sort((a,b)=>a[0]<b[0]?-1:1);
+   if(!p.length||isNaN(new Date(j.forecast_date)))throw new Error('sin pronóstico');
+   return {emitido:j.forecast_date,p}}
 };
 // Forma esperada de cada dato, venga del servidor o de lo guardado en el dispositivo.
 const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(v=>typeof v==='number'));
@@ -260,7 +270,8 @@ const FORMA={
  lluvia:d=>filas(d,LOCS.length),
  municipios:d=>filas(d,GEO.mun.length),
  rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
- caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&Array.isArray(d.q)&&d.q.length===d.dias.length
+ caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&Array.isArray(d.q)&&d.q.length===d.dias.length,
+ prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v)))
 };
 // Última consulta buena de cada fuente, guardada en este dispositivo. Reemplaza a la captura fija que traía la página.
 const MEM={
@@ -268,7 +279,7 @@ const MEM={
   borrar(k){try{localStorage.removeItem('anc:'+k)}catch(e){}},
   guardar(k,datos,t){try{localStorage.setItem('anc:'+k,JSON.stringify({t:new Date(t).toISOString(),datos}))}catch(e){}}
 };
-// Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, caudal y ONI.
+// Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, pronóstico del río, caudal y ONI.
 // Así la mayoría de las visitas no le pide nada a Open-Meteo ni al INA.
 let SRV=null,SRV_P=Promise.resolve(null),LLU_P=Promise.resolve(null);
 // Lluvia: la arma un robot de GitHub (robot/lluvia.js), que lanza el script de Google cada hora, y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
@@ -395,20 +406,24 @@ function riesgo(loc,i){
     por:por.join(' ')};
 }
 
-// Alerta de la APA: se carga a mano (la APA no tiene consulta automática). Deja de mostrarse después de 'vence'.
-const APA={nivel:1,fecha:'2026-10-04',vence:'2026-10-15',prev:5.5,
- texto:'La Administración Provincial del Agua (APA) declaró alerta amarilla por la creciente del Paraná: prevé que se acerque a 5,50 m en Barranqueras durante la primera quincena de octubre. Según una nota de EsChaco del 5/10, el pronóstico del INA es más alto: cerca de 5 m hacia el 8/10 y cerca de 6 m, el nivel de alerta, hacia el 15/10.',
- zonas:'Isla del Cerrito, Puerto Vilelas, Isla Soto, Colonia Tacuarí y otras zonas bajas de la costa'};
-const apaVigente=()=>APA&&hoy>=APA.fecha&&hoy<=APA.vence?APA:null;
-// Pasada la fecha cargada no se sabe si la APA la renovó: se avisa durante 30 días en vez de borrarla en silencio.
-const apaVencida=()=>APA&&hoy>APA.vence&&hoy<=masDias(APA.vence,30)?APA:null;
-const apaVencidaTxt=a=>'La alerta '+['','amarilla','roja'][a.nivel]+' de la APA del '+fDia(a.fecha)+' estaba cargada hasta el '+fDia(a.vence)+' y no se actualizó acá: puede seguir vigente o haber cambiado.';
+// Pronóstico oficial del INA para Barranqueras: fechas que faltan y el valor más alto del rango previsto.
+// El INA lo renueva martes y viernes: con más de 7 días de emitido no se usa.
+function resumenProno(){
+  const d=D.prono&&D.prono.datos;if(!d)return null;
+  const emitido=diaAR(new Date(d.emitido));
+  if(diasEntre(emitido,hoy)>7)return {emitido,viejo:true};
+  const fut=d.p.filter(r=>r[0]>=hoy);
+  if(!fut.length)return null;
+  let mx=fut[0];fut.forEach(r=>{if(r[3]>mx[3])mx=r});
+  return {emitido,fut,mx,alerta:mx[3]>=NIVEL.alerta};
+}
+const pronoTxt=p=>'El INA prevé '+p.fut.map(r=>nf(r[2],2)+' m para el '+fDia(r[0])+(r[3]>r[1]?' (entre '+nf(r[1],2)+' y '+nf(r[3],2)+')':'')).join('; ')+'.';
 // Renglón propio del río: vale para la zona ribereña, fuera de las defensas del Gran Resistencia.
 function riesgoRio(){
-  const r=resumenRio(),a=apaVigente(),v=apaVencida(),viejo=r&&r.atraso>=4;
+  const r=resumenRio(),p=resumenProno(),a=!!(p&&p.alerta),viejo=r&&r.atraso>=4;
   const viejoTxt=()=>'La última lectura del río es del '+fDia(r.dia)+' ('+nf(r.h,2)+' m): es demasiado vieja para calcular el color.';
-  if((!r||viejo)&&!a)return {c:'gris',et:'Sin datos',por:(r?viejoTxt():LISTO?'No hay lectura de la altura del río.':'Consultando la altura del río…')+(v?' '+apaVencidaTxt(v):'')};
-  let n=a?a.nivel:0;const por=[];
+  if((!r||viejo)&&!a)return {c:'gris',et:'Sin datos',por:r?viejoTxt():LISTO?'No hay lectura de la altura del río.':'Consultando la altura del río…'};
+  let n=a?1:0;const por=[];
   if(viejo)por.push(viejoTxt());
   else if(r){
     if(r.h>=NIVEL.evac)n=2;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))n=Math.max(n,1);
@@ -417,8 +432,7 @@ function riesgoRio(){
       :'El Paraná está en '+nf(r.h,2)+' m en Barranqueras, a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.');
     if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
   }else por.push('Falta la lectura de la altura del río.');
-  if(a)por.push('Alerta '+['','amarilla','roja'][a.nivel]+' de la APA desde el '+fDia(a.fecha)+'.');
-  if(v)por.push(apaVencidaTxt(v));
+  if(a)por.push('El pronóstico del INA llega hasta '+nf(p.mx[3],2)+' m hacia el '+fDia(p.mx[0])+', en el valor más alto de su rango: puede alcanzar el nivel de alerta.');
   return {c:['verde','amarillo','rojo'][n],et:['Verde','Amarillo','Rojo'][n],por:por.join(' ')};
 }
 
@@ -709,7 +723,7 @@ function leerRio(e){
   const m=sv.querySelector('#rioMarca');m.setAttribute('visibility','visible');
   m.querySelector('line').setAttribute('x1',p[0]);m.querySelector('line').setAttribute('x2',p[0]);
   m.querySelector('circle').setAttribute('cx',p[0]);m.querySelector('circle').setAttribute('cy',p[1]);
-  $('rioLee').innerHTML='<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>, a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
+  $('rioLee').innerHTML=(p[4]?'<b>Previsto por el INA para el '+fDia(p[2])+': '+nf(p[3],2)+' m</b> (entre '+nf(p[4][1],2)+' y '+nf(p[4][3],2)+' m)':'<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>')+', a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
 }
 ['pointermove','pointerdown'].forEach(t=>$('rio').addEventListener(t,leerRio));
 function pintarRio(){
@@ -726,22 +740,29 @@ function pintarRio(){
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
   const W=340,H=170,L=30,Rt=46,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
-  const lo=Math.floor(Math.min(...vals)-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4);
-  const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/span,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
+  // pronóstico del INA: se dibujan las fechas posteriores a la última lectura, a la derecha de la línea
+  const pn=resumenProno(),pf=pn&&pn.fut?pn.fut.filter(q=>q[0]>o[n][0]):[];
+  const spanX=span+(pf.length?diasEntre(o[n][0],pf[pf.length-1][0]):0);
+  const lo=Math.floor(Math.min(...vals,...pf.map(q=>q[1]))-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4,...pf.map(q=>q[3]+0.4));
+  const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/spanX,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
   let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+=(m===NIVEL.alerta||m===NIVEL.evac?'':'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/>')+'<text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
   // marcas de fecha cada 7 días, contando hacia atrás desde la última lectura
   const paso=span<=45?7:span<=120?21:61;let ejes='';for(let k=0;k*paso<=span;k++){const dia=masDias(o[n][0],-k*paso),fin=k===0,ini=span-k*paso<paso/2;if(ini&&k>0&&span-k*paso>0)continue;
     ejes+='<line x1="'+x(dia)+'" x2="'+x(dia)+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(dia)+'" y="'+(H-5)+'" text-anchor="'+(fin?'end':ini?'start':'middle')+'">'+fDia(dia)+'</text>'}
+  pf.forEach(q=>{if(diasEntre(o[n][0],q[0])>=3)ejes+='<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(q[0])+'" y="'+(H-5)+'" text-anchor="middle">'+fDia(q[0])+'</text>'});
   const ref=(v,c)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="1.5" stroke-dasharray="5 4"/>';
+  const prono=!pf.length?'':'<polyline points="'+[[o[n][0],o[n][1]]].concat(pf.map(q=>[q[0],q[2]])).map(q=>x(q[0]).toFixed(1)+','+y(q[1]).toFixed(1)).join(' ')+'" fill="none" stroke="var(--water)" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round"/>'
+    +pf.map(q=>'<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(q[3])+'" y2="'+y(q[1])+'" stroke="var(--water)" stroke-width="5" stroke-linecap="round" opacity=".35"/><circle cx="'+x(q[0])+'" cy="'+y(q[2])+'" r="3.2" fill="var(--card)" stroke="var(--water)" stroke-width="2"/>').join('')
+    +(q=>'<text x="'+(x(q[0])+8)+'" y="'+(y(q[2])+4)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf[pf.length-1]);
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
-  RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]])};
-  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.">'+g
+  RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]]).concat(pf.map(q=>[x(q[0]),y(q[2]),q[0],q[2],q]))};
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.'+(pf.length?' Pronóstico del INA: '+pf.map(q=>nf(q[2],2)+' metros para el '+fDia(q[0])).join(', ')+'.':'')+'">'+g
    +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')
-   +(a=>a&&a.prev?'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(a.prev)+'" y2="'+y(a.prev)+'" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="2 3"/>':'')(apaVigente())
+   +prono
    +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
-   +'<text x="'+(x(o[n][0])+8)+'" y="'+(y(o[n][1])+4)+'" style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
+   +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   let caudal='';
   const c=D.caudal&&D.caudal.datos;
@@ -754,15 +775,18 @@ function pintarRio(){
         +meta('caudal','GloFAS, vía Open-Meteo');}
   }else if(D.caudal)caudal=meta('caudal','el caudal previsto (GloFAS, vía Open-Meteo)');
   $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
-   +(a=>a?'<div class="aviso" role="note"><strong>Alerta '+['','amarilla','roja'][a.nivel]+' de la APA</strong>'+a.texto+' Zonas nombradas: '+a.zonas+'. <span class="meta">Cargado a mano; alerta del '+fDia(a.fecha)+'.</span></div>':'')(apaVigente())
-   +(a=>a?'<div class="aviso" role="note"><strong>Alerta de la APA sin confirmar</strong>'+apaVencidaTxt(a)+' Consultá a la APA o a Defensa Civil.</div>':'')(apaVencida())
+   +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.</div>'
+     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.</p>')
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Estos dos niveles son los que publica el INA para el puerto de Barranqueras y valen para la zona ribereña: islas, parajes costeros y sectores de Barranqueras y Puerto Vilelas que están fuera de las defensas. La ciudad dentro de las defensas está protegida hasta unos 9,50 m; ahí, con el río alto, el riesgo es que la lluvia tarde en desagotar.</p>'
    +stats+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
-   +(a=>a&&a.prev?'<span><i style="border-color:var(--muted);border-top-style:dotted"></i>Previsto por la APA hasta el '+fDia(a.vence)+': '+nf(a.prev,2)+' m</span>':'')(apaVigente())+'</div>'
+   +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.','Conectado')
+   +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
+     :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
+     :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')
    +caudal;
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
 }
@@ -815,25 +839,25 @@ function seguro(f,ks){
   try{f()}catch(e){console.error(e)}
 }
 function pintar(){
-  seguro(()=>{if(D.rio)pintarRio()},['rio','caudal']);
+  seguro(()=>{if(D.rio)pintarRio()},['rio','caudal','prono']);
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
-  seguro(pintarSemaforo,['lluvia','rio','municipios','smn']);
+  seguro(pintarSemaforo,['lluvia','rio','prono','municipios','smn']);
   seguro(pintarBanner);
 }
 
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
-['lluvia','rio','caudal'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
+['lluvia','rio','caudal','prono'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','caudal'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar()});
+Promise.all(['lluvia','rio','caudal','prono'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar()});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
   if(document.hidden||!LISTO)return;
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
-  Promise.all(['lluvia','rio','caudal'].map(cargar)).then(pintar);
+  Promise.all(['lluvia','rio','caudal','prono'].map(cargar)).then(pintar);
   cargarTodos();
 }
 setInterval(renovar,30*60e3);
