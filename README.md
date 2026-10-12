@@ -35,6 +35,7 @@ Si una fuente falla, las demás siguen y se muestra el último dato bueno con su
 | `.github/workflows/` | Tareas de GitHub: `pruebas.yml` (en cada subida) y `lluvia.yml` (robot). |
 | `netlify.toml` | Publicación y cabeceras de seguridad. |
 | `CAMBIOS.md` | Historial de cambios. |
+| `LICENSE` | Licencia MIT del código. |
 
 ## Pruebas
 
@@ -119,3 +120,7 @@ Cada fila de alerta es `[día, fenómeno, madrugada, mañana, tarde, noche, extr
 ## Fuentes
 
 Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (río), Open-Meteo (lluvia), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
+
+## Licencia
+
+El código está bajo licencia MIT (ver `LICENSE`), © 2026 Mariano Avalos. Los datos que muestra el sitio pertenecen a cada fuente y siguen sus propias condiciones de uso.
