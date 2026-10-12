@@ -2,16 +2,21 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar todavía
+## 12/10/2026
 
-- Las alertas del SMN se asignan por varios puntos de cada municipio, no solo por el central.
-- La corrección de 3 horas del canal del SMN se decide sola en cada lectura: si el SMN arregla su canal, el script deja de corregir.
-- Aviso cuando el informe del SMN lleva más de 3 horas sin renovar.
-- Si la lluvia lleva más de 24 horas sin renovar: aviso en el sitio y correo a quien mantiene el script, con el motivo.
-- Secciones nuevas: "Qué hacer ante una alerta" y "Acerca de este sitio", con nota de privacidad.
-- El script de Google ya no reescribe la clave de GitHub al guardar los datos.
-- README, este historial y más pruebas (lo que está escrito dos veces en el sitio y en el script tiene que coincidir).
-- Node 22 en las tareas de GitHub.
+- Node 22 en las tareas de GitHub (`lluvia.yml` y `pruebas.yml`) y este historial ordenado. No toca el sitio (`[skip netlify]`).
+- Fuera del repositorio: el script de Google quedó con el código de `5fbffcc` (antes tenía el de `8c81ee2`), la app web pasó a la versión 2 (misma dirección) y se dio el permiso de correo con `probarCorreo()`.
+
+## 8/10/2026 (tarde)
+
+- `5fbffcc` Mejoras tras la auditoría 4:
+  - Las alertas del SMN se asignan por varios puntos de cada municipio, no solo por el central.
+  - La corrección de 3 horas del canal del SMN se decide sola en cada lectura: si el SMN arregla su canal, el script deja de corregir.
+  - Aviso cuando el informe del SMN lleva más de 3 horas sin renovar.
+  - Si la lluvia lleva más de 24 horas sin renovar: aviso en el sitio y correo a quien mantiene el script, con el motivo.
+  - Secciones nuevas: "Qué hacer ante una alerta" y "Acerca de este sitio", con nota de privacidad.
+  - El script de Google ya no reescribe la clave de GitHub al guardar los datos.
+  - README, este historial y más pruebas (lo que está escrito dos veces en el sitio y en el script tiene que coincidir).
 
 ## 8/10/2026
 
