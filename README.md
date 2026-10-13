@@ -178,6 +178,10 @@ Una lectura de 4 días o más deja el renglón en gris.
 
 Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
 
+## Contacto
+
+En el sitio, "Acerca de este sitio" da el correo marianoavalos.tech@gmail.com y el enlace a los issues de GitHub. El correo no está escrito en el HTML: lo arma `armarCorreo()` al cargar la página (hay una prueba que controla que no aparezca escrito tal cual). Para cambiarlo, editar esa función y la prueba.
+
 ## Licencia
 
 El código está bajo licencia MIT (ver `LICENSE`), © 2026 Mariano Avalos. Los datos que muestra el sitio pertenecen a cada fuente y siguen sus propias condiciones de uso.

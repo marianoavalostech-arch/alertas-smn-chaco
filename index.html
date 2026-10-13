@@ -148,7 +148,7 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <div class="aviso" role="note">
     <strong>Este sitio es informativo.</strong>
-    No reemplaza los alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
+    No reemplaza las alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
     <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver alertas oficiales del SMN</a>
   </div>
 
@@ -233,7 +233,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>Vaciá recipientes con agua acumulada (contra el dengue) y cuidá la casa de roedores.</li>
       </ul>
     </details>
-    <p><b>Teléfonos de emergencia en el Chaco:</b> 911 (Policía), 100 (Bomberos), 107 (emergencias médicas). Defensa Civil de la Provincia: <a href="tel:+543624448000">(0362) 444-8000</a>, interno 103.</p>
+    <p><b>Teléfonos de emergencia en el Chaco:</b> 911 (Policía), 100 (Bomberos), 107 (emergencias médicas). Defensa Civil de la Provincia: <a href="tel:+543624448000,103">(0362) 444-8000</a>, interno 103.</p>
     <p class="meta">Significado de cada color: SMN. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR) y Ministerio de Salud de la Nación, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
   </section>
 
@@ -303,6 +303,8 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
+      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
+      <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
@@ -310,17 +312,15 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
-<li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
-      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
-      <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
+      <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
     </ul>
   </section>
 
   <section aria-labelledby="t-acerca">
     <h2 id="t-acerca">Acerca de este sitio</h2>
-    <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
+    <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
-    <p><b>¿Viste un error?</b> Avisá en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
+    <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
     <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA, Open-Meteo y la NASA.</p>
   </section>
 
@@ -1270,6 +1270,15 @@ function renovar(){
 }
 setInterval(renovar,30*60e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-ULT>10*60e3)renovar()});
+
+// Correo de contacto: se arma al cargar para que los robots que buscan direcciones no lo lean del HTML.
+function armarCorreo(){
+  const a=document.getElementById('correo'); if(!a) return;
+  const c=['marianoavalos','tech'].join('.')+String.fromCharCode(64)+['gmail','com'].join('.');
+  a.href='mailto:'+c+'?subject='+encodeURIComponent('Ríos y Clima del Chaco');
+  a.textContent=c;
+}
+armarCorreo();
 </script>
 
 </body></html>

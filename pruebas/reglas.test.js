@@ -25,6 +25,13 @@ const sitio = vm.createContext({
 vm.runInContext(codigo, sitio);
 const S = c => vm.runInContext(c, sitio);
 
+prueba('correo de contacto: no está escrito en el HTML y se arma al cargar', () => {
+  assert.ok(!html.includes('marianoavalos.tech@'), 'el correo no tiene que estar escrito tal cual');
+  const a = {}; elementos.correo = a; S('armarCorreo()'); delete elementos.correo;
+  assert.strictEqual(a.textContent, 'marianoavalos.tech@gmail.com');
+  assert.ok(a.href.startsWith('mailto:marianoavalos.tech@gmail.com?subject='));
+});
+
 prueba('umbrales de lluvia', () => {
   const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
   assert.strictEqual(n(0, 0, 0), 0);
