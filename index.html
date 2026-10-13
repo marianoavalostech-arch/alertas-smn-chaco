@@ -277,17 +277,17 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="rio"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-otros" class="plegable">
+  <section aria-labelledby="t-otros" class="plegable" data-cerrada>
     <h2 id="t-otros">Ríos Paraguay y Bermejo</h2>
     <div id="otros"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-lluvia" class="plegable">
+  <section aria-labelledby="t-lluvia" class="plegable" data-cerrada>
     <h2 id="t-lluvia">Lluvias: últimos 7 días y pronóstico a 7 días</h2>
     <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-anim" class="plegable">
+  <section aria-labelledby="t-anim" class="plegable" data-cerrada>
     <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
     <div id="aDias" role="group" aria-label="Elegir el día"></div>
     <div class="anim-ctrl">
@@ -310,7 +310,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="meta">No es un radar. La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
   </section>
 
-  <section aria-labelledby="t-nino" class="plegable">
+  <section aria-labelledby="t-nino" class="plegable" data-cerrada>
     <h2 id="t-nino">¿Cómo está El Niño?</h2>
     <div id="nino"></div>
     <figure id="pacifico" class="pacif" hidden>
@@ -636,7 +636,7 @@ function riesgoParaguay(){
 /* ---------- pantalla ---------- */
 const $=id=>document.getElementById(id);
 // Secciones contraíbles. Mapa, alertas, riesgo por localidad y río Paraná quedan siempre abiertos.
-// "De dónde salen los datos" y "Acerca" empiezan cerradas. Lo que cada persona abre o cierra queda en su navegador.
+// Todas las contraíbles empiezan cerradas (data-cerrada). Lo que cada persona abre o cierra queda en su navegador.
 const PLEG_K='anc-plegadas',PLEG={},AL_ABRIR={};
 const plegGuardadas=()=>{try{const o=JSON.parse(localStorage.getItem(PLEG_K));return o&&typeof o==='object'?o:{}}catch(e){return {}}};
 const abierta=id=>!PLEG[id]||PLEG[id].abierta;
