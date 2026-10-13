@@ -216,6 +216,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <ul>
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
+        <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
     </details>
@@ -270,13 +271,15 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
+      <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
 <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
-      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Para el Paraguay y el Bermejo el INA no publica pronóstico.</li>
+      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
+      <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
     </ul>
   </section>
 
@@ -329,8 +332,13 @@ const URLS=()=>({
  paraguay:serieINA(OTROS.paraguay.serie),
  bermejo:serieINA(OTROS.bermejo.serie),
  caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30',
- prono:'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true'
+ prono:'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true',
+ pronoPy:'https://alerta.ina.gob.ar/a5/sim/calibrados/312/corridas/last?includeProno=true'
 });
+// Pronóstico del INA para el río Paraguay, río arriba de Puerto Bermejo: serie de cada puerto y sus niveles (los del INA). Solo informativo.
+const PUERTOS_PY={formosa:{serie:3127,lugar:'Puerto Formosa',alerta:7.8,evac:8.3},pilcomayo:{serie:1525,lugar:'Puerto Pilcomayo',alerta:5.35,evac:6.0}};
+// Lluvia medida en estaciones automáticas (red SAT de la Red Hidrológica Nacional, vía INA). La arma el script de Google; la página no la pide al INA.
+const MEDIDA_KM=50,MEDIDA_H=24;   // estación más cercana a menos de 50 km, con una lectura de las últimas 24 horas
 // Cada fuente se normaliza a la misma forma que la captura guardada.
 // Lluvia de un punto. Un día suelto sin dato cuenta como 0; si faltan más de 3, no se usa (no se puede decir que no llovió).
 const mmDe=x=>{const v=x.daily.precipitation_sum;if(!Array.isArray(v)||v.filter(y=>y==null).length>3)throw new Error('faltan datos');return v.map(y=>y==null?0:Number(y))};
@@ -354,7 +362,13 @@ const NORM={
    const p=[...m.values()].filter(r=>r[2]!=null).map(r=>{const a=r[1]==null?r[2]:r[1],c=r[3]==null?r[2]:r[3];return [r[0],Math.min(a,r[2],c),r[2],Math.max(a,r[2],c)]})
      .sort((a,b)=>a[0]<b[0]?-1:1);
    if(!p.length||isNaN(new Date(j.forecast_date)))throw new Error('sin pronóstico');
-   return {emitido:j.forecast_date,p}}
+   return {emitido:j.forecast_date,p}},
+ // Pronóstico del Paraguay: la misma lectura que el del Paraná, por separado para cada puerto.
+ pronoPy:j=>{const out={emitido:j&&j.forecast_date};let hay=false;
+   ((j&&j.series)||[]).forEach(s=>{const k=Object.keys(PUERTOS_PY).find(k=>PUERTOS_PY[k].serie===s.series_id);if(!k)return;
+     try{out[k]=NORM.prono({forecast_date:j.forecast_date,series:[s]}).p;hay=true}catch(e){}});
+   if(!hay||isNaN(new Date(out.emitido)))throw new Error('sin pronóstico');
+   return out}
 };
 // Forma esperada de cada dato, venga del servidor o de lo guardado en el dispositivo.
 const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(v=>typeof v==='number'));
@@ -366,7 +380,11 @@ const FORMA={
  paraguay:d=>FORMA.rio(d),
  bermejo:d=>FORMA.rio(d),
  caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.q)&&d.q.length===d.dias.length&&d.q.every(v=>typeof v==='number'&&isFinite(v)),
- prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v)))
+ prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v))),
+ pronoPy:d=>{const ks=Object.keys(PUERTOS_PY).filter(k=>d[k]!=null);return ks.length>0&&ks.every(k=>FORMA.prono({emitido:d.emitido,p:d[k]}))},
+ // Lluvia medida: [nombre, lat, lon, última lectura, mm en 24 h, mm en 3 días, avisos (1 faltan lecturas, 2 mucho más que las vecinas)].
+ medida:d=>!isNaN(new Date(d.t))&&Array.isArray(d.e)&&d.e.length>0&&d.e.every(x=>Array.isArray(x)&&x.length===7&&typeof x[0]==='string'
+   &&[1,2,4,5].every(j=>typeof x[j]==='number'&&isFinite(x[j]))&&x[4]>=0&&x[5]>=0&&!isNaN(new Date(x[3]))&&[0,1,2,3].includes(x[6]))
 };
 // Última consulta buena de cada fuente, guardada en este dispositivo. Reemplaza a la captura fija que traía la página.
 const MEM={
@@ -430,6 +448,12 @@ async function cargar(k){
     let nuevo;
     if(sv)nuevo={datos:sv,vivo:true,t:new Date(sv.t)};
     else if(g)nuevo={datos:g.datos,vivo:true,t:new Date(g.t)};
+    else if(k==='medida'){
+      // Lluvia medida: solo de la copia del script, aunque tenga más de 2 horas. Cada estación lleva la hora de su última lectura,
+      // y las de más de 24 horas no se muestran.
+      const j=await Promise.race([SRV_P,espera(4000)]),d=j&&j.datos&&j.datos.medida;if(!d)throw new Error('sin copia');
+      nuevo={datos:d,vivo:true,t:new Date(d.t)};
+    }
     else if(esLluvia(k)){
       // Copia atrasada: si es de hoy se usa como al día (con su hora); si es de otro día, como dato guardado.
       const v=await copiaVieja(k);if(!v)throw new Error('sin copia');
@@ -740,7 +764,30 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+smnInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+medidaInfo(i)+smnInfo(i);
+}
+// Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
+// con una lectura de las últimas MEDIDA_H horas.
+const km=(a,b,c,d)=>{const r=Math.PI/180,x=(d-b)*r*Math.cos((a+c)/2*r),y=(c-a)*r;return 6371*Math.hypot(x,y)};
+function medidaCerca(lat,lon){
+  const d=D.medida&&D.medida.datos;if(!d)return null;
+  let mejor=null;
+  d.e.forEach(x=>{if(Date.now()-new Date(x[3])>MEDIDA_H*36e5)return;const k=km(lat,lon,x[1],x[2]);if(k<=MEDIDA_KM&&(!mejor||k<mejor.km))mejor={x,km:k}});
+  return mejor;
+}
+const mmTxt=v=>(v<0.05?'0':nf(v,v<10&&v%1?1:0))+' mm';
+function medidaInfo(i){
+  try{
+    if(!D.medida)return '';
+    if(!D.medida.datos)return LISTO?'<p class="meta"><b>Lluvia medida:</b> no se pudo consultar la lluvia de las estaciones.</p>':'';
+    const m=GEO.mun[i],l=LOCS[MUNI.indexOf(i)],c=l?medidaCerca(l.lat,l.lon):medidaCerca(m[2],m[3]);
+    if(!c)return '<p class="meta"><b>Lluvia medida:</b> no hay una estación con datos de las últimas '+MEDIDA_H+' horas a menos de '+MEDIDA_KM+' km.</p>';
+    const x=c.x;
+    return '<p><b>Lluvia medida</b> en la estación '+esc(x[0])+', '+(c.km<1?'a menos de 1 km':'a '+nf(c.km)+' km')+(l?' de '+esc(l.n):'')+': '+mmTxt(x[4])+' en 24 horas y '+mmTxt(x[5])+' en 3 días, hasta el '+fFechaHora(new Date(x[3]))+'.</p>'
+     +(x[6]&2?'<p><b>Ojo:</b> las estaciones vecinas midieron mucho menos. Puede ser una tormenta muy local o un error de la estación.</p>':'')
+     +(x[6]&1?'<p class="meta">Faltan lecturas de esta estación en las últimas 24 horas: puede haber llovido más.</p>':'')
+     +'<p class="meta">Estación automática de la Red Hidrológica Nacional, vía INA. Es un dato sin revisar: puede tener errores y no se usa para el color. Las estaciones que marcan 0 mientras sus vecinas miden lluvia no se usan.</p>';
+  }catch(e){console.error(e);return ''}
 }
 
 /* ---------- alertas oficiales del SMN ---------- */
@@ -933,7 +980,7 @@ function bloqueOtro(k){
   if(!r)return '<div class="otroRio">'+t+meta(k,'el INA')+'</div>';
   const ob=D[k].datos.obs,pk=r.pico;
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
-  const nota=k==='paraguay'?'<p class="meta">El INA no publica pronóstico para el Paraguay: el color de su renglón sale solo de la última lectura. Vale para la costa y las islas, de Puerto Bermejo a Isla del Cerrito.</p>':'';
+  const nota=k==='paraguay'?'<p class="meta">El color del renglón del Paraguay sale solo de la última lectura en Puerto Bermejo: el INA no publica pronóstico para ese puerto. Vale para la costa y las islas, de Puerto Bermejo a Isla del Cerrito.</p>':'';
   const sit=!N?'El INA no publica niveles de alerta para esta estación: sirve para ver si el río crece o baja.'
     :r.h>=N.evac?'Superó el nivel de evacuación ('+nf(N.evac,2)+' m).':r.h>=N.alerta?'Superó el nivel de alerta ('+nf(N.alerta,2)+' m).'
     :'Le faltan '+nf(r.falta,2)+' m para el nivel de alerta ('+nf(N.alerta,2)+' m) y '+nf(N.evac-r.h,2)+' m para el de evacuación ('+nf(N.evac,2)+' m).';
@@ -957,7 +1004,31 @@ function bloqueOtro(k){
   return '<div class="otroRio">'+t+'<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
    +viejo+'<p>'+sit+'</p>'+nota+stats+svg
    +(N?'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(N.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(N.alerta,2)+' m</span></div>':'')
-   +meta(k,o.fuente,'Última lectura: '+(D[k].datos.hora?fFechaHora(new Date(D[k].datos.hora)):fDia(r.dia))+'.')+'</div>';
+   +meta(k,o.fuente,'Última lectura: '+(D[k].datos.hora?fFechaHora(new Date(D[k].datos.hora)):fDia(r.dia))+'.')
+   +(k==='paraguay'?pronoPyInfo():'')+'</div>';
+}
+// Pronóstico del INA para Formosa y Puerto Pilcomayo (río arriba de Puerto Bermejo). Solo informativo: no cambia ningún color.
+function pronoPyInfo(){
+  const D0=D.pronoPy;if(!D0)return '';
+  const t='<h4 style="margin:6px 0 0;font-size:1rem">Pronóstico del INA río arriba: Formosa y Puerto Pilcomayo</h4>';
+  if(!D0.datos)return t+meta('pronoPy','el pronóstico del INA para Formosa y Puerto Pilcomayo');
+  const d=D0.datos,em=diaAR(new Date(d.emitido));
+  if(diasEntre(em,hoy)>7)return t+'<p class="meta">El último pronóstico del INA para estos puertos es del '+fDia(em)+': tiene más de 7 días y no se usa.</p>';
+  const rango=r=>r[3]>r[1]?' (entre '+nf(r[1],2)+' y '+nf(r[3],2)+' m)':'';
+  let aviso='';
+  const filas=Object.keys(PUERTOS_PY).map(k=>{const P=PUERTOS_PY[k],fut=(d[k]||[]).filter(r=>r[0]>=hoy);if(!fut.length)return '';
+    const a=fut[0],z=fut[fut.length-1];let mx=a,top=a;fut.forEach(r=>{if(r[2]>mx[2])mx=r;if(r[3]>top[3])top=r});
+    const dif=z[2]-a[2];
+    const txt=dif>0.05?'llegaría a '+nf(mx[2],2)+' m el '+fDia(mx[0])+rango(mx)
+      :dif<-0.05?'bajaría a '+nf(z[2],2)+' m el '+fDia(z[0])+rango(z)
+      :'se mantendría cerca de '+nf(a[2],2)+' m hasta el '+fDia(z[0])+rango(z);
+    if(top[3]>=P.alerta)aviso+='<div class="aviso" role="note"><strong>El pronóstico para '+P.lugar+' puede llegar al nivel de alerta</strong>El valor más alto del rango es '+nf(top[3],2)+' m hacia el '+fDia(top[0])+'; el nivel de alerta ahí es '+nf(P.alerta,2)+' m.</div>';
+    else if(top[3]>=P.alerta-0.5)aviso+='<p><b>Atención:</b> en '+P.lugar+' el valor más alto del rango ('+nf(top[3],2)+' m, '+fDia(top[0])+') queda a menos de 50 cm del nivel de alerta ('+nf(P.alerta,2)+' m).</p>';
+    return '<p><b>'+P.lugar+':</b> '+nf(a[2],2)+' m previsto para el '+fDia(a[0])+'; '+txt+'. Alerta: '+nf(P.alerta,2)+' m; evacuación: '+nf(P.evac,2)+' m.</p>'}).join('');
+  if(!filas)return t+'<p class="meta">El último pronóstico del INA para estos puertos no trae fechas próximas: no se usa.</p>';
+  return t+aviso+filas
+   +'<p class="meta">Formosa y Puerto Pilcomayo están río arriba de Puerto Bermejo. Sirven para ver hacia dónde va el río, pero no se pueden pasar a la altura de Puerto Bermejo, que también depende del Paraná.</p>'
+   +meta('pronoPy','INA, pronóstico de altura para Puerto Formosa y Puerto Pilcomayo','Pronóstico emitido el '+fDia(em)+'.');
 }
 function pintarOtros(){
   $('otros').innerHTML=Object.keys(OTROS).map(k=>{try{return bloqueOtro(k)}catch(e){console.error(e);MEM.borrar(k);D[k]={datos:null,error:true};return bloqueOtro(k)}}).join('');
@@ -1018,7 +1089,7 @@ function seguro(f,ks){
 }
 function pintar(){
   seguro(()=>{if(D.rio)pintarRio()},['rio','caudal','prono']);
-  seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo']);
+  seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo','pronoPy']);
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
   seguro(pintarBanner);
@@ -1148,17 +1219,17 @@ function iniciarAnim(){
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 seguro(iniciarAnim);cargarGrilla();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
-['lluvia','rio','caudal','prono','paraguay','bermejo'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
+['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
+Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
   if(document.hidden||!LISTO)return;
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
-  Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo'].map(cargar)).then(pintar);
+  Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].map(cargar)).then(pintar);
   cargarTodos();cargarGrilla();
 }
 setInterval(renovar,30*60e3);

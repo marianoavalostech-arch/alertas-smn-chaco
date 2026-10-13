@@ -1,6 +1,6 @@
 # Ríos y Clima del Chaco
 
-Sitio que junta en un solo lugar las alertas oficiales del SMN, la lluvia, la altura de los ríos Paraná (Barranqueras), Paraguay (Puerto Bermejo) y Bermejo (El Colorado) y el estado de El Niño, explicados en lenguaje sencillo para los 70 municipios del Chaco.
+Sitio que junta en un solo lugar las alertas oficiales del SMN, la lluvia (prevista y medida en estaciones), la altura y el pronóstico de los ríos Paraná (Barranqueras), Paraguay (Puerto Bermejo; pronóstico en Formosa y Puerto Pilcomayo) y Bermejo (El Colorado) y el estado de El Niño, explicados en lenguaje sencillo para los 70 municipios del Chaco.
 
 Sitio publicado: https://panel-alertas-chaco.netlify.app/
 
@@ -12,7 +12,7 @@ Es un sitio informativo. No reemplaza los alertas oficiales del Servicio Meteoro
 
 ```
 SMN (canal CAP) ─┐
-INA (ríos y pronóstico) ─┤
+INA (ríos, pronósticos y lluvia medida) ─┤
 GloFAS (caudal) ─┼─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
 NOAA (índice ONI) ─┘        │                                                    ├─> index.html
                             └─ lanza ─> Robot en GitHub ─> rama "datos" ─────────┘
@@ -20,10 +20,10 @@ Open-Meteo (lluvia) ────────────────────
 NASA GIBS (satélite GOES-East) ──────────────────────────────────────────────────> index.html (mapa animado)
 ```
 
-- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), el pronóstico del INA para el Paraná, el caudal y el ONI. Publica todo como JSON.
+- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), los pronósticos del INA para el Paraná y el Paraguay, la lluvia medida en estaciones, el caudal y el ONI. Publica todo como JSON.
 - **Robot de la lluvia** (`robot/lluvia.js`, tarea `.github/workflows/lluvia.yml`): Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la pide GitHub y la deja en `lluvia.json`, en la rama `datos`. El script de Google lo lanza en cada renovación; el horario propio de GitHub queda de respaldo.
 - **Grilla del mapa animado** (`robot/grilla.js`, en la misma tarea, después de la lluvia): lluvia, nubosidad y tormentas previstas hora por hora para ayer, hoy y mañana, en 208 puntos cada 0,5° (el Chaco y unos 100 km alrededor). Se renueva cada 3 horas como mucho, para cuidar el límite gratuito de Open-Meteo. Si falla, no insiste, queda la anterior y la lluvia se guarda igual.
-- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, el pronóstico y el caudal directamente; la lluvia nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
+- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, los pronósticos y el caudal directamente; la lluvia (la prevista y la medida) nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
 
 Si una fuente falla, las demás siguen y se muestra el último dato bueno con su fecha y hora.
 
@@ -93,7 +93,7 @@ Respuesta del script de Google:
   "leidas": n, "fallas": n,
   "ajuste":    { "alineadas": n, "corridas": n, "horas": 3 | 0 }   corrección de horas que se usó en esta lectura,
   "robot":     { "t": hora, "estado": "bien" | "sin clave" | error },
-  "datos":     { "rio", "paraguay", "bermejo", "prono", "caudal", "oni", "errores" }
+  "datos":     { "rio", "paraguay", "bermejo", "prono", "pronoPy", "medida", "caudal", "oni", "errores" }
 }
 ```
 
@@ -103,7 +103,22 @@ Cada fila de alerta es `[día, fenómeno, madrugada, mañana, tarde, noche, extr
 - **franjas:** nivel en cada franja de 6 horas: 0 sin alerta, 3 amarilla, 4 naranja, 5 roja.
 - **extra:** 1 granizo, 2 ráfagas, 3 los dos.
 
-Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, altura en m]`, una lectura por día: la última de ese día), `hora` (hora de la última lectura), `act` (cuándo la cargó el INA) y `t` (hora de la consulta). `prono` es solo del Paraná: `emitido` y `p` (lista de `[día, mínimo, más probable, máximo]`).
+Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, altura en m]`, una lectura por día: la última de ese día), `hora` (hora de la última lectura), `act` (cuándo la cargó el INA) y `t` (hora de la consulta). `prono` es el del Paraná en Barranqueras: `emitido` y `p` (lista de `[día, mínimo, más probable, máximo]`).
+
+`pronoPy` es el pronóstico del INA para el Paraguay (calibrado 312): `emitido` y una lista con la misma forma que `p` para cada puerto que venga, `formosa` (serie 3127) y `pilcomayo` (serie 1525). Solo informativo.
+
+`medida` es la lluvia medida: `e`, lista de `[nombre, lat, lon, última lectura, mm en 24 h, mm en 3 días, avisos]`, una por estación con una lectura de las últimas 24 horas, de norte a sur; `dudosas`, lista de `[nombre, motivo]` de las que se descartaron; y `t`. Cada lectura del INA es la lluvia caída desde la lectura anterior (casi todas cada hora; algunas cada 4, 6 o 12 horas); las 24 horas y los 3 días se cuentan hacia atrás desde la última lectura de cada estación. La lista de estaciones está en `MEDIDA` (script de Google): las de la red SAT (`sat2`) con lluvia a intervalo nativo (`var_id` 27) en el Chaco y alrededores, sacadas de `https://alerta.ina.gob.ar/a5/obs/puntual/series?var_id=27&geom=-63.7,-28.2,-58.2,-24`. Se piden todas juntas en un solo pedido (`observaciones?tipo=puntual&series_id=…`, unos 500 KB). Comparadas el 13/10/2026 con la lluvia diaria del INA de cada estación, coincidieron en 223 de 274 días.
+
+Controles de la lluvia medida (`normMedida`; "vecinas" son las estaciones a menos de 50 km, `MEDIDA_VECINAS`, con lecturas hasta la misma hora y que no fueron descartadas):
+
+| Control | Qué pasa |
+|---|---|
+| Lectura suelta mayor a 150 mm (`MEDIDA_MAX`), negativa o vacía | Se ignora esa lectura. |
+| Marcó 0 en 3 días y al menos dos vecinas midieron 10 mm o más | Se descarta la estación (pluviómetro trabado) y va a `dudosas`; el sitio usa la siguiente más cercana. |
+| Faltan lecturas en las últimas 24 horas (menos de 3/4 de las que suele mandar) | Aviso 1: "puede haber llovido más". |
+| Midió 20 mm o más en 24 horas y todas las vecinas (al menos dos) menos de la quinta parte | Aviso 2: "puede ser una tormenta muy local o un error". No se descarta, porque las tormentas locales son reales. |
+
+Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla del 0 encontró sobre todo pluviómetros que estuvieron trabados todo el verano (Colonia Benítez midió 1 mm en el trimestre, el pluviómetro 10 de los Bajos Submeridionales, 3 mm), y el aviso 2 salió en 11 de 97 días con 20 mm o más. `diagnosticoDatos()` lista las estaciones con aviso y las descartadas.
 
 `lluvia.json` (rama `datos`): `{ "datos": { "lluvia", "municipios", "errores" } }`. Cada uno trae `dias` (14 fechas: 7 pasadas y 7 por venir), `mm` (una lista por punto) y `t` (hora de la consulta).
 
@@ -121,6 +136,8 @@ Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, 
 | Amarillo | 70 mm o más | 45 mm o más | cayó + viene suman 120 |
 
 **Alerta del SMN:** es un piso. Amarilla o naranja → al menos amarillo; roja → rojo.
+
+**Solo informativos (no cambian ningún color):** la lluvia medida en estaciones (detalle de cada municipio: la estación más cercana a su centro, o a la ciudad en las 6 localidades del semáforo, a menos de 50 km y con datos de las últimas 24 horas; `MEDIDA_KM`, `MEDIDA_H`) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo (aviso si el máximo del rango llega a menos de 50 cm de su nivel de alerta, o lo supera; no se usa si tiene más de 7 días).
 
 **Ríos** (renglones propios en el semáforo; no cambian el color del mapa):
 
@@ -140,23 +157,24 @@ Una lectura de 4 días o más deja el renglón en gris.
 |---|---|
 | Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. |
 | Correo o aviso "La lluvia está sin renovar", o mapa en gris | GitHub, pestaña Actions, tarea "Lluvia". Ejecutar `probarRobot()` en Google: si no dice `bien`, revisar la clave. |
-| Algún río, el caudal o El Niño sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
+| Algún río, un pronóstico, el caudal, El Niño o la lluvia medida sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
 | Mapa animado viejo o "No disponible" | `https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/grilla.json`: el campo `error` dice qué falló. |
 | Las pruebas fallan en GitHub | Correrlas en la computadora con `node pruebas/reglas.test.js`. |
 
 ## Limitaciones conocidas
 
 - Los umbrales de lluvia son orientativos: no están validados por ningún organismo. Se ajustaron el 12/10/2026 con la lluvia diaria de 1991 a 2026 de las 6 localidades del semáforo (archivo de Open-Meteo), aplicando la regla como si el pronóstico hubiera sido perfecto: el amarillo sale unas 5 veces por año en el interior y 8 en Resistencia, el rojo 1 o 2, y enero de 2019 queda en rojo en todas. Ese archivo es un modelo de unos 25 km que suaviza los picos, y no hay una lista oficial de inundaciones para validar día por día.
-- Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico solo para Barranqueras. Las zonas ribereñas tienen renglón propio en el semáforo y no cambian el color del mapa.
+- Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico de corto plazo para Barranqueras, Puerto Formosa y Puerto Pilcomayo; no para Puerto Bermejo ni para el Bermejo. Las zonas ribereñas tienen renglón propio en el semáforo y no cambian el color del mapa.
 - Un municipio entra en una alerta del SMN si la zona alertada cubre su punto central o alguno de sus puntos interiores (uno cada unos 10 km, a más de 4 km del borde). Si la zona apenas roza el borde, puede no figurar. Doce municipios chicos solo tienen el punto central.
 - El canal del SMN rotula las horas como hora argentina, pero corresponden a UTC. El script las corrige 3 horas (`AJUSTE_H`), verificado contra el mapa del SMN el 6/10/2026. En cada lectura controla que el comienzo de las alertas caiga en las franjas del SMN (0, 6, 12 y 18 h); si la mayoría cae 3 horas antes, el SMN arregló su canal y el script deja de corregir solo (`ajuste.horas` pasa a 0). Necesita al menos 3 alertas en el país para decidir; con menos, sigue con lo que venía usando.
-- La lluvia es una estimación por modelo en un punto por municipio, no una medición con pluviómetro.
+- La lluvia que decide el color es una estimación por modelo en un punto por municipio, no una medición con pluviómetro.
+- La lluvia medida viene de estaciones automáticas sin revisar: puede tener errores y huecos. Los controles atrapan el pluviómetro trabado en 0 solo cuando llueve en las vecinas, y no detectan una estación que mide de menos. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña; para Resistencia la más cercana es la de Corrientes. Las estaciones del SMN y del INTA que tiene el INA no son públicas, y los datos abiertos del SMN no traen milímetros de lluvia.
 - El mapa animado no es un radar: la lluvia, también la de las horas pasadas, es del modelo, en puntos cada unos 50 km. Las tormentas son las que prevé el modelo, no rayos medidos.
 - El mapa no muestra el estado de los ríos. No se incluyen los avisos a muy corto plazo del SMN.
 
 ## Fuentes
 
-Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (río), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
+Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
 
 ## Licencia
 

@@ -280,7 +280,7 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.rio(${JSON.stringify(crudo)})`))), JSON.parse(JSON.stringify(gs.normRio(crudo))));
   // Direcciones de las fuentes
   const u = S(`hoy='2026-10-07';URLS()`), f = {}; gs.fuentesExtra('2026-10-07').forEach(x => { f[x.k] = x.url; });
-  ['rio', 'paraguay', 'bermejo', 'prono', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  ['rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
   // Números de fenómeno
   ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
@@ -294,6 +294,97 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   assert.strictEqual(n(0, +a7, 0), 1); assert.strictEqual(n(0, a7 - 1, 0), 0);
   assert.strictEqual(n(0, 0, +a1), 1); assert.strictEqual(n(0, 0, a1 - 1), 0);
   assert.strictEqual(n(nums(ac)[0] - 45, 45, 0), 1); assert.strictEqual(n(nums(ac)[0] - 46, 45, 0), 0);
+});
+
+prueba('lluvia medida: el script suma lo caído por estación, descarta lo viejo o imposible y controla con las vecinas', () => {
+  const ahora = new Date('2026-10-13T12:00:00Z'), h = n => new Date(ahora.getTime() - n * 36e5).toISOString();
+  const o = (serie, hrs, valor) => ({ series_id: serie, timestart: h(hrs), timeend: h(hrs), valor });
+  // Una lectura por hora durante 4 días, con lluvia en algunas horas: { horas atrás: mm }
+  const horaria = (serie, lluvia, desde = 1, hasta = 96) => Array.from({ length: hasta - desde + 1 }, (_, i) => o(serie, desde + i, (lluvia || {})[desde + i] || 0));
+  const crudo = [
+    ...horaria(39058, { 3: 2, 10: 1.5, 26: 4, 70: 5, 80: 9 }), o(39058, 3, 2),   // Charadai, con una lectura repetida
+    ...horaria(39083, { 5: 12 }),                                                 // Los Gansos
+    ...horaria(39082),                                                            // La Horqueta: siempre 0, con dos vecinas que midieron más de 10 mm
+    ...horaria(39140, { 2: 30 }),                                                 // Cote Lai: 30 mm, mucho más que sus vecinas
+    ...horaria(33262, { 4: 1 }),                                                  // Laguna Blanca
+    ...horaria(39077),                                                            // El 38 Norte: 0, vecina de Charadai y Cote Lai
+    o(43703, 1, 0), ...horaria(43703, {}, 48, 96), o(43703, 2, -1), o(43703, 3, 999), o(43703, 4, 151), o(43703, 5, null),   // Castelli: faltan lecturas, valores imposibles
+    o(33892, 30, 7),                                                              // Las Lomitas: última lectura de hace 30 horas
+    o(99999, 1, 5)                                                                // serie que no está en la lista
+  ];
+  const m = JSON.parse(JSON.stringify(gs.normMedida(crudo, ahora))), por = Object.fromEntries(m.e.map(x => [x[0], x]));
+  assert.deepStrictEqual(m.e.map(x => x[0]), ['Castelli', 'Laguna Blanca', 'Cote Lai', 'Charadai', 'Los Gansos']);   // de norte a sur
+  assert.deepStrictEqual(m.dudosas.map(x => x[0]).sort(), ['El 38 Norte', 'La Horqueta']);
+  const ch = por.Charadai;
+  assert.strictEqual(ch[3], h(1)); assert.strictEqual(ch[4], 3.5); assert.strictEqual(ch[5], 12.5); assert.strictEqual(ch[6], 0);   // 24 h y 3 días antes de la última lectura
+  assert.strictEqual(por['Cote Lai'][6], 2);                 // mucho más que las vecinas (Charadai y Laguna Blanca; El 38 Norte ya no cuenta)
+  assert.strictEqual(por['Los Gansos'][6], 0);               // 12 mm: no llega a 20
+  assert.deepStrictEqual(por.Castelli.slice(4), [0, 0, 1]);  // faltan lecturas; los valores imposibles no suman
+  assert.throws(() => gs.normMedida([o(33892, 30, 7)], ahora));
+  assert.throws(() => gs.normMedida({ rows: [] }, ahora));
+  // Sin dos vecinas con lluvia no se descarta a nadie por marcar 0
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.normMedida(horaria(39082), ahora))).e[0].slice(4), [0, 0, 0]);
+  // Un solo pedido con todas las estaciones, desde 4 días antes
+  const u = gs.urlMedida(ahora);
+  assert.ok(u.startsWith('https://alerta.ina.gob.ar/a5/obs/puntual/observaciones?tipo=puntual&series_id='));
+  assert.strictEqual(u.split('series_id=')[1].split('&')[0].split(',').length, gs.MEDIDA.length);
+  assert.ok(u.includes('timestart=2026-10-09T11:00:00Z&timeend=2026-10-13T13:00:00Z'));
+  assert.strictEqual(new Set(gs.MEDIDA.map(x => x[0])).size, gs.MEDIDA.length);
+  gs.MEDIDA.forEach(x => assert.ok(x[2] > -28.2 && x[2] < -24 && x[3] > -63.7 && x[3] < -58.2 && x[1].length > 2, x[1]));
+  // La copia pasa la revisión de forma del sitio
+  assert.ok(S(`FORMA.medida(${JSON.stringify(Object.assign({ t: ahora.toISOString() }, m))})`));
+  assert.strictEqual(S(`FORMA.medida({t:'${ahora.toISOString()}',e:[['X',-27,-59,'nada',1,2,0]]})`), false);
+  assert.strictEqual(S(`FORMA.medida({t:'${ahora.toISOString()}',e:[['X',-27,-59,'${h(1)}',-1,2,0]]})`), false);
+  assert.strictEqual(S(`FORMA.medida({t:'${ahora.toISOString()}',e:[['X',-27,-59,'${h(1)}',1,2,7]]})`), false);
+  assert.strictEqual(S(`FORMA.medida({t:'${ahora.toISOString()}',e:[]})`), false);
+});
+
+prueba('lluvia medida: el detalle del municipio usa la estación más cercana, reciente y a menos de 50 km', () => {
+  const h = n => new Date(Date.now() - n * 36e5).toISOString();
+  const i = S(`GEO.mun.findIndex(m=>m[0]==='Charadai')`), [lat, lon] = S(`[GEO.mun[${i}][2],GEO.mun[${i}][3]]`);
+  const pon = e => S(`LISTO=true;D.medida={datos:${JSON.stringify({ t: h(0), e })},vivo:true,t:new Date()};medidaInfo(${i})`);
+  const cerca = ['Cerca', lat + 0.05, lon, h(2), 2.4, 30, 0], lejos = ['Lejos', lat + 0.3, lon, h(2), 1, 1, 0], vieja = ['Vieja', lat, lon, h(30), 50, 50, 0];
+  let t = pon([lejos, cerca, vieja]);
+  assert.ok(t.includes('estación Cerca, a 6 km: '), t); assert.ok(t.includes('2,4 mm en 24 horas y 30 mm en 3 días'), t);
+  assert.ok(t.includes('no se usa para el color'));
+  assert.ok(!t.includes('Ojo') && !t.includes('Faltan lecturas'));
+  t = pon([['Con avisos', lat, lon, h(1), 25, 25, 3]]);
+  assert.ok(t.includes('<b>Ojo:</b> las estaciones vecinas midieron mucho menos') && t.includes('Faltan lecturas de esta estación'), t);
+  t = pon([vieja, ['Muy lejos', lat + 1, lon, h(1), 5, 5, 0]]);
+  assert.ok(t.includes('no hay una estación con datos de las últimas 24 horas a menos de 50 km'), t);
+  // En una localidad del semáforo se mide desde la ciudad, no desde el centro del municipio
+  const r = S(`MUNI[0]`), lr = S(`[LOCS[0].lat,LOCS[0].lon]`);
+  t = S(`D.medida={datos:${JSON.stringify({ t: h(0), e: [['Junto a la ciudad', lr[0] + 0.1, lr[1], h(1), 4, 9, 0]] })},vivo:true,t:new Date()};medidaInfo(${r})`);
+  assert.ok(t.includes('estación Junto a la ciudad, a 11 km de Resistencia: 4 mm'), t);
+  assert.strictEqual(S(`D.medida={datos:null,error:true};medidaInfo(${i})`).includes('no se pudo consultar'), true);
+  assert.strictEqual(S(`delete D.medida;medidaInfo(${i})`), '');
+});
+
+prueba('pronóstico del Paraguay: el script y el sitio lo leen igual, por puerto, y se muestra sin cambiar colores', () => {
+  const f = (dia, valor, qualifier) => ({ timestart: dia + 'T03:00:00.000Z', timeend: dia + 'T03:00:00.000Z', valor, qualifier });
+  const serie = (id, base) => ({ series_id: id, pronosticos: [f('2026-10-13', base, 'main'), f('2026-10-13', base - 0.1, 'inferior'), f('2026-10-13', base + 0.1, 'superior'),
+    f('2026-10-20', base + 1.6, 'main'), f('2026-10-20', base + 1, 'inferior'), f('2026-10-20', base + 2.2, 'superior')] });
+  const crudo = { id: 1, forecast_date: '2026-10-12T12:00:00.000Z', cal_id: 312, series: [serie(1525, 2.4), serie(3127, 3.3), serie(1, 9)] };
+  const g = JSON.parse(JSON.stringify(gs.normPronoPy(crudo)));
+  assert.deepStrictEqual(Object.keys(g).sort(), ['emitido', 'formosa', 'pilcomayo']);
+  assert.deepStrictEqual(g.formosa[1].map(v => typeof v === 'number' ? Math.round(v * 100) / 100 : v), ['2026-10-20', 4.3, 4.9, 5.5]);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.pronoPy(${JSON.stringify(crudo)})`))), g);
+  assert.ok(S(`FORMA.pronoPy(${JSON.stringify(g)})`));
+  assert.strictEqual(S(`FORMA.pronoPy({emitido:'2026-10-12T12:00:00.000Z'})`), false);
+  assert.throws(() => gs.normPronoPy({ forecast_date: '2026-10-12T12:00:00.000Z', series: [serie(1, 3)] }));
+  assert.throws(() => S(`NORM.pronoPy({message:'error'})`));
+  const ver = (dia, d) => S(`hoy='${dia}';D.pronoPy={datos:${JSON.stringify(d)},vivo:true,t:new Date()};pronoPyInfo()`);
+  let t = ver('2026-10-13', g);
+  assert.ok(t.includes('<b>Puerto Formosa:</b> 3,30 m previsto para el 13/10; llegaría a 4,90 m el 20/10 (entre 4,30 y 5,50 m)'), t);
+  assert.ok(!t.includes('class="aviso"') && !t.includes('Atención'));
+  // Cerca de la alerta de Puerto Pilcomayo (5,35 m) y por encima
+  const alto = JSON.parse(JSON.stringify(g)); alto.pilcomayo[1][3] = 5.0;
+  assert.ok(ver('2026-10-13', alto).includes('<b>Atención:</b> en Puerto Pilcomayo'));
+  alto.pilcomayo[1][3] = 5.4;
+  assert.ok(ver('2026-10-13', alto).includes('El pronóstico para Puerto Pilcomayo puede llegar al nivel de alerta'));
+  assert.ok(ver('2026-10-21', Object.assign({}, g, { emitido: '2026-10-18T12:00:00.000Z' })).includes('no trae fechas próximas'));
+  assert.ok(ver('2026-10-25', g).includes('tiene más de 7 días'));
+  S(`delete D.pronoPy;hoy=diaAR(new Date())`);
 });
 
 prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo', () => {

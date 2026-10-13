@@ -4,7 +4,8 @@
  * Lee el canal oficial de alertas del Servicio Meteorológico Nacional (formato CAP),
  * se queda con las que tocan a los municipios del Chaco y publica el resultado como JSON.
  *
- * Además guarda una copia horaria de los otros datos del sitio (lluvia, ríos Paraná, Paraguay y Bermejo, pronóstico del Paraná, caudal y ONI), en "datos".
+ * Además guarda una copia horaria de los otros datos del sitio (lluvia, ríos Paraná, Paraguay y Bermejo, pronósticos del Paraná y del Paraguay,
+ * lluvia medida en estaciones, caudal y ONI), en "datos".
  * El sitio usa esa copia si tiene menos de 2 horas; si no, consulta cada fuente directamente.
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
@@ -42,6 +43,31 @@ var PUNTOS = [[[-26.6,-60.8],[-26.6,-60.7],[-26.5,-60.7]],[],[[-27.9,-59.3],[-27
 
 // Localidades del semáforo [lat, lon], en el mismo orden que LOCS en el sitio.
 var LOCS = [[-27.45,-58.99],[-26.79,-60.44],[-27.57,-60.71],[-25.95,-60.62],[-27.21,-61.19],[-27.09,-61.08]];
+// Estaciones con lluvia medida: red SAT de la Red Hidrológica Nacional (estaciones automáticas, datos públicos del INA), en el Chaco y alrededores.
+// [serie del INA (lluvia a intervalo nativo), nombre, lat, lon]. Salen de alerta.ina.gob.ar/a5/obs/puntual/series?var_id=27&geom=-63.7,-28.2,-58.2,-24 (red "sat2").
+// Las que dejan de informar no molestan: solo se publican las que tienen una lectura de las últimas 24 horas.
+var MEDIDA = [
+  [6699, 'Puerto Velaz', -26.661, -58.634], [6788, 'Puerto Lavalle', -25.651, -60.128], [6914, 'El Colorado (río Bermejo, Formosa)', -26.334, -59.362],
+  [31970, 'Corrientes (puerto)', -27.46, -58.833], [31976, 'Parque Nacional Copo (Santiago del Estero)', -25.923, -61.714], [33152, 'Las Palmas', -27.118, -58.643],
+  [33262, 'Laguna Blanca', -27.263, -59.196], [33892, 'Las Lomitas (Formosa)', -24.712, -60.583], [38860, 'Laguna Yema (Formosa)', -24.256, -61.242],
+  [39058, 'Charadai', -27.651, -59.858], [39059, 'El Colorado (Bajos Submeridionales)', -27.915, -62.178], [39062, 'Línea Paraná', -28.009, -60.646],
+  [39063, 'Sachayoj (estación meteorológica)', -27.011, -62.058], [39065, 'El Aguará', -27.072, -60.076], [39066, 'El Caburé', -27.478, -60.998],
+  [39067, 'Kilómetro 468', -28.087, -61.463], [39069, 'Las Piedritas', -26.824, -61.567], [39070, 'Lote 48 (La Montenegrina)', -26.912, -60.677],
+  [39072, 'Palmar Norte', -27.165, -61.469], [39073, 'Pampa Hermosa', -26.637, -61.33], [39074, 'Tres Mojones', -28.028, -62.084],
+  [39075, 'Pluviómetro 10 (sin nombre)', -26.907, -61.714], [39077, 'El 38 Norte', -27.779, -59.607], [39082, 'La Horqueta', -27.8, -60.232],
+  [39083, 'Los Gansos', -27.834, -60.711], [39085, 'Nogués', -28.038, -59.697], [39086, 'Pampa Sandi', -26.927, -61.366],
+  [39087, 'Pozo las Piedras', -27.166, -61.687], [39088, 'Sachayoj (pluviómetro)', -26.681, -61.819], [39123, 'Pampa del Indio', -25.933, -60.05],
+  [39127, 'Parque Nacional El Impenetrable', -25.053, -61.044], [39135, 'Ibarreta (Formosa)', -25.204, -59.869], [39136, 'Pirané (Formosa)', -25.756, -59.117],
+  [39137, 'Puente Lavalle', -25.676, -60.14], [39138, 'Posta Zalazar (Formosa)', -24.212, -60.197], [39139, 'Colonia Benítez', -27.324, -58.953],
+  [39140, 'Cote Lai', -27.533, -59.576], [39141, 'La Escondida', -27.133, -59.473], [39142, 'Parque Nacional Chaco', -26.807, -59.607],
+  [43703, 'Castelli', -25.934, -60.602], [43705, 'El Aybal (Formosa)', -24.367, -61.685], [43706, 'Corrientes (ICA)', -27.472, -58.822],
+  [43711, 'Pampa del Cielo', -27.609, -61.68], [43715, 'Pozo del Tigre (Formosa)', -24.904, -60.323], [43722, 'Belgrano (Formosa)', -24.937, -59.019],
+  [43726, 'Fuerte Esperanza', -25.163, -61.841], [43727, 'Río Muerto', -26.307, -61.66], [43754, 'Santos Lugares (Santiago del Estero)', -26.684, -63.556],
+  [43782, 'General Pinedo', -27.325, -61.282], [43783, 'Granadero Gatica (Santiago del Estero)', -26.866, -62.667], [43796, 'San Martín 2 (Formosa)', -24.454, -59.669]
+];
+// Pronóstico del INA para el río Paraguay (calibrado 312): serie de cada puerto.
+var PRONO_PY = { 1525: 'pilcomayo', 3127: 'formosa' };
+
 var TRIM = { DJF: 'dic-feb', JFM: 'ene-mar', FMA: 'feb-abr', MAM: 'mar-may', AMJ: 'abr-jun', MJJ: 'may-jul', JJA: 'jun-ago', JAS: 'jul-sep', ASO: 'ago-oct', SON: 'sep-nov', OND: 'oct-dic', NDJ: 'nov-ene' };
 
 // Mismos números que usa el mapa: 3 = amarillo, 4 = naranja, 5 = rojo.
@@ -247,6 +273,83 @@ function normProno(j) {
   return { emitido: j.forecast_date, p: p };
 }
 
+// Pronóstico del INA para el río Paraguay: una lista como la del Paraná para cada puerto que venga (Formosa y Puerto Pilcomayo).
+function normPronoPy(j) {
+  var out = { emitido: j && j.forecast_date }, hay = false;
+  ((j && j.series) || []).forEach(function (s) {
+    var k = PRONO_PY[s.series_id];
+    if (!k) return;
+    try { out[k] = normProno({ forecast_date: j.forecast_date, series: [s] }).p; hay = true; } catch (e) {}
+  });
+  if (!hay || isNaN(new Date(out.emitido))) throw new Error('sin pronóstico');
+  return out;
+}
+
+// Lluvia medida: todas las estaciones de MEDIDA en un solo pedido, desde 4 días antes de ahora.
+function urlMedida(ahora) {
+  var h = function (ms) { return new Date(ms).toISOString().slice(0, 13) + ':00:00Z'; };
+  return 'https://alerta.ina.gob.ar/a5/obs/puntual/observaciones?tipo=puntual&series_id=' + MEDIDA.map(function (m) { return m[0]; }).join(',') +
+    '&timestart=' + h(ahora.getTime() - 97 * 3600000) + '&timeend=' + h(ahora.getTime() + 3600000);
+}
+
+// Distancia en km entre dos puntos [lat, lon] (alcanza para distancias cortas).
+function km(a, b) {
+  var r = Math.PI / 180, x = (b[1] - a[1]) * r * Math.cos((a[0] + b[0]) / 2 * r), y = (b[0] - a[0]) * r;
+  return 6371 * Math.sqrt(x * x + y * y);
+}
+
+// Controles de la lluvia medida (probados con enero a marzo de 2026 y con el último mes):
+var MEDIDA_MAX = 150;      // mm: una lectura suelta mayor se descarta por imposible
+var MEDIDA_VECINAS = 50;   // km: estaciones vecinas para comparar
+
+// Cada lectura es la lluvia caída desde la lectura anterior. Por estación: lo caído en las 24 horas y en los 3 días
+// anteriores a su última lectura. Solo entran las estaciones con una lectura de las últimas 24 horas.
+// Controles (las vecinas son las que están a menos de MEDIDA_VECINAS km y tienen lecturas hasta la misma hora):
+//  - Se descarta la estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más: suele ser un pluviómetro trabado.
+//  - Aviso 1: faltan lecturas en las últimas 24 horas (menos de las tres cuartas partes de las que suele mandar). Puede haber llovido más.
+//  - Aviso 2: midió 20 mm o más en 24 horas y todas las vecinas (al menos dos) menos de la quinta parte. Puede ser una tormenta muy local o un error.
+// Devuelve { e: [[nombre, lat, lon, última lectura, mm en 24 h, mm en 3 días, avisos], ...] (de norte a sur), dudosas: [[nombre, motivo], ...] }.
+function normMedida(j, ahora) {
+  if (!Array.isArray(j)) throw new Error('formato');
+  var H = 3600000, por = {}, est = [], e = [], dudosas = [];
+  j.forEach(function (o) {
+    var v = Number(o && o.valor), t = new Date(o && o.timestart);
+    if (!o || o.valor == null || !(v >= 0 && v <= MEDIDA_MAX) || isNaN(t) || t > ahora.getTime() + H) return;
+    (por[o.series_id] = por[o.series_id] || {})[t.getTime()] = v;   // una lectura repetida cuenta una sola vez
+  });
+  MEDIDA.forEach(function (m) {
+    var s = por[m[0]];
+    if (!s) return;
+    var obs = Object.keys(s).map(function (t) { return [Number(t), s[t]]; }).sort(function (a, b) { return a[0] - b[0]; });
+    var u = obs[obs.length - 1][0];
+    if (ahora - u <= 24 * H) est.push({ m: m, obs: obs, u: u });
+  });
+  var suma = function (obs, desde, hasta) { return obs.reduce(function (a, x) { return a + (x[0] > desde && x[0] <= hasta ? x[1] : 0); }, 0); };
+  var redondo = function (v) { return Math.round(v * 10) / 10; };
+  var vecinas = function (a) {
+    return est.filter(function (b) { return b !== a && !b.dudosa && b.u >= a.u - 3 * H && km([a.m[2], a.m[3]], [b.m[2], b.m[3]]) <= MEDIDA_VECINAS; });
+  };
+  // Primero se descartan los pluviómetros trabados en 0, para que no cuenten como vecinas en el otro control.
+  est.forEach(function (a) {
+    var u = a.u, v72 = vecinas(a).map(function (b) { return suma(b.obs, u - 72 * H, u); });
+    if (suma(a.obs, u - 72 * H, u) === 0 && v72.filter(function (v) { return v >= 10; }).length >= 2) a.dudosa = true;
+  });
+  est.forEach(function (a) {
+    if (a.dudosa) { dudosas.push([a.m[1], 'marcó 0 en 3 días y las vecinas midieron lluvia']); return; }
+    var u = a.u, s24 = suma(a.obs, u - 24 * H, u), s72 = suma(a.obs, u - 72 * H, u);
+    var v24 = vecinas(a).map(function (b) { return suma(b.obs, u - 24 * H, u); });
+    var pasos = a.obs.slice(1).map(function (x, i) { return (x[0] - a.obs[i][0]) / H; }).sort(function (x, y) { return x - y; });
+    var paso = pasos.length ? Math.max(1, pasos[Math.floor(pasos.length / 2)]) : 1;
+    var n24 = a.obs.filter(function (x) { return x[0] > u - 24 * H; }).length, avisos = 0;
+    if (n24 < 0.75 * 24 / paso) avisos |= 1;
+    if (s24 >= 20 && v24.length >= 2 && Math.max.apply(null, v24) < s24 / 5) avisos |= 2;
+    e.push([a.m[1], a.m[2], a.m[3], new Date(u).toISOString(), redondo(s24), redondo(s72), avisos]);
+  });
+  if (!e.length) throw new Error('ninguna estación con lecturas de las últimas 24 horas');
+  e.sort(function (a, b) { return b[1] - a[1]; });
+  return { e: e, dudosas: dudosas };
+}
+
 function normCaudal(j) {
   var dias = j.daily.time, q = j.daily.river_discharge;
   if (!Array.isArray(dias) || !Array.isArray(q) || q.length !== dias.length) throw new Error('formato');
@@ -267,8 +370,9 @@ function serieINA(n, hoy) {
   return 'https://alerta.ina.gob.ar/a5/obs/puntual/series/' + n + '/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json';
 }
 
-function fuentesExtra(hoy) {
+function fuentesExtra(hoy, ahora) {
   var json = function (f) { return function (t) { return f(JSON.parse(t)); }; };
+  ahora = ahora || new Date();
   return [
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
     { k: 'municipios', url: urlLluvia(CENTROS), leer: json(function (j) { return normLluvia(j, CENTROS.length); }) },
@@ -276,6 +380,8 @@ function fuentesExtra(hoy) {
     { k: 'paraguay', url: serieINA(58, hoy), leer: json(normRio) },
     { k: 'bermejo', url: serieINA(6697, hoy), leer: json(normRio) },
     { k: 'prono', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true', leer: json(normProno) },
+    { k: 'pronoPy', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/312/corridas/last?includeProno=true', leer: json(normPronoPy) },
+    { k: 'medida', url: urlMedida(ahora), leer: json(function (j) { return normMedida(j, ahora); }) },
     { k: 'caudal', url: 'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30', leer: json(normCaudal) },
     { k: 'oni', url: 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt', leer: leerOni }
   ];
@@ -285,7 +391,7 @@ function fuentesExtra(hoy) {
 // pedir(url) devuelve { codigo, texto }.
 function leerExtras(hoy, ahora, previo, pedir) {
   var out = {}, errores = {};
-  fuentesExtra(hoy).forEach(function (f) {
+  fuentesExtra(hoy, ahora).forEach(function (f) {
     try {
       var r = pedir(f.url);
       if (r.codigo !== 200) throw new Error('HTTP ' + r.codigo);
@@ -454,10 +560,16 @@ function diagnostico() {
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var d = leerExtras(hoy, ahora, {}, pedirUrl);
-  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'caudal', 'oni'].forEach(function (k) {
+  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'caudal', 'oni'].forEach(function (k) {
     Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + d.errores[k]));
   });
   ['rio', 'paraguay', 'bermejo'].forEach(function (k) { if (d[k]) Logger.log('Última lectura (' + k + '): ' + JSON.stringify(d[k].obs[d[k].obs.length - 1])); });
   if (d.prono) Logger.log('Pronóstico del río (emitido ' + d.prono.emitido + '): ' + JSON.stringify(d.prono.p));
+  if (d.pronoPy) Logger.log('Pronóstico del Paraguay (emitido ' + d.pronoPy.emitido + '): Formosa ' + JSON.stringify(d.pronoPy.formosa) + ' | Pilcomayo ' + JSON.stringify(d.pronoPy.pilcomayo));
+  if (d.medida) {
+    Logger.log('Lluvia medida: ' + d.medida.e.length + ' estaciones con datos. ' + d.medida.e.slice(0, 5).map(function (x) { return x[0] + ' ' + x[4] + ' mm'; }).join(', ') + '…');
+    Logger.log('Con aviso: ' + (d.medida.e.filter(function (x) { return x[6]; }).map(function (x) { return x[0] + (x[6] & 1 ? ' (faltan lecturas)' : '') + (x[6] & 2 ? ' (mucho más que las vecinas)' : ''); }).join(', ') || 'ninguna') +
+      '. Descartadas: ' + (d.medida.dudosas.map(function (x) { return x[0] + ' (' + x[1] + ')'; }).join(', ') || 'ninguna'));
+  }
   if (d.oni) Logger.log('ONI: ' + JSON.stringify(d.oni.v));
 }
