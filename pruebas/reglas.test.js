@@ -43,7 +43,8 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
 prueba('secciones contraíbles: las principales siempre abiertas, las contraíbles empiezan cerradas, nada se pide con la sección cerrada', () => {
   const sec = id => (new RegExp('<section aria-labelledby="' + id + '"([^>]*)>').exec(html) || [])[1];
   for (const id of ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio']) assert.ok(!/plegable/.test(sec(id)), id + ' no se puede cerrar');
-  for (const id of ['t-otros', 't-lluvia', 't-anim', 't-nino', 't-fuentes', 't-acerca']) assert.ok(/class="plegable" data-cerrada$/.test(sec(id)), id + ' empieza cerrada');
+  for (const id of ['t-otros', 't-lluvia', 't-anim', 't-nino', 't-fuentes', 't-acerca']) assert.ok(/class="plegable" data-cerrada data-pista="[^"]{10,80}"$/.test(sec(id)), id + ' empieza cerrada y dice qué tiene');
+  assert.ok(/\.pleg\[aria-expanded="true"\]>\.tt>small\{display:none\}/.test(html), 'la pista se oculta al abrir');
   assert.ok(codigo.includes("const conSat=k=>abierta('t-anim')&&"), 'sin satélite con la animación cerrada');
   assert.ok(/if\(abierta\('t-nino'\)\)ir\(\);else alAbrir\('t-nino'/.test(codigo), 'el mapa del Pacífico espera a que se abra');
   assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces abren la sección');

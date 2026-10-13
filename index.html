@@ -42,12 +42,16 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
 .pleg>.tt{flex:1;min-width:0}
-.pleg>.pv{flex:none;font-size:.85rem;font-weight:400;color:var(--muted);display:flex;align-items:center;gap:6px}
-.pleg>.pv::after{content:'';width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.pleg>.pv{flex:none;font-size:.85rem;font-weight:600;color:var(--water);display:flex;align-items:center;gap:6px;border:1.5px solid currentColor;border-radius:99px;padding:6px 12px;min-height:36px;box-sizing:border-box;transition:background .15s}
+.pleg:hover>.pv{background:var(--water-soft)}
+.pleg>.pv::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
 .pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
+.pleg>.tt>small{display:block;font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
+.pleg[aria-expanded="true"]>.tt>small{display:none}
+@media (prefers-reduced-motion:reduce){.pleg>.pv,.pleg>.pv::after{transition:none}}
 .pleg:focus-visible{outline:3px solid var(--water);outline-offset:4px;border-radius:4px}
 .cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
-@media print{.cuerpo[hidden]{display:flex!important}.pleg>.pv{display:none}}
+@media print{.cuerpo[hidden]{display:flex!important}.pleg>.pv,.pleg>.tt>small{display:none}}
 .meta{font-size:.82rem;color:var(--muted)}
 .estado{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--line);margin-right:6px}
 .estado.vivo{border-color:var(--verde);color:var(--verde)}
@@ -277,17 +281,17 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="rio"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-otros" class="plegable" data-cerrada>
+  <section aria-labelledby="t-otros" class="plegable" data-cerrada data-pista="Altura de los ríos y pronóstico de Formosa y Pilcomayo">
     <h2 id="t-otros">Ríos Paraguay y Bermejo</h2>
     <div id="otros"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-lluvia" class="plegable" data-cerrada>
+  <section aria-labelledby="t-lluvia" class="plegable" data-cerrada data-pista="Cuánto llovió y cuánto se espera en 6 localidades">
     <h2 id="t-lluvia">Lluvias: últimos 7 días y pronóstico a 7 días</h2>
     <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-anim" class="plegable" data-cerrada>
+  <section aria-labelledby="t-anim" class="plegable" data-cerrada data-pista="Mapa animado de la lluvia, con satélite">
     <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
     <div id="aDias" role="group" aria-label="Elegir el día"></div>
     <div class="anim-ctrl">
@@ -310,7 +314,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="meta">No es un radar. La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
   </section>
 
-  <section aria-labelledby="t-nino" class="plegable" data-cerrada>
+  <section aria-labelledby="t-nino" class="plegable" data-cerrada data-pista="Índice ONI y mapa del mar del Pacífico">
     <h2 id="t-nino">¿Cómo está El Niño?</h2>
     <div id="nino"></div>
     <figure id="pacifico" class="pacif" hidden>
@@ -322,7 +326,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa que se mueve</a> <span class="meta">(earth.nullschool.net, en inglés). Se puede girar y acercar; pesa más.</span></p>
   </section>
 
-  <section aria-labelledby="t-fuentes" class="plegable" data-cerrada>
+  <section aria-labelledby="t-fuentes" class="plegable" data-cerrada data-pista="Organismos y servicios de donde vienen los datos">
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
@@ -340,7 +344,7 @@ footer{font-size:.85rem;color:var(--muted)}
     </ul>
   </section>
 
-  <section aria-labelledby="t-acerca" class="plegable" data-cerrada>
+  <section aria-labelledby="t-acerca" class="plegable" data-cerrada data-pista="Quién lo hace, contacto, privacidad y licencia">
     <h2 id="t-acerca">Acerca de este sitio</h2>
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
@@ -656,7 +660,10 @@ function iniciarPlegables(){
     sec.appendChild(cuerpo);
     const btn=document.createElement('button');btn.type='button';btn.className='pleg';btn.setAttribute('aria-controls',cuerpo.id);
     btn.innerHTML='<span class="tt"></span><span class="pv" aria-hidden="true"></span>';
-    btn.firstChild.textContent=h.textContent;h.textContent='';h.appendChild(btn);
+    btn.firstChild.textContent=h.textContent;
+    // Con la sección cerrada, una línea dice qué hay adentro (data-pista).
+    if(sec.dataset.pista){const sm=document.createElement('small');sm.textContent=sec.dataset.pista;btn.firstChild.appendChild(sm)}
+    h.textContent='';h.appendChild(btn);
     PLEG[id]={abierta:true,cuerpo,btn,txt:btn.lastChild};
     const ab=typeof g[id]==='boolean'?g[id]:!sec.hasAttribute('data-cerrada');
     PLEG[id].abierta=!ab;abrirSec(id,ab,false);
