@@ -12,18 +12,18 @@ Es un sitio informativo. No reemplaza los alertas oficiales del Servicio Meteoro
 
 ```
 SMN (canal CAP) ─┐
-INA (ríos, pronósticos y lluvia medida) ─┤
-GloFAS (caudal) ─┼─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
+INA (ríos, Yacyretá, pronósticos y lluvia medida) ─┤
+                 ├─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
 NOAA (índice ONI) ─┘        │                                                    ├─> index.html
                             └─ lanza ─> Robot en GitHub ─> rama "datos" ─────────┘
 Open-Meteo (lluvia) ────────────────────────┘              (lluvia.json, grilla.json)
 NASA GIBS (satélite GOES-East) ──────────────────────────────────────────────────> index.html (mapa animado)
 ```
 
-- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), los pronósticos del INA para el Paraná y el Paraguay, la lluvia medida en estaciones, el caudal y el ONI. Publica todo como JSON.
+- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), los pronósticos del INA para el Paraná y el Paraguay, la lluvia medida en estaciones, lo que suelta la represa de Yacyretá y el ONI. Publica todo como JSON.
 - **Robot de la lluvia** (`robot/lluvia.js`, tarea `.github/workflows/lluvia.yml`): Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la pide GitHub y la deja en `lluvia.json`, en la rama `datos`. El script de Google lo lanza en cada renovación; el horario propio de GitHub queda de respaldo.
 - **Grilla del mapa animado** (`robot/grilla.js`, en la misma tarea, después de la lluvia): lluvia, nubosidad y tormentas previstas hora por hora para ayer, hoy y mañana, en 208 puntos cada 0,5° (el Chaco y unos 100 km alrededor). Se renueva cada 3 horas como mucho, para cuidar el límite gratuito de Open-Meteo. Si falla, no insiste, queda la anterior y la lluvia se guarda igual.
-- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, los pronósticos y el caudal directamente; la lluvia (la prevista y la medida) nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
+- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, los pronósticos y Yacyretá directamente; la lluvia (la prevista y la medida) nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
 
 Si una fuente falla, las demás siguen y se muestra el último dato bueno con su fecha y hora.
 
@@ -93,7 +93,7 @@ Respuesta del script de Google:
   "leidas": n, "fallas": n,
   "ajuste":    { "alineadas": n, "corridas": n, "horas": 3 | 0 }   corrección de horas que se usó en esta lectura,
   "robot":     { "t": hora, "estado": "bien" | "sin clave" | error },
-  "datos":     { "rio", "paraguay", "bermejo", "prono", "pronoPy", "medida", "caudal", "oni", "errores" }
+  "datos":     { "rio", "paraguay", "bermejo", "prono", "pronoPy", "medida", "yacy", "oni", "errores" }
 }
 ```
 
@@ -104,6 +104,8 @@ Cada fila de alerta es `[día, fenómeno, madrugada, mañana, tarde, noche, extr
 - **extra:** 1 granizo, 2 ráfagas, 3 los dos.
 
 Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, altura en m]`, una lectura por día: la última de ese día), `hora` (hora de la última lectura), `act` (cuándo la cargó el INA) y `t` (hora de la consulta). `prono` es el del Paraná en Barranqueras: `emitido` y `p` (lista de `[día, mínimo, más probable, máximo]`).
+
+`yacy` es lo que suelta la represa de Yacyretá (serie 937 del INA, en m³/s): `obs` (lista de `[día, caudal]`, una lectura por día, redondeada), `hora` y `t`. El sitio lo muestra en una sola línea debajo del gráfico del Paraná, comparado con lo normal del mes (`YACY_NORMAL` en `index.html`: mediana de las lecturas diarias de 2011 a 2025; entre 11.000 en septiembre y 13.600 en noviembre) y con la lectura de una semana antes. Que esa agua tarde unos 3 días en llegar a Barranqueras salió de comparar, de 2010 a 2026, los cambios diarios de la descarga con los del caudal en Corrientes (serie 868) y la altura en Barranqueras: la relación más fuerte se da a los 3 días. Solo informativo.
 
 `pronoPy` es el pronóstico del INA para el Paraguay (calibrado 312): `emitido` y una lista con la misma forma que `p` para cada puerto que venga, `formosa` (serie 3127) y `pilcomayo` (serie 1525). Solo informativo.
 
@@ -159,7 +161,7 @@ Una lectura de 4 días o más deja el renglón en gris.
 |---|---|
 | Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. |
 | Correo o aviso "La lluvia está sin renovar", o mapa en gris | GitHub, pestaña Actions, tarea "Lluvia". Ejecutar `probarRobot()` en Google: si no dice `bien`, revisar la clave. |
-| Algún río, un pronóstico, el caudal, El Niño o la lluvia medida sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
+| Algún río, un pronóstico, Yacyretá, El Niño o la lluvia medida sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
 | Mapa animado viejo o "No disponible" | `https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/grilla.json`: el campo `error` dice qué falló. |
 | Las pruebas fallan en GitHub | Correrlas en la computadora con `node pruebas/reglas.test.js`. |
 
@@ -176,7 +178,7 @@ Una lectura de 4 días o más deja el renglón en gris.
 
 ## Fuentes
 
-Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
+Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Entidad Binacional Yacyretá, vía INA (agua que suelta la represa), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
 
 ## Contacto
 

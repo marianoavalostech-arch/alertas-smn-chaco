@@ -108,12 +108,13 @@ prueba('SMN: piso del color y franjas que ya pasaron', () => {
 });
 
 prueba('copia del servidor: solo si es reciente y tiene la forma esperada', () => {
-  const d = (min, extra) => S(`delServidor('caudal',{datos:{caudal:{t:new Date(Date.now()-${min}*60e3).toISOString(),dias:['2026-10-07'],q:[1]${extra || ''}}}})`);
+  const d = min => S(`delServidor('yacy',{datos:{yacy:{t:new Date(Date.now()-${min}*60e3).toISOString(),obs:[['2026-10-07',20000]]}}})`);
   assert.ok(d(30));
   assert.strictEqual(d(130), null);
-  assert.strictEqual(S(`delServidor('caudal',{datos:{caudal:{t:new Date().toISOString(),dias:['a','b'],q:[1]}}})`), null);
-  assert.strictEqual(S(`delServidor('caudal',{})`), null);
-  assert.strictEqual(S(`delServidor('caudal',null)`), null);
+  assert.strictEqual(S(`delServidor('yacy',{datos:{yacy:{t:new Date().toISOString(),obs:[['a',1]]}}})`), null);
+  assert.strictEqual(S(`delServidor('yacy',{datos:{yacy:{t:new Date().toISOString(),obs:[['2026-10-07',-5]]}}})`), null);
+  assert.strictEqual(S(`delServidor('yacy',{})`), null);
+  assert.strictEqual(S(`delServidor('yacy',null)`), null);
 });
 
 prueba('El Niño: el dato del servidor no puede ser más viejo que el cargado a mano', () => {
@@ -225,7 +226,6 @@ prueba('pronóstico del INA: el script y el sitio lo leen igual', () => {
 prueba('script: si una fuente falla queda la copia anterior y las demás siguen', () => {
   const lluvia = n => JSON.stringify(Array.from({ length: n }, () => ({ daily: { time: ['2026-10-07'], precipitation_sum: [null] } })));
   const pedir = url => url.indexOf('ina.gob.ar') >= 0 ? { codigo: 500, texto: '' }
-    : url.indexOf('flood-api') >= 0 ? { codigo: 200, texto: '{"daily":{"time":["2026-10-07"],"river_discharge":[17000]}}' }
     : url.indexOf('noaa') >= 0 ? { codigo: 200, texto: 'no es la tabla' }
     : { codigo: 200, texto: lluvia(url.split('latitude=')[1].split('&')[0].split(',').length) };
   const d = JSON.parse(JSON.stringify(gs.leerExtras('2026-10-07', new Date('2026-10-07T12:00:00Z'), { rio: { obs: [['2026-10-06', 4.6]], t: 'antes' } }, pedir)));
@@ -233,17 +233,17 @@ prueba('script: si una fuente falla queda la copia anterior y las demás siguen'
   assert.strictEqual(d.lluvia.mm[0][0], 0);
   assert.strictEqual(d.rio.t, 'antes'); assert.ok(d.errores.rio); assert.ok(d.errores.oni); assert.strictEqual(d.oni, undefined);
   assert.ok(d.errores.prono); assert.strictEqual(d.prono, undefined);
-  assert.strictEqual(d.caudal.t, '2026-10-07T12:00:00.000Z');
+  assert.strictEqual(d.lluvia.t, '2026-10-07T12:00:00.000Z'); assert.ok(d.errores.yacy);
 });
 
 prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo demás se renueva', () => {
-  const pedir = url => url.indexOf('flood-api') >= 0 ? { codigo: 200, texto: '{"daily":{"time":["2026-10-07"],"river_discharge":[17000]}}' } : { codigo: 500, texto: '' };
+  const pedir = url => url.indexOf('/series/937/') >= 0 ? { codigo: 200, texto: '[{"timestart":"2026-10-07T03:00:00.000Z","valor":20000}]' } : { codigo: 500, texto: '' };
   const antes = { capturado: 'antes', alertas: { 0: [] }, datos: { rio: { t: 'antes' } } };
   const r = gs.juntar(antes, '2026-10-07', new Date('2026-10-07T12:00:00Z'), () => { throw new Error('canal caído'); }, pedir);
   assert.ok(r.falla); assert.strictEqual(r.datos.capturado, 'antes');
-  assert.strictEqual(r.datos.datos.caudal.t, '2026-10-07T12:00:00.000Z'); assert.strictEqual(r.datos.datos.rio.t, 'antes');
+  assert.strictEqual(r.datos.datos.yacy.t, '2026-10-07T12:00:00.000Z'); assert.strictEqual(r.datos.datos.rio.t, 'antes');
   const b = gs.juntar(antes, '2026-10-07', new Date('2026-10-07T12:00:00Z'), () => ({ capturado: 'ahora', leidas: 3 }), pedir);
-  assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.caudal);
+  assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.yacy);
 });
 
 prueba('script: una alerta que no cubre el centro del municipio igual lo alcanza por sus puntos interiores', () => {
@@ -287,7 +287,14 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.rio(${JSON.stringify(crudo)})`))), JSON.parse(JSON.stringify(gs.normRio(crudo))));
   // Direcciones de las fuentes
   const u = S(`hoy='2026-10-07';URLS()`), f = {}; gs.fuentesExtra('2026-10-07').forEach(x => { f[x.k] = x.url; });
-  ['rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  ['rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'yacy'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  // Lectura de lo que suelta Yacyretá
+  const yc = [{ timestart: '2026-10-12T03:00:00.000Z', valor: 27200 }, { timestart: '2026-10-11T03:00:00.000Z', valor: 23800.4 },
+    { timestart: '2026-10-13T03:00:00.000Z', valor: 32800, timeupdate: 'x' }, { timestart: '2026-10-10T03:00:00.000Z', valor: -1 }, { timestart: '2026-10-09T03:00:00.000Z', valor: null }];
+  const ys = JSON.parse(JSON.stringify(S(`NORM.yacy(${JSON.stringify(yc)})`)));
+  assert.deepStrictEqual(ys, JSON.parse(JSON.stringify(gs.normYacy(yc))));
+  assert.deepStrictEqual(ys.obs, [['2026-10-11', 23800], ['2026-10-12', 27200], ['2026-10-13', 32800]]);
+  assert.ok(S(`FORMA.yacy(${JSON.stringify(ys)})`)); assert.throws(() => gs.normYacy([{ timestart: '2026-10-10T03:00:00.000Z', valor: 0 }]));
   // Números de fenómeno
   ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
@@ -510,6 +517,16 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
     assert.strictEqual(publico, '{"a":1}'); assert.ok(!publico.includes('clave'));
     assert.deepStrictEqual(Object.keys(props).sort(), ['p0', 'partes']);
     assert.strictEqual(sinClave, 'sin clave'); assert.strictEqual(pedidos.length, 1);
+  });
+  prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', () => {
+    const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
+    const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
+    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba:</b> la represa de Yacyretá está soltando unos 32.800 m³ de agua por segundo. Lo normal en octubre es unos 13.100, y una semana antes soltaba 21.800. Esa agua tarda unos 3 días en llegar a Barranqueras.</p><p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
+    assert.ok(l('2026-10-14', o).includes('soltaba el 13/10 unos 32.800'));      // el dato de hoy todavía no está
+    assert.ok(!l('2026-10-13', o.slice(1)).includes('una semana antes') && l('2026-10-13', o.slice(1)).includes('es unos 13.100. Esa'));   // sin lectura de hace una semana, no compara
+    assert.strictEqual(S('YACY_NORMAL.length'), 12);
+    assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
+    assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

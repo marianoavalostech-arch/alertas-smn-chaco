@@ -308,7 +308,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
-      <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
+      <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
@@ -364,7 +364,7 @@ const URLS=()=>({
  rio:serieINA(20),
  paraguay:serieINA(OTROS.paraguay.serie),
  bermejo:serieINA(OTROS.bermejo.serie),
- caudal:'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30',
+ yacy:serieINA(937),   // caudal que suelta la represa de Yacyretá (m³/s)
  prono:'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true',
  pronoPy:'https://alerta.ina.gob.ar/a5/sim/calibrados/312/corridas/last?includeProno=true'
 });
@@ -384,7 +384,12 @@ const NORM={
    const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Number(r.valor)));
    const u=rows[rows.length-1];
    return {obs:[...m],act:u.timeupdate||null,hora:u.timestart}},
- caudal:j=>({dias:j.daily.time,q:j.daily.river_discharge.map(Number)}),
+ // Lo que suelta Yacyretá (m³/s): una lectura por día (la última), redondeada, sin valores imposibles.
+ yacy:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>{const v=Number(r&&r.valor);return r&&r.valor!=null&&r.timestart&&v>0&&v<1e5})
+     .sort((a,b)=>new Date(a.timestart)-new Date(b.timestart));
+   if(!rows.length)throw new Error('sin lecturas');
+   const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Math.round(Number(r.valor))));
+   return {obs:[...m],hora:rows[rows.length-1].timestart}},
  paraguay:j=>NORM.rio(j),
  bermejo:j=>NORM.rio(j),
  // Pronóstico del INA para Barranqueras: por cada fecha, mínimo, valor más probable y máximo del rango.
@@ -412,7 +417,7 @@ const FORMA={
  rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
  paraguay:d=>FORMA.rio(d),
  bermejo:d=>FORMA.rio(d),
- caudal:d=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.q)&&d.q.length===d.dias.length&&d.q.every(v=>typeof v==='number'&&isFinite(v)),
+ yacy:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&p[1]>0&&p[1]<1e5)&&esFecha(d.hora),
  prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v))),
  pronoPy:d=>{const ks=Object.keys(PUERTOS_PY).filter(k=>d[k]!=null);return ks.length>0&&ks.every(k=>FORMA.prono({emitido:d.emitido,p:d[k]}))},
  // Lluvia medida: [nombre, lat, lon, última lectura, mm en 24 h, mm en 3 días, avisos (1 faltan lecturas, 2 mucho más que las vecinas)].
@@ -425,7 +430,7 @@ const MEM={
   borrar(k){try{localStorage.removeItem('anc:'+k)}catch(e){}},
   guardar(k,datos,t){try{localStorage.setItem('anc:'+k,JSON.stringify({t:new Date(t).toISOString(),datos}))}catch(e){}}
 };
-// Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, río, pronóstico del río, caudal y ONI.
+// Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, ríos, pronósticos, Yacyretá y ONI.
 // Así la mayoría de las visitas no le pide nada a Open-Meteo ni al INA.
 let SRV=null,SRV_P=Promise.resolve(null),LLU_P=Promise.resolve(null);
 // Lluvia: la arma un robot de GitHub (robot/lluvia.js), que lanza el script de Google cada hora, y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
@@ -984,16 +989,6 @@ function pintarRio(){
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
    +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
-  let caudal='';
-  const c=D.caudal&&D.caudal.datos;
-  if(c){
-    const ref0=D.caudal.vivo?hoy:diaAR(D.caudal.t),i0=c.dias.indexOf(ref0);
-    if(i0>=0&&c.q[i0]>0){let im=i0;for(let i=i0;i<Math.min(c.dias.length,i0+15);i++)if(c.q[i]>c.q[im])im=i;
-      const pc=(c.q[im]/c.q[i0]-1)*100,red=v=>nf(Math.round(v/100)*100);
-      caudal='<p><b>Qué puede pasar en dos semanas:</b> '+(pc>5?'el modelo europeo GloFAS calcula que el caudal del Paraná en esta zona subiría de '+red(c.q[i0])+' a unos '+red(c.q[im])+' m³ por segundo hacia el '+fDia(c.dias[im])+' (+'+nf(pc)+' %).'
-        :'el modelo europeo GloFAS no calcula una suba importante del caudal en los próximos 15 días.')+' Es una estimación automática, no un pronóstico oficial.</p>'
-        +meta('caudal','GloFAS, vía Open-Meteo');}
-  }else if(D.caudal)caudal=meta('caudal','el caudal previsto (GloFAS, vía Open-Meteo)');
   $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
    +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.</div>'
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.</p>')
@@ -1003,12 +998,28 @@ function pintarRio(){
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
+   +lineaYacy()
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
-     :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')
-   +caudal;
+     :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>');
+
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
+}
+// Una línea, solo informativa, con lo que suelta la represa de Yacyretá río arriba, lo normal del mes y lo que soltaba una semana antes.
+// Sin dato, no se muestra nada. Una lectura de más de 4 días no se usa.
+// Normal de cada mes (enero a diciembre): mediana de las lecturas diarias del INA (serie 937) de 2011 a 2025, redondeada a 100.
+const YACY_NORMAL=[13000,12800,13000,12000,11700,11900,11800,11100,11000,13100,13600,13100];
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function lineaYacy(){
+  const o=D.yacy&&D.yacy.datos&&D.yacy.datos.obs;if(!o||!o.length)return '';
+  const [dia,v]=o[o.length-1];if(diasEntre(dia,hoy)>4)return '';
+  const red=x=>nf(Math.round(x/100)*100);
+  let antes=null;for(const p of o)if(p[0]<=masDias(dia,-7)&&diasEntre(p[0],dia)<=9)antes=p;
+  const mes=Number(dia.slice(5,7))-1;
+  return '<p><b>Río arriba:</b> la represa de Yacyretá '+(dia===hoy?'está soltando':'soltaba el '+fDia(dia))+' unos '+red(v)+' m³ de agua por segundo. '
+    +'Lo normal en '+MESES[mes]+' es unos '+red(YACY_NORMAL[mes])+(antes?', y una semana antes soltaba '+red(antes[1]):'')+'. Esa agua tarda unos 3 días en llegar a Barranqueras.</p>'
+    +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del '+fDia(dia)+'.</p>';
 }
 // Paraguay y Bermejo: altura, tendencia, cambios y un gráfico chico de 30 días (con los niveles oficiales si los hay).
 function bloqueOtro(k){
@@ -1124,7 +1135,7 @@ function seguro(f,ks){
   try{f()}catch(e){console.error(e)}
 }
 function pintar(){
-  seguro(()=>{if(D.rio)pintarRio()},['rio','caudal','prono']);
+  seguro(()=>{if(D.rio)pintarRio()},['rio','yacy','prono']);
   seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo','pronoPy']);
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
@@ -1255,17 +1266,17 @@ function iniciarAnim(){
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 seguro(iniciarAnim);cargarGrilla();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
-['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
+['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
+Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
   if(document.hidden||!LISTO)return;
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
-  Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo','pronoPy','medida'].map(cargar)).then(pintar);
+  Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(cargar)).then(pintar);
   cargarTodos();cargarGrilla();
 }
 setInterval(renovar,30*60e3);

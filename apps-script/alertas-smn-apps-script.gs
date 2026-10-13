@@ -5,7 +5,7 @@
  * se queda con las que tocan a los municipios del Chaco y publica el resultado como JSON.
  *
  * Además guarda una copia horaria de los otros datos del sitio (lluvia, ríos Paraná, Paraguay y Bermejo, pronósticos del Paraná y del Paraguay,
- * lluvia medida en estaciones, caudal y ONI), en "datos".
+ * lluvia medida en estaciones, lo que suelta Yacyretá y ONI), en "datos".
  * El sitio usa esa copia si tiene menos de 2 horas; si no, consulta cada fuente directamente.
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
@@ -212,7 +212,7 @@ function enlacesDelCanal(texto) {
   return out;
 }
 
-/* ---------- copia horaria de lluvia, río, caudal y ONI (funciones puras) ---------- */
+/* ---------- copia horaria de lluvia, ríos, Yacyretá y ONI (funciones puras) ---------- */
 
 function urlLluvia(pts) {
   return 'https://api.open-meteo.com/v1/forecast?latitude=' + pts.map(function (p) { return p[0]; }).join(',') +
@@ -350,10 +350,19 @@ function normMedida(j, ahora) {
   return { e: e, dudosas: dudosas };
 }
 
-function normCaudal(j) {
-  var dias = j.daily.time, q = j.daily.river_discharge;
-  if (!Array.isArray(dias) || !Array.isArray(q) || q.length !== dias.length) throw new Error('formato');
-  return { dias: dias, q: q.map(Number) };
+// Lo que suelta la represa de Yacyretá (serie 937 del INA, m³/s): una lectura por día (la última), redondeada, sin valores imposibles.
+function normYacy(j) {
+  var rows = (Array.isArray(j) ? j : (j && j.rows) || []).filter(function (r) {
+    var v = Number(r && r.valor);
+    return r && r.valor != null && r.timestart && v > 0 && v < 100000 && diaAR(r.timestart);
+  }).sort(function (a, b) { return new Date(a.timestart) - new Date(b.timestart); });
+  if (!rows.length) throw new Error('sin lecturas');
+  var obs = [], pos = {};
+  rows.forEach(function (r) {
+    var dia = diaAR(r.timestart), v = Math.round(Number(r.valor));
+    if (pos[dia] == null) { pos[dia] = obs.length; obs.push([dia, v]); } else obs[pos[dia]][1] = v;
+  });
+  return { obs: obs, hora: rows[rows.length - 1].timestart };
 }
 
 // Tabla ONI de la NOAA (texto con columnas SEAS YR TOTAL ANOM): devuelve los últimos 6 trimestres.
@@ -365,7 +374,8 @@ function leerOni(texto) {
 }
 
 // Qué se pide y cómo se lee. hoy = 'AAAA-MM-DD' en hora de Argentina.
-// Serie de altura del INA, últimos 30 días. 20 = Paraná en Barranqueras, 58 = Paraguay en Puerto Bermejo, 6697 = Bermejo en El Colorado.
+// Serie del INA, últimos 30 días. Alturas: 20 = Paraná en Barranqueras, 58 = Paraguay en Puerto Bermejo, 6697 = Bermejo en El Colorado.
+// Caudal: 937 = lo que suelta la represa de Yacyretá.
 function serieINA(n, hoy) {
   return 'https://alerta.ina.gob.ar/a5/obs/puntual/series/' + n + '/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json';
 }
@@ -382,7 +392,7 @@ function fuentesExtra(hoy, ahora) {
     { k: 'prono', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true', leer: json(normProno) },
     { k: 'pronoPy', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/312/corridas/last?includeProno=true', leer: json(normPronoPy) },
     { k: 'medida', url: urlMedida(ahora), leer: json(function (j) { return normMedida(j, ahora); }) },
-    { k: 'caudal', url: 'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30', leer: json(normCaudal) },
+    { k: 'yacy', url: serieINA(937, hoy), leer: json(normYacy) },
     { k: 'oni', url: 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt', leer: leerOni }
   ];
 }
@@ -448,7 +458,7 @@ function leerSmn(hoy, ahora) {
 }
 
 // Junta las alertas con la copia horaria de las demás fuentes. Ninguna de las dos partes impide guardar la otra:
-// si el canal del SMN falla, quedan las alertas anteriores (con su hora de lectura) y lluvia, río, caudal y ONI se renuevan igual.
+// si el canal del SMN falla, quedan las alertas anteriores (con su hora de lectura) y lluvia, ríos, Yacyretá y ONI se renuevan igual.
 // leer(hoy, ahora) devuelve las alertas o da error; pedir(url) devuelve { codigo, texto }.
 function juntar(anterior, hoy, ahora, leer, pedir) {
   var falla = null, datos;
@@ -560,10 +570,10 @@ function diagnostico() {
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var d = leerExtras(hoy, ahora, {}, pedirUrl);
-  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'caudal', 'oni'].forEach(function (k) {
+  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'yacy', 'oni'].forEach(function (k) {
     Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + d.errores[k]));
   });
-  ['rio', 'paraguay', 'bermejo'].forEach(function (k) { if (d[k]) Logger.log('Última lectura (' + k + '): ' + JSON.stringify(d[k].obs[d[k].obs.length - 1])); });
+  ['rio', 'paraguay', 'bermejo', 'yacy'].forEach(function (k) { if (d[k]) Logger.log('Última lectura (' + k + '): ' + JSON.stringify(d[k].obs[d[k].obs.length - 1])); });
   if (d.prono) Logger.log('Pronóstico del río (emitido ' + d.prono.emitido + '): ' + JSON.stringify(d.prono.p));
   if (d.pronoPy) Logger.log('Pronóstico del Paraguay (emitido ' + d.pronoPy.emitido + '): Formosa ' + JSON.stringify(d.pronoPy.formosa) + ' | Pilcomayo ' + JSON.stringify(d.pronoPy.pilcomayo));
   if (d.medida) {
