@@ -32,6 +32,14 @@ prueba('correo de contacto: no está escrito en el HTML y se arma al cargar', ()
   assert.ok(a.href.startsWith('mailto:marianoavalos.tech@gmail.com?subject='));
 });
 
+prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del río, sin pedirle datos', () => {
+  const v = S('VILELAS');
+  assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));
+  assert.ok(/m\[0\]==='Puerto Vilelas'\?'<p>[^']*'\+VILELAS/.test(codigo), 'falta en el detalle del municipio');
+  assert.ok(/lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
+  assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
+});
+
 prueba('umbrales de lluvia', () => {
   const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
   assert.strictEqual(n(0, 0, 0), 0);

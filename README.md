@@ -177,6 +177,7 @@ El pronóstico del Paraná no se usa si tiene más de 7 días. Si tiene 3 días 
 - La lluvia medida viene de estaciones automáticas sin revisar: puede tener errores y huecos. Los controles atrapan el pluviómetro trabado en 0 solo cuando llueve en las vecinas, y no detectan una estación que mide de menos. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña; para Resistencia la más cercana es la de Corrientes. Las estaciones del SMN y del INTA que tiene el INA no son públicas, y los datos abiertos del SMN no traen milímetros de lluvia.
 - El mapa animado no es un radar: la lluvia, también la de las horas pasadas, es del modelo, en puntos cada unos 50 km. Las tormentas son las que prevé el modelo, no rayos medidos.
 - El mapa no muestra el estado de los ríos. No se incluyen los avisos a muy corto plazo del SMN.
+- Puerto Vilelas: el detalle del municipio y la sección del Paraná enlazan a Hidroalerta Vilelas (hidrometro.concejovilelas.com, Sala de Situación de la Municipalidad), que informa caminos cortados, estaciones de bombeo (las N° 9, 10 y 11 de APA y una municipal) y avisos por barrio. Sus datos se cargan a mano y no son públicos para otros sitios (la base pide iniciar sesión), por eso la página no los lee: solo enlaza. Se podrían mostrar si el municipio publica un archivo abierto con el estado de las bombas y da permiso.
 
 ## Fuentes
 

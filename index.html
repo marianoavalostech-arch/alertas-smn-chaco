@@ -653,6 +653,8 @@ const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
   const t=(a,b)=>'M'+P.slice(a,b+1).join('L');
   return {bermejo:t(0,1112),paraguay:t(1112,1189),parana:t(1189,1241)}})();
 const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
+// Sala de Situación de la Municipalidad de Puerto Vilelas: solo enlace (sus datos no son públicos para otros sitios).
+const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
 const ETQ={verde:'Verde',amarillo:'Amarillo',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const sinTildes=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
@@ -822,7 +824,7 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+medidaInfo(i)+smnInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+smnInfo(i);
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
 // con una lectura de las últimas MEDIDA_H horas.
@@ -1016,6 +1018,7 @@ function pintarRio(){
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
    +lineaYacy()
+   +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
