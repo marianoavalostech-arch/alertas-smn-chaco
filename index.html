@@ -53,6 +53,9 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 .sem b{font-size:1.02rem}
 .sem .nivel{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
 .sem .por{font-size:.92rem;min-width:0}
+.sem li.verdes{cursor:default}
+.sem .nombres{grid-column:2;display:flex;flex-wrap:wrap;gap:6px}
+.sem .nombres button,.sem .nombres a{font:inherit;font-size:.9rem;padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;text-decoration:none;cursor:pointer}
 /* río */
 .grande{font-size:2.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .grande small{font-size:1rem;font-weight:600;color:var(--muted)}
@@ -145,7 +148,7 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <div class="aviso" role="note">
     <strong>Este sitio es informativo.</strong>
-    No reemplaza los alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 o a Defensa Civil (103).
+    No reemplaza los alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
     <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver alertas oficiales del SMN</a>
   </div>
 
@@ -190,18 +193,48 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Roja: seguí las instrucciones oficiales.</b> Se esperan "fenómenos meteorológicos excepcionales con potencial de provocar emergencias o desastres".</li>
     </ul>
     <details>
-      <summary>Cuidados con tormentas y lluvias fuertes</summary>
+      <summary>Tormentas y rayos</summary>
       <ul>
-        <li>Quedate en un lugar cerrado y evitá salir o viajar si no hace falta.</li>
-        <li>No saques la basura y retirá lo que impida que el agua escurra.</li>
-        <li>Alejate de árboles, postes y cables caídos.</li>
-        <li>No cruces calles, caminos ni puentes cubiertos de agua, ni a pie ni en vehículo.</li>
-        <li>Desconectá los aparatos eléctricos. Si entra agua a tu casa, cortá la luz.</li>
-        <li>Tené a mano linterna, radio, teléfono cargado, documentos y agua potable.</li>
-        <li>Ante una emergencia llamá al 911 o a Defensa Civil (103).</li>
+        <li>Quedate en un lugar cerrado (casa, escuela, edificio). Si vas en auto, quedate adentro: protege de los rayos.</li>
+        <li>Desenchufá los aparatos eléctricos y no uses teléfonos con cable.</li>
+        <li>Mientras haya rayos, no te bañes ni laves platos o ropa: las cañerías conducen la electricidad.</li>
+        <li>No te refugies bajo árboles ni estructuras de metal. Alejate de alambrados, piletas, ríos y lagunas.</li>
+        <li>En el campo, alejate de los animales grandes y de los lugares altos. Si no tenés dónde refugiarte, agachate con la cabeza baja.</li>
       </ul>
     </details>
-    <p class="meta">Significado de cada color según el SMN. Los cuidados son las recomendaciones generales del SMN y de Defensa Civil. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las recomendaciones del SMN</a>.</p>
+    <details>
+      <summary>Viento fuerte y granizo</summary>
+      <ul>
+        <li>Evitá salir. Atá o guardá lo que el viento pueda arrastrar (chapas, macetas, sillas).</li>
+        <li>Alejate de árboles, postes y carteles. No te acerques a cables caídos: avisá a la empresa de luz.</li>
+        <li>Con granizo en la ruta: bajá la velocidad de a poco, prendé las luces bajas, no frenes de golpe y no pares sobre la calzada.</li>
+        <li>Calmá a chicos, mayores y mascotas: el ruido asusta. Cuando pase, revisá techos, ventanas y canaletas.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Lluvias fuertes, calles anegadas y crecida del río</summary>
+      <ul>
+        <li>No cruces calles, caminos ni puentes con agua, ni a pie ni en vehículo. No camines ni nades en cauces o zonas inundadas.</li>
+        <li>No saques la basura y despejá rejillas y desagües.</li>
+        <li>Si entra agua a tu casa: cortá la luz, el gas y el agua, y subí a la parte más alta. Cerrá puertas y ventanas.</li>
+        <li>Si vivís en la costa, fuera de las defensas: tené lista una mochila (documentos, remedios, linterna, radio a pilas, teléfono cargado, agua) y salí hacia un lugar alto cuando lo indiquen las autoridades.</li>
+        <li>Avisá a las autoridades si cerca hay personas que no pueden salir solas (movilidad reducida, mayores, enfermos).</li>
+        <li>Si tu casa tiene pozo ciego, marcalo: el terreno mojado puede hundirse.</li>
+        <li>Seguí solo los avisos oficiales de la Provincia y de tu municipio.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>Cuando baja el agua</summary>
+      <ul>
+        <li>Tomá solo agua envasada o hervida. Para la leche de bebés, agua envasada. Si amamantás, seguí haciéndolo.</li>
+        <li>Tirá los alimentos que tocaron el agua, los que estuvieron más de 2 horas sin heladera y las latas hinchadas o dañadas. No uses remedios que se mojaron.</li>
+        <li>Antes de limpiar, cortá la luz general y usá botas de goma. Desinfectá con una taza de lavandina cada 15 litros de agua.</li>
+        <li>Lavate las manos seguido. Si te lastimaste, lavá la herida con agua y jabón y consultá en el centro de salud (puede hacer falta la vacuna antitetánica).</li>
+        <li>Vaciá recipientes con agua acumulada (contra el dengue) y cuidá la casa de roedores.</li>
+      </ul>
+    </details>
+    <p><b>Teléfonos de emergencia en el Chaco:</b> 911 (Policía), 100 (Bomberos), 107 (emergencias médicas). Defensa Civil de la Provincia: <a href="tel:+543624448000">(0362) 444-8000</a>, interno 103.</p>
+    <p class="meta">Significado de cada color: SMN. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR) y Ministerio de Salud de la Nación, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
   </section>
 
   <section aria-labelledby="t-sem">
@@ -572,16 +605,19 @@ function riesgoParaguay(){
 /* ---------- pantalla ---------- */
 const $=id=>document.getElementById(id);
 function pintarSemaforo(){
-  const R=LOCS.map(riesgo);
-  $('sem').innerHTML=LOCS.map((l,i)=>'<li class="'+R[i].c+'" data-j="'+i+'"><span class="luz" aria-hidden="true">'+({verde:'✓',amarillo:'!',rojo:'!!',gris:'?'})[R[i].c]+'</span>'
-    +'<span><b>'+l.n+'</b>'+(l.sub?' '+l.sub:'')+'<span class="nivel">'+R[i].et+'</span></span><span class="por">'+R[i].por+'</span>'
-    +'<button class="vermapa" type="button">Ver en el mapa</button></li>').join('')
-    +(q=>'<li class="'+q.c+'"><span class="luz" aria-hidden="true">'+({verde:'✓',amarillo:'!',rojo:'!!',gris:'?'})[q.c]+'</span>'
-    +'<span><b>Zona ribereña del Paraná</b> islas y costa fuera de las defensas<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'
-    +'<a class="vermapa" href="#t-rio">Ver el río</a></li>')(riesgoRio())
-    +(q=>'<li class="'+q.c+'"><span class="luz" aria-hidden="true">'+({verde:'✓',amarillo:'!',rojo:'!!',gris:'?'})[q.c]+'</span>'
-    +'<span><b>Zona ribereña del Paraguay</b> costa e islas de Puerto Bermejo a Isla del Cerrito<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'
-    +'<a class="vermapa" href="#t-otros">Ver el río</a></li>')(riesgoParaguay());
+  const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',rojo:'!!',gris:'?'},ORD={rojo:0,amarillo:1,gris:2,verde:3};
+  // Cada renglón: color, nombre corto (para la línea de verdes), su renglón completo y cómo se abre (data-j o enlace).
+  const fila=(q,tit,sub,ver,abre)=>({c:q.c,n:tit,abre,html:'<li class="'+q.c+'"'+abre+'><span class="luz" aria-hidden="true">'+LUZ[q.c]+'</span>'
+    +'<span><b>'+tit+'</b>'+(sub?' '+sub:'')+'<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'+ver+'</li>'});
+  const F=LOCS.map((l,i)=>fila(R[i],l.n,l.sub,'<button class="vermapa" type="button">Ver en el mapa</button>',' data-j="'+i+'"'))
+    .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio">Ver el río</a>',' data-a="#t-rio"'),
+            fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros">Ver el río</a>',' data-a="#t-otros"'));
+  // Primero lo que no está en verde (rojo, amarillo, gris); las verdes, juntas en un solo renglón.
+  const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
+  $('sem').innerHTML=otras.map(f=>f.html).join('')
+    +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
+      +'<span class="por">'+(otras.length?'':'Sin lluvia fuerte prevista ni alerta del SMN, y los ríos lejos del nivel de alerta. ')+'Tocá un nombre para ver el detalle.</span>'
+      +'<span class="nombres">'+verdes.map(f=>f.abre.startsWith(' data-j')?'<button type="button"'+f.abre+'>'+f.n+'</button>':'<a href="'+f.abre.slice(9,-1)+'">'+f.n+'</a>').join('')+'</span></li>':'');
   colorearMapa(R);
 }
 
@@ -665,7 +701,7 @@ function armarMapa(){
     if(i>=0){$('mBuscar').value=GEO.mun[i][0];elegir(i,true)}else{elegir(-1);$('mInfo').innerHTML='<span class="nodisp">No hay ningún municipio del Chaco con ese nombre.</span>'}};
   $('mBuscar').addEventListener('change',buscar);
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
-  $('sem').addEventListener('click',e=>{const li=e.target.closest('li[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
+  $('sem').addEventListener('click',e=>{const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
     if(i>=0){elegir(i,true);$('t-mapa').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}});
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
   const soltarFoco=()=>{if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
