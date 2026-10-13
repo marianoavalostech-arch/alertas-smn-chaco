@@ -1114,6 +1114,7 @@ function pintarNino(){
   $('nino').innerHTML='<p style="font-size:1.1rem"><b>'+f+'.</b> '+(v>=0.5?'En el trimestre '+u[1]+', el Pacífico ecuatorial estuvo en promedio '+nf(v,1)+' °C más caliente de lo normal. En el Chaco, El Niño suele traer más lluvia que lo habitual en primavera y verano.':'')+'</p>'
    +'<p class="meta" style="margin:10px 0 6px">Cuánto más caliente estuvo el Pacífico, por trimestre (índice ONI). Desde +0,5 °C se considera El Niño.</p>'
    +'<div class="onis">'+o.map(p=>'<span>'+p[1]+': '+(p[2]>0?'+':'')+nf(p[2],1)+' °C</span>').join('')+'</div>'
+   +'<p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa interactivo</a> <span class="meta">(earth.nullschool.net, en inglés). Muestra el mar de hoy: en amarillo y rojo, el agua más caliente de lo normal; en azul, la más fría. Se puede girar y acercar.</span></p>'
    +'<p class="meta" style="margin-top:10px">'+(sv?'Última actualización: '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
      :'Última actualización: '+fDia(ONI_CARGA)+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
        )+' Para sus avisos la NOAA hoy usa una variante de este índice (RONI), con valores algo distintos. Fuente: NOAA, Climate Prediction Center.</p>';

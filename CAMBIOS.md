@@ -2,8 +2,9 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 13/10/2026 (aviso de pronóstico atrasado y limpieza)
+## 13/10/2026 (aviso de pronóstico atrasado, mapa del Pacífico y limpieza)
 
+- **Mapa interactivo del Pacífico**: en "¿Cómo está El Niño?", un enlace a earth.nullschool.net que abre centrado en el Pacífico y Sudamérica, con la capa de cuánto más caliente o más frío de lo normal está el mar hoy. Es un enlace (no está metido en la página), así el sitio no pesa más.
 - **Pronóstico del Paraná atrasado**: si el pronóstico del INA para Barranqueras tiene 3 días o más, el detalle del río agrega "Es del dd/m: no incluye lo que pasó río arriba después" (por ejemplo, una suba de lo que suelta Yacyretá posterior al pronóstico). No cambia ningún color. Prueba nueva (33 en total).
 - Limpieza: renglones de `907caf5` y `dfbadfe` ordenados bajo su fecha en este historial.
 
