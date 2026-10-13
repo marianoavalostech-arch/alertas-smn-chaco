@@ -551,7 +551,7 @@ function armarMapa(){
   caja.innerHTML='<svg viewBox="20 0 530 474" role="img" aria-label="Mapa interactivo del Chaco con sus '+GEO.mun.length+' municipios. Con teclado, usá el buscador de arriba para elegir un municipio.">'
    +'<g transform="scale(.1)">'
    // La zona sensible de los ríos va debajo de los municipios: así solo se toca del lado de afuera y no le saca lugar a ninguno.
-   +'<path class="rioT" data-rio="Río Paraguay" data-ir="t-otros" d="'+RIOS.paraguay+'"/><path class="rioT" data-rio="Río Paraná" d="'+RIOS.parana+'"/>'
+   +'<path class="rioT" data-rio="Río Bermejo" data-ir="t-otros" d="'+RIOS.bermejo+'"/><path class="rioT" data-rio="Río Paraguay" data-ir="t-otros" d="'+RIOS.paraguay+'"/><path class="rioT" data-rio="Río Paraná" d="'+RIOS.parana+'"/>'
    +GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
    +'<path class="ov" d="'+GEO.prov+'" stroke="var(--muted)" stroke-width="1.5"/>'
    +'<path class="rio" d="'+RIOS.bermejo+'"/><path class="rio" d="'+RIOS.paraguay+'"/><path class="rio" d="'+RIOS.parana+'"/>'
@@ -561,7 +561,7 @@ function armarMapa(){
    +GEO.mun.map((m,i)=>MON[i]!=null?'':'<g class="fx" data-i="'+i+'" data-x="'+PX(m[3])+'" data-y="'+PY(m[2])+'"><text text-anchor="middle" dy=".35em" style="'+borde+'fill:var(--ink);font-size:12px;font-weight:600;stroke-width:3px">'+esc(m[0])+'</text></g>').join('')
    +'<g class="fx" data-rio="Río Paraná" data-x="544" data-y="470"><text text-anchor="end" style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Paraná</text></g>'
    +'<g class="fx" data-rio="Río Paraguay" data-ir="t-otros" data-x="546" data-y="244"><text text-anchor="end" style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Paraguay</text></g>'
-   +'<g class="fx" data-x="330" data-y="118"><text style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Bermejo</text></g>'
+   +'<g class="fx" data-rio="Río Bermejo" data-ir="t-otros" data-x="330" data-y="118"><text style="'+borde+'fill:var(--water);font-size:17px;font-weight:600;stroke-width:3px">Río Bermejo</text></g>'
    +LOCS.map(l=>'<g class="fx" data-x="'+PX(l.lon)+'" data-y="'+PY(l.lat)+'"><circle class="pto" r="9" stroke="var(--card)" stroke-width="2.5"/>'
      +'<text x="'+l.dx+'" y="'+l.dy+'" text-anchor="'+l.a+'" style="'+borde+'fill:var(--ink);font-size:21px;font-weight:700;stroke-width:4px">'+l.n+'</text></g>').join('')
    +'</g></svg><div id="mCarga" hidden>Pintando el mapa con la lluvia de cada municipio…</div><div id="mTip" hidden></div>';
