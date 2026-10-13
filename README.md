@@ -180,7 +180,7 @@ El pronóstico del Paraná no se usa si tiene más de 7 días. Si tiene 3 días 
 
 ## Fuentes
 
-Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Entidad Binacional Yacyretá, vía INA (agua que suelta la represa), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
+Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (ríos y pronósticos), Entidad Binacional Yacyretá, vía INA (agua que suelta la represa), Red Hidrológica Nacional de la Secretaría de Recursos Hídricos, vía INA (lluvia medida), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), NOAA (ONI), NASA GIBS (mapa del Pacífico: temperatura del mar comparada con lo normal, GHRSST MUR), Instituto Geográfico Nacional y OpenStreetMap (límites).
 
 ## Contacto
 

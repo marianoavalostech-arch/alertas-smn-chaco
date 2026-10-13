@@ -4,7 +4,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## 13/10/2026 (aviso de pronóstico atrasado, mapa del Pacífico y limpieza)
 
-- **Mapa interactivo del Pacífico**: en "¿Cómo está El Niño?", un enlace a earth.nullschool.net que abre centrado en el Pacífico y Sudamérica, con la capa de cuánto más caliente o más frío de lo normal está el mar hoy. Es un enlace (no está metido en la página), así el sitio no pesa más.
+- **Mapa del Pacífico** en "¿Cómo está El Niño?": imagen de la NASA (GIBS, datos GHRSST MUR) con la temperatura del mar comparada con lo normal, del Pacífico ecuatorial y Sudamérica, con un punto en el Chaco, barra de colores (de 3 °C más frío a 3 °C más caliente) y fecha. Pesa unos 90 KB y se pide recién cuando la sección está por verse. La NASA la publica con 1 o 2 días de atraso: la página prueba primero ayer y, si todavía no está, los días anteriores (hasta 4). Si no hay imagen, no se muestra nada.
+- Debajo, enlace a earth.nullschool.net para ver el mismo dato en un mapa que se mueve (pesa más; en inglés).
 - **Pronóstico del Paraná atrasado**: si el pronóstico del INA para Barranqueras tiene 3 días o más, el detalle del río agrega "Es del dd/m: no incluye lo que pasó río arriba después" (por ejemplo, una suba de lo que suelta Yacyretá posterior al pronóstico). No cambia ningún color. Prueba nueva (33 en total).
 - Limpieza: renglones de `907caf5` y `dfbadfe` ordenados bajo su fecha en este historial.
 

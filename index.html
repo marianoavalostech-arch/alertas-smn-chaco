@@ -88,6 +88,14 @@ details ul,.fuentes{margin:8px 0 0;padding-left:20px;display:flex;flex-direction
 .onis{display:flex;gap:6px;flex-wrap:wrap;font-variant-numeric:tabular-nums;font-size:.85rem}
 .onis span{border:1px solid var(--line);border-radius:6px;padding:3px 7px}
 .onis span:last-child{border-color:var(--ink);font-weight:700}
+.pacif{margin:12px 0 0}
+.pacif-img{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#8c978b}
+.pacif-img img{display:block;width:100%;height:auto}
+.pacif-pt{position:absolute;left:82.4%;top:78.9%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#132f38;border:2px solid #fff}
+.pacif-etq{position:absolute;left:84.2%;top:78.9%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:#132f38;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.pacif-esc{height:10px;margin-top:8px;border-radius:3px;background:linear-gradient(to right,#6b00db 0%,#2264f1 14%,#00aeff 19%,#03f8fa 24%,#88ff84 34%,#c2cab8 49%,#fff679 59%,#ffaa00 69%,#ff3d00 79%,#f90113 84%,#bf0068 94%,#88000f 100%)}
+.pacif-num{display:flex;justify-content:space-between;margin-top:2px}
+.pacif figcaption{margin-top:6px}
 footer{font-size:.85rem;color:var(--muted)}
 /* mapa interactivo */
 .sem li{cursor:pointer}
@@ -296,6 +304,13 @@ footer{font-size:.85rem;color:var(--muted)}
   <section aria-labelledby="t-nino">
     <h2 id="t-nino">¿Cómo está El Niño?</h2>
     <div id="nino"></div>
+    <figure id="pacifico" class="pacif" hidden>
+      <div class="pacif-img"><img id="pacImg" width="870" height="390" alt="" decoding="async"><span class="pacif-pt" aria-hidden="true"></span><span class="pacif-etq" aria-hidden="true">Chaco</span></div>
+      <div class="pacif-esc" aria-hidden="true"></div>
+      <div class="pacif-num meta" aria-hidden="true"><span>3 °C más frío</span><span>normal</span><span>3 °C más caliente</span></div>
+      <figcaption class="meta">El mar comparado con lo normal para la fecha. La mancha larga sobre el ecuador, frente a Sudamérica, es El Niño. <span id="pacFecha"></span> Fuente: NASA (GIBS), datos GHRSST MUR.</figcaption>
+    </figure>
+    <p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa que se mueve</a> <span class="meta">(earth.nullschool.net, en inglés). Se puede girar y acercar; pesa más.</span></p>
   </section>
 
   <section aria-labelledby="t-fuentes">
@@ -309,7 +324,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
-      <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
+      <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso.</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
       <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
@@ -1114,10 +1129,30 @@ function pintarNino(){
   $('nino').innerHTML='<p style="font-size:1.1rem"><b>'+f+'.</b> '+(v>=0.5?'En el trimestre '+u[1]+', el Pacífico ecuatorial estuvo en promedio '+nf(v,1)+' °C más caliente de lo normal. En el Chaco, El Niño suele traer más lluvia que lo habitual en primavera y verano.':'')+'</p>'
    +'<p class="meta" style="margin:10px 0 6px">Cuánto más caliente estuvo el Pacífico, por trimestre (índice ONI). Desde +0,5 °C se considera El Niño.</p>'
    +'<div class="onis">'+o.map(p=>'<span>'+p[1]+': '+(p[2]>0?'+':'')+nf(p[2],1)+' °C</span>').join('')+'</div>'
-   +'<p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa interactivo</a> <span class="meta">(earth.nullschool.net, en inglés). Muestra el mar de hoy: en amarillo y rojo, el agua más caliente de lo normal; en azul, la más fría. Se puede girar y acercar.</span></p>'
    +'<p class="meta" style="margin-top:10px">'+(sv?'Última actualización: '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
      :'Última actualización: '+fDia(ONI_CARGA)+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
        )+' Para sus avisos la NOAA hoy usa una variante de este índice (RONI), con valores algo distintos. Fuente: NOAA, Climate Prediction Center.</p>';
+}
+// Mapa del Pacífico: imagen de la NASA (GIBS) con la temperatura del mar comparada con lo normal (unos 90 KB).
+// Se pide recién cuando la sección está por verse. Si no hay imagen, la figura queda oculta.
+const PAC='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies&STYLES=&SRS=EPSG:4326';
+const pacUrl=(dia,bbox,w,h,f)=>PAC+'&BBOX='+bbox+'&WIDTH='+w+'&HEIGHT='+h+'&FORMAT=image/'+f+'&TIME='+dia;
+const diaAntes=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
+// Prueba chica (4x2 puntos en medio del Pacífico): si ese día todavía no está publicado, la NASA devuelve una imagen transparente.
+function pacHay(dia){return new Promise(ok=>{const i=new Image();i.crossOrigin='anonymous';
+  i.onload=()=>{try{const c=document.createElement('canvas');c.width=4;c.height=2;const x=c.getContext('2d');x.drawImage(i,0,0);ok(x.getImageData(0,0,4,2).data.some((v,k)=>k%4===3&&v>0))}catch(e){ok(false)}};
+  i.onerror=()=>ok(false);i.src=pacUrl(dia,'-170,-5,-120,5',4,2,'png')})}
+async function cargarPacifico(){
+  for(const n of [1,2,3,4]){const d=diaAntes(n);if(!await pacHay(d))continue;
+    const im=$('pacImg');im.onerror=()=>{$('pacifico').hidden=true};
+    im.alt='Mapa del océano Pacífico y Sudamérica del '+fDia(d)+', con el agua más caliente de lo normal en rojo y la más fría en azul.';
+    im.src=pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;return}
+}
+function iniciarPacifico(){
+  if(typeof Image==='undefined')return;
+  const ir=()=>cargarPacifico().catch(e=>console.error(e));
+  if(typeof IntersectionObserver==='undefined'){ir();return}
+  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();ir()}},{rootMargin:'600px'});o.observe($('t-nino'));
 }
 function pintarBanner(){
   const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos);
@@ -1267,7 +1302,7 @@ function iniciarAnim(){
 }
 
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
-seguro(iniciarAnim);cargarGrilla();
+seguro(iniciarAnim);cargarGrilla();seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
