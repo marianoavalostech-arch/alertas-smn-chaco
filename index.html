@@ -1146,17 +1146,21 @@ const diaAntes=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
 function pacHay(dia){return new Promise(ok=>{const i=new Image();i.crossOrigin='anonymous';
   i.onload=()=>{try{const c=document.createElement('canvas');c.width=4;c.height=2;const x=c.getContext('2d');x.drawImage(i,0,0);ok(x.getImageData(0,0,4,2).data.some((v,k)=>k%4===3&&v>0))}catch(e){ok(false)}};
   i.onerror=()=>ok(false);i.src=pacUrl(dia,'-170,-5,-120,5',4,2,'png')})}
-async function cargarPacifico(){
-  for(const n of [1,2,3,4]){const d=diaAntes(n);if(!await pacHay(d))continue;
-    const im=$('pacImg');im.onerror=()=>{$('pacifico').hidden=true};
-    im.alt='Mapa del océano Pacífico y Sudamérica del '+fDia(d)+', con el agua más caliente de lo normal en rojo y la más fría en azul.';
-    im.src=pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;return}
+async function buscarDiaPac(){for(const n of [1,2,3,4]){const d=diaAntes(n);if(await pacHay(d))return d}return null}
+function mostrarPac(d){
+  const im=$('pacImg');im.onerror=()=>{$('pacifico').hidden=true};
+  im.alt='Mapa del océano Pacífico y Sudamérica del '+fDia(d)+', con el agua más caliente de lo normal en rojo y la más fría en azul.';
+  im.src=pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;
 }
+const cargarPacifico=()=>buscarDiaPac().then(d=>{if(d)mostrarPac(d)});
+// La prueba chica (unos cientos de bytes) se hace apenas carga la página. La imagen se pide cuando la sección
+// está a unos 2500 px (varias pantallas de celular), para que al llegar ya esté lista.
 function iniciarPacifico(){
   if(typeof Image==='undefined')return;
-  const ir=()=>cargarPacifico().catch(e=>console.error(e));
+  const dia=buscarDiaPac();let pedida=false;
+  const ir=()=>{if(pedida)return;pedida=true;dia.then(d=>{if(d)mostrarPac(d)}).catch(e=>console.error(e))};
   if(typeof IntersectionObserver==='undefined'){ir();return}
-  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();ir()}},{rootMargin:'600px'});o.observe($('t-nino'));
+  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();ir()}},{rootMargin:'2500px 0px'});o.observe($('t-nino'));
 }
 function pintarBanner(){
   const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos);
