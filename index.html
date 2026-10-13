@@ -308,7 +308,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <div class="pacif-img"><img id="pacImg" width="870" height="390" alt="" decoding="async"><span class="pacif-pt" aria-hidden="true"></span><span class="pacif-etq" aria-hidden="true">Chaco</span></div>
       <div class="pacif-esc" aria-hidden="true"></div>
       <div class="pacif-num meta" aria-hidden="true"><span>3 °C más frío</span><span>normal</span><span>3 °C más caliente</span></div>
-      <figcaption class="meta">El mar comparado con lo normal para la fecha. La mancha larga sobre el ecuador, frente a Sudamérica, es El Niño. <span id="pacFecha"></span> Fuente: NASA (GIBS), datos GHRSST MUR.</figcaption>
+      <figcaption class="meta">El mar comparado con lo normal para la fecha. <span id="pacNino"></span> <span id="pacFecha"></span> Fuente: NASA (GIBS), datos GHRSST MUR.</figcaption>
     </figure>
     <p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa que se mueve</a> <span class="meta">(earth.nullschool.net, en inglés). Se puede girar y acercar; pesa más.</span></p>
   </section>
@@ -1132,6 +1132,10 @@ function pintarNino(){
    +'<p class="meta" style="margin-top:10px">'+(sv?'Última actualización: '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
      :'Última actualización: '+fDia(ONI_CARGA)+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
        )+' Para sus avisos la NOAA hoy usa una variante de este índice (RONI), con valores algo distintos. Fuente: NOAA, Climate Prediction Center.</p>';
+  // La explicación del mapa sigue al ONI, para que no diga "es El Niño" cuando ya no lo hay.
+  $('pacNino').textContent=v>=0.5?'La mancha roja larga sobre el ecuador, frente a Sudamérica, es El Niño.'
+    :v<=-0.5?'Con La Niña, la franja sobre el ecuador frente a Sudamérica se ve azul: más fría de lo normal.'
+    :'Cuando hay El Niño, sobre el ecuador frente a Sudamérica aparece una mancha roja larga.';
 }
 // Mapa del Pacífico: imagen de la NASA (GIBS) con la temperatura del mar comparada con lo normal (unos 90 KB).
 // Se pide recién cuando la sección está por verse. Si no hay imagen, la figura queda oculta.

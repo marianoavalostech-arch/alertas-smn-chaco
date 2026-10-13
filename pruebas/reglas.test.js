@@ -526,7 +526,17 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
     assert.deepStrictEqual(Object.keys(props).sort(), ['p0', 'partes']);
     assert.strictEqual(sinClave, 'sin clave'); assert.strictEqual(pedidos.length, 1);
   });
-  prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', () => {
+  prueba('mapa del Pacífico: la explicación sigue al ONI', () => {
+  const e = {}; elementos.pacNino = e;
+  const con = v => { S(`ONI[ONI.length-1][2]=${v};pintarNino()`); return e.textContent; };
+  const orig = S('ONI[ONI.length-1][2]');
+  assert.ok(con(2.1).includes('es El Niño'));
+  assert.ok(con(0.2).startsWith('Cuando hay El Niño'));
+  assert.ok(con(-0.8).includes('La Niña'));
+  con(orig); delete elementos.pacNino;
+});
+
+prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
     assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba:</b> la represa de Yacyretá está soltando unos 32.800 m³ de agua por segundo. Lo normal en octubre es unos 13.100, y una semana antes soltaba 21.800. Esa agua tarda unos 3 días en llegar a Barranqueras.</p><p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
