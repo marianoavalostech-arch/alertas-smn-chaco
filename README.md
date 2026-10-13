@@ -1,8 +1,10 @@
-# Tiempo y Ríos del Chaco
+# Ríos y Clima del Chaco
 
-Sitio que junta en un solo lugar las alertas oficiales del SMN, la lluvia, la altura del río Paraná en Barranqueras y el estado de El Niño, explicados en lenguaje sencillo para los 70 municipios del Chaco.
+Sitio que junta en un solo lugar las alertas oficiales del SMN, la lluvia, la altura de los ríos Paraná (Barranqueras), Paraguay (Puerto Bermejo) y Bermejo (El Colorado) y el estado de El Niño, explicados en lenguaje sencillo para los 70 municipios del Chaco.
 
 Sitio publicado: https://panel-alertas-chaco.netlify.app/
+
+Antes se llamó "Alerta Niño Chaco" y "Tiempo y Ríos del Chaco".
 
 Es un sitio informativo. No reemplaza los alertas oficiales del Servicio Meteorológico Nacional ni de Defensa Civil.
 
@@ -10,16 +12,16 @@ Es un sitio informativo. No reemplaza los alertas oficiales del Servicio Meteoro
 
 ```
 SMN (canal CAP) ─┐
-INA (río y pronóstico) ─┤
+INA (ríos y pronóstico) ─┤
 GloFAS (caudal) ─┼─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
 NOAA (índice ONI) ─┘        │                                                    ├─> index.html
                             └─ lanza ─> Robot en GitHub ─> rama "datos" ─────────┘
 Open-Meteo (lluvia) ────────────────────────┘              (lluvia.json)
 ```
 
-- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia del río, el pronóstico del INA, el caudal y el ONI. Publica todo como JSON.
+- **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), el pronóstico del INA para el Paraná, el caudal y el ONI. Publica todo como JSON.
 - **Robot de la lluvia** (`robot/lluvia.js`, tarea `.github/workflows/lluvia.yml`): Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la pide GitHub y la deja en `lluvia.json`, en la rama `datos`. El script de Google lo lanza en cada renovación; el horario propio de GitHub queda de respaldo.
-- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta el río, el pronóstico y el caudal directamente; la lluvia nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
+- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, el pronóstico y el caudal directamente; la lluvia nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
 
 Si una fuente falla, las demás siguen y se muestra el último dato bueno con su fecha y hora.
 
@@ -88,7 +90,7 @@ Respuesta del script de Google:
   "leidas": n, "fallas": n,
   "ajuste":    { "alineadas": n, "corridas": n, "horas": 3 | 0 }   corrección de horas que se usó en esta lectura,
   "robot":     { "t": hora, "estado": "bien" | "sin clave" | error },
-  "datos":     { "rio", "prono", "caudal", "oni", "errores" }
+  "datos":     { "rio", "paraguay", "bermejo", "prono", "caudal", "oni", "errores" }
 }
 ```
 
@@ -98,7 +100,32 @@ Cada fila de alerta es `[día, fenómeno, madrugada, mañana, tarde, noche, extr
 - **franjas:** nivel en cada franja de 6 horas: 0 sin alerta, 3 amarilla, 4 naranja, 5 roja.
 - **extra:** 1 granizo, 2 ráfagas, 3 los dos.
 
+Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, altura en m]`, una lectura por día: la última de ese día), `hora` (hora de la última lectura), `act` (cuándo la cargó el INA) y `t` (hora de la consulta). `prono` es solo del Paraná: `emitido` y `p` (lista de `[día, mínimo, más probable, máximo]`).
+
 `lluvia.json` (rama `datos`): `{ "datos": { "lluvia", "municipios", "errores" } }`. Cada uno trae `dias` (14 fechas: 7 pasadas y 7 por venir), `mm` (una lista por punto) y `t` (hora de la consulta).
+
+## Reglas del color
+
+**Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes.
+
+| Color | Viene en 7 días | En un solo día | Con lo ya caído |
+|---|---|---|---|
+| Rojo | 120 mm o más | 80 mm o más | cayeron 100 y vienen 70 |
+| Amarillo | 70 mm o más | 45 mm o más | cayó + viene suman 120 |
+
+**Alerta del SMN:** es un piso. Amarilla o naranja → al menos amarillo; roja → rojo.
+
+**Ríos** (renglones propios en el semáforo; no cambian el color del mapa):
+
+| Río | Estación (serie INA) | Amarillo | Rojo |
+|---|---|---|---|
+| Paraná | Barranqueras (20) | 6,00 m, a menos de 50 cm y creciendo, o el máximo del pronóstico del INA llega a 6,00 | 6,50 m |
+| Paraguay | Puerto Bermejo (58) | 6,50 m, o a menos de 50 cm y creciendo | 7,00 m |
+| Bermejo | El Colorado (6697) | sin color: el INA no publica niveles | — |
+
+Una lectura de 4 días o más deja el renglón en gris.
+
+**Para sumar otro río:** agregarlo en `OTROS` (`index.html`), en `fuentesExtra` (script de Google, misma dirección: lo controla una prueba) y en las listas de `cargar` y `pintar`. El catálogo de series está en `https://alerta.ina.gob.ar/a5/obs/puntual/series?var_id=2&format=json` (los niveles oficiales vienen en `estacion.nivel_alerta` y `estacion.nivel_evacuacion`).
 
 ## Si algo falla
 
@@ -106,16 +133,17 @@ Cada fila de alerta es `[día, fenómeno, madrugada, mañana, tarde, noche, extr
 |---|---|
 | Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. |
 | Correo o aviso "La lluvia está sin renovar", o mapa en gris | GitHub, pestaña Actions, tarea "Lluvia". Ejecutar `probarRobot()` en Google: si no dice `bien`, revisar la clave. |
-| Río, caudal o El Niño sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
+| Algún río, el caudal o El Niño sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
 | Las pruebas fallan en GitHub | Correrlas en la computadora con `node pruebas/reglas.test.js`. |
 
 ## Limitaciones conocidas
 
-- Los umbrales de lluvia son orientativos: no están validados por ningún organismo.
+- Los umbrales de lluvia son orientativos: no están validados por ningún organismo. Se ajustaron el 12/10/2026 con la lluvia diaria de 1991 a 2026 de las 6 localidades del semáforo (archivo de Open-Meteo), aplicando la regla como si el pronóstico hubiera sido perfecto: el amarillo sale unas 5 veces por año en el interior y 8 en Resistencia, el rojo 1 o 2, y enero de 2019 queda en rojo en todas. Ese archivo es un modelo de unos 25 km que suaviza los picos, y no hay una lista oficial de inundaciones para validar día por día.
+- Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico solo para Barranqueras. Las zonas ribereñas tienen renglón propio en el semáforo y no cambian el color del mapa.
 - Un municipio entra en una alerta del SMN si la zona alertada cubre su punto central o alguno de sus puntos interiores (uno cada unos 10 km, a más de 4 km del borde). Si la zona apenas roza el borde, puede no figurar. Doce municipios chicos solo tienen el punto central.
 - El canal del SMN rotula las horas como hora argentina, pero corresponden a UTC. El script las corrige 3 horas (`AJUSTE_H`), verificado contra el mapa del SMN el 6/10/2026. En cada lectura controla que el comienzo de las alertas caiga en las franjas del SMN (0, 6, 12 y 18 h); si la mayoría cae 3 horas antes, el SMN arregló su canal y el script deja de corregir solo (`ajuste.horas` pasa a 0). Necesita al menos 3 alertas en el país para decidir; con menos, sigue con lo que venía usando.
 - La lluvia es una estimación por modelo en un punto por municipio, no una medición con pluviómetro.
-- El mapa no muestra el estado del río. No se incluyen los avisos a muy corto plazo del SMN.
+- El mapa no muestra el estado de los ríos. No se incluyen los avisos a muy corto plazo del SMN.
 
 ## Fuentes
 

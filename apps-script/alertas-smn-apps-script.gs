@@ -4,7 +4,7 @@
  * Lee el canal oficial de alertas del Servicio Meteorológico Nacional (formato CAP),
  * se queda con las que tocan a los municipios del Chaco y publica el resultado como JSON.
  *
- * Además guarda una copia horaria de los otros datos del sitio (lluvia, río, pronóstico del río, caudal y ONI), en "datos".
+ * Además guarda una copia horaria de los otros datos del sitio (lluvia, ríos Paraná, Paraguay y Bermejo, pronóstico del Paraná, caudal y ONI), en "datos".
  * El sitio usa esa copia si tiene menos de 2 horas; si no, consulta cada fuente directamente.
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
@@ -262,12 +262,19 @@ function leerOni(texto) {
 }
 
 // Qué se pide y cómo se lee. hoy = 'AAAA-MM-DD' en hora de Argentina.
+// Serie de altura del INA, últimos 30 días. 20 = Paraná en Barranqueras, 58 = Paraguay en Puerto Bermejo, 6697 = Bermejo en El Colorado.
+function serieINA(n, hoy) {
+  return 'https://alerta.ina.gob.ar/a5/obs/puntual/series/' + n + '/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json';
+}
+
 function fuentesExtra(hoy) {
   var json = function (f) { return function (t) { return f(JSON.parse(t)); }; };
   return [
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
     { k: 'municipios', url: urlLluvia(CENTROS), leer: json(function (j) { return normLluvia(j, CENTROS.length); }) },
-    { k: 'rio', url: 'https://alerta.ina.gob.ar/a5/obs/puntual/series/20/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json', leer: json(normRio) },
+    { k: 'rio', url: serieINA(20, hoy), leer: json(normRio) },
+    { k: 'paraguay', url: serieINA(58, hoy), leer: json(normRio) },
+    { k: 'bermejo', url: serieINA(6697, hoy), leer: json(normRio) },
     { k: 'prono', url: 'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true', leer: json(normProno) },
     { k: 'caudal', url: 'https://flood-api.open-meteo.com/v1/flood?latitude=-27.48&longitude=-58.93&daily=river_discharge&past_days=30&forecast_days=30', leer: json(normCaudal) },
     { k: 'oni', url: 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt', leer: leerOni }
@@ -396,7 +403,7 @@ function avisarLluvia(ahora, robot) {
   var que = decidirAviso(t, ahora, p.getProperty('avisoLluvia') === '1');
   if (que === 'limpiar') p.deleteProperty('avisoLluvia');
   if (que === 'avisar') {
-    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Tiempo y Ríos del Chaco: la lluvia no se renueva',
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Ríos y Clima del Chaco: la lluvia no se renueva',
       'La última copia de la lluvia es del ' + Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm') + ' h (hora argentina): lleva más de ' + HORAS_AVISO + ' horas sin renovarse.\n\n' +
       'Estado del robot al lanzarlo: ' + robot + '\n\n' +
       'Qué mirar: en GitHub, pestaña Actions, tarea "Lluvia". Si el estado no dice "bien", revisar la clave GITHUB_TOKEN en las propiedades del script.\n' +
@@ -409,7 +416,7 @@ function avisarLluvia(ahora, robot) {
 // Da el permiso de enviar correo (Google lo pide la primera vez) y manda uno de prueba a la cuenta dueña del script.
 function probarCorreo() {
   var a = Session.getEffectiveUser().getEmail();
-  MailApp.sendEmail(a, 'Tiempo y Ríos del Chaco: correo de prueba', 'Si llegó este correo, el aviso de la lluvia sin renovar va a funcionar.');
+  MailApp.sendEmail(a, 'Ríos y Clima del Chaco: correo de prueba', 'Si llegó este correo, el aviso de la lluvia sin renovar va a funcionar.');
   Logger.log('Correo de prueba enviado a ' + a);
 }
 
@@ -447,10 +454,10 @@ function diagnostico() {
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var d = leerExtras(hoy, ahora, {}, pedirUrl);
-  ['lluvia', 'municipios', 'rio', 'prono', 'caudal', 'oni'].forEach(function (k) {
+  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'caudal', 'oni'].forEach(function (k) {
     Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + d.errores[k]));
   });
-  if (d.rio) Logger.log('Última lectura del río: ' + JSON.stringify(d.rio.obs[d.rio.obs.length - 1]));
+  ['rio', 'paraguay', 'bermejo'].forEach(function (k) { if (d[k]) Logger.log('Última lectura (' + k + '): ' + JSON.stringify(d[k].obs[d[k].obs.length - 1])); });
   if (d.prono) Logger.log('Pronóstico del río (emitido ' + d.prono.emitido + '): ' + JSON.stringify(d.prono.p));
   if (d.oni) Logger.log('ONI: ' + JSON.stringify(d.oni.v));
 }

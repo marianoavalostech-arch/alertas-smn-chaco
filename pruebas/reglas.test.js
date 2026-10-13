@@ -28,15 +28,15 @@ const S = c => vm.runInContext(c, sitio);
 prueba('umbrales de lluvia', () => {
   const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
   assert.strictEqual(n(0, 0, 0), 0);
-  assert.strictEqual(n(0, 49, 34), 0);
-  assert.strictEqual(n(0, 50, 0), 1);
-  assert.strictEqual(n(0, 10, 35), 1);
-  assert.strictEqual(n(60, 0, 0), 1);
-  assert.strictEqual(n(45, 45, 0), 1);
-  assert.strictEqual(n(0, 100, 0), 2);
-  assert.strictEqual(n(0, 10, 70), 2);
-  assert.strictEqual(n(80, 60, 0), 2);
-  assert.strictEqual(n(80, 59, 0), 1);
+  assert.strictEqual(n(0, 69, 44), 0);
+  assert.strictEqual(n(80, 0, 0), 0);      // lo ya caído, solo, no alcanza
+  assert.strictEqual(n(0, 70, 0), 1);
+  assert.strictEqual(n(0, 10, 45), 1);
+  assert.strictEqual(n(60, 60, 0), 1);     // suman 120
+  assert.strictEqual(n(0, 120, 0), 2);
+  assert.strictEqual(n(0, 10, 80), 2);
+  assert.strictEqual(n(100, 70, 0), 2);
+  assert.strictEqual(n(100, 69, 0), 1);
 });
 
 prueba('suma de lluvia: lo caído es antes de hoy, lo que viene incluye hoy', () => {
@@ -68,6 +68,20 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.strictEqual(rio('2026-10-08', [['2026-10-08', 6.6]], real).c, 'rojo');                        // el rojo sale solo de la lectura
   assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'amarillo');   // el pronóstico solo llega a amarillo
   S(`D.prono={datos:null}`);
+});
+
+prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () => {
+  const par = (hoy, obs) => S(`hoy='${hoy}';LISTO=true;D.paraguay={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};riesgoParaguay()`);
+  assert.strictEqual(par('2027-03-10', [['2027-03-07', 3.6], ['2027-03-10', 3.6]]).c, 'verde');
+  assert.strictEqual(par('2027-03-10', [['2027-03-07', 5.8], ['2027-03-10', 6.1]]).c, 'amarillo');   // cerca y creciendo
+  assert.strictEqual(par('2027-03-10', [['2027-03-07', 6.1], ['2027-03-10', 6.1]]).c, 'verde');      // cerca pero estable
+  assert.strictEqual(par('2027-03-10', [['2027-03-10', 6.5]]).c, 'amarillo');
+  assert.strictEqual(par('2027-03-10', [['2027-03-10', 7.0]]).c, 'rojo');
+  assert.strictEqual(par('2027-03-10', [['2027-03-06', 7.2]]).c, 'gris');                             // lectura de hace 4 días
+  assert.strictEqual(S(`D.paraguay={datos:null};riesgoParaguay()`).c, 'gris');
+  // El Bermejo no tiene niveles oficiales: se pinta sin la cuenta de "le faltan"
+  const b = S(`hoy='2027-03-10';LISTO=true;D.bermejo={datos:{obs:[['2027-03-07',2.2],['2027-03-10',2.5]],hora:'2027-03-10T12:00:00Z'},vivo:true,t:new Date()};bloqueOtro('bermejo')`);
+  assert.ok(b.includes('no publica niveles de alerta')); assert.ok(b.includes('creciendo')); assert.ok(!b.includes('NaN'));
 });
 
 prueba('SMN: piso del color y franjas que ya pasaron', () => {
@@ -266,7 +280,7 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.rio(${JSON.stringify(crudo)})`))), JSON.parse(JSON.stringify(gs.normRio(crudo))));
   // Direcciones de las fuentes
   const u = S(`hoy='2026-10-07';URLS()`), f = {}; gs.fuentesExtra('2026-10-07').forEach(x => { f[x.k] = x.url; });
-  ['rio', 'prono', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  ['rio', 'paraguay', 'bermejo', 'prono', 'caudal'].forEach(k => assert.strictEqual(u[k], f[k], k));
   // Números de fenómeno
   ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
@@ -279,8 +293,7 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   assert.strictEqual(n(...nums(rc), 0), 2); assert.strictEqual(n(nums(rc)[0] - 1, nums(rc)[1], 0), 1);
   assert.strictEqual(n(0, +a7, 0), 1); assert.strictEqual(n(0, a7 - 1, 0), 0);
   assert.strictEqual(n(0, 0, +a1), 1); assert.strictEqual(n(0, 0, a1 - 1), 0);
-  assert.strictEqual(n(nums(ac)[0], 0, 0), 1); assert.strictEqual(n(nums(ac)[0] - 1, 0, 0), 0);
-  assert.strictEqual(n(nums(ac)[1] - 45, 45, 0), 1); assert.strictEqual(n(nums(ac)[1] - 46, 45, 0), 0);
+  assert.strictEqual(n(nums(ac)[0] - 45, 45, 0), 1); assert.strictEqual(n(nums(ac)[0] - 46, 45, 0), 0);
 });
 
 prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo', () => {
