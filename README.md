@@ -153,6 +153,8 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 Una lectura de 4 días o más deja el renglón en gris.
 
+El pronóstico del Paraná no se usa si tiene más de 7 días. Si tiene 3 días o más, el detalle del río agrega "Es del dd/m: no incluye lo que pasó río arriba después" (`pronoAtraso`); no cambia el color.
+
 **Para sumar otro río:** agregarlo en `OTROS` (`index.html`), en `fuentesExtra` (script de Google, misma dirección: lo controla una prueba) y en las listas de `cargar` y `pintar`. El catálogo de series está en `https://alerta.ina.gob.ar/a5/obs/puntual/series?var_id=2&format=json` (los niveles oficiales vienen en `estacion.nivel_alerta` y `estacion.nivel_evacuacion`).
 
 ## Si algo falla

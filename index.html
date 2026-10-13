@@ -575,6 +575,8 @@ function resumenProno(){
   let mx=fut[0];fut.forEach(r=>{if(r[3]>mx[3])mx=r});
   return {emitido,fut,mx,alerta:mx[3]>=NIVEL.alerta};
 }
+// Si el pronóstico tiene 3 días o más, se avisa que no incluye lo que pasó río arriba después (no cambia el color).
+const pronoAtraso=p=>diasEntre(p.emitido,hoy)>=3?' Es del '+fDia(p.emitido)+': no incluye lo que pasó río arriba después.':'';
 const pronoTxt=p=>'El INA prevé '+p.fut.map(r=>nf(r[2],2)+' m para el '+fDia(r[0])+(r[3]>r[1]?' (entre '+nf(r[1],2)+' y '+nf(r[3],2)+')':'')).join('; ')+'.';
 // Renglón propio del río: vale para la zona ribereña, fuera de las defensas del Gran Resistencia.
 function riesgoRio(){
@@ -990,8 +992,8 @@ function pintarRio(){
    +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
-   +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.</div>'
-     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.</p>')
+   +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.'+pronoAtraso(pn)+'</div>'
+     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.'+pronoAtraso(pn)+'</p>')
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
    +stats+svg

@@ -401,6 +401,14 @@ prueba('pronóstico del Paraguay: el script y el sitio lo leen igual, por puerto
   S(`delete D.pronoPy;hoy=diaAR(new Date())`);
 });
 
+prueba('pronóstico del Paraná: con 3 días o más avisa que no incluye lo que pasó río arriba después', () => {
+  const f = (em, h) => S(`hoy='${h}';pronoAtraso({emitido:'${em}'})`);
+  assert.strictEqual(f('2026-10-09', '2026-10-11'), '');
+  assert.strictEqual(f('2026-10-09', '2026-10-12'), ' Es del 9/10: no incluye lo que pasó río arriba después.');
+  assert.strictEqual(f('2026-10-09', '2026-10-13'), ' Es del 9/10: no incluye lo que pasó río arriba después.');
+  S(`hoy=diaAR(new Date())`);
+});
+
 prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo', () => {
   const lluvia = h => S(`D.lluvia={datos:{},vivo:true,t:new Date(Date.now()-${h}*36e5)};lluviaAtraso()`);
   assert.strictEqual(lluvia(5), ''); assert.strictEqual(lluvia(23), '');
