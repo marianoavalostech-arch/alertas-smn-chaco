@@ -1,4 +1,14 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}</style>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+#anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
+#anim svg{touch-action:pan-y}
+#anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
+.anim-ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.anim-ctrl input[type=range]{flex:1 1 220px;min-width:0;accent-color:var(--water);min-height:40px}
+#aEtq{font-size:.95rem;min-height:1.45em}
+#aDias{display:flex;flex-wrap:wrap;gap:6px}
+.escala i{display:inline-block;width:22px;height:12px;margin-right:4px;vertical-align:-1px;border-radius:2px}
+.escala .torm{width:12px;border-radius:50%;background:var(--amarillo);border:1.5px solid var(--ink)}
+</style>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 :root{
@@ -226,6 +236,29 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
+  <section aria-labelledby="t-anim">
+    <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
+    <div id="aDias" role="group" aria-label="Elegir el día"></div>
+    <div class="anim-ctrl">
+      <button class="btn" id="aPlay" type="button" aria-pressed="false">▶ Reproducir</button>
+      <input type="range" id="aHora" min="0" max="71" step="1" value="0" aria-label="Hora" aria-describedby="aEtq">
+    </div>
+    <p id="aEtq" aria-live="polite"></p>
+    <div id="anim"></div>
+    <div class="leyenda escala">
+      <span>Lluvia en la hora:</span>
+      <span><i style="background:#a9d8f2"></i>débil</span>
+      <span><i style="background:#5aaee3"></i>1 a 3 mm</span>
+      <span><i style="background:#2277d4"></i>3 a 7 mm</span>
+      <span><i style="background:#2f45b5"></i>7 a 15 mm</span>
+      <span><i style="background:#7b2fb6"></i>15 mm o más</span>
+      <span><i class="torm"></i>tormenta prevista</span>
+    </div>
+    <label class="meta"><input type="checkbox" id="aSat" checked> Mostrar las nubes del satélite en las horas que ya pasaron</label>
+    <p class="meta" id="animMeta">Consultando…</p>
+    <p class="meta">No es un radar. La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
+  </section>
+
   <section aria-labelledby="t-nino">
     <h2 id="t-nino">¿Cómo está El Niño?</h2>
     <div id="nino"></div>
@@ -237,6 +270,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
+      <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Caudal previsto:</b> modelo europeo GloFAS (Copernicus), a través de Open-Meteo.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos).</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
@@ -251,7 +285,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Avisá en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA y Open-Meteo.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA, Open-Meteo y la NASA.</p>
   </section>
 
   <footer>Los horarios están en hora de Argentina.</footer>
@@ -978,7 +1012,8 @@ function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
   (ks||[]).forEach(k=>{MEM.borrar(k);if(D[k])D[k]={datos:null,error:true};
     if(k==='municipios'){M.est={};M.tEst=0}
-    if(k==='smn'){SMN=SMN_VACIO;SMN_VIVO=false}});
+    if(k==='smn'){SMN=SMN_VACIO;SMN_VIVO=false}
+    if(k==='grilla'){A.g=null;A.t=null;A.armado=false;$('anim').innerHTML=''}});
   try{f()}catch(e){console.error(e)}
 }
 function pintar(){
@@ -989,12 +1024,134 @@ function pintar(){
   seguro(pintarBanner);
 }
 
+/* ---------- lluvia hora por hora (mapa animado) ---------- */
+// Grilla cada 0,5° del Chaco y alrededores, armada por el robot de GitHub cada 3 horas (robot/grilla.js) y guardada en la rama "datos".
+// Horas pasadas: nubes del satélite GOES-East (NASA GIBS). Horas que vienen: nubosidad prevista. La lluvia es siempre del modelo.
+const GRILLA_URL='https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/grilla.json';
+const enteros=(a,n,max)=>Array.isArray(a)&&a.length===n&&a.every(v=>Number.isInteger(v)&&v>=0&&v<=max);
+FORMA.grilla=d=>!!d&&Number.isInteger(d.nlat)&&Number.isInteger(d.nlon)&&d.nlat>1&&d.nlon>1&&[d.lat0,d.lon0,d.paso].every(v=>typeof v==='number'&&isFinite(v))&&d.paso>0
+  &&/^\d{4}-\d\d-\d\dT\d\d:00$/.test(d.h0)&&Number.isInteger(d.n)&&d.n>=24&&d.n<=96
+  &&Array.isArray(d.p)&&d.p.length===d.nlat*d.nlon&&d.p.every(x=>enteros(x,d.n,5000))
+  &&Array.isArray(d.nube)&&d.nube.length===d.p.length&&d.nube.every(x=>enteros(x,d.n,10))
+  &&Array.isArray(d.torm)&&d.torm.every(x=>Array.isArray(x)&&x.length===2&&Number.isInteger(x[0])&&x[0]>=0&&x[0]<d.n&&Number.isInteger(x[1])&&x[1]>=0&&x[1]<d.p.length);
+const AVB={x:-60,y:-70,w:680,h:600};   // vista del mapa animado, en las mismas unidades que el mapa de municipios
+const A={g:null,t:null,k:-1,play:0,lluvia:new Map(),nube:new Map(),sat:new Map(),satMal:new Set(),armado:false};
+// Escala de lluvia por hora (mm): desde, color
+const ESCALA=[[0.2,'#a9d8f2'],[1,'#5aaee3'],[3,'#2277d4'],[7,'#2f45b5'],[15,'#7b2fb6']];
+const OTRAS=[{n:'Formosa',lat:-26.18,lon:-58.17,dx:-8,a:'end'},{n:'Asunción',lat:-25.28,lon:-57.63,dx:-8,a:'end'}];
+const horaDe=k=>new Date(new Date(A.g.h0+':00-03:00').getTime()+k*36e5);
+const kAhora=()=>Math.max(0,Math.min(A.g.n-1,Math.floor((Date.now()-new Date(A.g.h0+':00-03:00'))/36e5)));
+// Las horas pasadas usan el satélite si la imagen ya está publicada (la NASA tarda casi una hora).
+const conSat=k=>$('aSat').checked&&!A.satMal.has(urlSat(k))&&horaDe(k).getTime()+70*60e3<=Date.now();
+function urlSat(k){
+  const t=horaDe(k).toISOString().slice(0,13)+':00:00Z',lon=x=>(x/100-63.7).toFixed(3),lat=y=>(-24-y/112).toFixed(3);
+  return 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=GOES-East_ABI_GeoColor&STYLES=&SRS=EPSG:4326'
+    +'&BBOX='+lon(AVB.x)+','+lat(AVB.y+AVB.h)+','+lon(AVB.x+AVB.w)+','+lat(AVB.y)+'&WIDTH=544&HEIGHT=480&FORMAT=image/jpeg&TIME='+t;
+}
+// Imagen del satélite: se baja aparte y solo se muestra cuando llegó, para que la animación no parpadee.
+// Si la hora todavía no está publicada, la NASA devuelve una imagen negra muy liviana: se descarta y se usa la nubosidad prevista.
+function sat(k){
+  const u=urlSat(k);   // la clave es la dirección (la hora), no el número de hora: así sirve también después de renovar la grilla
+  if(!A.sat.has(u))A.sat.set(u,getBlob(u).then(b=>{if(b.size<6000)throw new Error('vacía');return URL.createObjectURL(b)})
+    .catch(e=>{A.satMal.add(u);A.sat.delete(u);throw e}));
+  return A.sat.get(u);
+}
+async function getBlob(u){
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),12000);
+  try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.blob()}
+  finally{clearTimeout(t)}
+}
+// Valor de la grilla interpolado entre los 4 puntos vecinos, dibujado en un lienzo 20 veces más fino que la grilla.
+function lienzo(capa,k,color){
+  const g=A.g,F=20,W=(g.nlon-1)*F+1,H=(g.nlat-1)*F+1,c=document.createElement('canvas');c.width=W;c.height=H;
+  const cx=c.getContext('2d'),img=cx.createImageData(W,H),v=(i,j)=>g[capa][i*g.nlon+j][k];
+  for(let y=0;y<H;y++){const gy=y/F,i=Math.min(g.nlat-2,Math.floor(gy)),fy=gy-i;
+    for(let x=0;x<W;x++){const gx=x/F,j=Math.min(g.nlon-2,Math.floor(gx)),fx=gx-j;
+      const val=(v(i,j)*(1-fx)+v(i,j+1)*fx)*(1-fy)+(v(i+1,j)*(1-fx)+v(i+1,j+1)*fx)*fy,col=color(val);
+      if(col){const o=(y*W+x)*4;img.data[o]=col[0];img.data[o+1]=col[1];img.data[o+2]=col[2];img.data[o+3]=col[3]}}}
+  cx.putImageData(img,0,0);return c.toDataURL();
+}
+const rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const ESC_RGB=ESCALA.map(e=>[e[0]*10,rgb(e[1])]);
+function colorLluvia(v){let c=null;for(const e of ESC_RGB)if(v>=e[0])c=e[1];return c&&[c[0],c[1],c[2],215]}
+function colorNube(v){if(v<2)return null;const c=A.tono;return [c[0],c[1],c[2],Math.round(v*14)]}
+function imgLluvia(k){if(!A.lluvia.has(k))A.lluvia.set(k,lienzo('p',k,colorLluvia));return A.lluvia.get(k)}
+function imgNube(k){if(!A.nube.has(k))A.nube.set(k,lienzo('nube',k,colorNube));return A.nube.get(k)}
+function armarAnim(){
+  const g=A.g,x0=PX(g.lon0),y0=PY(g.lat0),w=PX(g.lon0+(g.nlon-1)*g.paso)-x0,h=PY(g.lat0-(g.nlat-1)*g.paso)-y0;
+  const pto=(n,lat,lon,dx,dy,a)=>'<circle cx="'+PX(lon)+'" cy="'+PY(lat)+'" r="4.5" fill="var(--ink)" stroke="var(--card)" stroke-width="2"/>'
+    +'<text x="'+(PX(lon)+(dx||8))+'" y="'+(PY(lat)+(dy||5))+'" text-anchor="'+(a||'start')+'" class="aCiudad">'+esc(n)+'</text>';
+  $('anim').innerHTML='<svg viewBox="'+AVB.x+' '+AVB.y+' '+AVB.w+' '+AVB.h+'" role="img" aria-labelledby="aEtq">'
+   +'<rect x="'+AVB.x+'" y="'+AVB.y+'" width="'+AVB.w+'" height="'+AVB.h+'" fill="var(--land)"/>'
+   +'<image id="aFondo" x="'+AVB.x+'" y="'+AVB.y+'" width="'+AVB.w+'" height="'+AVB.h+'" preserveAspectRatio="none"/>'
+   +'<image id="aNube" x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+h+'" preserveAspectRatio="none"/>'
+   +'<image id="aLluvia" x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+h+'" preserveAspectRatio="none"/>'
+   +'<g transform="scale(.1)" fill="none" stroke-linejoin="round"><path d="'+GEO.prov+'" stroke="var(--card)" stroke-width="5" vector-effect="non-scaling-stroke"/>'
+   +'<path d="'+GEO.prov+'" stroke="var(--ink)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>'
+   +'<path d="'+RIOS.bermejo+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="'+RIOS.paraguay+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="'+RIOS.parana+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></g>'
+   +'<g id="aTorm"></g><g>'+LOCS.map(l=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a)).join('')+OTRAS.map(l=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a)).join('')+'</g></svg>';
+  A.armado=true;
+}
+function etqDia(dia){const d=Math.round((new Date(dia+'T12:00:00Z')-new Date(hoy+'T12:00:00Z'))/864e5);return d===0?'Hoy':d===-1?'Ayer':d===1?'Mañana':fDia(dia)}
+function mostrar(k){
+  const g=A.g;k=Math.max(0,Math.min(g.n-1,k));A.k=k;
+  const t=horaDe(k),dia=diaAR(t),hh=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'}).format(t);
+  const ya=t.getTime()+36e5<=Date.now(),ahora=!ya&&t.getTime()<=Date.now();
+  $('aHora').value=k;
+  $('aEtq').innerHTML='<b>'+etqDia(dia)+' '+fDia(dia)+', '+hh+' h</b> · '+(ya?'ya pasó: lluvia estimada por el modelo'+(conSat(k)?', nubes del satélite':''):ahora?'ahora: lluvia prevista':'pronóstico');
+  document.querySelectorAll('#aDias .ley').forEach(b=>b.setAttribute('aria-pressed',b.dataset.d===dia?'true':'false'));
+  $('aLluvia').setAttribute('href',imgLluvia(k));
+  const fondo=$('aFondo'),nube=$('aNube');
+  if(conSat(k)){
+    nube.setAttribute('href','');
+    sat(k).then(u=>{if(A.k===k)fondo.setAttribute('href',u)}).catch(()=>{if(A.k===k)mostrar(k)});
+  }else{fondo.setAttribute('href','');nube.setAttribute('href',imgNube(k))}
+  $('aTorm').innerHTML=g.torm.filter(x=>x[0]===k).map(x=>{const i=Math.floor(x[1]/g.nlon),j=x[1]%g.nlon;
+    return '<circle cx="'+PX(g.lon0+j*g.paso)+'" cy="'+PY(g.lat0-i*g.paso)+'" r="7" fill="var(--amarillo)" stroke="var(--ink)" stroke-width="1.5"/>'}).join('');
+  if(conSat(k+1))sat(k+1).catch(()=>{});
+}
+function parar(){if(A.play){clearInterval(A.play);A.play=0}$('aPlay').textContent='▶ Reproducir';$('aPlay').setAttribute('aria-pressed','false')}
+function reproducir(){
+  if(A.play){parar();return}
+  if(A.k>=A.g.n-1)mostrar(0);
+  $('aPlay').textContent='❚❚ Pausa';$('aPlay').setAttribute('aria-pressed','true');
+  A.play=setInterval(()=>{if(document.hidden||A.k>=A.g.n-1){parar();return}mostrar(A.k+1)},650);
+}
+function pintarAnim(){
+  if(!A.g){$('animMeta').innerHTML=!LISTO?'Consultando…':'<span class="estado falla">No disponible</span>No se pudo traer el pronóstico por hora. El resto del sitio sigue funcionando.';return}
+  const nuevo=!A.armado;if(nuevo)armarAnim();
+  A.tono=rgb((getComputedStyle($('anim')).getPropertyValue('--muted').trim()||'#56696f').slice(0,7));
+  const g=A.g,dias=[...new Set(Array.from({length:g.n},(_,k)=>diaAR(horaDe(k))))];
+  $('aHora').max=g.n-1;
+  $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false">'+etqDia(d)+' <span class="meta">'+fDia(d)+'</span></button>').join('');
+  $('animMeta').textContent='Última actualización: '+fFechaHora(new Date(A.t))+'. Fuente: Open-Meteo (lluvia, nubosidad y tormentas previstas) y NASA, satélite GOES-East (nubes de las horas pasadas).';
+  mostrar(nuevo||A.k<0?kAhora():A.k);
+}
+async function cargarGrilla(){
+  try{
+    const j=await getJSON(GRILLA_URL+'?'+Math.floor(Date.now()/3e5)),d=j&&j.datos;
+    if(!d||isNaN(new Date(d.t))||!FORMA.grilla(d))throw new Error('formato');
+    if(!A.g||d.t!==A.t){A.g=d;A.t=d.t;A.lluvia.clear();A.nube.clear();A.satMal.clear();MEM.guardar('grilla',d,d.t)}
+  }catch(e){if(!A.g){const g=MEM.leer('grilla');if(g){A.g=g.datos;A.t=g.t}}}
+  A.satMal.clear();   // en cada renovación se vuelve a probar el satélite de las horas que todavía no estaban
+  seguro(pintarAnim,['grilla']);
+}
+function iniciarAnim(){
+  $('aHora').addEventListener('input',e=>{parar();mostrar(Number(e.target.value))});
+  $('aPlay').addEventListener('click',()=>{if(A.g)reproducir()});
+  $('aSat').addEventListener('change',()=>{if(A.g)mostrar(A.k)});
+  $('aDias').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b||!A.g)return;parar();
+    const d=b.dataset.d;mostrar(d===diaAR(new Date())?kAhora():Array.from({length:A.g.n},(_,k)=>k).find(k=>diaAR(horaDe(k))===d))});
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(A.g){A.nube.clear();pintarAnim()}});
+}
+
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
+seguro(iniciarAnim);cargarGrilla();
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','caudal','prono','paraguay','bermejo'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar()});
+Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
@@ -1002,7 +1159,7 @@ function renovar(){
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
   Promise.all(['lluvia','rio','caudal','prono','paraguay','bermejo'].map(cargar)).then(pintar);
-  cargarTodos();
+  cargarTodos();cargarGrilla();
 }
 setInterval(renovar,30*60e3);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-ULT>10*60e3)renovar()});

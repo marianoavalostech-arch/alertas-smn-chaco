@@ -1,4 +1,5 @@
 # Robot de la lluvia: pide la lluvia a Open-Meteo y deja lluvia.json en la rama "datos".
+# Después renueva, cada 3 horas como mucho, la grilla del mapa animado (grilla.json). Si la grilla falla, la lluvia se guarda igual.
 # Lo lanza el script de Google en cada renovación (cada hora). El horario de abajo queda de respaldo: GitHub lo cumple muy poco.
 # El sitio lee ese archivo. Netlify solo publica la rama main, así que esto no publica ni gasta créditos.
 name: Lluvia
@@ -24,6 +25,11 @@ jobs:
           mkdir salida
           curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/lluvia.json" -o anterior.json || true
           node robot/lluvia.js anterior.json salida/lluvia.json
+      - name: Consultar la grilla del mapa animado
+        continue-on-error: true
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/grilla.json" -o grilla-anterior.json || true
+          node robot/grilla.js grilla-anterior.json salida/grilla.json
       - name: Guardar en la rama datos
         run: |
           cd salida
@@ -32,6 +38,7 @@ jobs:
           git config user.name "robot-lluvia"
           git config user.email "robot-lluvia@users.noreply.github.com"
           git add lluvia.json
+          if [ -s grilla.json ]; then git add grilla.json; fi
           git commit -q -m "Lluvia [skip ci] [skip netlify]"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" datos
       - name: Marcar la corrida si Open-Meteo no respondió

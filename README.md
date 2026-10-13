@@ -16,11 +16,13 @@ INA (ríos y pronóstico) ─┤
 GloFAS (caudal) ─┼─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
 NOAA (índice ONI) ─┘        │                                                    ├─> index.html
                             └─ lanza ─> Robot en GitHub ─> rama "datos" ─────────┘
-Open-Meteo (lluvia) ────────────────────────┘              (lluvia.json)
+Open-Meteo (lluvia) ────────────────────────┘              (lluvia.json, grilla.json)
+NASA GIBS (satélite GOES-East) ──────────────────────────────────────────────────> index.html (mapa animado)
 ```
 
 - **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), el pronóstico del INA para el Paraná, el caudal y el ONI. Publica todo como JSON.
 - **Robot de la lluvia** (`robot/lluvia.js`, tarea `.github/workflows/lluvia.yml`): Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la pide GitHub y la deja en `lluvia.json`, en la rama `datos`. El script de Google lo lanza en cada renovación; el horario propio de GitHub queda de respaldo.
+- **Grilla del mapa animado** (`robot/grilla.js`, en la misma tarea, después de la lluvia): lluvia, nubosidad y tormentas previstas hora por hora para ayer, hoy y mañana, en 208 puntos cada 0,5° (el Chaco y unos 100 km alrededor). Se renueva cada 3 horas como mucho, para cuidar el límite gratuito de Open-Meteo. Si falla, no insiste, queda la anterior y la lluvia se guarda igual.
 - **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, el pronóstico y el caudal directamente; la lluvia nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo.
 
 Si una fuente falla, las demás siguen y se muestra el último dato bueno con su fecha y hora.
@@ -32,6 +34,7 @@ Si una fuente falla, las demás siguen y se muestra el último dato bueno con su
 | `index.html` | El sitio completo: estilos, mapa y reglas. |
 | `apps-script/alertas-smn-apps-script.gs` | Script de Google. También define los centros de los municipios, que el robot reutiliza. |
 | `robot/lluvia.js` | Robot de la lluvia. |
+| `robot/grilla.js` | Grilla de lluvia por hora para el mapa animado. |
 | `herramientas/puntos.js` | Genera los puntos interiores de cada municipio (`PUNTOS` en el script). Solo hace falta si cambia el mapa. |
 | `pruebas/reglas.test.js` | Pruebas de las reglas del sitio, del script y del robot. |
 | `.github/workflows/` | Tareas de GitHub: `pruebas.yml` (en cada subida) y `lluvia.yml` (robot). |
@@ -104,6 +107,10 @@ Cada río (`rio` = Paraná, `paraguay`, `bermejo`) trae `obs` (lista de `[día, 
 
 `lluvia.json` (rama `datos`): `{ "datos": { "lluvia", "municipios", "errores" } }`. Cada uno trae `dias` (14 fechas: 7 pasadas y 7 por venir), `mm` (una lista por punto) y `t` (hora de la consulta).
 
+`grilla.json` (rama `datos`): `{ "datos": { lat0, lon0, paso, nlat, nlon, h0, n, p, nube, torm, t }, "error" }`. Los puntos van fila por fila desde el norte (`lat0`) y de oeste a este (`lon0`), cada `paso` grados. `h0` es la primera hora (hora argentina) y `n` la cantidad de horas (72). `p[punto][hora]` es la lluvia en décimas de mm, `nube[punto][hora]` la nubosidad en decenas de % (0 a 10) y `torm` la lista de `[hora, punto]` con tormenta prevista (código de tiempo 95 a 99). `error` dice por qué no se pudo renovar, si pasó.
+
+**Mapa animado:** las nubes de las horas pasadas son imágenes del satélite GOES-East (capa `GOES-East_ABI_GeoColor` del servicio GIBS de la NASA), pedidas por el navegador del visitante. La NASA tarda casi una hora en publicarlas; mientras tanto devuelve una imagen negra, que el sitio descarta (se usa la nubosidad prevista).
+
 ## Reglas del color
 
 **Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes.
@@ -134,6 +141,7 @@ Una lectura de 4 días o más deja el renglón en gris.
 | Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. |
 | Correo o aviso "La lluvia está sin renovar", o mapa en gris | GitHub, pestaña Actions, tarea "Lluvia". Ejecutar `probarRobot()` en Google: si no dice `bien`, revisar la clave. |
 | Algún río, el caudal o El Niño sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
+| Mapa animado viejo o "No disponible" | `https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/grilla.json`: el campo `error` dice qué falló. |
 | Las pruebas fallan en GitHub | Correrlas en la computadora con `node pruebas/reglas.test.js`. |
 
 ## Limitaciones conocidas
@@ -143,11 +151,12 @@ Una lectura de 4 días o más deja el renglón en gris.
 - Un municipio entra en una alerta del SMN si la zona alertada cubre su punto central o alguno de sus puntos interiores (uno cada unos 10 km, a más de 4 km del borde). Si la zona apenas roza el borde, puede no figurar. Doce municipios chicos solo tienen el punto central.
 - El canal del SMN rotula las horas como hora argentina, pero corresponden a UTC. El script las corrige 3 horas (`AJUSTE_H`), verificado contra el mapa del SMN el 6/10/2026. En cada lectura controla que el comienzo de las alertas caiga en las franjas del SMN (0, 6, 12 y 18 h); si la mayoría cae 3 horas antes, el SMN arregló su canal y el script deja de corregir solo (`ajuste.horas` pasa a 0). Necesita al menos 3 alertas en el país para decidir; con menos, sigue con lo que venía usando.
 - La lluvia es una estimación por modelo en un punto por municipio, no una medición con pluviómetro.
+- El mapa animado no es un radar: la lluvia, también la de las horas pasadas, es del modelo, en puntos cada unos 50 km. Las tormentas son las que prevé el modelo, no rayos medidos.
 - El mapa no muestra el estado de los ríos. No se incluyen los avisos a muy corto plazo del SMN.
 
 ## Fuentes
 
-Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (río), Open-Meteo (lluvia), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
+Servicio Meteorológico Nacional (alertas), Instituto Nacional del Agua y Prefectura Naval Argentina (río), Open-Meteo (lluvia), NASA GIBS y NOAA (satélite GOES-East), GloFAS / Copernicus (caudal), NOAA (ONI), Instituto Geográfico Nacional y OpenStreetMap (límites).
 
 ## Licencia
 

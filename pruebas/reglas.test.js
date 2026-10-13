@@ -323,6 +323,37 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
     assert.ok(S(`hoy='2026-10-08';var real=Date.now;Date.now=()=>new Date('2026-10-08T12:30:00Z').getTime();var x=delServidor('lluvia',${JSON.stringify(r.salida)});Date.now=real;x`));
   });
 
+  // Robot de la grilla (mapa animado), con Open-Meteo simulado
+  const gr = require('../robot/grilla.js'), np = gr.G.nlat * gr.G.nlon;
+  const horas = Array.from({ length: 72 }, (_, k) => '2026-10-' + String(11 + Math.floor(k / 24)) + 'T' + String(k % 24).padStart(2, '0') + ':00');
+  const resp = Array.from({ length: np }, (_, i) => ({ hourly: { time: horas, precipitation: horas.map((_, k) => i === 5 && k === 30 ? 12.64 : 0.04),
+    cloud_cover: horas.map(() => 87), weather_code: horas.map((_, k) => i === 5 && k === 30 ? 95 : 3) } }));
+  let pedidosGrilla = [];
+  global.fetch = async url => { pedidosGrilla.push(url); return { ok: true, json: async () => resp }; };
+  const g1 = await gr.armarGrilla(null, new Date('2026-10-12T12:00:00Z'));
+  const g2 = await gr.armarGrilla(g1.salida, new Date('2026-10-12T14:00:00Z'));    // 2 horas después: no pide
+  const g3 = await gr.armarGrilla(g1.salida, new Date('2026-10-12T15:00:00Z'));    // 3 horas después: pide
+  global.fetch = async () => ({ ok: false, status: 429 });
+  const g4 = await gr.armarGrilla(g1.salida, new Date('2026-10-12T18:00:00Z'));    // falla: queda la anterior
+  const g5 = await gr.armarGrilla(null, new Date('2026-10-12T18:00:00Z'));         // falla sin anterior: no hay archivo
+  global.fetch = real;
+  prueba('robot de la grilla: forma compacta, cada 3 horas, y si falla queda la anterior', () => {
+    assert.strictEqual(np, 208);
+    assert.strictEqual(pedidosGrilla.length, 2); assert.strictEqual(pedidosGrilla[0].split('latitude=')[1].split('&')[0].split(',').length, 208);
+    const d = g1.salida.datos;
+    assert.strictEqual(d.h0, '2026-10-11T00:00'); assert.strictEqual(d.n, 72);
+    assert.strictEqual(d.p[5][30], 126); assert.strictEqual(d.p[0][0], 0); assert.strictEqual(d.nube[0][0], 9);
+    assert.deepStrictEqual(d.torm, [[30, 5]]);
+    assert.strictEqual(g2.pidio, false); assert.strictEqual(g3.pidio, true); assert.strictEqual(g3.salida.datos.t, '2026-10-12T15:00:00.000Z');
+    assert.strictEqual(g4.bien, false); assert.strictEqual(g4.salida.datos.t, '2026-10-12T12:00:00.000Z'); assert.strictEqual(g4.salida.error, 'HTTP 429');
+    assert.strictEqual(g5.salida, null);
+    // El sitio acepta esa forma y rechaza una rota
+    assert.strictEqual(S(`FORMA.grilla(${JSON.stringify(d)})`), true);
+    assert.strictEqual(S(`FORMA.grilla(${JSON.stringify({ ...d, p: d.p.slice(1) })})`), false);
+    assert.strictEqual(S(`FORMA.grilla(${JSON.stringify({ ...d, torm: [[99, 5]] })})`), false);
+    assert.strictEqual(S(`FORMA.grilla(${JSON.stringify({ ...d, h0: 'ayer' })})`), false);
+  });
+
   // La página nunca le pide la lluvia a Open-Meteo: usa la copia del robot aunque esté atrasada
   S(`var llamadas=[];fetch=u=>{llamadas.push(String(u));return Promise.reject(new Error('sin red'))};
      var copiaRobot=h=>{const t=new Date(Date.now()-h*36e5),d0=diaAR(t),dias=Array.from({length:14},(_,i)=>masDias(d0,i-7));
