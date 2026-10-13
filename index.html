@@ -39,6 +39,15 @@ header{text-align:center}
 .aviso strong{display:block}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
 section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+/* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
+.pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
+.pleg>.tt{flex:1;min-width:0}
+.pleg>.pv{flex:none;font-size:.85rem;font-weight:400;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pleg>.pv::after{content:'';width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
+.pleg:focus-visible{outline:3px solid var(--water);outline-offset:4px;border-radius:4px}
+.cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
+@media print{.cuerpo[hidden]{display:flex!important}.pleg>.pv{display:none}}
 .meta{font-size:.82rem;color:var(--muted)}
 .estado{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--line);margin-right:6px}
 .estado.vivo{border-color:var(--verde);color:var(--verde)}
@@ -268,17 +277,17 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="rio"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-otros">
+  <section aria-labelledby="t-otros" class="plegable">
     <h2 id="t-otros">Ríos Paraguay y Bermejo</h2>
     <div id="otros"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-lluvia">
+  <section aria-labelledby="t-lluvia" class="plegable">
     <h2 id="t-lluvia">Lluvias: últimos 7 días y pronóstico a 7 días</h2>
     <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-anim">
+  <section aria-labelledby="t-anim" class="plegable">
     <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
     <div id="aDias" role="group" aria-label="Elegir el día"></div>
     <div class="anim-ctrl">
@@ -301,7 +310,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="meta">No es un radar. La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
   </section>
 
-  <section aria-labelledby="t-nino">
+  <section aria-labelledby="t-nino" class="plegable">
     <h2 id="t-nino">¿Cómo está El Niño?</h2>
     <div id="nino"></div>
     <figure id="pacifico" class="pacif" hidden>
@@ -313,7 +322,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p style="margin:10px 0 0"><a href="https://earth.nullschool.net/#current/ocean/surface/currents/overlay=sea_surface_temp_anomaly/orthographic=-110.00,-10.00,250" target="_blank" rel="noopener">Ver el Pacífico en un mapa que se mueve</a> <span class="meta">(earth.nullschool.net, en inglés). Se puede girar y acercar; pesa más.</span></p>
   </section>
 
-  <section aria-labelledby="t-fuentes">
+  <section aria-labelledby="t-fuentes" class="plegable" data-cerrada>
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
@@ -331,12 +340,12 @@ footer{font-size:.85rem;color:var(--muted)}
     </ul>
   </section>
 
-  <section aria-labelledby="t-acerca">
+  <section aria-labelledby="t-acerca" class="plegable" data-cerrada>
     <h2 id="t-acerca">Acerca de este sitio</h2>
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA, Open-Meteo y la NASA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA, Open-Meteo y la NASA.</p>
   </section>
 
   <footer>Los horarios están en hora de Argentina.</footer>
@@ -626,6 +635,40 @@ function riesgoParaguay(){
 
 /* ---------- pantalla ---------- */
 const $=id=>document.getElementById(id);
+// Secciones contraíbles. Mapa, alertas, riesgo por localidad y río Paraná quedan siempre abiertos.
+// "De dónde salen los datos" y "Acerca" empiezan cerradas. Lo que cada persona abre o cierra queda en su navegador.
+const PLEG_K='anc-plegadas',PLEG={},AL_ABRIR={};
+const plegGuardadas=()=>{try{const o=JSON.parse(localStorage.getItem(PLEG_K));return o&&typeof o==='object'?o:{}}catch(e){return {}}};
+const abierta=id=>!PLEG[id]||PLEG[id].abierta;
+function abrirSec(id,abrir,guardar){
+  const p=PLEG[id];if(!p||p.abierta===abrir)return;
+  p.abierta=abrir;p.cuerpo.hidden=!abrir;p.btn.setAttribute('aria-expanded',abrir);p.txt.textContent=abrir?'Ocultar':'Mostrar';
+  if(guardar){const g=plegGuardadas();g[id]=abrir;try{localStorage.setItem(PLEG_K,JSON.stringify(g))}catch(e){}}
+  (AL_ABRIR[id]||[]).forEach(f=>seguro(()=>f(abrir)));
+}
+const alAbrir=(id,f)=>(AL_ABRIR[id]=AL_ABRIR[id]||[]).push(f);
+function iniciarPlegables(){
+  const g=plegGuardadas();
+  document.querySelectorAll('section.plegable').forEach(sec=>{
+    const h=sec.querySelector('h2'),id=h.id,cuerpo=document.createElement('div');
+    cuerpo.className='cuerpo';cuerpo.id='c-'+id;
+    while(h.nextSibling)cuerpo.appendChild(h.nextSibling);
+    sec.appendChild(cuerpo);
+    const btn=document.createElement('button');btn.type='button';btn.className='pleg';btn.setAttribute('aria-controls',cuerpo.id);
+    btn.innerHTML='<span class="tt"></span><span class="pv" aria-hidden="true"></span>';
+    btn.firstChild.textContent=h.textContent;h.textContent='';h.appendChild(btn);
+    PLEG[id]={abierta:true,cuerpo,btn,txt:btn.lastChild};
+    const ab=typeof g[id]==='boolean'?g[id]:!sec.hasAttribute('data-cerrada');
+    PLEG[id].abierta=!ab;abrirSec(id,ab,false);
+    btn.addEventListener('click',()=>abrirSec(id,!PLEG[id].abierta,true));
+  });
+  // Un enlace a una sección cerrada (por ejemplo "Ver el río") la abre antes de ir.
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(a)abrirSec(a.getAttribute('href').slice(1),true,false)},true);
+  const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);$(hs).scrollIntoView()}};
+  porHash();addEventListener('hashchange',porHash);
+}
+// Lleva a una sección (y la abre si está cerrada).
+function irSec(id){abrirSec(id,true,false);$(id).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
 function pintarSemaforo(){
   const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',rojo:'!!',gris:'?'},ORD={rojo:0,amarillo:1,gris:2,verde:3};
   // Cada renglón: color, nombre corto (para la línea de verdes), su renglón completo y cómo se abre (data-j o enlace).
@@ -711,7 +754,7 @@ function armarMapa(){
   svg.addEventListener('pointerup',soltar);svg.addEventListener('pointercancel',soltar);
   svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){M.activo=false;sobre(null)}});
   svg.addEventListener('click',e=>{if(M.movio){M.movio=false;return}
-    if(e.target.closest('[data-rio]')){$(e.target.closest('[data-rio]').dataset.ir||'t-rio').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});return}
+    if(e.target.closest('[data-rio]')){irSec(e.target.closest('[data-rio]').dataset.ir||'t-rio');return}
     if(e.detail>1)return;   // el segundo toque de un doble toque solo acerca
     const t=e.target.closest('[data-m]'),i=t?+t.dataset.m:-1;elegir(i===M.sel?-1:i,i!==M.sel)});
   svg.addEventListener('dblclick',e=>{e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(2,c[0],c[1],true)});
@@ -1163,7 +1206,8 @@ function iniciarPacifico(){
   const dia=buscarDiaPac();let pedida=false;
   const ir=()=>{if(pedida)return;pedida=true;dia.then(d=>{if(d)mostrarPac(d)}).catch(e=>console.error(e))};
   if(typeof IntersectionObserver==='undefined'){ir();return}
-  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();ir()}},{rootMargin:'2500px 0px'});o.observe($('t-nino'));
+  // Con la sección cerrada no se pide: se espera a que la abran.
+  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();if(abierta('t-nino'))ir();else alAbrir('t-nino',ab=>{if(ab)ir()})}},{rootMargin:'2500px 0px'});o.observe($('t-nino'));
 }
 function pintarBanner(){
   const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos);
@@ -1209,7 +1253,7 @@ const OTRAS=[{n:'Formosa',lat:-26.18,lon:-58.17,dx:-8,a:'end'},{n:'Asunción',la
 const horaDe=k=>new Date(new Date(A.g.h0+':00-03:00').getTime()+k*36e5);
 const kAhora=()=>Math.max(0,Math.min(A.g.n-1,Math.floor((Date.now()-new Date(A.g.h0+':00-03:00'))/36e5)));
 // Las horas pasadas usan el satélite si la imagen ya está publicada (la NASA tarda casi una hora).
-const conSat=k=>$('aSat').checked&&!A.satMal.has(urlSat(k))&&horaDe(k).getTime()+70*60e3<=Date.now();
+const conSat=k=>abierta('t-anim')&&$('aSat').checked&&!A.satMal.has(urlSat(k))&&horaDe(k).getTime()+70*60e3<=Date.now();
 function urlSat(k){
   const t=horaDe(k).toISOString().slice(0,13)+':00:00Z',lon=x=>(x/100-63.7).toFixed(3),lat=y=>(-24-y/112).toFixed(3);
   return 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=GOES-East_ABI_GeoColor&STYLES=&SRS=EPSG:4326'
@@ -1310,8 +1354,10 @@ function iniciarAnim(){
   $('aDias').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b||!A.g)return;parar();
     const d=b.dataset.d;mostrar(d===diaAR(new Date())?kAhora():Array.from({length:A.g.n},(_,k)=>k).find(k=>diaAR(horaDe(k))===d))});
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(A.g){A.nube.clear();pintarAnim()}});
+  alAbrir('t-anim',ab=>{if(!ab)parar();else if(A.g&&A.k>=0)mostrar(A.k)});
 }
 
+seguro(iniciarPlegables);
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
 seguro(iniciarAnim);cargarGrilla();seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.

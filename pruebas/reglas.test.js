@@ -17,7 +17,7 @@ const codigo = /<script>\n([\s\S]*)<\/script>/.exec(html)[1];
 const elementos = {};   // elementos de la página que una prueba quiere mirar
 const sitio = vm.createContext({
   document: { getElementById: id => elementos[id] || nada, querySelectorAll: () => [], addEventListener() {}, hidden: false },
-  addEventListener() {}, matchMedia: () => ({ matches: false }), performance: { now: () => 0 },
+  addEventListener() {}, location: { hash: '' }, matchMedia: () => ({ matches: false }), performance: { now: () => 0 },
   requestAnimationFrame() {}, cancelAnimationFrame() {}, setInterval() {}, setTimeout() {}, clearTimeout() {},
   fetch: () => Promise.reject(new Error('sin red')), localStorage: { getItem: () => null, setItem() {} },
   AbortController, Intl, console, Promise, JSON, Math, Date, Number, String, Array, Map, Error
@@ -38,6 +38,17 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
   assert.ok(/m\[0\]==='Puerto Vilelas'\?'<p>[^']*'\+VILELAS/.test(codigo), 'falta en el detalle del municipio');
   assert.ok(/lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
   assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
+});
+
+prueba('secciones contraíbles: las principales siempre abiertas, Datos y Acerca cerradas, nada se pide con la sección cerrada', () => {
+  const sec = id => (new RegExp('<section aria-labelledby="' + id + '"([^>]*)>').exec(html) || [])[1];
+  for (const id of ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio']) assert.ok(!/plegable/.test(sec(id)), id + ' no se puede cerrar');
+  for (const id of ['t-otros', 't-lluvia', 't-anim', 't-nino']) assert.ok(/class="plegable"$/.test(sec(id)), id + ' contraíble y abierta');
+  for (const id of ['t-fuentes', 't-acerca']) assert.ok(/class="plegable" data-cerrada$/.test(sec(id)), id + ' empieza cerrada');
+  assert.ok(codigo.includes("const conSat=k=>abierta('t-anim')&&"), 'sin satélite con la animación cerrada');
+  assert.ok(/if\(abierta\('t-nino'\)\)ir\(\);else alAbrir\('t-nino'/.test(codigo), 'el mapa del Pacífico espera a que se abra');
+  assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces abren la sección');
+  assert.strictEqual(S('abierta("t-otros")'), true, 'sin iniciar, todo cuenta como abierto');
 });
 
 prueba('umbrales de lluvia', () => {
