@@ -2,7 +2,7 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 14/10/2026 (sin publicar: seguridad y muchas visitas)
+## 14/10/2026 (`8851810`: seguridad y muchas visitas)
 
 - **La página ya no consulta las fuentes**: lee primero una copia en GitHub (`servidor.json`, rama `datos`) que arma el robot cada hora con la respuesta del script de Google. El script queda de respaldo, solo si esa copia falta o tiene más de 2 horas. Si los datos son viejos se muestran con su hora y los avisos de siempre, en lugar de pedirle los ríos, los pronósticos y Yacyretá al INA desde cada navegador. Con muchas visitas a la vez, ni el INA ni el script de Google reciben un pedido por cada visita.
 - **El script lanza el robot al final de la corrida**, para que la copia salga con lo recién leído; si GitHub rechaza la clave, solo publica el número de error.
