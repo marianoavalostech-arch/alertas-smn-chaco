@@ -143,7 +143,7 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 **Solo informativos (no cambian ningún color):** la lluvia medida en estaciones (detalle de cada municipio: la estación más cercana a su centro, o a la ciudad en las 6 localidades del semáforo, a menos de 50 km y con datos de las últimas 24 horas; `MEDIDA_KM`, `MEDIDA_H`) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo (aviso si el máximo del rango llega a menos de 50 cm de su nivel de alerta, o lo supera; no se usa si tiene más de 7 días).
 
-**Ríos** (renglones propios en el semáforo; no cambian el color del mapa):
+**Ríos** (renglones propios en el semáforo; el del Paraná también pinta la costa en el mapa, ver abajo):
 
 | Río | Estación (serie INA) | Amarillo | Naranja | Rojo |
 |---|---|---|---|---|
@@ -152,6 +152,8 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 | Bermejo | El Colorado (6697) | sin color: el INA no publica niveles | — | — |
 
 **Naranja del Paraná** (desde el 13/10/2026, `casoProno`): cubre el hueco entre "puede llegar a la alerta" y "ya pasó la evacuación". Sale solo del pronóstico oficial del INA (valor más probable, la fila `p[2]` más alta entre las fechas que faltan) y del nivel oficial de evacuación; no usa Yacyretá ni cálculos propios. El rojo sigue saliendo solo de lo que mide el río. Los textos dicen "según el pronóstico del INA" y nunca "alerta naranja", porque no es una alerta oficial (las del río las declara la APA). El Paraguay no tiene naranja porque en Puerto Bermejo el INA no publica pronóstico. Con el río arriba de la alerta, el pronóstico solo agrega texto si su máximo llega a la evacuación.
+
+**Costa del Paraná en el mapa** (desde el 14/10/2026, `RIBERA` y `colorDe`): Barranqueras, Puerto Vilelas e Isla del Cerrito toman el color más alto entre el suyo (lluvia con el piso del SMN) y el renglón del Paraná (amarillo, naranja o rojo; el gris y el verde del río no cambian nada). Es la única forma de que el mapa muestre naranja; la leyenda lo aclara ("Naranja: solo en la costa del Paraná, cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es una alerta del SMN"). El detalle del municipio explica que el color sigue al río. Fontana y Resistencia no se pintan: la ciudad está dentro de las defensas. El Paraguay no pinta el mapa.
 
 Una lectura de 4 días o más deja el renglón en gris.
 
@@ -172,13 +174,13 @@ El pronóstico del Paraná no se usa si tiene más de 7 días (ni para el amaril
 ## Limitaciones conocidas
 
 - Los umbrales de lluvia son orientativos: no están validados por ningún organismo. Se ajustaron el 12/10/2026 con la lluvia diaria de 1991 a 2026 de las 6 localidades del semáforo (archivo de Open-Meteo), aplicando la regla como si el pronóstico hubiera sido perfecto: el amarillo sale unas 5 veces por año en el interior y 8 en Resistencia, el rojo 1 o 2, y enero de 2019 queda en rojo en todas. Ese archivo es un modelo de unos 25 km que suaviza los picos, y no hay una lista oficial de inundaciones para validar día por día.
-- Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico de corto plazo para Barranqueras, Puerto Formosa y Puerto Pilcomayo; no para Puerto Bermejo ni para el Bermejo. Las zonas ribereñas tienen renglón propio en el semáforo y no cambian el color del mapa.
+- Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico de corto plazo para Barranqueras, Puerto Formosa y Puerto Pilcomayo; no para Puerto Bermejo ni para el Bermejo. Las zonas ribereñas tienen renglón propio en el semáforo; el del Paraná también pinta la costa en el mapa.
 - Un municipio entra en una alerta del SMN si la zona alertada cubre su punto central o alguno de sus puntos interiores (uno cada unos 10 km, a más de 4 km del borde). Si la zona apenas roza el borde, puede no figurar. Doce municipios chicos solo tienen el punto central.
 - El canal del SMN rotula las horas como hora argentina, pero corresponden a UTC. El script las corrige 3 horas (`AJUSTE_H`), verificado contra el mapa del SMN el 6/10/2026. En cada lectura controla que el comienzo de las alertas caiga en las franjas del SMN (0, 6, 12 y 18 h); si la mayoría cae 3 horas antes, el SMN arregló su canal y el script deja de corregir solo (`ajuste.horas` pasa a 0). Necesita al menos 3 alertas en el país para decidir; con menos, sigue con lo que venía usando.
 - La lluvia que decide el color es una estimación por modelo en un punto por municipio, no una medición con pluviómetro.
 - La lluvia medida viene de estaciones automáticas sin revisar: puede tener errores y huecos. Los controles atrapan el pluviómetro trabado en 0 solo cuando llueve en las vecinas, y no detectan una estación que mide de menos. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña; para Resistencia la más cercana es la de Corrientes. Las estaciones del SMN y del INTA que tiene el INA no son públicas, y los datos abiertos del SMN no traen milímetros de lluvia.
 - El mapa animado no es un radar: la lluvia, también la de las horas pasadas, es del modelo, en puntos cada unos 50 km. Las tormentas son las que prevé el modelo, no rayos medidos.
-- El mapa no muestra el estado de los ríos. No se incluyen los avisos a muy corto plazo del SMN.
+- El mapa muestra el Paraná solo en Barranqueras, Puerto Vilelas e Isla del Cerrito; el Paraguay y el Bermejo no lo cambian. No se incluyen los avisos a muy corto plazo del SMN.
 - Puerto Vilelas: el detalle del municipio y la sección del Paraná enlazan a Hidroalerta Vilelas (hidrometro.concejovilelas.com, Sala de Situación de la Municipalidad), que informa caminos cortados, estaciones de bombeo (las N° 9, 10 y 11 de APA y una municipal) y avisos por barrio. Sus datos se cargan a mano y no son públicos para otros sitios (la base pide iniciar sesión), por eso la página no los lee: solo enlaza. Se podrían mostrar si el municipio publica un archivo abierto con el estado de las bombas y da permiso.
 
 ## Fuentes

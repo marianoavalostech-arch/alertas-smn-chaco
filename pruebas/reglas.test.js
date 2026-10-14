@@ -121,6 +121,35 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   S(`D.prono={datos:null}`);
 });
 
+prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río', () => {
+  const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
+  const B = idx('Barranqueras'), V = idx('Puerto Vilelas'), C = idx('Isla del Cerrito'), F = idx('Fontana'), R = idx('Resistencia');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas', 'Isla del Cerrito']);
+  assert.ok([B, V, C, F, R].every(i => i >= 0));
+  const col = (lluvia, obs, prono) => JSON.parse(S(`hoy='2026-10-13';LISTO=true;SMN=SMN_VACIO;
+    D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};
+    M.R=${lluvia ? `LOCS.map(()=>({c:'${lluvia}',et:ETQ['${lluvia}'],por:'x'}))` : '[]'};
+    M.est=${lluvia ? `Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'${lluvia}',ll:{cayo:0,viene:0,max:0}}]))` : '{}'};M.tEst=Date.now();M.todos=${lluvia ? "'listo'" : "''"};
+    JSON.stringify([${B},${V},${C},${F},${R}].map(i=>{const k=colorDe(i);return [k.c,k.tipo,!!k.rio]}))`));
+  const obs13 = [['2026-10-06', 4.27], ['2026-10-10', 4.88], ['2026-10-13', 5.27]];
+  const pr13 = { emitido: '2026-10-13T03:00:00.000Z', p: [['2026-10-13', 5.2, 5.3, 5.4], ['2026-10-20', 6.75, 7.3, 7.55]] };
+  // Caso real del 13/10: el renglón del Paraná en naranja pinta la costa; Fontana y Resistencia siguen con su lluvia
+  assert.deepStrictEqual(col('verde', obs13, pr13), [['naranja', 'gran', true], ['naranja', 'gran', true], ['naranja', 'est', true], ['verde', 'gran', false], ['verde', 'seg', false]]);
+  // La lluvia en rojo gana al naranja del río
+  assert.deepStrictEqual(col('rojo', obs13, pr13).slice(0, 3).map(x => x[0] + x[2]), ['rojofalse', 'rojofalse', 'rojofalse']);
+  // Río en verde: no cambia nada
+  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 4.0]]).slice(0, 3).map(x => x[0] + x[2]), ['amarillofalse', 'amarillofalse', 'amarillofalse']);
+  // Río sobre la evacuación: rojo aunque la lluvia esté en amarillo
+  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).slice(0, 3).map(x => x[0]), ['rojo', 'rojo', 'rojo']);
+  // Sin datos de lluvia todavía, el río igual pinta la costa
+  assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
+  // Leyenda con el naranja, aclarando que no es una alerta del SMN
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja: solo en la costa del Paraná[^<]*No es una alerta del SMN<\/button>/.test(html), 'leyenda');
+  assert.strictEqual(S('ETQ.naranja'), 'Naranja');
+  assert.ok(/#mInfo\.naranja\{border-color:var\(--naranja\)\}/.test(html), 'borde del detalle');
+  S(`D.prono={datos:null};M.R=[];M.est={};M.todos=''`);
+});
+
 prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () => {
   const par = (hoy, obs) => S(`hoy='${hoy}';LISTO=true;D.paraguay={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};riesgoParaguay()`);
   assert.strictEqual(par('2027-03-10', [['2027-03-07', 3.6], ['2027-03-10', 3.6]]).c, 'verde');
