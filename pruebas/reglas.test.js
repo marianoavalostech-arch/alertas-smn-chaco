@@ -210,13 +210,11 @@ prueba('datos raros: no pasan la revisión de forma y no traban la página', () 
   assert.strictEqual(S('pasos'), 2); assert.strictEqual(S('D.rio.datos'), null);
 });
 
-prueba('lluvia: la copia del servidor tiene que ser de hoy, y no se inventa un cero si faltan datos', () => {
+prueba('lluvia: la copia del servidor tiene que ser de hoy', () => {
   const dias = h => Array.from({ length: 14 }, (_, i) => S(`masDias('${h}',${i - 7})`));
   const copia = h => S(`hoy='2026-10-07';delServidor('lluvia',{datos:{lluvia:{t:new Date().toISOString(),dias:${JSON.stringify(dias(h))},mm:LOCS.map(()=>Array(14).fill(1))}}})`);
   assert.ok(copia('2026-10-07'));
   assert.strictEqual(copia('2026-10-06'), null);
-  assert.strictEqual(S(`mmDe({daily:{precipitation_sum:[1,null,2]}})`)[1], 0);
-  assert.throws(() => S(`mmDe({daily:{precipitation_sum:[null,null,null,null,1]}})`));
 });
 
 prueba('SMN: si el informe lleva más de 3 horas sin renovar, se avisa', () => {
@@ -278,7 +276,7 @@ prueba('script: río, una lectura por día en hora de Argentina', () => {
   assert.throws(() => gs.normRio([]));
 });
 
-prueba('pronóstico del INA: el script y el sitio lo leen igual', () => {
+prueba('pronóstico del INA: lo que arma el script lo acepta el sitio', () => {
   const f = (dia, valor, qualifier) => ({ timestart: dia + 'T03:00:00.000Z', timeend: dia + 'T03:00:00.000Z', valor, qualifier });
   const crudo = { id: 1, forecast_date: '2026-10-06T03:00:00.000Z', cal_id: 289, series: [{ series_id: 3523, pronosticos: [
     f('2026-10-20', 5.55, 'medio'), f('2026-10-13', 5.7, 'superior'), f('2026-10-13', 4.9, 'inferior'), f('2026-10-13', 5.34, 'medio'),
@@ -287,13 +285,11 @@ prueba('pronóstico del INA: el script y el sitio lo leen igual', () => {
   assert.strictEqual(g.emitido, '2026-10-06T03:00:00.000Z');
   // ordenado por fecha; sin mínimo o máximo se usa el valor central; un valor imposible descarta esa fecha
   assert.deepStrictEqual(g.p, [['2026-10-13', 4.9, 5.34, 5.7], ['2026-10-20', 5.55, 5.55, 6], ['2026-11-03', 5.1, 5.1, 5.1]]);
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.prono(${JSON.stringify(crudo)})`))), g);
   assert.ok(S(`FORMA.prono(${JSON.stringify(g)})`));
   assert.strictEqual(S(`FORMA.prono({emitido:'2026-10-06T03:00:00.000Z',p:[['2026-10-13',4.9,'5.34',5.7]]})`), false);
   assert.strictEqual(S(`FORMA.prono({p:[['2026-10-13',4.9,5.34,5.7]]})`), false);
   assert.throws(() => gs.normProno({ forecast_date: '2026-10-06T03:00:00.000Z', series: [] }));
   assert.throws(() => gs.normProno({ series: [{ pronosticos: [f('2026-10-13', 5, 'medio')] }] }));
-  assert.throws(() => S(`NORM.prono({message:'error'})`));
 });
 
 prueba('script: si una fuente falla queda la copia anterior y las demás siguen', () => {
@@ -357,15 +353,17 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   // Lectura del río
   const crudo = [{ timestart: '2026-10-06T03:00:00.000Z', valor: 4.5 }, { timestart: '2026-10-05T15:00:00.000Z', valor: 4.4 },
     { timestart: '2026-10-06T15:00:00.000Z', valor: 4.6, timeupdate: '2026-10-06T16:00:00.000Z' }, { timestart: '2026-10-07T01:00:00.000Z', valor: 4.7 }, { timestart: '2026-10-07T12:00:00.000Z', valor: 99 }];
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.rio(${JSON.stringify(crudo)})`))), JSON.parse(JSON.stringify(gs.normRio(crudo))));
-  // Direcciones de las fuentes
-  const u = S(`hoy='2026-10-07';URLS()`), f = {}; gs.fuentesExtra('2026-10-07').forEach(x => { f[x.k] = x.url; });
-  ['rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'yacy'].forEach(k => assert.strictEqual(u[k], f[k], k));
+  const rs = JSON.parse(JSON.stringify(gs.normRio(crudo)));
+  assert.deepStrictEqual(rs.obs, [['2026-10-05', 4.4], ['2026-10-06', 4.7]]);   // en hora argentina, la última lectura de cada día; 99 es imposible
+  assert.ok(S(`FORMA.rio(${JSON.stringify(rs)})`), 'el sitio acepta lo que arma el script');
+  // Lluvia: un día suelto sin dato cuenta como 0; si faltan más de 3, no se usa (no se puede decir que no llovió)
+  const ll = v => [{ daily: { time: ['2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11'], precipitation_sum: v } }];
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.normLluvia(ll([1, null, 2, 0, 0]), 1).mm)), [[1, 0, 2, 0, 0]]);
+  assert.throws(() => gs.normLluvia(ll([null, null, null, null, 1]), 1));
   // Lectura de lo que suelta Yacyretá
   const yc = [{ timestart: '2026-10-12T03:00:00.000Z', valor: 27200 }, { timestart: '2026-10-11T03:00:00.000Z', valor: 23800.4 },
     { timestart: '2026-10-13T03:00:00.000Z', valor: 32800, timeupdate: 'x' }, { timestart: '2026-10-10T03:00:00.000Z', valor: -1 }, { timestart: '2026-10-09T03:00:00.000Z', valor: null }];
-  const ys = JSON.parse(JSON.stringify(S(`NORM.yacy(${JSON.stringify(yc)})`)));
-  assert.deepStrictEqual(ys, JSON.parse(JSON.stringify(gs.normYacy(yc))));
+  const ys = JSON.parse(JSON.stringify(gs.normYacy(yc)));
   assert.deepStrictEqual(ys.obs, [['2026-10-11', 23800], ['2026-10-12', 27200], ['2026-10-13', 32800]]);
   assert.ok(S(`FORMA.yacy(${JSON.stringify(ys)})`)); assert.throws(() => gs.normYacy([{ timestart: '2026-10-10T03:00:00.000Z', valor: 0 }]));
   // Números de fenómeno
@@ -447,7 +445,7 @@ prueba('lluvia medida: el detalle del municipio usa la estación más cercana, r
   assert.strictEqual(S(`delete D.medida;medidaInfo(${i})`), '');
 });
 
-prueba('pronóstico del Paraguay: el script y el sitio lo leen igual, por puerto, y se muestra sin cambiar colores', () => {
+prueba('pronóstico del Paraguay: el script lo arma por puerto, el sitio lo acepta y se muestra sin cambiar colores', () => {
   const f = (dia, valor, qualifier) => ({ timestart: dia + 'T03:00:00.000Z', timeend: dia + 'T03:00:00.000Z', valor, qualifier });
   const serie = (id, base) => ({ series_id: id, pronosticos: [f('2026-10-13', base, 'main'), f('2026-10-13', base - 0.1, 'inferior'), f('2026-10-13', base + 0.1, 'superior'),
     f('2026-10-20', base + 1.6, 'main'), f('2026-10-20', base + 1, 'inferior'), f('2026-10-20', base + 2.2, 'superior')] });
@@ -455,11 +453,9 @@ prueba('pronóstico del Paraguay: el script y el sitio lo leen igual, por puerto
   const g = JSON.parse(JSON.stringify(gs.normPronoPy(crudo)));
   assert.deepStrictEqual(Object.keys(g).sort(), ['emitido', 'formosa', 'pilcomayo']);
   assert.deepStrictEqual(g.formosa[1].map(v => typeof v === 'number' ? Math.round(v * 100) / 100 : v), ['2026-10-20', 4.3, 4.9, 5.5]);
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S(`NORM.pronoPy(${JSON.stringify(crudo)})`))), g);
   assert.ok(S(`FORMA.pronoPy(${JSON.stringify(g)})`));
   assert.strictEqual(S(`FORMA.pronoPy({emitido:'2026-10-12T12:00:00.000Z'})`), false);
   assert.throws(() => gs.normPronoPy({ forecast_date: '2026-10-12T12:00:00.000Z', series: [serie(1, 3)] }));
-  assert.throws(() => S(`NORM.pronoPy({message:'error'})`));
   const ver = (dia, d) => S(`hoy='${dia}';D.pronoPy={datos:${JSON.stringify(d)},vivo:true,t:new Date()};pronoPyInfo()`);
   let t = ver('2026-10-13', g);
   assert.ok(t.includes('<b>Puerto Formosa:</b> 3,30 m previsto para el 13/10; llegaría a 4,90 m el 20/10 (entre 4,30 y 5,50 m)'), t);
@@ -618,6 +614,111 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.strictEqual(S('YACY_NORMAL.length'), 12);
     assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
     assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');
+  });
+
+  // Muchas visitas: la página nunca consulta las fuentes; usa la copia de GitHub, el script de respaldo o lo guardado
+  S(`var llamadas=[];fetch=u=>{llamadas.push(String(u));return Promise.reject(new Error('sin red'))}`);
+  const copiaRio = h => `{robot:{t:new Date(Date.now()-${h}*36e5).toISOString()},datos:{rio:{t:new Date(Date.now()-${h}*36e5).toISOString(),obs:[[diaAR(new Date()),5.1]],hora:null,act:null}}}`;
+  S(`hoy=diaAR(new Date());SRV_P=Promise.resolve(${copiaRio(5)});delete D.rio;localStorage.getItem=()=>null`);
+  await S(`cargar('rio')`);
+  const rioViejo = S(`({h:D.rio.datos.obs[0][1],vivo:D.rio.vivo,robot:!!D.rio.robot,horas:Math.round((Date.now()-D.rio.t)/36e5)})`);
+  // Lo guardado en el dispositivo es más nuevo que la copia: se usa eso
+  S(`localStorage.getItem=k=>k==='anc:rio'?JSON.stringify({t:new Date(Date.now()-36e5).toISOString(),datos:{obs:[[diaAR(new Date()),5.3]],hora:null,act:null}}):null;delete D.rio`);
+  await S(`cargar('rio')`);
+  const rioMem = S(`({h:D.rio.datos.obs[0][1],vivo:D.rio.vivo})`);
+  S(`localStorage.getItem=()=>null;SRV_P=Promise.resolve(null);delete D.rio`);
+  await S(`cargar('rio')`);
+  const rioNada = S(`({datos:D.rio.datos,error:!!D.rio.error})`);
+  // Medida: la copia vieja cuenta como al día (cada estación lleva su hora)
+  S(`SRV_P=Promise.resolve({robot:{t:new Date(Date.now()-5*36e5).toISOString()},datos:{medida:{t:new Date(Date.now()-5*36e5).toISOString(),e:[['X',-27,-59,new Date().toISOString(),1,2,0]]}}});delete D.medida`);
+  await S(`cargar('medida')`);
+  const medidaVieja = S(`D.medida.vivo`);
+  prueba('muchas visitas: la página nunca consulta al INA ni a Open-Meteo; con la copia vieja muestra su hora', () => {
+    for (const f of ['alerta.ina.gob.ar', 'api.open-meteo.com', 'cpc.ncep.noaa.gov', 'ssl.smn.gob.ar/CAP']) assert.ok(!codigo.includes(f), 'la página no tiene la dirección de ' + f);
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(rioViejo)), { h: 5.1, vivo: false, robot: true, horas: 5 });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(rioMem)), { h: 5.3, vivo: false });
+    assert.strictEqual(rioNada.datos, null); assert.ok(rioNada.error);
+    assert.strictEqual(medidaVieja, true);
+    assert.strictEqual(S('llamadas.length'), 0, 'no pidió nada');
+  });
+
+  // Copia de GitHub primero; el script solo si la copia falta o es vieja
+  const pide = async (gh, sc) => S(`llamadas=[];getJSON=u=>{llamadas.push(u.includes('raw.githubusercontent.com')?'github':u.includes('script.google.com')?'script':u);
+      const r=u.includes('raw.githubusercontent.com')?${gh}:${sc};return r?Promise.resolve(r):Promise.reject(new Error('falla'))};
+    leerCopias().then(j=>({de:j&&j.de,llamadas}))`);
+  const ct = (de, h) => `{de:'${de}',robot:{t:new Date(Date.now()-${h}*36e5).toISOString()},capturado:new Date().toISOString(),datos:{}}`;
+  const c1 = await pide(ct('github', 0.5), ct('script', 0));
+  const c2 = await pide(ct('github', 3), ct('script', 0));
+  const c3 = await pide(ct('github', 3), 'null');
+  const c4 = await pide('null', ct('script', 0));
+  const c5 = await pide(`{error:'x'}`, `{error:'y'}`);
+  const c6 = await pide(ct('github', 3), ct('script', 5));
+  prueba('copias: primero GitHub; el script de Google solo si la copia de GitHub falta o tiene más de 2 horas', () => {
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(c1)), { de: 'github', llamadas: ['github'] });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(c2)), { de: 'script', llamadas: ['github', 'script'] });
+    assert.strictEqual(c3.de, 'github');      // el script no responde: queda la copia vieja
+    assert.strictEqual(c4.de, 'script');
+    assert.strictEqual(c5.de, undefined);     // una respuesta de error no se usa
+    assert.strictEqual(c6.de, 'github');      // el script trae algo más viejo: queda la de GitHub
+  });
+
+  // Robot de la copia del servidor
+  const sv = require('../robot/servidor.js');
+  const copiaSv = (t, extra) => Object.assign({ robot: { t }, capturado: t, fechas: ['2026-10-14'], areas: [0], alertas: {}, datos: { rio: {} } }, extra || {});
+  const correr = async (anterior, respuesta) => { global.fetch = async () => respuesta instanceof Error ? Promise.reject(respuesta)
+      : { ok: true, text: async () => typeof respuesta === 'string' ? respuesta : JSON.stringify(respuesta) };
+    const r = await sv.armarCopia(anterior, 'https://script.google.com/macros/s/x/exec', 1); global.fetch = real; return r; };
+  const ant = copiaSv('2026-10-14T12:00:00Z');
+  const s1 = await correr(ant, copiaSv('2026-10-14T13:00:00Z'));
+  const s2 = await correr(ant, copiaSv('2026-10-14T11:00:00Z'));
+  const s3 = await correr(ant, '<html>error</html>');
+  const s4 = await correr(ant, { error: 'algo' });
+  const s5 = await correr(null, new Error('sin red'));
+  const s6 = await correr(ant, copiaSv('2026-10-14T13:00:00Z', { areas: 'x' }));
+  prueba('robot de la copia: guarda solo una copia completa y más nueva; si no, queda la anterior', () => {
+    assert.strictEqual(s1.salida.robot.t, '2026-10-14T13:00:00Z'); assert.ok(s1.bien);
+    assert.strictEqual(s2.salida, ant); assert.ok(s2.bien);
+    for (const x of [s3, s4, s6]) { assert.strictEqual(x.salida, ant); assert.strictEqual(x.bien, false); }
+    assert.strictEqual(s5.salida, null); assert.strictEqual(s5.bien, false);
+    assert.strictEqual(sv.urlScript(), S('SMN_URL'), 'la dirección del script sale de la página');
+    assert.ok(S(`copiaVale(${JSON.stringify(s1.salida)})`), 'la página acepta lo que guarda el robot');
+  });
+
+  // Script: lanza el robot después de guardar y no publica el texto de error de GitHub
+  const orden = [], guardado = () => JSON.parse(vm.runInContext('leerGuardado()', gs));
+  props.GITHUB_TOKEN = 'clave-de-prueba';
+  gs.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 401, getContentText: () => '{"message":"Bad credentials","detalle":"texto largo de GitHub"}' }) };
+  const avisos = []; gs.console = { warn: m => avisos.push(m), log() {}, error() {} };
+  const malo = vm.runInContext('lanzarRobot()', gs);
+  const orig = { juntar: gs.juntar, lanzarRobot: gs.lanzarRobot, avisarLluvia: gs.avisarLluvia };
+  gs.Utilities = { formatDate: () => '2026-10-14' };
+  vm.runInContext(`juntar=function(){return {datos:{fuente:'prueba',robot:{t:'viejo',estado:'bien'}},falla:null}};
+    lanzarRobot=function(){__orden.push('robot:'+JSON.parse(leerGuardado()).robot.t);return 'GitHub respondió 401'};
+    avisarLluvia=function(){__orden.push('aviso')}`, Object.assign(gs, { __orden: orden }));
+  vm.runInContext(`guardar(JSON.stringify({robot:{t:'antes',estado:'bien'}}))`, gs);
+  vm.runInContext('actualizar()', gs);
+  const final = guardado();
+  Object.assign(gs, orig); gs.console = console; delete props.GITHUB_TOKEN;
+  prueba('script: lanza el robot después de guardar y no publica el texto de error de GitHub', () => {
+    assert.strictEqual(malo, 'GitHub respondió 401');
+    assert.ok(avisos.some(a => a.includes('Bad credentials')), 'el detalle queda en el registro');
+    assert.ok(orden[0].startsWith('robot:') && orden[0] !== 'robot:antes', 'cuando se lanza el robot ya está guardado lo nuevo');
+    assert.strictEqual(orden[1], 'aviso');
+    assert.strictEqual(final.robot.estado, 'GitHub respondió 401');
+    assert.ok(!JSON.stringify(final).includes('Bad credentials'));
+  });
+
+  prueba('regla del navegador (CSP): la huella del código está al día y cubre todas las fuentes que usa la página', () => {
+    const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8'), csp = (/Content-Security-Policy = "([^"]+)"/.exec(toml) || [])[1];
+    assert.ok(csp, 'falta la regla en netlify.toml');
+    const h = require('../herramientas/csp.js').huella(html), regla = n => (new RegExp('(?:^|; )' + n + ' ([^;]+)').exec(csp) || [])[1] || '';
+    assert.strictEqual(regla('script-src'), h, 'la huella quedó vieja: correr  node herramientas/csp.js');
+    assert.ok(/default-src 'none'/.test(csp) && /object-src 'none'/.test(csp) && /frame-ancestors 'none'/.test(csp) && /base-uri 'none'/.test(csp));
+    assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
+    const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas/.test(u));   // esos dos son enlaces
+    for (const u of hosts) assert.ok(regla('connect-src').split(' ').includes(u), u + ' falta en connect-src');
+    assert.ok(regla('connect-src').includes('https://script.googleusercontent.com'), 'el script de Google redirige ahí');
+    assert.ok(/Permissions-Policy = "camera=\(\), microphone=\(\), geolocation=\(\)/.test(toml));
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

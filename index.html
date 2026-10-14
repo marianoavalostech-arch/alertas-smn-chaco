@@ -388,58 +388,13 @@ async function getJSON(u){
 let hoy=diaAR(new Date());   // se recalcula en cada renovación
 // Otros ríos (series de altura del INA): el Paraguay en Puerto Bermejo, con niveles oficiales, y el Bermejo en El Colorado, solo informativo.
 const OTROS={
- paraguay:{serie:58,rio:'Paraguay',lugar:'Puerto Bermejo',fuente:'Prefectura Naval Argentina, vía INA',nivel:{alerta:6.5,evac:7.0}},
- bermejo:{serie:6697,rio:'Bermejo',lugar:'El Colorado',fuente:'estación automática, vía INA',nivel:null}
+ paraguay:{rio:'Paraguay',lugar:'Puerto Bermejo',fuente:'Prefectura Naval Argentina, vía INA',nivel:{alerta:6.5,evac:7.0}},
+ bermejo:{rio:'Bermejo',lugar:'El Colorado',fuente:'estación automática, vía INA',nivel:null}
 };
-const serieINA=n=>'https://alerta.ina.gob.ar/a5/obs/puntual/series/'+n+'/observaciones?timestart='+masDias(hoy,-30)+'&timeend='+masDias(hoy,2)+'&format=json';
-const URLS=()=>({
- rio:serieINA(20),
- paraguay:serieINA(OTROS.paraguay.serie),
- bermejo:serieINA(OTROS.bermejo.serie),
- yacy:serieINA(937),   // caudal que suelta la represa de Yacyretá (m³/s)
- prono:'https://alerta.ina.gob.ar/a5/sim/calibrados/289/corridas/last?estacion_id=20&includeProno=true',
- pronoPy:'https://alerta.ina.gob.ar/a5/sim/calibrados/312/corridas/last?includeProno=true'
-});
-// Pronóstico del INA para el río Paraguay, río arriba de Puerto Bermejo: serie de cada puerto y sus niveles (los del INA). Solo informativo.
-const PUERTOS_PY={formosa:{serie:3127,lugar:'Puerto Formosa',alerta:7.8,evac:8.3},pilcomayo:{serie:1525,lugar:'Puerto Pilcomayo',alerta:5.35,evac:6.0}};
+// Pronóstico del INA para el río Paraguay, río arriba de Puerto Bermejo: niveles de cada puerto (los del INA). Solo informativo.
+const PUERTOS_PY={formosa:{lugar:'Puerto Formosa',alerta:7.8,evac:8.3},pilcomayo:{lugar:'Puerto Pilcomayo',alerta:5.35,evac:6.0}};
 // Lluvia medida en estaciones automáticas (red SAT de la Red Hidrológica Nacional, vía INA). La arma el script de Google; la página no la pide al INA.
 const MEDIDA_KM=50,MEDIDA_H=24;   // estación más cercana a menos de 50 km, con una lectura de las últimas 24 horas
-// Cada fuente se normaliza a la misma forma que la captura guardada.
-// Lluvia de un punto. Un día suelto sin dato cuenta como 0; si faltan más de 3, no se usa (no se puede decir que no llovió).
-const mmDe=x=>{const v=x.daily.precipitation_sum;if(!Array.isArray(v)||v.filter(y=>y==null).length>3)throw new Error('faltan datos');return v.map(y=>y==null?0:Number(y))};
-const NORM={
- lluvia:j=>{if(!Array.isArray(j)||j.length!==LOCS.length)throw new Error('formato');return {dias:j[0].daily.time,mm:j.map(mmDe)}},
- // Se ordena por fecha, se descartan valores imposibles y queda una lectura por día (la última de cada día).
- rio:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>r.valor!=null&&r.timestart&&Number(r.valor)>-3&&Number(r.valor)<12)
-     .sort((a,b)=>new Date(a.timestart)-new Date(b.timestart));
-   if(!rows.length)throw new Error('sin lecturas');
-   const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Number(r.valor)));
-   const u=rows[rows.length-1];
-   return {obs:[...m],act:u.timeupdate||null,hora:u.timestart}},
- // Lo que suelta Yacyretá (m³/s): una lectura por día (la última), redondeada, sin valores imposibles.
- yacy:j=>{const rows=(Array.isArray(j)?j:j.rows||[]).filter(r=>{const v=Number(r&&r.valor);return r&&r.valor!=null&&r.timestart&&v>0&&v<1e5})
-     .sort((a,b)=>new Date(a.timestart)-new Date(b.timestart));
-   if(!rows.length)throw new Error('sin lecturas');
-   const m=new Map();rows.forEach(r=>m.set(diaAR(new Date(r.timestart)),Math.round(Number(r.valor))));
-   return {obs:[...m],hora:rows[rows.length-1].timestart}},
- paraguay:j=>NORM.rio(j),
- bermejo:j=>NORM.rio(j),
- // Pronóstico del INA para Barranqueras: por cada fecha, mínimo, valor más probable y máximo del rango.
- prono:j=>{const q={inferior:1,medio:2,superior:3},m=new Map();
-   ((j&&j.series)||[]).forEach(s=>(s.pronosticos||[]).forEach(p=>{const v=Number(p.valor),t=new Date(p.timestart);
-     if(p.valor==null||!(v>-3&&v<12)||isNaN(t))return;
-     const dia=diaAR(t);if(!m.has(dia))m.set(dia,[dia,null,null,null]);m.get(dia)[q[p.qualifier]||2]=v}));
-   const p=[...m.values()].filter(r=>r[2]!=null).map(r=>{const a=r[1]==null?r[2]:r[1],c=r[3]==null?r[2]:r[3];return [r[0],Math.min(a,r[2],c),r[2],Math.max(a,r[2],c)]})
-     .sort((a,b)=>a[0]<b[0]?-1:1);
-   if(!p.length||isNaN(new Date(j.forecast_date)))throw new Error('sin pronóstico');
-   return {emitido:j.forecast_date,p}},
- // Pronóstico del Paraguay: la misma lectura que el del Paraná, por separado para cada puerto.
- pronoPy:j=>{const out={emitido:j&&j.forecast_date};let hay=false;
-   ((j&&j.series)||[]).forEach(s=>{const k=Object.keys(PUERTOS_PY).find(k=>PUERTOS_PY[k].serie===s.series_id);if(!k)return;
-     try{out[k]=NORM.prono({forecast_date:j.forecast_date,series:[s]}).p;hay=true}catch(e){}});
-   if(!hay||isNaN(new Date(out.emitido)))throw new Error('sin pronóstico');
-   return out}
-};
 // Forma esperada de cada dato, venga del servidor o de lo guardado en el dispositivo.
 const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(v=>typeof v==='number'));
 const esFecha=v=>v==null||!isNaN(new Date(v));
@@ -462,12 +417,15 @@ const MEM={
   borrar(k){try{localStorage.removeItem('anc:'+k)}catch(e){}},
   guardar(k,datos,t){try{localStorage.setItem('anc:'+k,JSON.stringify({t:new Date(t).toISOString(),datos}))}catch(e){}}
 };
-// Copia horaria del servidor (script de Google): trae las alertas del SMN y, si el script está al día, también lluvia, ríos, pronósticos, Yacyretá y ONI.
-// Así la mayoría de las visitas no le pide nada a Open-Meteo ni al INA.
+// Copia horaria del servidor (script de Google): trae las alertas del SMN, ríos, pronósticos, Yacyretá, lluvia medida y ONI.
+// La página nunca le pide datos al INA ni a Open-Meteo: con muchas visitas a la vez esas fuentes podrían bloquear o caerse.
+// El robot de GitHub guarda esa copia en la rama "datos" (servidor.json), que GitHub entrega a muchas visitas a la vez.
+// La página lee primero esa copia; el script de Google queda de respaldo si la copia falta o tiene más de 2 horas.
 let SRV=null,SRV_P=Promise.resolve(null),LLU_P=Promise.resolve(null);
 // Lluvia: la arma un robot de GitHub (robot/lluvia.js), que lanza el script de Google cada hora, y la deja en la rama "datos". Todos los visitantes leen esa misma copia.
 // Open-Meteo rechaza los pedidos que salen de Google, por eso la lluvia no viene en la copia del script.
-const LLUVIA_URL='https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/lluvia.json';
+const DATOS_URL='https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/';
+const LLUVIA_URL=DATOS_URL+'lluvia.json',COPIA_URL=DATOS_URL+'servidor.json';
 const espera=ms=>new Promise(r=>setTimeout(r,ms));
 // Si el script de Google todavía no conoce a El Espinillo (trae un municipio menos), le toca lo de Villa Río Bermejito, de donde se separó.
 function completar(j){
@@ -476,11 +434,22 @@ function completar(j){
   if(d&&Array.isArray(d.mm)&&d.mm.length===n-1)d.mm.push(d.mm[v]);
   return j;
 }
+// Hora de la copia: la de la última corrida del script (aunque el canal del SMN haya fallado en esa corrida).
+const tCopia=j=>{const t=new Date(j&&j.robot&&j.robot.t);return isNaN(t)?(j&&!isNaN(new Date(j.capturado))?new Date(j.capturado):null):t};
+const copiaVale=j=>!!j&&typeof j==='object'&&!j.error&&!!j.datos&&typeof j.datos==='object'&&!!tCopia(j);
+// Copia de GitHub primero. Si falta o tiene más de 2 horas, se pide al script; si el script falla, queda la copia de GitHub aunque sea vieja.
+async function leerCopias(){
+  const bucket=Math.floor(Date.now()/3e5),gh=await getJSON(COPIA_URL+'?'+bucket).catch(()=>null),okGh=copiaVale(gh);
+  if(okGh&&Date.now()-tCopia(gh)<2*36e5)return gh;
+  const sc=SMN_URL?await getJSON(SMN_URL).catch(()=>null):null;
+  if(copiaVale(sc)&&(!okGh||tCopia(sc)>=tCopia(gh)))return sc;
+  return okGh?gh:sc;
+}
 function pedirServidor(){
-  SRV_P=SMN_URL?getJSON(SMN_URL).then(j=>{SRV=completar(j);return SRV}).catch(()=>null):Promise.resolve(null);
+  SRV_P=leerCopias().then(j=>{SRV=j?completar(j):null;return SRV}).catch(()=>null);
   LLU_P=LLUVIA_URL?getJSON(LLUVIA_URL+'?'+Math.floor(Date.now()/3e5)).catch(()=>null):Promise.resolve(null);
 }
-// Dato del servidor: solo si tiene la forma esperada y menos de 2 horas. Si no, se consulta la fuente directamente.
+// Dato del servidor: solo si tiene la forma esperada y menos de 2 horas. Si no, se usa la copia más vieja (nunca se consulta la fuente).
 function delServidor(k,j){
   const d=j&&j.datos&&j.datos[k];
   if(!d||isNaN(new Date(d.t))||Date.now()-new Date(d.t)>2*36e5||!FORMA[k](d))return null;
@@ -518,19 +487,22 @@ async function cargar(k){
     let nuevo;
     if(sv)nuevo={datos:sv,vivo:true,t:new Date(sv.t)};
     else if(g)nuevo={datos:g.datos,vivo:true,t:new Date(g.t)};
-    else if(k==='medida'){
-      // Lluvia medida: solo de la copia del script, aunque tenga más de 2 horas. Cada estación lleva la hora de su última lectura,
-      // y las de más de 24 horas no se muestran.
-      const j=await Promise.race([SRV_P,espera(4000)]),d=j&&j.datos&&j.datos.medida;if(!d)throw new Error('sin copia');
-      nuevo={datos:d,vivo:true,t:new Date(d.t)};
-    }
     else if(esLluvia(k)){
       // Copia atrasada: si es de hoy se usa como al día (con su hora); si es de otro día, como dato guardado.
       const v=await copiaVieja(k);if(!v)throw new Error('sin copia');
       const deHoy=v.dias.indexOf(hoy)===7;
       nuevo={datos:v,vivo:deHoy,t:new Date(v.t),robot:!deHoy};
     }
-    else nuevo={datos:NORM[k](await getJSON(URLS()[k])),vivo:true,t:new Date()};
+    else{
+      // Sin copia reciente: se usa la última copia aunque tenga más de 2 horas, o lo guardado en este dispositivo si es más nuevo.
+      // Nunca se consulta la fuente desde la página. Cada sección muestra la hora del dato y avisa si es viejo.
+      // La lluvia medida cuenta como al día: cada estación lleva la hora de su lectura y las de más de 24 horas no se muestran.
+      const j=await Promise.race([SRV_P,espera(4000)]),d=j&&j.datos&&j.datos[k],m=MEM.leer(k);
+      const okD=d&&!isNaN(new Date(d.t))&&FORMA[k](d);
+      if(okD&&(!m||new Date(d.t)>=new Date(m.t)))nuevo={datos:d,vivo:k==='medida',t:new Date(d.t),robot:k!=='medida'};
+      else if(m)nuevo={datos:m.datos,vivo:k==='medida',t:new Date(m.t)};
+      else throw new Error('sin copia');
+    }
     if(!FORMA[k](nuevo.datos))throw new Error('formato');
     D[k]=nuevo;
     MEM.guardar(k,D[k].datos,D[k].t);

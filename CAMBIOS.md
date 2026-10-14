@@ -2,7 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 14/10/2026 (sin publicar)
+## 14/10/2026 (sin publicar: seguridad y muchas visitas)
+
+- **La página ya no consulta las fuentes**: lee primero una copia en GitHub (`servidor.json`, rama `datos`) que arma el robot cada hora con la respuesta del script de Google. El script queda de respaldo, solo si esa copia falta o tiene más de 2 horas. Si los datos son viejos se muestran con su hora y los avisos de siempre, en lugar de pedirle los ríos, los pronósticos y Yacyretá al INA desde cada navegador. Con muchas visitas a la vez, ni el INA ni el script de Google reciben un pedido por cada visita.
+- **El script lanza el robot al final de la corrida**, para que la copia salga con lo recién leído; si GitHub rechaza la clave, solo publica el número de error.
+- **Regla del navegador** (`Content-Security-Policy`): solo corre el código de la página y solo se conecta a GitHub, Google y la NASA. `Permissions-Policy` apaga cámara, micrófono, ubicación y pagos. `herramientas/csp.js` actualiza la huella del código.
+- Tareas de GitHub fijadas por huella; `pruebas.yml` solo lee. Se quitó de la página el código que consultaba al INA. 42 pruebas (antes 37).
+
+## 14/10/2026 (`d1f9034`)
 
 - **El mapa pinta la costa del Paraná con el color del río**: Barranqueras, Puerto Vilelas e Isla del Cerrito toman el color más alto entre su lluvia (con el piso del SMN) y el renglón "Zona ribereña del Paraná". Con el pronóstico del INA de hoy (7,30 m para el 20/10) quedan en naranja. Si el río pasa los 6,50 m, en rojo. Fontana y Resistencia siguen solo con la lluvia (están dentro de las defensas). La leyenda suma "Naranja: solo en la costa del Paraná, cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es una alerta del SMN"; el detalle del municipio explica por qué tiene ese color, y "¿Cómo se decide el color?" lo cuenta. Pedido de Mariano. Prueba nueva (37 en total).
 

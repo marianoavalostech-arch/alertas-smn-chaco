@@ -6,7 +6,8 @@
  *
  * Además guarda una copia horaria de los otros datos del sitio (lluvia, ríos Paraná, Paraguay y Bermejo, pronósticos del Paraná y del Paraguay,
  * lluvia medida en estaciones, lo que suelta Yacyretá y ONI), en "datos".
- * El sitio usa esa copia si tiene menos de 2 horas; si no, consulta cada fuente directamente.
+ * El robot de GitHub copia este resultado a la rama "datos" (servidor.json) y el sitio lee primero esa copia; esta dirección queda de respaldo.
+ * El sitio nunca consulta las fuentes directamente: si la copia es vieja, la muestra con su hora.
  * Si una de esas fuentes falla, se conserva la copia anterior y las alertas del SMN no se ven afectadas.
  * Para ver qué fuentes responden desde Google: ejecutar diagnosticoDatos().
  *
@@ -469,15 +470,19 @@ function juntar(anterior, hoy, ahora, leer, pedir) {
   return { datos: datos, falla: falla };
 }
 
+// El robot de GitHub se lanza después de guardar: así copia a la rama "datos" el resultado recién armado (servidor.json),
+// que es lo que leen primero las visitas. Su estado se guarda en una segunda pasada (solo cambia ese campo).
 function actualizar() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd'), anterior = {};
-  var robot;
-  try { robot = lanzarRobot(); } catch (e) { robot = String(e.message || e); }   // nunca frena la renovación
   try { anterior = JSON.parse(leerGuardado() || '{}'); } catch (e) {}
   var r = juntar(anterior, hoy, ahora, leerSmn, pedirUrl);
-  r.datos.robot = { t: ahora.toISOString(), estado: robot };
-  try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
+  var antes = (anterior.robot && anterior.robot.estado) || 'sin dato';
+  r.datos.robot = { t: ahora.toISOString(), estado: antes };
   guardar(JSON.stringify(r.datos));
+  var robot;
+  try { robot = lanzarRobot(); } catch (e) { robot = 'error al lanzar'; console.warn('Robot: ' + (e.message || e)); }   // nunca frena la renovación
+  if (robot !== antes) { r.datos.robot.estado = robot; guardar(JSON.stringify(r.datos)); }
+  try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
   return r.datos;
 }
@@ -498,7 +503,8 @@ function leerGuardado() {
 }
 
 // Le pide a GitHub que ejecute ya el robot de la lluvia (.github/workflows/lluvia.yml).
-// Devuelve 'bien', 'sin clave' o el error de GitHub. La clave nunca sale de este script.
+// Devuelve 'bien', 'sin clave' o 'GitHub respondió <número>'. Ese texto se publica, así que no lleva el mensaje de GitHub:
+// el detalle queda solo en el registro de ejecuciones. La clave nunca sale de este script.
 function lanzarRobot() {
   var clave = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
   if (!clave) return 'sin clave';
@@ -508,7 +514,9 @@ function lanzarRobot() {
     payload: JSON.stringify({ ref: 'main' })
   });
   var c = r.getResponseCode();
-  return c === 204 ? 'bien' : 'GitHub respondió ' + c + ': ' + r.getContentText().slice(0, 200);
+  if (c === 204) return 'bien';
+  console.warn('GitHub respondió ' + c + ': ' + r.getContentText().slice(0, 500));
+  return 'GitHub respondió ' + c;
 }
 
 // Mira la copia de la lluvia que deja el robot. Si lleva más de HORAS_AVISO horas sin renovarse, manda un correo (uno solo por caída).

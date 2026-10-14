@@ -13,17 +13,18 @@ Es un sitio informativo. No reemplaza los alertas oficiales del Servicio Meteoro
 ```
 SMN (canal CAP) ─┐
 INA (ríos, Yacyretá, pronósticos y lluvia medida) ─┤
-                 ├─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐
-NOAA (índice ONI) ─┘        │                                                    ├─> index.html
+                 ├─> Script de Google (cada hora) ──> dirección pública (JSON) ─┐ (respaldo)
+NOAA (índice ONI) ─┘        │                     │ copia                        ├─> index.html
                             └─ lanza ─> Robot en GitHub ─> rama "datos" ─────────┘
-Open-Meteo (lluvia) ────────────────────────┘              (lluvia.json, grilla.json)
+Open-Meteo (lluvia) ────────────────────────┘   (lluvia.json, grilla.json, servidor.json)
 NASA GIBS (satélite GOES-East) ──────────────────────────────────────────────────> index.html (mapa animado)
 ```
 
 - **Script de Google** (`apps-script/`): cada hora lee las alertas del SMN, se queda con las que tocan al Chaco y guarda además una copia de los ríos (Paraná, Paraguay y Bermejo), los pronósticos del INA para el Paraná y el Paraguay, la lluvia medida en estaciones, lo que suelta la represa de Yacyretá y el ONI. Publica todo como JSON.
 - **Robot de la lluvia** (`robot/lluvia.js`, tarea `.github/workflows/lluvia.yml`): Open-Meteo rechaza los pedidos que salen de Google, así que la lluvia la pide GitHub y la deja en `lluvia.json`, en la rama `datos`. El script de Google lo lanza en cada renovación; el horario propio de GitHub queda de respaldo.
+- **Copia del script** (`robot/servidor.js`, en la misma tarea): baja la respuesta del script de Google y la deja tal cual en `servidor.json`, en la rama `datos`. Solo la guarda si está completa y es más nueva que la anterior; si no, queda la anterior. El script lanza el robot después de guardar, así la copia sale con lo recién leído. GitHub entrega esa copia a muchas visitas a la vez: así ni el script ni las fuentes reciben un pedido por cada visita.
 - **Grilla del mapa animado** (`robot/grilla.js`, en la misma tarea, después de la lluvia): lluvia, nubosidad y tormentas previstas hora por hora para ayer, hoy y mañana, en 208 puntos cada 0,5° (el Chaco y unos 100 km alrededor). Se renueva cada 3 horas como mucho, para cuidar el límite gratuito de Open-Meteo. Si falla, no insiste, queda la anterior y la lluvia se guarda igual.
-- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee las dos copias. Si una copia tiene más de 2 horas, consulta los ríos, los pronósticos y Yacyretá directamente; la lluvia (la prevista y la medida) nunca se pide desde la página. Lo último que funcionó queda guardado en el dispositivo. Seis secciones se pueden cerrar tocando el título (`plegable`; todas empiezan cerradas, con `data-cerrada`: Paraguay y Bermejo, Lluvias, Lluvia hora por hora, El Niño, De dónde salen los datos y Acerca); el botón "Mostrar"/"Ocultar" va con borde y, cerrada, una línea debajo del título dice qué hay adentro (`data-pista`); lo que cierra cada persona queda en su navegador (`anc-plegadas`). El mapa, las alertas, "Qué hacer", el riesgo por localidad y el Paraná no se pueden cerrar. Con su sección cerrada no se bajan la imagen del Pacífico ni las del satélite.
+- **Sitio** (`index.html`): una sola página, sin nada que compilar. Lee primero las copias de la rama `datos` (`servidor.json` y `lluvia.json`); el script de Google queda de respaldo, solo si `servidor.json` falta o tiene más de 2 horas (`leerCopias`). **La página nunca consulta las fuentes** (INA, SMN, Open-Meteo, NOAA): con muchas visitas a la vez podrían bloquear o caerse. Si la copia es vieja, se muestra igual con su hora y los avisos de siempre (franja "Estás viendo datos guardados", aviso del SMN sin renovar a las 3 horas; con más de 36 horas la lluvia no se usa para el color). Solo las imágenes de la NASA (Pacífico y satélite) se piden desde cada navegador. Lo último que funcionó queda guardado en el dispositivo. Seis secciones se pueden cerrar tocando el título (`plegable`; todas empiezan cerradas, con `data-cerrada`: Paraguay y Bermejo, Lluvias, Lluvia hora por hora, El Niño, De dónde salen los datos y Acerca); el botón "Mostrar"/"Ocultar" va con borde y, cerrada, una línea debajo del título dice qué hay adentro (`data-pista`); lo que cierra cada persona queda en su navegador (`anc-plegadas`). El mapa, las alertas, "Qué hacer", el riesgo por localidad y el Paraná no se pueden cerrar. Con su sección cerrada no se bajan la imagen del Pacífico ni las del satélite.
 
 Si una fuente falla, las demás siguen y se muestra el último dato bueno con su fecha y hora.
 
@@ -35,10 +36,12 @@ Si una fuente falla, las demás siguen y se muestra el último dato bueno con su
 | `apps-script/alertas-smn-apps-script.gs` | Script de Google. También define los centros de los municipios, que el robot reutiliza. |
 | `robot/lluvia.js` | Robot de la lluvia. |
 | `robot/grilla.js` | Grilla de lluvia por hora para el mapa animado. |
+| `robot/servidor.js` | Copia de la respuesta del script de Google en la rama `datos` (`servidor.json`). |
+| `herramientas/csp.js` | Pone en `netlify.toml` la huella del código de la página (regla del navegador). Correrlo después de cada cambio en `index.html`. |
 | `herramientas/puntos.js` | Genera los puntos interiores de cada municipio (`PUNTOS` en el script). Solo hace falta si cambia el mapa. |
 | `pruebas/reglas.test.js` | Pruebas de las reglas del sitio, del script y del robot. |
 | `.github/workflows/` | Tareas de GitHub: `pruebas.yml` (en cada subida) y `lluvia.yml` (robot). |
-| `netlify.toml` | Publicación y cabeceras de seguridad. |
+| `netlify.toml` | Publicación y cabeceras de seguridad (regla del navegador con la huella del código, `Permissions-Policy`). |
 | `CAMBIOS.md` | Historial de cambios. |
 | `LICENSE` | Licencia MIT del código. |
 
@@ -52,9 +55,19 @@ node pruebas/reglas.test.js
 
 No consultan ninguna fuente. GitHub las corre solas en cada subida a `main`.
 
+Después de cambiar `index.html`, correr antes `node herramientas/csp.js`: actualiza la huella del código en `netlify.toml`. Si se olvida, una prueba falla y avisa; si se publicara con la huella vieja, el navegador no correría el código de la página.
+
 ## Publicar
 
 Netlify publica la rama `main` tal cual está. Cada subida a `main` es una publicación. La rama `datos` no publica nada.
+
+## Seguridad
+
+- La página no carga código de otros sitios. La regla del navegador (`Content-Security-Policy` en `netlify.toml`) solo deja correr el `<script>` de la página (por su huella) y solo deja conectarse a `raw.githubusercontent.com`, `script.google.com`, `script.googleusercontent.com` y `gibs.earthdata.nasa.gov`. Sin formularios, cookies ni estadísticas de visitas.
+- Todo dato que llega se revisa antes de usarlo (`FORMA`, `smnVale`, `copiaVale`); los textos de afuera se escriben con `esc`.
+- La clave de GitHub (`GITHUB_TOKEN`) queda en las propiedades del script de Google; la dirección pública no la devuelve, y si GitHub rechaza la clave solo se publica el número de error (el detalle queda en el registro del script).
+- Las tareas de GitHub usan sus herramientas fijadas por huella; `pruebas.yml` solo puede leer.
+- Revisión completa del 14/10/2026 (cuentas, verificación en dos pasos, vistas previas de Netlify, dominio propio): informe en las notas del proyecto en Claude (`claude/revision-seguridad-oficial-14-10.md`).
 
 ## Instalar el script de Google
 
@@ -92,7 +105,7 @@ Respuesta del script de Google:
   "alertas":   { "0": [fila, ...], ... },
   "leidas": n, "fallas": n,
   "ajuste":    { "alineadas": n, "corridas": n, "horas": 3 | 0 }   corrección de horas que se usó en esta lectura,
-  "robot":     { "t": hora, "estado": "bien" | "sin clave" | error },
+  "robot":     { "t": hora de la corrida, "estado": "bien" | "sin clave" | "GitHub respondió <número>" | "error al lanzar" },
   "datos":     { "rio", "paraguay", "bermejo", "prono", "pronoPy", "medida", "yacy", "oni", "errores" }
 }
 ```
@@ -165,7 +178,8 @@ El pronóstico del Paraná no se usa si tiene más de 7 días (ni para el amaril
 
 | Qué se ve | Dónde mirar |
 |---|---|
-| Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. |
+| Alertas del SMN sin renovar | Registro de ejecuciones del script de Google. Ejecutar `diagnostico()`. Si el script anda, mirar en GitHub, pestaña Actions, tarea "Lluvia", el paso "Copiar el resultado del script de Google". |
+| Página en blanco o sin nada que funcione | La huella de `netlify.toml` no coincide con el código: correr `node herramientas/csp.js` y publicar. |
 | Correo o aviso "La lluvia está sin renovar", o mapa en gris | GitHub, pestaña Actions, tarea "Lluvia". Ejecutar `probarRobot()` en Google: si no dice `bien`, revisar la clave. |
 | Algún río, un pronóstico, Yacyretá, El Niño o la lluvia medida sin dato | Ejecutar `diagnosticoDatos()` en Google: dice qué fuente no responde. |
 | Mapa animado viejo o "No disponible" | `https://raw.githubusercontent.com/marianoavalostech-arch/alertas-smn-chaco/datos/grilla.json`: el campo `error` dice qué falló. |
