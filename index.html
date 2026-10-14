@@ -14,16 +14,16 @@
 :root{
   --bg:#edf1ef; --card:#ffffff; --ink:#132f38; --muted:#56696f; --line:#d3dcd9;
   --water:#2f7f9e; --water-soft:#d6e8ee; --land:#e3e7d8;
-  --verde:#2c8a57; --amarillo:#d99a00; --rojo:#c5392f; --gris:#8a9699;
-  --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --rojo-bg:#f8dedb;
+  --verde:#2c8a57; --amarillo:#d99a00; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
+  --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0f1c21; --card:#18292f; --ink:#e6eeec; --muted:#9db0b3; --line:#2c4048;
   --water:#62b4d1; --water-soft:#1f3d49; --land:#24363a;
-  --verde:#4fbf83; --amarillo:#f0bb33; --rojo:#ef6b60; --gris:#7d8c90;
-  --verde-bg:#173a2a; --amarillo-bg:#40330d; --rojo-bg:#47201d;
+  --verde:#4fbf83; --amarillo:#f0bb33; --naranja:#f28c3c; --rojo:#ef6b60; --gris:#7d8c90;
+  --verde-bg:#173a2a; --amarillo-bg:#40330d; --naranja-bg:#45280f; --rojo-bg:#47201d;
   --aviso-bg:#3a300f; --aviso-ink:#f6e3a6; color-scheme:dark}}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
@@ -37,6 +37,7 @@ header p{color:var(--muted);margin-top:4px}
 header{text-align:center}
 .aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
 .aviso strong{display:block}
+.aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
 section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
@@ -60,9 +61,9 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 /* semáforo */
 .sem{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .sem li{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:10px;border-radius:8px;align-items:start}
-.sem li.verde{background:var(--verde-bg)} .sem li.amarillo{background:var(--amarillo-bg)} .sem li.rojo{background:var(--rojo-bg)} .sem li.gris{background:var(--bg)}
+.sem li.verde{background:var(--verde-bg)} .sem li.amarillo{background:var(--amarillo-bg)} .sem li.naranja{background:var(--naranja-bg)} .sem li.rojo{background:var(--rojo-bg)} .sem li.gris{background:var(--bg)}
 .luz{width:44px;height:44px;border-radius:50%;grid-row:span 2;display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.2rem}
-.verde .luz{background:var(--verde)} .amarillo .luz{background:var(--amarillo);color:#2b2000} .rojo .luz{background:var(--rojo)} .gris .luz{background:var(--gris)}
+.verde .luz{background:var(--verde)} .amarillo .luz{background:var(--amarillo);color:#2b2000} .naranja .luz{background:var(--naranja);color:#2b1400} .rojo .luz{background:var(--rojo)} .gris .luz{background:var(--gris)}
 .sem b{font-size:1.02rem}
 .sem .nivel{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
 .sem .por{font-size:.92rem;min-width:0}
@@ -141,11 +142,11 @@ footer{font-size:.85rem;color:var(--muted)}
 .smnChip{white-space:normal}.smnChip .con{font-weight:500;font-size:.9em}
 .smnChip small{font-weight:600;font-size:.78em;text-transform:uppercase;letter-spacing:.04em;padding-left:7px;border-left:2px solid currentColor;margin-left:1px}
 .smnChip.n3{border-color:var(--amarillo)}.smnChip.n3 small{color:var(--amarillo)}
-.smnChip.n4{border-color:#d9730d}.smnChip.n4 small{color:#d9730d}
+.smnChip.n4{border-color:var(--naranja)}.smnChip.n4 small{color:var(--naranja)}
 .smnChip.n5{border-color:var(--rojo);background:var(--rojo-bg)}.smnChip.n5 small{color:var(--rojo)}
 #smnBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 #smnBanda[hidden]{display:none}
-#smnBanda.n4{border-color:#d9730d}#smnBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
+#smnBanda.n4{border-color:var(--naranja)}#smnBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
 #smnBanda b{font-size:1.02rem}
 #mapa path.mun[data-smn]{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3}
 .leyenda i.punteado{background:none;border:1.6px dashed var(--ink)}
@@ -270,6 +271,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <ul>
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
+        <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no. El naranja no es una alerta oficial: es lo que prevé el INA. El rojo sale solo de lo que mide el río.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
@@ -331,7 +333,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
-      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa.</li>
+      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, nunca a rojo.</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
@@ -592,7 +594,7 @@ function riesgo(loc,i){
     por:por.join(' ')};
 }
 
-// Pronóstico oficial del INA para Barranqueras: fechas que faltan y el valor más alto del rango previsto.
+// Pronóstico oficial del INA para Barranqueras: fechas que faltan, el valor más alto del rango y el valor más probable más alto.
 // El INA lo renueva martes y viernes: con más de 7 días de emitido no se usa.
 function resumenProno(){
   const d=D.prono&&D.prono.datos;if(!d)return null;
@@ -600,28 +602,43 @@ function resumenProno(){
   if(diasEntre(emitido,hoy)>7)return {emitido,viejo:true};
   const fut=d.p.filter(r=>r[0]>=hoy);
   if(!fut.length)return null;
-  let mx=fut[0];fut.forEach(r=>{if(r[3]>mx[3])mx=r});
-  return {emitido,fut,mx,alerta:mx[3]>=NIVEL.alerta};
+  let mx=fut[0],cen=fut[0];fut.forEach(r=>{if(r[3]>mx[3])mx=r;if(r[2]>cen[2])cen=r});
+  // alerta: el valor más alto del rango llega a 6,00 m (amarillo). evac: el valor más probable llega a 6,50 m (naranja).
+  return {emitido,fut,mx,cen,alerta:mx[3]>=NIVEL.alerta,evac:cen[2]>=NIVEL.evac};
 }
+// Qué agrega el pronóstico frente a la altura de hoy (h): 'evac' si el valor más probable pasa la evacuación,
+// 'puede' si el valor más alto del rango llega a un nivel que el río todavía no pasó, o '' si no agrega nada.
+function casoProno(p,h){
+  if(!p||!p.fut||h>=NIVEL.evac)return '';
+  if(p.evac)return 'evac';
+  return p.mx[3]>=(h>=NIVEL.alerta?NIVEL.evac:NIVEL.alerta)?'puede':'';
+}
+const nivelNombre=v=>v>=NIVEL.evac?'evacuación ('+nf(NIVEL.evac,2)+' m)':'alerta ('+nf(NIVEL.alerta,2)+' m)';
+const pronoCen=p=>nf(p.cen[2],2)+' m para el '+fDia(p.cen[0])+(p.cen[3]>p.cen[1]?' (entre '+nf(p.cen[1],2)+' y '+nf(p.cen[3],2)+')':'');
 // Si el pronóstico tiene 3 días o más, se avisa que no incluye lo que pasó río arriba después (no cambia el color).
 const pronoAtraso=p=>diasEntre(p.emitido,hoy)>=3?' Es del '+fDia(p.emitido)+': no incluye lo que pasó río arriba después.':'';
 const pronoTxt=p=>'El INA prevé '+p.fut.map(r=>nf(r[2],2)+' m para el '+fDia(r[0])+(r[3]>r[1]?' (entre '+nf(r[1],2)+' y '+nf(r[3],2)+')':'')).join('; ')+'.';
 // Renglón propio del río: vale para la zona ribereña, fuera de las defensas del Gran Resistencia.
+// Verde, amarillo (el río cerca o arriba de la alerta, o el valor más alto del pronóstico llega a la alerta),
+// naranja (el valor más probable del pronóstico del INA pasa la evacuación, y el río todavía no) y rojo (el río pasó la evacuación).
+// El naranja sale solo del pronóstico oficial del INA y del nivel oficial de evacuación.
 function riesgoRio(){
   const r=resumenRio(),p=resumenProno(),a=!!(p&&p.alerta),viejo=r&&r.atraso>=4;
   const viejoTxt=()=>'La última lectura del río es del '+fDia(r.dia)+' ('+nf(r.h,2)+' m): es demasiado vieja para calcular el color.';
   if((!r||viejo)&&!a)return {c:'gris',et:'Sin datos',por:r?viejoTxt():LISTO?'No hay lectura de la altura del río.':'Consultando la altura del río…'};
-  let n=a?1:0;const por=[];
+  const h=r&&!viejo?r.h:-Infinity,caso=casoProno(p,h);
+  let n=caso==='evac'?2:a?1:0;const por=[];
   if(viejo)por.push(viejoTxt());
   else if(r){
-    if(r.h>=NIVEL.evac)n=2;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))n=Math.max(n,1);
+    if(r.h>=NIVEL.evac)n=3;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))n=Math.max(n,1);
     por.push(r.h>=NIVEL.evac?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).'
       :r.h>=NIVEL.alerta?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
       :'El Paraná está en '+nf(r.h,2)+' m en Barranqueras, a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.');
     if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
   }else por.push('Falta la lectura de la altura del río.');
-  if(a)por.push('El pronóstico del INA llega hasta '+nf(p.mx[3],2)+' m hacia el '+fDia(p.mx[0])+', en el valor más alto de su rango: puede alcanzar el nivel de alerta.');
-  return {c:['verde','amarillo','rojo'][n],et:['Verde','Amarillo','Rojo'][n],por:por.join(' ')};
+  if(caso==='evac')por.push('El pronóstico del INA prevé '+pronoCen(p)+': pasaría el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).');
+  else if(caso==='puede')por.push('El pronóstico del INA llega hasta '+nf(p.mx[3],2)+' m hacia el '+fDia(p.mx[0])+', en el valor más alto de su rango: puede alcanzar el nivel de '+nivelNombre(p.mx[3])+'.');
+  return {c:['verde','amarillo','naranja','rojo'][n],et:['Verde','Amarillo','Naranja','Rojo'][n],por:por.join(' ')};
 }
 
 // Renglón del río Paraguay: costa e islas del este, de Puerto Bermejo a Isla del Cerrito. Sin pronóstico (el INA no lo publica para esta estación).
@@ -677,14 +694,14 @@ function iniciarPlegables(){
 // Lleva a una sección (y la abre si está cerrada).
 function irSec(id){abrirSec(id,true,false);$(id).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
 function pintarSemaforo(){
-  const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',rojo:'!!',gris:'?'},ORD={rojo:0,amarillo:1,gris:2,verde:3};
+  const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',naranja:'!!',rojo:'!!!',gris:'?'},ORD={rojo:0,naranja:1,amarillo:2,gris:3,verde:4};
   // Cada renglón: color, nombre corto (para la línea de verdes), su renglón completo y cómo se abre (data-j o enlace).
   const fila=(q,tit,sub,ver,abre)=>({c:q.c,n:tit,abre,html:'<li class="'+q.c+'"'+abre+'><span class="luz" aria-hidden="true">'+LUZ[q.c]+'</span>'
     +'<span><b>'+tit+'</b>'+(sub?' '+sub:'')+'<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'+ver+'</li>'});
   const F=LOCS.map((l,i)=>fila(R[i],l.n,l.sub,'<button class="vermapa" type="button">Ver en el mapa</button>',' data-j="'+i+'"'))
     .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio">Ver el río</a>',' data-a="#t-rio"'),
             fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros">Ver el río</a>',' data-a="#t-otros"'));
-  // Primero lo que no está en verde (rojo, amarillo, gris); las verdes, juntas en un solo renglón.
+  // Primero lo que no está en verde (rojo, naranja, amarillo, gris); las verdes, juntas en un solo renglón. El naranja solo lo usa el Paraná.
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
   $('sem').innerHTML=otras.map(f=>f.html).join('')
     +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
@@ -906,7 +923,7 @@ const SMN_EV={41:'tormentas',37:'lluvias',42:'nevadas',39:'viento',47:'viento zo
 const SMN_ICO={41:'⛈️',37:'🌧️',42:'❄️',39:'💨',47:'💨',101:'🌡️',102:'🥶',103:'🌫️',104:'🌫️',105:'🌫️'};
 const SMN_NIV={3:['amarillo','amarilla'],4:['naranja','naranja'],5:['rojo','roja']};
 const SMN_FR=['madrugada','mañana','tarde','noche'];
-const SMN_COL={amarillo:'var(--amarillo)',naranja:'#d9730d',rojo:'var(--rojo)'};
+const SMN_COL={amarillo:'var(--amarillo)',naranja:'var(--naranja)',rojo:'var(--rojo)'};
 // Dirección del script de Google que publica las alertas al día. Vacía = solo informe guardado.
 const SMN_URL='https://script.google.com/macros/s/AKfycbwCmRXbp0zTNVfDDLMmRGwaKpsTPN0ZrAzUQ9a-HjT4rg6o7bVcRDrd_lILB8ON6-dT/exec';
 const SMN_VACIO={emitido:null,capturado:null,fechas:[],areas:[],alertas:{}};
@@ -1059,8 +1076,9 @@ function pintarRio(){
    +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
-   +(!pn||!pn.fut?'':pn.alerta?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de alerta</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de alerta es '+nf(NIVEL.alerta,2)+' m.'+pronoAtraso(pn)+'</div>'
-     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+' Ni el valor más alto del rango llega al nivel de alerta.'+pronoAtraso(pn)+'</p>')
+   +(!pn||!pn.fut?'':(c=>c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>'+pronoTxt(pn)+' El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.'+pronoAtraso(pn)+'</div>'
+     :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.'+pronoAtraso(pn)+'</div>'
+     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
    +stats+svg

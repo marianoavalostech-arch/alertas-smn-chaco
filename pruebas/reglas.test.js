@@ -92,7 +92,32 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.strictEqual(rio('2026-10-15', [['2026-10-15', 4.4]], p('2026-10-06', [['2026-10-20', 5.2, 6.2, 6.4]])).c, 'verde');   // pronóstico de hace 9 días: no se usa
   assert.strictEqual(rio('2026-10-08', [['2026-10-03', 4.0]], real).c, 'amarillo');                    // lectura vieja, pero el pronóstico avisa
   assert.strictEqual(rio('2026-10-08', [['2026-10-08', 6.6]], real).c, 'rojo');                        // el rojo sale solo de la lectura
-  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'amarillo');   // el pronóstico solo llega a amarillo
+  // Naranja: el valor más probable del INA llega a 6,50 m y el río todavía no (desde el 13/10/2026)
+  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'naranja');
+  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.0, 6.49, 7]])).c, 'amarillo');   // solo el más alto del rango pasa 6,50
+  assert.strictEqual(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.0, 6.5, 6.8]])).c, 'naranja');    // justo 6,50
+  assert.strictEqual(rio('2026-10-08', [['2026-10-03', 4.0]], p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'naranja');   // lectura vieja, pronóstico al día
+  assert.strictEqual(rio('2026-10-08', [['2026-10-08', 6.6]], p('2026-10-06', [['2026-10-13', 6.4, 6.7, 7]])).c, 'rojo');      // el río ya pasó 6,50
+  assert.strictEqual(rio('2026-10-15', [['2026-10-15', 4.4]], p('2026-10-06', [['2026-10-20', 6.4, 6.7, 7]])).c, 'verde');     // pronóstico de hace 9 días: no se usa
+  // Caso real del 13/10/2026: 5,27 m creciendo; INA 7,30 m para el 20/10 (entre 6,75 y 7,55)
+  const dia13 = rio('2026-10-13', [['2026-10-06', 4.27], ['2026-10-10', 4.88], ['2026-10-13', 5.27]],
+    p('2026-10-13', [['2026-10-13', 5.2, 5.3, 5.4], ['2026-10-20', 6.75, 7.3, 7.55], ['2026-10-27', 5.9, 6.39, 6.9]]));
+  assert.strictEqual(dia13.c, 'naranja'); assert.strictEqual(dia13.et, 'Naranja');
+  assert.ok(dia13.por.includes('7,30 m para el 20/10 (entre 6,75 y 7,55)') && dia13.por.includes('pasaría el nivel de evacuación (6,50 m)'), dia13.por);
+  assert.ok(!/alerta naranja/i.test(dia13.por), 'no se presenta como alerta oficial');
+  // Amarillo por pronóstico: nombra el nivel que alcanza el valor más alto del rango
+  assert.ok(rio('2026-10-08', bajo, p('2026-10-06', [['2026-10-13', 6.0, 6.3, 6.6]])).por.includes('puede alcanzar el nivel de evacuación (6,50 m)'));
+  assert.ok(rio('2026-10-08', bajo, real).por.includes('puede alcanzar el nivel de alerta (6,00 m)'));
+  // Con el río arriba de la alerta y el pronóstico sin llegar a la evacuación, no repite "puede alcanzar el nivel de alerta"
+  const arriba = rio('2026-10-08', [['2026-10-08', 6.2]], p('2026-10-06', [['2026-10-13', 6.0, 6.2, 6.4]]));
+  assert.strictEqual(arriba.c, 'amarillo'); assert.ok(!arriba.por.includes('puede alcanzar'), arriba.por);
+  // El semáforo pone el naranja entre el rojo y el amarillo, con su color en modo claro y oscuro
+  assert.ok(codigo.includes("ORD={rojo:0,naranja:1,amarillo:2,gris:3,verde:4}"), 'orden del semáforo');
+  assert.ok(/\.sem li\.naranja\{background:var\(--naranja-bg\)\}/.test(html) && /\.naranja \.luz\{background:var\(--naranja\)/.test(html), 'color del renglón naranja');
+  assert.strictEqual((html.match(/--naranja:#[0-9a-f]{6}/g) || []).length, 2, 'naranja en modo claro y oscuro');
+  // El Paraguay no tiene naranja (no hay pronóstico en Puerto Bermejo)
+  const py = codigo.slice(codigo.indexOf('function riesgoParaguay'), codigo.indexOf('/* ---------- pantalla'));
+  assert.ok(py.length > 100 && !py.includes("'naranja'"));
   S(`D.prono={datos:null}`);
 });
 

@@ -139,21 +139,23 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 **Alerta del SMN:** es un piso. Amarilla o naranja → al menos amarillo; roja → rojo.
 
-**Cómo se muestra el semáforo** (`pintarSemaforo`): primero los renglones en rojo, amarillo y gris, con su explicación; las localidades y zonas ribereñas en verde van juntas en un solo renglón, con un botón por nombre que abre su detalle. Si todo está en verde, ese renglón dice "Todo en verde".
+**Cómo se muestra el semáforo** (`pintarSemaforo`): primero los renglones en rojo, naranja (solo el Paraná), amarillo y gris, con su explicación; las localidades y zonas ribereñas en verde van juntas en un solo renglón, con un botón por nombre que abre su detalle. Si todo está en verde, ese renglón dice "Todo en verde".
 
 **Solo informativos (no cambian ningún color):** la lluvia medida en estaciones (detalle de cada municipio: la estación más cercana a su centro, o a la ciudad en las 6 localidades del semáforo, a menos de 50 km y con datos de las últimas 24 horas; `MEDIDA_KM`, `MEDIDA_H`) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo (aviso si el máximo del rango llega a menos de 50 cm de su nivel de alerta, o lo supera; no se usa si tiene más de 7 días).
 
 **Ríos** (renglones propios en el semáforo; no cambian el color del mapa):
 
-| Río | Estación (serie INA) | Amarillo | Rojo |
-|---|---|---|---|
-| Paraná | Barranqueras (20) | 6,00 m, a menos de 50 cm y creciendo, o el máximo del pronóstico del INA llega a 6,00 | 6,50 m |
-| Paraguay | Puerto Bermejo (58) | 6,50 m, o a menos de 50 cm y creciendo | 7,00 m |
-| Bermejo | El Colorado (6697) | sin color: el INA no publica niveles | — |
+| Río | Estación (serie INA) | Amarillo | Naranja | Rojo |
+|---|---|---|---|---|
+| Paraná | Barranqueras (20) | 6,00 m, a menos de 50 cm y creciendo, o el máximo del rango del pronóstico del INA llega a 6,00 | el valor más probable del pronóstico del INA llega a 6,50 m y el río todavía no | 6,50 m |
+| Paraguay | Puerto Bermejo (58) | 6,50 m, o a menos de 50 cm y creciendo | — (sin pronóstico) | 7,00 m |
+| Bermejo | El Colorado (6697) | sin color: el INA no publica niveles | — | — |
+
+**Naranja del Paraná** (desde el 13/10/2026, `casoProno`): cubre el hueco entre "puede llegar a la alerta" y "ya pasó la evacuación". Sale solo del pronóstico oficial del INA (valor más probable, la fila `p[2]` más alta entre las fechas que faltan) y del nivel oficial de evacuación; no usa Yacyretá ni cálculos propios. El rojo sigue saliendo solo de lo que mide el río. Los textos dicen "según el pronóstico del INA" y nunca "alerta naranja", porque no es una alerta oficial (las del río las declara la APA). El Paraguay no tiene naranja porque en Puerto Bermejo el INA no publica pronóstico. Con el río arriba de la alerta, el pronóstico solo agrega texto si su máximo llega a la evacuación.
 
 Una lectura de 4 días o más deja el renglón en gris.
 
-El pronóstico del Paraná no se usa si tiene más de 7 días. Si tiene 3 días o más, el detalle del río agrega "Es del dd/m: no incluye lo que pasó río arriba después" (`pronoAtraso`); no cambia el color.
+El pronóstico del Paraná no se usa si tiene más de 7 días (ni para el amarillo ni para el naranja). Si tiene 3 días o más, el detalle del río agrega "Es del dd/m: no incluye lo que pasó río arriba después" (`pronoAtraso`); no cambia el color.
 
 **Para sumar otro río:** agregarlo en `OTROS` (`index.html`), en `fuentesExtra` (script de Google, misma dirección: lo controla una prueba) y en las listas de `cargar` y `pintar`. El catálogo de series está en `https://alerta.ina.gob.ar/a5/obs/puntual/series?var_id=2&format=json` (los niveles oficiales vienen en `estacion.nivel_alerta` y `estacion.nivel_evacuacion`).
 
