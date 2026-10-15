@@ -8,7 +8,7 @@
 #   raw.githubusercontent.com (copias de la rama datos), script.google.com y script.googleusercontent.com (script de Google, de respaldo),
 #   gibs.earthdata.nasa.gov (imágenes de la NASA). Después de cambiar index.html: node herramientas/csp.js (las pruebas avisan si falta).
 #   Imágenes: las de la NASA y las capas de lluvia que la página dibuja (data: y blob:).
-#   Letra: solo la Montserrat guardada en fuentes/ (font-src 'self').
+#   Letras: solo Kanit y Manrope, guardadas en fuentes/ (font-src 'self').
 #   frame-ancestors: solo el propio sitio y el portal de Gobierno Abierto del Chaco pueden mostrarlo dentro de su página
 #   (por eso no hay X-Frame-Options: esa cabecera no deja nombrar un sitio permitido).
 # Permissions-Policy: el sitio no usa cámara, micrófono, ubicación ni pagos; quedan apagados.

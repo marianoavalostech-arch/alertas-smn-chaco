@@ -2,7 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (defensas de la ciudad en el gráfico del Paraná)
+## 15/10/2026 (aspecto del portal nuevo de Gobierno Abierto)
+
+- **Estilo del portal nuevo** (https://gobiernoabierto.chaco.gob.ar/inicio/, todavía no público; antes se había tomado el portal anterior, en azul): títulos en **Kanit** y texto en **Manrope**, guardadas en `fuentes/` (licencia OFL); azul marino `#0b3158`; encabezado en degradado del marino al violeta con la barrita violeta-rosa debajo del título; botones "Mostrar" y "Qué hacer" con el degradado violeta-rosa del portal; fondo lavanda-rosado muy suave; secciones más redondeadas, con sombra suave; enlaces en violeta.
+- El azul queda solo para el agua (ríos del mapa y gráficos del río). Los colores del semáforo y del mapa no cambian. Modo oscuro con los mismos tonos; dentro del portal, siempre claro y con fondo transparente.
+- Solo cambia el estilo: la huella del código sigue igual. La prueba de la regla del navegador ahora controla las dos letras (siguen 43). Se quitó la letra Montserrat, que ya no se usa. Pedido de Mariano.
+
+## 15/10/2026 (`97d1d35`: defensas de la ciudad en el gráfico del Paraná)
 
 - **Marca de las defensas**: arriba del gráfico del Paraná, una línea punteada azul con el texto "↑ Defensas de la ciudad: unos 9,50 m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera." No estira la escala, así se siguen leyendo bien la alerta (6,00 m) y la evacuación (6,50 m).
 - Si el río o el valor más alto del pronóstico del INA llegan a 8 m, las defensas pasan a ser una línea dentro del gráfico (la escala se estira hasta 9,80 m) con su renglón en la leyenda.

@@ -1,4 +1,5 @@
-Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat) Montserrat-Italic[wght].ttf: Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)
+Kanit (fuentes/kanit-700.woff2): Copyright 2020 The Kanit Project Authors (https://github.com/cadsondemak/kanit)
+Manrope (fuentes/manrope-wght.woff2): Copyright 2019 The Manrope Project Authors (https://github.com/sharanda/manrope)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

@@ -723,7 +723,7 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.strictEqual(regla('frame-ancestors'), "'self' https://gobiernoabierto.chaco.gob.ar", 'solo el portal de Gobierno Abierto puede mostrar el sitio en su página');
     assert.ok(!/X-Frame-Options *=/.test(toml), 'X-Frame-Options no deja nombrar al portal: no tiene que estar');
     assert.strictEqual(regla('font-src'), "'self'", 'la letra se sirve desde el propio sitio');
-    assert.ok(fs.existsSync(path.join(raiz, 'fuentes', 'montserrat-wght.woff2')) && html.includes('url(fuentes/montserrat-wght.woff2)'), 'falta la letra Montserrat');
+    for (const l of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(fs.existsSync(path.join(raiz, 'fuentes', l)) && html.includes('url(fuentes/' + l + ')'), 'falta la letra ' + l);
     assert.ok(codigo.includes("PORTAL='https://gobiernoabierto.chaco.gob.ar'") && !/postMessage\([^)]*'\*'/.test(codigo), 'los avisos al portal van solo al portal');
     assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
     const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas/.test(u));   // esos dos son enlaces

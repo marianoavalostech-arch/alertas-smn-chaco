@@ -1,9 +1,9 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#063565"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#0b3158"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
 .anim-ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-.anim-ctrl input[type=range]{flex:1 1 220px;min-width:0;accent-color:var(--water);min-height:40px}
+.anim-ctrl input[type=range]{flex:1 1 220px;min-width:0;accent-color:var(--acento);min-height:40px}
 #aEtq{font-size:.95rem;min-height:1.45em}
 #aDias{display:flex;flex-wrap:wrap;gap:6px}
 .escala i{display:inline-block;width:22px;height:12px;margin-right:4px;vertical-align:-1px;border-radius:2px}
@@ -11,78 +11,83 @@
 </style>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
-/* Colores y letra del portal de Gobierno Abierto del Chaco (azul marino, celeste, Montserrat en los títulos).
-   Montserrat va guardada en el sitio (fuentes/, licencia OFL): no se pide a ningún servidor externo. */
-@font-face{font-family:"Montserrat";src:url(fuentes/montserrat-wght.woff2) format("woff2");font-weight:300 800;font-display:swap}
+/* Colores y letras del portal de Gobierno Abierto del Chaco: azul marino, degradado violeta-rosa, Kanit en los títulos y Manrope en el texto.
+   Las dos letras van guardadas en el sitio (fuentes/, licencia OFL): no se piden a ningún servidor externo.
+   --water es el azul del agua (ríos del mapa y gráficos); --acento, el violeta de botones y enlaces. */
+@font-face{font-family:"Kanit";src:url(fuentes/kanit-700.woff2) format("woff2");font-weight:600 800;font-display:swap}
+@font-face{font-family:"Manrope";src:url(fuentes/manrope-wght.woff2) format("woff2");font-weight:200 800;font-display:swap}
 :root{
-  --bg:#f1f4f8; --card:#ffffff; --ink:#14273d; --muted:#55657a; --line:#d8e0ea;
+  --bg:#f6f4fb; --card:#ffffff; --ink:#1c3357; --muted:#536a8d; --line:#e6e1f2;
   --water:#2a72b8; --water-soft:#dde9f6; --land:#e6eadb;
-  --marino:#063565; --celeste:#0bbbef; --violeta:#5059bc; --titulo:#063565;
+  --acento:#4e4fc4; --acento-soft:#efecfc;
+  --marino:#0b3158; --violeta:#5059bc; --rosa:#f26df9; --titulo:#0b3158;
+  --degrade:linear-gradient(135deg,#5059bc 0%,#8d58e8 55%,#f26df9 100%);
+  --fondo:linear-gradient(90deg,#f4f5fa 0%,#f7f5fa 42%,#faf3f9 72%,#fcecf9 100%);
   --verde:#2c8a57; --amarillo:#d99a00; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
   --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
-  --sombra:0 1px 2px rgba(6,53,101,.07),0 3px 10px rgba(6,53,101,.05);
-  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --font-tit:"Montserrat",var(--font);
+  --sombra:0 1px 2px rgba(80,89,188,.06),0 8px 24px rgba(80,89,188,.08);
+  --font:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-tit:"Kanit",var(--font);
 }
 /* Oscuro solo fuera del portal: dentro de Gobierno Abierto (fondo blanco) queda siempre claro. */
 @media (prefers-color-scheme: dark){:root:not(.emb){
-  --bg:#0c1726; --card:#14243a; --ink:#e6edf6; --muted:#9fb0c4; --line:#283c57;
+  --bg:#111a36; --card:#18223f; --ink:#e8e9f6; --muted:#a9b0d2; --line:#2e3768;
   --water:#6aaee8; --water-soft:#1c3554; --land:#23323b;
-  --marino:#0a2a52; --titulo:#a9cff5;
+  --acento:#a9a6ff; --acento-soft:#272d5c;
+  --marino:#121d48; --titulo:#cfccff;
+  --fondo:linear-gradient(90deg,#0e1631 0%,#121a38 60%,#1a1739 100%);
   --verde:#4fbf83; --amarillo:#f0bb33; --naranja:#f28c3c; --rojo:#ef6b60; --gris:#7d8c90;
   --verde-bg:#173a2a; --amarillo-bg:#40330d; --naranja-bg:#45280f; --rojo-bg:#47201d;
   --aviso-bg:#3a300f; --aviso-ink:#f6e3a6; --sombra:none; color-scheme:dark}}
 :root.emb{color-scheme:light}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
+body{background:var(--bg);background-image:var(--fondo);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
-h1{font-family:var(--font-tit);font-weight:700;font-size:1.6rem;line-height:1.15;margin:0;letter-spacing:-.01em}
-h2{font-family:var(--font-tit);font-weight:700;font-size:1.12rem;line-height:1.25;color:var(--titulo);margin:0;text-wrap:balance}
+h1{font-family:var(--font-tit);font-weight:700;font-size:1.75rem;line-height:1.1;margin:0;letter-spacing:0}
+h2{font-family:var(--font-tit);font-weight:700;font-size:1.2rem;line-height:1.2;color:var(--titulo);margin:0;text-wrap:balance}
 p{margin:0}
-a{color:var(--water)}
-a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
-/* encabezado: franja azul marino con los triángulos del logo de Gobierno Abierto */
-.cab{position:relative;overflow:hidden;background:var(--marino);color:#fff;border-radius:10px;padding:22px 20px 20px;box-shadow:var(--sombra)}
-.cab::before,.cab::after{content:'';position:absolute;pointer-events:none;clip-path:polygon(100% 0,100% 100%,0 100%)}
-.cab::before{right:0;bottom:0;width:120px;height:120px;background:linear-gradient(135deg,var(--celeste),var(--violeta))}
-.cab::after{right:58px;bottom:0;width:62px;height:62px;background:var(--celeste);opacity:.55}
+a{color:var(--acento)}
+a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+/* encabezado: azul marino que pasa a violeta, con la barrita violeta-rosa del portal de Gobierno Abierto debajo del título */
+.cab{position:relative;overflow:hidden;background:linear-gradient(135deg,#0b3158 0%,#26357e 60%,#5059bc 100%);color:#fff;border-radius:20px;padding:22px 20px 20px;box-shadow:var(--sombra)}
 .cab>*{position:relative}
-.cab h1{color:#fff;padding-right:72px}
-.cab p{color:#cfe0f3;margin-top:6px;padding-right:72px}
+.cab h1{color:#fff}
+.cab h1::after{content:'';display:block;width:64px;height:4px;border-radius:2px;margin-top:10px;background:linear-gradient(90deg,#5059bc,#f26df9)}
+.cab p{color:#e3e1fb;margin-top:10px}
 .cab a{color:#fff;font-weight:600}
 .solo-emb{display:none}.emb .solo-emb{display:block}
-.emb body{background:transparent}
+.emb body{background:transparent;background-image:none}
 .emb .wrap{padding:2px 2px 8px}
 .cab .solo-emb{font-size:.9rem;margin-top:10px}
-@media print{.cab{background:none;color:inherit;box-shadow:none}.cab::before,.cab::after{display:none}.cab h1,.cab p{color:inherit}}
-.aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
+@media print{body{background-image:none}.cab{background:none;color:inherit;box-shadow:none}.cab h1,.cab p{color:inherit}}
+.aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:10px;font-size:.95rem}
 .aviso strong{display:block}
 .aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
 /* defensas de la ciudad en el gráfico del Paraná: marca arriba del gráfico mientras el río está lejos */
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
-.aviso.info{border-left-color:var(--water);background:var(--water-soft);color:var(--ink)}
-.captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sombra);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
+.captura{background:var(--acento-soft);border-left:5px solid var(--acento);padding:10px 12px;border-radius:4px;font-size:.95rem}
+section{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
 .pleg>.tt{flex:1;min-width:0}
-.pleg>.pv{flex:none;font-size:.95rem;font-weight:700;color:var(--card);background:var(--water);display:flex;align-items:center;gap:8px;border:1.5px solid var(--water);border-radius:99px;padding:8px 16px;min-height:42px;box-sizing:border-box;transition:background .15s,color .15s}
+.pleg>.pv{flex:none;font-size:.95rem;font-weight:700;color:#fff;background:var(--degrade);display:flex;align-items:center;gap:8px;border:1.5px solid transparent;border-radius:99px;padding:8px 16px;min-height:42px;box-sizing:border-box;transition:background .15s,color .15s}
 .pleg:hover>.pv{filter:brightness(1.1)}
-.pleg[aria-expanded="true"]>.pv{background:transparent;color:var(--water)}
-.pleg[aria-expanded="true"]:hover>.pv{background:var(--water-soft);filter:none}
+.pleg[aria-expanded="true"]>.pv{background:transparent;color:var(--acento);border-color:var(--acento)}
+.pleg[aria-expanded="true"]:hover>.pv{background:var(--acento-soft);filter:none}
 .pleg>.pv::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
 .pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
 .pleg>.tt>small{display:block;font-family:var(--font);font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
 .pleg[aria-expanded="true"]>.tt>small{display:none}
 @media (prefers-reduced-motion:reduce){.pleg>.pv,.pleg>.pv::after{transition:none}}
-.pleg:focus-visible{outline:3px solid var(--water);outline-offset:4px;border-radius:4px}
+.pleg:focus-visible{outline:3px solid var(--acento);outline-offset:4px;border-radius:4px}
 .cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
 /* cerrada: se ve el comienzo del contenido, que se desvanece; tocarlo abre la sección */
 .cuerpo.vista{max-height:7.5rem;overflow:hidden;-webkit-mask-image:linear-gradient(#000 25%,transparent);mask-image:linear-gradient(#000 25%,transparent);user-select:none}
-.mas{all:unset;box-sizing:border-box;align-self:center;margin-top:-26px;position:relative;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--water);padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:8px}
+.mas{all:unset;box-sizing:border-box;align-self:center;margin-top:-26px;position:relative;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--acento);padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:8px}
 .mas[hidden]{display:none}
-.mas:hover{background:var(--water-soft)}
+.mas:hover{background:var(--acento-soft)}
 .mas::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
 .plegable.cerrada{cursor:pointer}.plegable.cerrada .cuerpo,.plegable.cerrada .mas{cursor:pointer}
 @media print{.cuerpo[hidden]{display:flex!important}.cuerpo.vista{max-height:none;-webkit-mask-image:none;mask-image:none}.pleg>.pv,.pleg>.tt>small,.mas{display:none!important}}
@@ -139,8 +144,8 @@ details ul,.fuentes{margin:8px 0 0;padding-left:20px;display:flex;flex-direction
 .pacif{margin:12px 0 0}
 .pacif-img{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#8c978b}
 .pacif-img img{display:block;width:100%;height:auto}
-.pacif-pt{position:absolute;left:82.4%;top:78.9%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#063565;border:2px solid #fff}
-.pacif-etq{position:absolute;left:84.2%;top:78.9%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:#063565;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.pacif-pt{position:absolute;left:82.4%;top:78.9%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#0b3158;border:2px solid #fff}
+.pacif-etq{position:absolute;left:84.2%;top:78.9%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:#0b3158;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .pacif-esc{height:10px;margin-top:8px;border-radius:3px;background:linear-gradient(to right,#6b00db 0%,#2264f1 14%,#00aeff 19%,#03f8fa 24%,#88ff84 34%,#c2cab8 49%,#fff679 59%,#ffaa00 69%,#ff3d00 79%,#f90113 84%,#bf0068 94%,#88000f 100%)}
 .pacif-num{display:flex;justify-content:space-between;margin-top:2px}
 .pacif figcaption{margin-top:6px}
@@ -148,11 +153,11 @@ footer{font-size:.85rem;color:var(--muted)}
 /* mapa interactivo */
 .sem li{cursor:pointer}
 .sem .luz{grid-row:span 3}
-.vermapa{grid-column:2;justify-self:start;font:inherit;font-size:.85rem;font-weight:700;background:none;border:0;padding:2px 0;color:var(--water);text-decoration:underline;cursor:pointer}
+.vermapa{grid-column:2;justify-self:start;font:inherit;font-size:.85rem;font-weight:700;background:none;border:0;padding:2px 0;color:var(--acento);text-decoration:underline;cursor:pointer}
 .mapa-barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .mapa-barra input{flex:1 1 170px;min-width:0;min-height:40px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .btn{font:inherit;font-weight:700;min-width:40px;min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
-.btn:hover:not(:disabled){border-color:var(--water)}
+.btn:hover:not(:disabled){border-color:var(--acento)}
 .btn:disabled{opacity:.45;cursor:default}
 .mapa-zoom{display:flex;gap:6px}
 #mapa{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
@@ -188,10 +193,10 @@ footer{font-size:.85rem;color:var(--muted)}
 #mapa svg.foco path.mun:not(.on){fill-opacity:.18;stroke-opacity:.4}
 #mapa svg.foco path.mun.on{fill-opacity:.95}
 .ley{font:inherit;color:inherit;text-align:left;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-height:36px;cursor:pointer}
-.ley:hover{border-color:var(--water)}
+.ley:hover{border-color:var(--acento)}
 .ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
-.irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--water);text-decoration:underline;cursor:pointer}
+.irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
 /* qué hacer ante una alerta: franja "Ahora en el Chaco", teléfonos para tocar, tarjetas por situación, mochila para tildar */
 .hEt{font-weight:700;margin-bottom:8px}
@@ -205,29 +210,29 @@ footer{font-size:.85rem;color:var(--muted)}
 .hHoy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .hHoy li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
 .hHoy li>span{flex:1 1 220px;min-width:0}
-.hIr{font:inherit;font-size:.92rem;font-weight:700;color:var(--card);background:var(--water);border:0;border-radius:99px;padding:8px 16px;min-height:40px;cursor:pointer;white-space:nowrap}
+.hIr{font:inherit;font-size:.92rem;font-weight:700;color:#fff;background:var(--degrade);border:0;border-radius:99px;padding:8px 16px;min-height:40px;cursor:pointer;white-space:nowrap}
 .hIr:hover{filter:brightness(1.1)}
-.hLink{all:unset;cursor:pointer;color:var(--water);text-decoration:underline;font-weight:inherit}
-.hLink:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+.hLink{all:unset;cursor:pointer;color:var(--acento);text-decoration:underline;font-weight:inherit}
+.hLink:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 .hTel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .hTel a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;padding:8px 6px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);text-decoration:none;font-size:.85rem;line-height:1.2;text-align:center}
 .hTel a b{font-family:var(--font-tit);font-size:1.45rem;color:var(--titulo);line-height:1.1}
 .hTel a.hDc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:4px 10px;min-height:52px}
 .hTel a.hDc b{font-size:1.1rem}
-.hTel a:hover{border-color:var(--water)}
+.hTel a:hover{border-color:var(--acento)}
 @media (min-width:600px){.hTel{grid-template-columns:repeat(5,minmax(0,1fr))}.hTel a.hDc{grid-column:auto;flex-direction:column}}
 .hSit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row dense;gap:8px}
 @media (min-width:600px){.hSit{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .hSit details{border:1.5px solid var(--line);border-radius:10px;background:var(--card);min-width:0}
-.hSit details[open]{grid-column:1/-1;border-color:var(--water)}
+.hSit details[open]{grid-column:1/-1;border-color:var(--acento)}
 .hSit details#h-mochila{grid-column:1/-1}
 .hSit summary{list-style:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;min-height:92px;text-align:center;border-radius:9px;line-height:1.2}
 .hSit summary::-webkit-details-marker{display:none}
-.hSit summary:hover{background:var(--water-soft)}
+.hSit summary:hover{background:var(--acento-soft)}
 .hSit .ico{font-size:1.75rem;line-height:1}
-.hSit details[open] summary{flex-direction:row;justify-content:flex-start;text-align:left;min-height:0;padding:12px 14px;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;background:var(--water-soft)}
+.hSit details[open] summary{flex-direction:row;justify-content:flex-start;text-align:left;min-height:0;padding:12px 14px;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;background:var(--acento-soft)}
 .hSit details[open] .nom{flex:1;font-family:var(--font-tit);font-size:1.02rem;color:var(--titulo)}
-.hSit details[open] summary::after{content:'';flex:none;width:7px;height:7px;margin:0 4px;border-right:2px solid var(--water);border-bottom:2px solid var(--water);transform:translateY(2px) rotate(-135deg)}
+.hSit details[open] summary::after{content:'';flex:none;width:7px;height:7px;margin:0 4px;border-right:2px solid var(--acento);border-bottom:2px solid var(--acento);transform:translateY(2px) rotate(-135deg)}
 .hSit details ul{margin:0;padding:12px 16px 14px 32px;gap:8px}
 .hSit .rige{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--amarillo);color:#2b2000}
 .hSit details.n3{border-color:var(--amarillo);border-width:2.5px}
