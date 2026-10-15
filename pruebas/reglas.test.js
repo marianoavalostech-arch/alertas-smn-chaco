@@ -725,5 +725,34 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(regla('connect-src').includes('https://script.googleusercontent.com'), 'el script de Google redirige ahí');
     assert.ok(/Permissions-Policy = "camera=\(\), microphone=\(\), geolocation=\(\)/.test(toml));
   });
+  prueba('qué hacer: lo que rige hoy lleva a su tarjeta, el río nunca dice "alerta naranja" y sin informe al día no dice que no hay alertas', () => {
+    // cada fenómeno del SMN y cada botón tiene su tarjeta, con las recomendaciones adentro
+    const tarj = [...html.matchAll(/<details id="h-(\w+)" data-h="\1" name="hacer">/g)].map(m => m[1]);
+    assert.deepStrictEqual(tarj, ['torm', 'viento', 'lluvia', 'baja', 'calor', 'frio', 'niebla', 'mochila']);
+    for (const t of Object.values(S('HACER_EV'))) assert.ok(tarj.includes(t), t + ' sin tarjeta');
+    for (const ev of Object.keys(S('SMN_EV'))) assert.ok(S('HACER_EV')[ev], 'el fenómeno ' + ev + ' del SMN no tiene qué hacer');
+    for (const m of html.matchAll(/data-h="(\w+)"/g)) assert.ok(tarj.includes(m[1]), m[1]);
+    assert.strictEqual((html.match(/<input type="checkbox" value="\w+">/g) || []).length, 12, 'mochila con 12 cosas');
+    for (const n of ['911', '100', '107', '+543624448000,103']) assert.ok(html.includes('href="tel:' + n + '"'), n);
+    // escenario: alerta naranja por tormentas con granizo mañana en un municipio, calor amarillo hoy en toda la provincia, Paraná en naranja
+    const hoy = S('hoy'), man = S('masDias(hoy,1)'), T = S('GEO.mun.length');
+    const areas = Array.from({ length: T }, (_, i) => 'a' + i), alertas = {};
+    areas.forEach(a => { alertas[a] = [[hoy, 101, 3, 3, 3, 3, 0]] });
+    alertas.a0.push([man, 41, 0, 0, 4, 4, 1]);
+    S('horaAR=()=>0;riesgoParaguay=()=>({c:"verde"});riesgoRio=()=>({c:"naranja"})');
+    S('SMN=' + JSON.stringify({ emitido: new Date().toISOString(), capturado: new Date().toISOString(), fechas: [hoy, man], areas, alertas, leidas: 5 }));
+    let H = S('hacerHoy()');
+    assert.strictEqual(H.smn, 'ok');
+    assert.strictEqual(JSON.stringify(H.filas.map(f => [f.t, f.niv])), '[["torm",4],["lluvia",4],["calor",3]]');
+    assert.ok(H.filas[0].txt.includes('Alerta naranja por tormentas, con posible granizo') && H.filas[0].txt.includes('mañana') && H.filas[0].txt.includes('1 de ' + T + ' municipios'));
+    assert.ok(H.filas[1].txt.includes('naranja según el pronóstico del INA') && !/alerta naranja/i.test(H.filas[1].txt), 'el río no es una alerta del SMN');
+    assert.ok(H.filas[2].txt.includes('Alerta amarilla por calor extremo') && H.filas[2].txt.includes('hoy') && H.filas[2].txt.includes('toda la provincia'));
+    assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
+    // sin alertas y con el informe al día: "no hay"; con el informe viejo o vacío del canal: no se puede confirmar
+    S('riesgoRio=()=>({c:"verde"});SMN.alertas={};SMN.areas.forEach(a=>{SMN.alertas[a]=[]})');
+    H = S('hacerHoy()'); assert.strictEqual(H.filas.length, 0); assert.strictEqual(H.smn, 'ok');
+    S('SMN.leidas=0'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
+    S('SMN.leidas=5;SMN.capturado=new Date(Date.now()-4*36e5).toISOString()'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

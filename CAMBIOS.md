@@ -2,7 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (aspecto del portal)
+## 15/10/2026 ("Qué hacer ante una alerta", más legible e interactiva)
+
+- **"Ahora en el Chaco"**: arriba de la sección, una franja dice qué rige (alertas del SMN de hoy en adelante, con día y cantidad de municipios; Paraná o Paraguay fuera del verde) y cada renglón tiene un botón "Qué hacer" que abre la tarjeta que corresponde. Sin nada vigente y con el informe del SMN al día: "Hoy no hay alertas del SMN para el Chaco". Si el informe está viejo o el canal no listó alertas, no dice que no hay: avisa que no se pudo confirmar. El naranja del Paraná dice "según el pronóstico del INA", nunca "alerta naranja". Usa los datos que la página ya tiene (`hacerHoy`, `pintarHacer`); no pide nada nuevo.
+- **Tarjetas por situación con ícono** (se abre una por vez): Tormenta y rayos; Viento fuerte y granizo; Lluvia fuerte y crecida del río; Cuando baja el agua; y nuevas: **Calor extremo, Frío extremo, Niebla, humo o polvo** (el sitio ya mostraba esas alertas del SMN pero no decía qué hacer) y **Mochila y plan familiar**. La tarjeta de lo que rige queda marcada ("Alerta naranja", "Río naranja") y la más grave se abre sola una vez. Cada consejo empieza con la idea clave en negrita.
+- **Mochila para tildar** (12 cosas, según el kit del SINAGIR): lo tildado queda solo en ese navegador (`anc-mochila`).
+- **Teléfonos como botones** que llaman al tocarlos: 911, 100, 107 y Defensa Civil (0362) 444-8000, interno 103.
+- Los tres colores del SMN, como tarjetas con su color. Al imprimir se ven todas las tarjetas abiertas.
+- Fuentes nuevas: SINAGIR (ola de calor, ola polar, niebla, kit de emergencias, plan familiar) y Ministerio de Salud (humo). Prueba nueva (43 en total). Pedido de Mariano.
+
+## 15/10/2026 (`40552f6`: aspecto del portal)
 
 - **Se puede mostrar dentro del portal de Gobierno Abierto del Chaco**: antes el sitio no dejaba que ninguna página lo mostrara en un marco (`X-Frame-Options: DENY`, `frame-ancestors 'none'`). Ahora lo permite solo a gobiernoabierto.chaco.gob.ar (y a sí mismo). Dentro del portal se ve en claro, con fondo transparente y sin márgenes propios, le avisa al portal su alto para que no haya doble barra y los enlaces internos bajan la página del portal. Bloque para pegar en el portal: README, "Dentro del portal de Gobierno Abierto".
 - **Aspecto alineado con el portal**: encabezado azul marino con los triángulos celeste y violeta del logo de Gobierno Abierto; títulos en Montserrat (la letra del portal, guardada en el sitio: no se pide a Google); azul y grises del portal; secciones con una sombra suave. Los colores del semáforo y del mapa no cambian. El modo oscuro sigue fuera del portal, con los mismos tonos.

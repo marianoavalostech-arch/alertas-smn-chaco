@@ -189,6 +189,60 @@ footer{font-size:.85rem;color:var(--muted)}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
 .irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--water);text-decoration:underline;cursor:pointer}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
+/* qué hacer ante una alerta: franja "Ahora en el Chaco", teléfonos para tocar, tarjetas por situación, mochila para tildar */
+.hEt{font-weight:700;margin-bottom:8px}
+.hEt .meta{font-weight:400;margin-left:4px}
+.hHoy{border-left:6px solid var(--verde);background:var(--verde-bg);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.hHoy.n3{border-left-color:var(--amarillo);background:var(--amarillo-bg)}
+.hHoy.n4{border-left-color:var(--naranja);background:var(--naranja-bg)}
+.hHoy.n5{border-left-color:var(--rojo);background:var(--rojo-bg)}
+.hHoy.gris{border-left-color:var(--gris);background:var(--bg)}
+.hHoy .hEt{margin:0}
+.hHoy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.hHoy li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+.hHoy li>span{flex:1 1 220px;min-width:0}
+.hIr{font:inherit;font-size:.92rem;font-weight:700;color:var(--card);background:var(--water);border:0;border-radius:99px;padding:8px 16px;min-height:40px;cursor:pointer;white-space:nowrap}
+.hIr:hover{filter:brightness(1.1)}
+.hLink{all:unset;cursor:pointer;color:var(--water);text-decoration:underline;font-weight:inherit}
+.hLink:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+.hTel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hTel a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;padding:8px 6px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);text-decoration:none;font-size:.85rem;line-height:1.2;text-align:center}
+.hTel a b{font-family:var(--font-tit);font-size:1.45rem;color:var(--titulo);line-height:1.1}
+.hTel a.hDc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:4px 10px;min-height:52px}
+.hTel a.hDc b{font-size:1.1rem}
+.hTel a:hover{border-color:var(--water)}
+@media (min-width:600px){.hTel{grid-template-columns:repeat(4,minmax(0,1fr))}.hTel a.hDc{grid-column:auto;flex-direction:column}}
+.hSit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row dense;gap:8px}
+@media (min-width:600px){.hSit{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.hSit details{border:1.5px solid var(--line);border-radius:10px;background:var(--card);min-width:0}
+.hSit details[open]{grid-column:1/-1;border-color:var(--water)}
+.hSit summary{list-style:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;min-height:92px;text-align:center;border-radius:9px;line-height:1.2}
+.hSit summary::-webkit-details-marker{display:none}
+.hSit summary:hover{background:var(--water-soft)}
+.hSit .ico{font-size:1.75rem;line-height:1}
+.hSit details[open] summary{flex-direction:row;justify-content:flex-start;text-align:left;min-height:0;padding:12px 14px;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;background:var(--water-soft)}
+.hSit details[open] .nom{flex:1;font-family:var(--font-tit);font-size:1.02rem;color:var(--titulo)}
+.hSit details[open] summary::after{content:'';flex:none;width:7px;height:7px;margin:0 4px;border-right:2px solid var(--water);border-bottom:2px solid var(--water);transform:translateY(2px) rotate(-135deg)}
+.hSit details ul{margin:0;padding:12px 16px 14px 32px;gap:8px}
+.hSit .rige{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:var(--amarillo);color:#2b2000}
+.hSit details.n3{border-color:var(--amarillo);border-width:2.5px}
+.hSit details.n4{border-color:var(--naranja);border-width:2.5px}.hSit details.n4 .rige{background:var(--naranja);color:#2b1400}
+.hSit details.n5{border-color:var(--rojo);border-width:2.5px}.hSit details.n5 .rige{background:var(--rojo);color:#fff}
+.hMoch{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.hSit .hMoch ul{padding:0 0 0 18px}
+.hSit .hMoch #hMochLista{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:4px}
+#hMochLista label{display:flex;align-items:center;gap:10px;min-height:42px;padding:4px 8px;border-radius:8px;cursor:pointer}
+#hMochLista label:hover{background:var(--bg)}
+#hMochLista input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--verde)}
+#hMochLista label:has(input:checked){background:var(--verde-bg)}
+.hCuenta{font-weight:700;display:flex;flex-wrap:wrap;gap:4px 14px}
+.hCuenta .hLink{font-weight:400}
+.hNiv{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hNiv li{border-left:6px solid;border-radius:6px;padding:8px 10px;font-size:.95rem}
+.hNiv .n3{border-color:var(--amarillo);background:var(--amarillo-bg)}
+.hNiv .n4{border-color:var(--naranja);background:var(--naranja-bg)}
+.hNiv .n5{border-color:var(--rojo);background:var(--rojo-bg)}
+@media print{.hSit{display:block}.hSit details{margin-bottom:8px}.hIr{display:none}}
 </style>
 </head><body>
 
@@ -241,55 +295,131 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <section aria-labelledby="t-hacer">
     <h2 id="t-hacer">Qué hacer ante una alerta</h2>
-    <ul class="fuentes">
-      <li><b>Amarilla: informate.</b> El SMN prevé un tiempo que puede causar algunos daños o cortes por un rato. Mirá el pronóstico antes de salir.</li>
-      <li><b>Naranja: preparate.</b> El SMN prevé un tiempo que puede causar daños. Revisá qué hacer y seguí las novedades oficiales.</li>
-      <li><b>Roja: seguí las instrucciones oficiales.</b> El SMN prevé un tiempo excepcional, que puede causar daños importantes. Hacé caso a Defensa Civil y a tu municipio.</li>
-    </ul>
-    <p class="meta">Definiciones completas en el <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">sitio del SMN</a>.</p>
-    <details>
-      <summary>Tormentas y rayos</summary>
-      <ul>
-        <li>Quedate en un lugar cerrado (casa, escuela, edificio). Si vas en auto, quedate adentro: protege de los rayos.</li>
-        <li>Desenchufá los aparatos eléctricos y no uses teléfonos con cable.</li>
-        <li>Mientras haya rayos, no te bañes ni laves platos o ropa: las cañerías conducen la electricidad.</li>
-        <li>No te refugies bajo árboles ni estructuras de metal. Alejate de alambrados, piletas, ríos y lagunas.</li>
-        <li>En el campo, alejate de los animales grandes y de los lugares altos. Si no tenés dónde refugiarte, agachate con la cabeza baja.</li>
+    <div id="hHoy" class="hHoy gris" aria-live="polite"><p class="nodisp">Consultando las alertas…</p></div>
+    <div>
+      <p class="hEt">Teléfonos de emergencia en el Chaco <span class="meta">Tocá para llamar</span></p>
+      <div class="hTel">
+        <a href="tel:911"><b>911</b>Policía</a>
+        <a href="tel:100"><b>100</b>Bomberos</a>
+        <a href="tel:107"><b>107</b>Emergencias médicas</a>
+        <a href="tel:+543624448000,103" class="hDc"><b>Defensa Civil</b>(0362) 444-8000, interno 103</a>
+      </div>
+    </div>
+    <div>
+      <p class="hEt">¿Qué está pasando? <span class="meta">Tocá para ver qué hacer</span></p>
+      <div class="hSit">
+        <details id="h-torm" data-h="torm" name="hacer">
+          <summary><span class="ico" aria-hidden="true">⛈️</span><span class="nom">Tormenta y rayos</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Quedate adentro.</b> En tu casa, la escuela o un edificio. Si vas en auto, quedate adentro: protege de los rayos.</li>
+            <li><b>Desenchufá los aparatos eléctricos.</b> Y no uses teléfonos con cable.</li>
+            <li><b>No te bañes mientras haya rayos.</b> Tampoco laves platos o ropa: las cañerías conducen la electricidad.</li>
+            <li><b>Lejos de árboles y metales.</b> No te refugies bajo árboles ni estructuras de metal. Alejate de alambrados, piletas, ríos y lagunas.</li>
+            <li><b>En el campo,</b> alejate de los animales grandes y de los lugares altos. Si no tenés dónde refugiarte, agachate con la cabeza baja.</li>
+          </ul>
+        </details>
+        <details id="h-viento" data-h="viento" name="hacer">
+          <summary><span class="ico" aria-hidden="true">💨</span><span class="nom">Viento fuerte y granizo</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Evitá salir.</b> Atá o guardá lo que el viento pueda arrastrar: chapas, macetas, sillas.</li>
+            <li><b>Lejos de árboles, postes y carteles.</b> No te acerques a cables caídos: avisá a la empresa de luz.</li>
+            <li><b>Con granizo en la ruta:</b> bajá la velocidad de a poco, prendé las luces bajas, no frenes de golpe y no pares sobre la calzada.</li>
+            <li><b>Calmá a chicos, mayores y mascotas:</b> el ruido asusta. Cuando pase, revisá techos, ventanas y canaletas.</li>
+          </ul>
+        </details>
+        <details id="h-lluvia" data-h="lluvia" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🌧️</span><span class="nom">Lluvia fuerte y crecida del río</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>No cruces calles, caminos ni puentes con agua,</b> ni a pie ni en vehículo. No camines ni nades en cauces o zonas inundadas.</li>
+            <li><b>Despejá rejillas y desagües.</b> Y no saques la basura.</li>
+            <li><b>Si entra agua a tu casa:</b> cortá la luz, el gas y el agua, y subí a la parte más alta. Cerrá puertas y ventanas.</li>
+            <li><b>Si vivís en la costa, fuera de las defensas:</b> tené lista la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button> y salí hacia un lugar alto cuando lo indiquen las autoridades.</li>
+            <li><b>Avisá si alguien no puede salir solo:</b> personas con movilidad reducida, mayores o enfermos.</li>
+            <li><b>Si tu casa tiene pozo ciego, marcalo:</b> el terreno mojado puede hundirse.</li>
+            <li><b>Seguí solo los avisos oficiales</b> de la Provincia y de tu municipio.</li>
+          </ul>
+        </details>
+        <details id="h-baja" data-h="baja" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🏠</span><span class="nom">Cuando baja el agua</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Tomá solo agua envasada o hervida.</b> Para la leche de los bebés, agua envasada. Si amamantás, seguí haciéndolo.</li>
+            <li><b>Tirá los alimentos que tocaron el agua,</b> los que estuvieron más de 2 horas sin heladera y las latas hinchadas o dañadas. No uses remedios que se mojaron.</li>
+            <li><b>Antes de limpiar, cortá la luz general</b> y usá botas de goma. Desinfectá con una taza de lavandina cada 15 litros de agua.</li>
+            <li><b>Lavate las manos seguido.</b> Si te lastimaste, lavá la herida con agua y jabón y consultá en el centro de salud: puede hacer falta la vacuna antitetánica.</li>
+            <li><b>Vaciá los recipientes con agua acumulada</b> (contra el dengue) y cuidá la casa de roedores.</li>
+          </ul>
+        </details>
+        <details id="h-calor" data-h="calor" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🌡️</span><span class="nom">Calor extremo</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Tomá agua seguido, aunque no tengas sed.</b> Evitá las bebidas con mucha cafeína o azúcar, y las muy frías o muy calientes.</li>
+            <li><b>Evitá el sol de 10 a 16 h.</b> Si tenés que salir: gorro, protector solar y ropa liviana, holgada y de colores claros.</li>
+            <li><b>Comé liviano:</b> frutas y verduras, sin comidas abundantes. No hagas actividad física intensa.</li>
+            <li><b>A los chicos, ofreceles agua sin esperar a que la pidan.</b> A los bebés, dales el pecho más seguido. Mojalos o bañalos seguido y tenelos en lugares frescos y ventilados.</li>
+            <li><b>Cuidá a quienes más sufren el calor:</b> personas mayores, bebés, embarazadas, personas con enfermedades crónicas, quienes trabajan al sol y personas en situación de calle. Agua y sombra para las mascotas.</li>
+            <li><b>Señales de alerta:</b> sed intensa y boca seca, fiebre de más de 39 °C, piel seca, mareos o desmayo, náuseas o vómitos, dolor de cabeza, agotamiento. Si aparecen, consultá en el centro de salud o llamá al 107.</li>
+          </ul>
+        </details>
+        <details id="h-frio" data-h="frio" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🥶</span><span class="nom">Frío extremo</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Si usás estufa o brasero, ventilá el ambiente.</b> El monóxido de carbono no se ve ni tiene olor. Revisá estufas y chimeneas antes del invierno.</li>
+            <li><b>Abrigate en varias capas,</b> que puedas sacarte para no transpirar y enfriarte después.</li>
+            <li><b>De noche, fijate que no pasen frío</b> las personas mayores y los chicos: pierden calor más rápido mientras duermen.</li>
+            <li><b>Evitá los esfuerzos físicos fuertes</b> y, con alerta, no salgas si no hace falta.</li>
+            <li><b>Tené a mano linterna y radio a pilas</b> por si se corta la luz.</li>
+          </ul>
+        </details>
+        <details id="h-niebla" data-h="niebla" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🌫️</span><span class="nom">Niebla, humo o polvo</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Si manejás: luces bajas y despacio.</b> Bajá la velocidad de a poco, sin frenar de golpe, y dejá mucha distancia con el de adelante. No adelantes.</li>
+            <li><b>Guiate por las marcas en V del asfalto:</b> si ves dos, no pases de 60 km/h; si ves una, no pases de 40 km/h.</li>
+            <li><b>Si casi no ves,</b> salí del camino despacio y pará fuera de la calzada y de la banquina.</li>
+            <li><b>Con humo, quedate adentro:</b> cerrá ventanas y rejillas, y tapá las rendijas con trapos. Suspendé los deportes y las caminatas al aire libre.</li>
+            <li><b>Con humo, no fumes ni prendas velas.</b> Si tenés que estar mucho tiempo afuera, usá un barbijo bien ajustado.</li>
+            <li><b>Si te cuesta respirar,</b> consultá en el centro de salud.</li>
+          </ul>
+        </details>
+        <details id="h-mochila" data-h="mochila" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🎒</span><span class="nom">Mochila y plan familiar</span><span class="rige" hidden></span></summary>
+          <div class="hMoch">
+            <p>Tenela lista por si tenés que salir rápido de tu casa. <b>Tildá lo que ya tenés:</b> queda guardado solo en este dispositivo.</p>
+            <ul id="hMochLista">
+              <li><label><input type="checkbox" value="doc"> Documentos de todos, en una bolsa cerrada</label></li>
+              <li><label><input type="checkbox" value="agua"> Agua para un día</label></li>
+              <li><label><input type="checkbox" value="comida"> Comida para un día (latas, galletitas, chocolate)</label></li>
+              <li><label><input type="checkbox" value="remedios"> Remedios recetados y botiquín</label></li>
+              <li><label><input type="checkbox" value="linterna"> Linterna y radio a pilas</label></li>
+              <li><label><input type="checkbox" value="telefono"> Teléfono cargado y cargador</label></li>
+              <li><label><input type="checkbox" value="numeros"> Lista con teléfonos útiles</label></li>
+              <li><label><input type="checkbox" value="dinero"> Dinero</label></li>
+              <li><label><input type="checkbox" value="llaves"> Llaves de la casa y del vehículo</label></li>
+              <li><label><input type="checkbox" value="abrigo"> Abrigo y mantas</label></li>
+              <li><label><input type="checkbox" value="silbato"> Silbato</label></li>
+              <li><label><input type="checkbox" value="higiene"> Alcohol en gel y papel higiénico</label></li>
+            </ul>
+            <p class="hCuenta"><span id="hMochN" aria-live="polite">Tenés 0 de 12.</span> <button type="button" class="hLink" id="hMochBorrar" hidden>Destildar todo</button></p>
+            <p><b>Armá un plan con tu familia:</b></p>
+            <ul>
+              <li><b>Elegí un punto de encuentro</b> cerca de tu casa y el camino más seguro para llegar.</li>
+              <li><b>Decidí quién ayuda a quién,</b> empezando por quienes necesitan más atención.</li>
+              <li><b>Contáselo a toda la familia,</b> chicos y mayores incluidos, y practicalo una vez.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </div>
+    <div>
+      <p class="hEt">Qué significa cada color del SMN</p>
+      <ul class="hNiv">
+        <li class="n3"><b>Amarilla: informate.</b> El SMN prevé un tiempo que puede causar algunos daños o cortes por un rato. Mirá el pronóstico antes de salir.</li>
+        <li class="n4"><b>Naranja: preparate.</b> El SMN prevé un tiempo que puede causar daños. Revisá qué hacer y seguí las novedades oficiales.</li>
+        <li class="n5"><b>Roja: seguí las instrucciones oficiales.</b> El SMN prevé un tiempo excepcional, que puede causar daños importantes. Hacé caso a Defensa Civil y a tu municipio.</li>
       </ul>
-    </details>
-    <details>
-      <summary>Viento fuerte y granizo</summary>
-      <ul>
-        <li>Evitá salir. Atá o guardá lo que el viento pueda arrastrar (chapas, macetas, sillas).</li>
-        <li>Alejate de árboles, postes y carteles. No te acerques a cables caídos: avisá a la empresa de luz.</li>
-        <li>Con granizo en la ruta: bajá la velocidad de a poco, prendé las luces bajas, no frenes de golpe y no pares sobre la calzada.</li>
-        <li>Calmá a chicos, mayores y mascotas: el ruido asusta. Cuando pase, revisá techos, ventanas y canaletas.</li>
-      </ul>
-    </details>
-    <details>
-      <summary>Lluvias fuertes, calles anegadas y crecida del río</summary>
-      <ul>
-        <li>No cruces calles, caminos ni puentes con agua, ni a pie ni en vehículo. No camines ni nades en cauces o zonas inundadas.</li>
-        <li>No saques la basura y despejá rejillas y desagües.</li>
-        <li>Si entra agua a tu casa: cortá la luz, el gas y el agua, y subí a la parte más alta. Cerrá puertas y ventanas.</li>
-        <li>Si vivís en la costa, fuera de las defensas: tené lista una mochila (documentos, remedios, linterna, radio a pilas, teléfono cargado, agua) y salí hacia un lugar alto cuando lo indiquen las autoridades.</li>
-        <li>Avisá a las autoridades si cerca hay personas que no pueden salir solas (movilidad reducida, mayores, enfermos).</li>
-        <li>Si tu casa tiene pozo ciego, marcalo: el terreno mojado puede hundirse.</li>
-        <li>Seguí solo los avisos oficiales de la Provincia y de tu municipio.</li>
-      </ul>
-    </details>
-    <details>
-      <summary>Cuando baja el agua</summary>
-      <ul>
-        <li>Tomá solo agua envasada o hervida. Para la leche de bebés, agua envasada. Si amamantás, seguí haciéndolo.</li>
-        <li>Tirá los alimentos que tocaron el agua, los que estuvieron más de 2 horas sin heladera y las latas hinchadas o dañadas. No uses remedios que se mojaron.</li>
-        <li>Antes de limpiar, cortá la luz general y usá botas de goma. Desinfectá con una taza de lavandina cada 15 litros de agua.</li>
-        <li>Lavate las manos seguido. Si te lastimaste, lavá la herida con agua y jabón y consultá en el centro de salud (puede hacer falta la vacuna antitetánica).</li>
-        <li>Vaciá recipientes con agua acumulada (contra el dengue) y cuidá la casa de roedores.</li>
-      </ul>
-    </details>
-    <p><b>Teléfonos de emergencia en el Chaco:</b> 911 (Policía), 100 (Bomberos), 107 (emergencias médicas). Defensa Civil de la Provincia: <a href="tel:+543624448000,103">(0362) 444-8000</a>, interno 103.</p>
-    <p class="meta">Significado de cada color: SMN, explicado con palabras simples. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR) y Ministerio de Salud de la Nación, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
+      <p class="meta" style="margin-top:6px">Definiciones completas en el <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">sitio del SMN</a>.</p>
+    </div>
+    <p class="meta">Significado de cada color: SMN, explicado con palabras simples. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR), Ministerio de Salud de la Nación y Agencia Nacional de Seguridad Vial, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-de-calor/que-hacer" target="_blank" rel="noopener">calor</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-polar/que-hacer" target="_blank" rel="noopener">frío</a>, <a href="https://www.argentina.gob.ar/sinagir/niebla/que-hacer" target="_blank" rel="noopener">niebla</a>, <a href="https://www.argentina.gob.ar/noticias/recomendaciones-del-ministerio-de-salud-por-la-presencia-de-humo-en-varias-provincias-del" target="_blank" rel="noopener">humo</a>, <a href="https://www.argentina.gob.ar/sinagir/kit-de-emergencias" target="_blank" rel="noopener">mochila</a> y <a href="https://www.argentina.gob.ar/sinagir/plan-familiar-de-emergencias" target="_blank" rel="noopener">plan familiar</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
   </section>
 
   <section aria-labelledby="t-sem">
@@ -1027,7 +1157,7 @@ function smnInfo(i){
 function cargarSMN(){
   SRV_P.then(j=>{
     if(smnVale(j)){SMN=j;SMN_VIVO=true;MEM.guardar('smn',{emitido:j.emitido,capturado:j.capturado,fechas:j.fechas,areas:j.areas,alertas:j.alertas,leidas:j.leidas},new Date())}
-    SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarNino);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
+    SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarHacer);seguro(pintarNino);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
   });
 }
 function colorearMapa(R){
@@ -1293,6 +1423,84 @@ function pintar(){
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
   seguro(pintarBanner);
+  seguro(pintarHacer);
+}
+
+/* ---------- qué hacer ante una alerta ---------- */
+// Tarjeta de cada fenómeno del SMN (mismos números que SMN_EV). Las nevadas van con el frío.
+const HACER_EV={41:'torm',39:'viento',47:'viento',37:'lluvia',101:'calor',102:'frio',42:'frio',103:'niebla',104:'niebla',105:'niebla'};
+const HACER_ICO={torm:'⛈️',viento:'💨',lluvia:'🌧️',calor:'🌡️',frio:'🥶',niebla:'🌫️'};
+const etqHoy=d=>d===hoy?'hoy':d===masDias(hoy,1)?'mañana':'el '+fDiaLargo(d);
+// Lo que rige ahora: alertas del SMN para el Chaco (de hoy en adelante) y ríos fuera del verde.
+// filas: una por fenómeno o río, de la más grave a la más leve ({t: tarjeta, niv: 3 amarillo, 4 naranja, 5 rojo, txt, rige});
+// marcas: tarjeta -> nivel y etiqueta; smn: 'ok' (informe al día), 'duda' (no se puede confirmar) o 'carga'.
+function hacerHoy(){
+  const filas=[],marcas=new Map(),marcar=(t,niv,et)=>{const m=marcas.get(t);if(!m||niv>m.niv)marcas.set(t,{niv,et})};
+  const smn=!smnVigente()?(SMN_LISTO||SMN.emitido?'duda':'carga'):(SMN.leidas===0||smnViejo())?'duda':'ok';
+  if(smnVigente()){
+    const F=new Map();
+    GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{if(!HACER_EV[a.ev])return;let f=F.get(a.ev);if(!f)F.set(a.ev,f={ev:a.ev,niv:0,mun:new Set(),dias:new Set(),x:0});
+      if(a.niv>f.niv)f.niv=a.niv;f.mun.add(i);f.dias.add(a.dia);f.x|=a.x}));
+    F.forEach(f=>{const t=HACER_EV[f.ev],d=[...f.dias].sort(),n=f.mun.size,T=GEO.mun.length,nv=(SMN_NIV[f.niv]||['','nivel '+f.niv])[1];
+      filas.push({t,niv:f.niv,txt:'<b>'+smnTxt({niv:f.niv,ev:f.ev})+(f.x?', con posible '+SMN_X[f.x&3]:'')+'</b> · '
+        +(d.length>1?'de '+etqHoy(d[0])+' a '+etqHoy(d[d.length-1]):etqHoy(d[0]))+' · '+(n===T?'toda la provincia':n+' de '+T+' municipios')});
+      marcar(t,f.niv,'Alerta '+nv);
+      if(f.ev===41&&f.x)marcar('viento',f.niv,'Con la tormenta');   // granizo o ráfagas: la tarjeta del viento también sirve
+    });
+  }
+  // Ríos: el naranja del Paraná sale del pronóstico del INA y no es una alerta del SMN.
+  const NV={amarillo:3,naranja:4,rojo:5};
+  [['Paraná',riesgoRio(),'islas y costa fuera de las defensas'],['Paraguay',riesgoParaguay(),'costa e islas de Puerto Bermejo a Isla del Cerrito']].forEach(([rio,r,zona])=>{
+    if(!r||!NV[r.c])return;
+    filas.push({t:'lluvia',niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
+    marcar('lluvia',NV[r.c],'Río '+r.c);
+  });
+  filas.sort((x,y)=>y.niv-x.niv);
+  return {filas,marcas,smn};
+}
+let HACER_TOCADO=false,HACER_IMPR=false;
+function pintarHacer(){
+  const el=$('hHoy');if(!el)return;
+  const H=hacerHoy(),max=H.filas.reduce((m,f)=>Math.max(m,f.niv),0);
+  const smnLink='<a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">SMN</a>';
+  let h;
+  if(H.filas.length){
+    h='<p class="hEt">Ahora en el Chaco</p><ul>'+H.filas.map(f=>'<li><span>'+HACER_ICO[f.t]+' '+f.txt+'</span><button type="button" class="hIr" data-h="'+f.t+'">Qué hacer</button></li>').join('')+'</ul>'
+      +(H.smn==='duda'?'<p class="meta">El informe del SMN está sin renovar: puede haber alertas nuevas. Confirmalas en el '+smnLink+'.</p>':'');
+  }else if(H.smn==='ok'){
+    h='<p><b>Hoy no hay alertas del SMN para el Chaco'+(riesgoRio().c==='verde'&&riesgoParaguay().c==='verde'?' y los ríos están en verde':'')+'.</b> '
+      +'Es un buen momento para preparar la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button>.</p>';
+  }else h=H.smn==='carga'?'<p class="nodisp">Consultando las alertas…</p>'
+    :'<p><b>No se pudo confirmar si hay alertas del SMN ahora.</b> Consultalas en el '+smnLink+'. Mientras tanto, abajo tenés qué hacer en cada caso.</p>';
+  el.className='hHoy '+(H.filas.length?'n'+max:H.smn==='ok'?'':'gris');
+  el.innerHTML=h;
+  // Las tarjetas de lo que rige quedan marcadas; la más grave se abre sola una vez, si la persona todavía no tocó ninguna.
+  document.querySelectorAll('.hSit details').forEach(d=>{const m=H.marcas.get(d.dataset.h),r=d.querySelector('.rige');
+    d.classList.remove('n3','n4','n5');if(m)d.classList.add('n'+m.niv);if(r){r.hidden=!m;r.textContent=m?m.et:''}});
+  if(H.filas.length&&!HACER_TOCADO){const d=$('h-'+H.filas[0].t);if(d&&!d.open){d.open=true;HACER_TOCADO=true}}
+}
+const MOCH_K='anc-mochila';
+function iniciarHacer(){
+  const D_=[...document.querySelectorAll('.hSit details')];
+  // Una tarjeta abierta por vez (el atributo name lo hace solo en los navegadores nuevos).
+  D_.forEach(d=>d.addEventListener('toggle',()=>{if(!d.open||HACER_IMPR)return;D_.forEach(o=>{if(o!==d&&o.open)o.open=false})}));
+  D_.forEach(d=>{const s=d.querySelector('summary');if(s)s.addEventListener('click',()=>{HACER_TOCADO=true})});
+  // Botones "Qué hacer" y enlaces a otra tarjeta: la abren y la muestran.
+  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-h]');if(!b)return;
+    const d=$('h-'+b.dataset.h);if(!d)return;HACER_TOCADO=true;d.open=true;verSec(d)});
+  // Mochila: lo tildado queda en este navegador (si no se puede guardar, igual se puede tildar).
+  const L=[...document.querySelectorAll('#hMochLista input')];
+  let g=[];try{g=JSON.parse(localStorage.getItem(MOCH_K))||[]}catch(e){}
+  if(Array.isArray(g))L.forEach(i=>{i.checked=g.includes(i.value)});
+  const contar=()=>{const n=L.filter(i=>i.checked).length;$('hMochN').textContent=n===L.length?'¡Tenés todo! '+n+' de '+L.length+'.':'Tenés '+n+' de '+L.length+'.';$('hMochBorrar').hidden=!n};
+  const guardar=()=>{try{localStorage.setItem(MOCH_K,JSON.stringify(L.filter(i=>i.checked).map(i=>i.value)))}catch(e){}contar()};
+  L.forEach(i=>i.addEventListener('change',guardar));
+  $('hMochBorrar').addEventListener('click',()=>{L.forEach(i=>{i.checked=false});guardar()});
+  contar();
+  // Al imprimir se ven todas las tarjetas abiertas; después vuelven como estaban.
+  let antes=[];
+  addEventListener('beforeprint',()=>{HACER_IMPR=true;antes=D_.map(d=>d.open);D_.forEach(d=>{d.removeAttribute('name');d.open=true})});
+  addEventListener('afterprint',()=>{D_.forEach((d,k)=>{d.open=!!antes[k];d.setAttribute('name','hacer')});setTimeout(()=>{HACER_IMPR=false},0)});
 }
 
 /* ---------- lluvia hora por hora (mapa animado) ---------- */
@@ -1418,7 +1626,7 @@ function iniciarAnim(){
 }
 
 seguro(iniciarPlegables);
-pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);cargarSMN();
+pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);seguro(iniciarHacer);seguro(pintarHacer);cargarSMN();
 seguro(iniciarAnim);cargarGrilla();seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
