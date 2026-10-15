@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 15/10/2026
+
+- **Textos más calmos en "Qué hacer ante una alerta"**: los tres colores ya no citan textual al SMN ("peligrosos para la sociedad, la vida, los bienes y el ambiente", "emergencias o desastres"); lo dicen con palabras simples y sin comillas, subiendo de a un escalón (algunos daños o cortes por un rato → daños → daños importantes), con qué hacer en cada caso. El rojo sigue siendo serio. Debajo, enlace a las definiciones completas en el sitio del SMN. Pedido de Mariano: no alarmar. No cambia colores ni reglas.
+- **Desplegables más visibles**: el botón "Mostrar" de las secciones cerradas es más grande y va relleno de celeste (abierta, "Ocultar" con borde). Con la sección cerrada se ve el comienzo de lo que hay adentro, que se va desvaneciendo, y debajo "Mostrar todo"; tocar en cualquier parte de la sección la abre. Siguen empezando cerradas y, cerradas, no bajan las imágenes del Pacífico ni del satélite. Al imprimir se ve todo. Pedido de Mariano.
+
 ## 14/10/2026 (`8851810`: seguridad y muchas visitas)
 
 - **La página ya no consulta las fuentes**: lee primero una copia en GitHub (`servidor.json`, rama `datos`) que arma el robot cada hora con la respuesta del script de Google. El script queda de respaldo, solo si esa copia falta o tiene más de 2 horas. Si los datos son viejos se muestran con su hora y los avisos de siempre, en lugar de pedirle los ríos, los pronósticos y Yacyretá al INA desde cada navegador. Con muchas visitas a la vez, ni el INA ni el script de Google reciben un pedido por cada visita.

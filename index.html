@@ -43,8 +43,10 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
 .pleg>.tt{flex:1;min-width:0}
-.pleg>.pv{flex:none;font-size:.85rem;font-weight:600;color:var(--water);display:flex;align-items:center;gap:6px;border:1.5px solid currentColor;border-radius:99px;padding:6px 12px;min-height:36px;box-sizing:border-box;transition:background .15s}
-.pleg:hover>.pv{background:var(--water-soft)}
+.pleg>.pv{flex:none;font-size:.95rem;font-weight:700;color:var(--card);background:var(--water);display:flex;align-items:center;gap:8px;border:1.5px solid var(--water);border-radius:99px;padding:8px 16px;min-height:42px;box-sizing:border-box;transition:background .15s,color .15s}
+.pleg:hover>.pv{filter:brightness(1.1)}
+.pleg[aria-expanded="true"]>.pv{background:transparent;color:var(--water)}
+.pleg[aria-expanded="true"]:hover>.pv{background:var(--water-soft);filter:none}
 .pleg>.pv::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
 .pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
 .pleg>.tt>small{display:block;font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
@@ -52,7 +54,14 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 @media (prefers-reduced-motion:reduce){.pleg>.pv,.pleg>.pv::after{transition:none}}
 .pleg:focus-visible{outline:3px solid var(--water);outline-offset:4px;border-radius:4px}
 .cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
-@media print{.cuerpo[hidden]{display:flex!important}.pleg>.pv,.pleg>.tt>small{display:none}}
+/* cerrada: se ve el comienzo del contenido, que se desvanece; tocarlo abre la sección */
+.cuerpo.vista{max-height:7.5rem;overflow:hidden;-webkit-mask-image:linear-gradient(#000 25%,transparent);mask-image:linear-gradient(#000 25%,transparent);user-select:none}
+.mas{all:unset;box-sizing:border-box;align-self:center;margin-top:-26px;position:relative;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--water);padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:8px}
+.mas[hidden]{display:none}
+.mas:hover{background:var(--water-soft)}
+.mas::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.plegable.cerrada{cursor:pointer}.plegable.cerrada .cuerpo,.plegable.cerrada .mas{cursor:pointer}
+@media print{.cuerpo[hidden]{display:flex!important}.cuerpo.vista{max-height:none;-webkit-mask-image:none;mask-image:none}.pleg>.pv,.pleg>.tt>small,.mas{display:none!important}}
 .meta{font-size:.82rem;color:var(--muted)}
 .estado{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--line);margin-right:6px}
 .estado.vivo{border-color:var(--verde);color:var(--verde)}
@@ -211,10 +220,11 @@ footer{font-size:.85rem;color:var(--muted)}
   <section aria-labelledby="t-hacer">
     <h2 id="t-hacer">Qué hacer ante una alerta</h2>
     <ul class="fuentes">
-      <li><b>Amarilla: informate.</b> Para el SMN son "posibles fenómenos meteorológicos con capacidad de daño y riesgo de interrupción momentánea de las actividades cotidianas".</li>
-      <li><b>Naranja: preparate.</b> Se esperan "fenómenos meteorológicos peligrosos para la sociedad, la vida, los bienes y el ambiente".</li>
-      <li><b>Roja: seguí las instrucciones oficiales.</b> Se esperan "fenómenos meteorológicos excepcionales con potencial de provocar emergencias o desastres".</li>
+      <li><b>Amarilla: informate.</b> El SMN prevé un tiempo que puede causar algunos daños o cortes por un rato. Mirá el pronóstico antes de salir.</li>
+      <li><b>Naranja: preparate.</b> El SMN prevé un tiempo que puede causar daños. Revisá qué hacer y seguí las novedades oficiales.</li>
+      <li><b>Roja: seguí las instrucciones oficiales.</b> El SMN prevé un tiempo excepcional, que puede causar daños importantes. Hacé caso a Defensa Civil y a tu municipio.</li>
     </ul>
+    <p class="meta">Definiciones completas en el <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">sitio del SMN</a>.</p>
     <details>
       <summary>Tormentas y rayos</summary>
       <ul>
@@ -257,7 +267,7 @@ footer{font-size:.85rem;color:var(--muted)}
       </ul>
     </details>
     <p><b>Teléfonos de emergencia en el Chaco:</b> 911 (Policía), 100 (Bomberos), 107 (emergencias médicas). Defensa Civil de la Provincia: <a href="tel:+543624448000,103">(0362) 444-8000</a>, interno 103.</p>
-    <p class="meta">Significado de cada color: SMN. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR) y Ministerio de Salud de la Nación, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
+    <p class="meta">Significado de cada color: SMN, explicado con palabras simples. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR) y Ministerio de Salud de la Nación, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
   </section>
 
   <section aria-labelledby="t-sem">
@@ -637,7 +647,7 @@ const plegGuardadas=()=>{try{const o=JSON.parse(localStorage.getItem(PLEG_K));re
 const abierta=id=>!PLEG[id]||PLEG[id].abierta;
 function abrirSec(id,abrir,guardar){
   const p=PLEG[id];if(!p||p.abierta===abrir)return;
-  p.abierta=abrir;p.cuerpo.hidden=!abrir;p.btn.setAttribute('aria-expanded',abrir);p.txt.textContent=abrir?'Ocultar':'Mostrar';
+  p.abierta=abrir;p.cuerpo.classList.toggle('vista',!abrir);p.cuerpo.inert=!abrir;p.mas.hidden=abrir;p.sec.classList.toggle('cerrada',!abrir);p.btn.setAttribute('aria-expanded',abrir);p.txt.textContent=abrir?'Ocultar':'Mostrar';
   if(guardar){const g=plegGuardadas();g[id]=abrir;try{localStorage.setItem(PLEG_K,JSON.stringify(g))}catch(e){}}
   (AL_ABRIR[id]||[]).forEach(f=>seguro(()=>f(abrir)));
 }
@@ -649,16 +659,20 @@ function iniciarPlegables(){
     cuerpo.className='cuerpo';cuerpo.id='c-'+id;
     while(h.nextSibling)cuerpo.appendChild(h.nextSibling);
     sec.appendChild(cuerpo);
+    // Franja "Mostrar todo" debajo de la vista previa (repite el botón del título; los lectores de pantalla usan ese).
+    const mas=document.createElement('button');mas.type='button';mas.className='mas';mas.tabIndex=-1;mas.setAttribute('aria-hidden','true');mas.textContent='Mostrar todo';sec.appendChild(mas);
     const btn=document.createElement('button');btn.type='button';btn.className='pleg';btn.setAttribute('aria-controls',cuerpo.id);
     btn.innerHTML='<span class="tt"></span><span class="pv" aria-hidden="true"></span>';
     btn.firstChild.textContent=h.textContent;
     // Con la sección cerrada, una línea dice qué hay adentro (data-pista).
     if(sec.dataset.pista){const sm=document.createElement('small');sm.textContent=sec.dataset.pista;btn.firstChild.appendChild(sm)}
     h.textContent='';h.appendChild(btn);
-    PLEG[id]={abierta:true,cuerpo,btn,txt:btn.lastChild};
+    PLEG[id]={abierta:true,cuerpo,btn,txt:btn.lastChild,mas,sec};
     const ab=typeof g[id]==='boolean'?g[id]:!sec.hasAttribute('data-cerrada');
     PLEG[id].abierta=!ab;abrirSec(id,ab,false);
     btn.addEventListener('click',()=>abrirSec(id,!PLEG[id].abierta,true));
+    // Con la sección cerrada, tocar la vista previa o "Mostrar todo" la abre.
+    sec.addEventListener('click',e=>{if(!PLEG[id].abierta&&!btn.contains(e.target))abrirSec(id,true,true)});
   });
   // Un enlace a una sección cerrada (por ejemplo "Ver el río") la abre antes de ir.
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(a)abrirSec(a.getAttribute('href').slice(1),true,false)},true);
