@@ -2,7 +2,18 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (textos de "Qué hacer" pensados para la gente de la costa y los barrios)
+## 15/10/2026 (informar sin alarmar)
+
+- **Tranquilidad junto al aviso del río**: cuando el Paraná sale del verde, "Ahora en el Chaco", el renglón del semáforo y el detalle de los municipios de la costa dicen "Dentro de las defensas del Gran Resistencia no hace falta hacer nada: protegen hasta unos 9,50 m". Antes estaba solo dentro de la sección del río.
+- **Detalle de Barranqueras y Puerto Vilelas**: con el color del río dice "Costa del Paraná" y aclara que por la lluvia comparten el semáforo del Gran Resistencia y en qué color está (antes decía "Gran Resistencia · Naranja" con Resistencia en verde).
+- **Ícono de los ríos**: los renglones de los ríos fuera del verde llevan ≈ en lugar de "!!".
+- **Tarjetas separadas**: "Lluvia fuerte" y "Crecida del río" (nueva, 🌊). El Paraná y el Paraguay llevan a la del río, que empieza diciendo que dentro de las defensas no hace falta hacer nada. Nueve tarjetas; la mochila va a lo ancho.
+- **Cartel "Este sitio es informativo"** en azul, no en amarillo (el amarillo es un color del semáforo).
+- **El Niño**: agrega que es una tendencia de la temporada, no un aviso; lo que vale día a día son las alertas del SMN.
+- **Privacidad al día**: el navegador se conecta a GitHub (copias de los datos), a Google solo si las copias están atrasadas, y a la NASA para las imágenes; no al SMN, INA, Open-Meteo ni NOAA.
+- No cambian colores ni reglas. Huella nueva del código. Prueba de "Qué hacer" ampliada (sigue en 43). Pedido de Mariano, a partir de la revisión del sitio con el Paraná en naranja.
+
+## 15/10/2026 (`766bebc` y `53e41d9`: textos de "Qué hacer" pensados para la gente de la costa y los barrios; teléfonos)
 
 - **Redacción más cercana**: palabras de todos los días (salita, garrafa, frazada, plata, abuelos), ejemplos que la gente tiene en la casa y situaciones del Chaco: moto y bici, pesca y canoa, chicos jugando en zanjas, animales (gallinas, chanchos, caballos), pozo ciego o letrina, tereré, quema de basura y pastizales, audios de WhatsApp sin origen. Cables caídos: avisar a SECHEEP o al municipio.
 - **Mochila**: sin chocolate (se derrite con el calor); comida que no se echa a perder (galletitas, pan, latas de picadillo o atún, abrelatas), DNI y libreta de vacunas en bolsa de nylon, teléfonos anotados en papel, muda de ropa y frazada, pañales y leche si hay bebé. Sigue con 12 cosas y lo ya tildado se conserva.

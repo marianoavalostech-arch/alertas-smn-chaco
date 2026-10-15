@@ -728,7 +728,7 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
   prueba('qué hacer: lo que rige hoy lleva a su tarjeta, el río nunca dice "alerta naranja" y sin informe al día no dice que no hay alertas', () => {
     // cada fenómeno del SMN y cada botón tiene su tarjeta, con las recomendaciones adentro
     const tarj = [...html.matchAll(/<details id="h-(\w+)" data-h="\1" name="hacer">/g)].map(m => m[1]);
-    assert.deepStrictEqual(tarj, ['torm', 'viento', 'lluvia', 'baja', 'calor', 'frio', 'niebla', 'mochila']);
+    assert.deepStrictEqual(tarj, ['torm', 'viento', 'lluvia', 'rio', 'baja', 'calor', 'frio', 'niebla', 'mochila']);
     for (const t of Object.values(S('HACER_EV'))) assert.ok(tarj.includes(t), t + ' sin tarjeta');
     for (const ev of Object.keys(S('SMN_EV'))) assert.ok(S('HACER_EV')[ev], 'el fenómeno ' + ev + ' del SMN no tiene qué hacer');
     for (const m of html.matchAll(/data-h="(\w+)"/g)) assert.ok(tarj.includes(m[1]), m[1]);
@@ -743,11 +743,15 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     S('SMN=' + JSON.stringify({ emitido: new Date().toISOString(), capturado: new Date().toISOString(), fechas: [hoy, man], areas, alertas, leidas: 5 }));
     let H = S('hacerHoy()');
     assert.strictEqual(H.smn, 'ok');
-    assert.strictEqual(JSON.stringify(H.filas.map(f => [f.t, f.niv])), '[["torm",4],["lluvia",4],["calor",3]]');
+    assert.strictEqual(JSON.stringify(H.filas.map(f => [f.t, f.niv])), '[["torm",4],["rio",4],["calor",3]]');
     assert.ok(H.filas[0].txt.includes('Alerta naranja por tormentas, con posible granizo') && H.filas[0].txt.includes('mañana') && H.filas[0].txt.includes('1 de ' + T + ' municipios'));
     assert.ok(H.filas[1].txt.includes('naranja según el pronóstico del INA') && !/alerta naranja/i.test(H.filas[1].txt), 'el río no es una alerta del SMN');
     assert.ok(H.filas[2].txt.includes('Alerta amarilla por calor extremo') && H.filas[2].txt.includes('hoy') && H.filas[2].txt.includes('toda la provincia'));
     assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
+    // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas, en la franja y en su tarjeta
+    S('pintarHacer()'); assert.ok(S("$('hHoy').innerHTML").includes(S('DEFENSAS')), 'la franja dice que dentro de las defensas no hace falta hacer nada');
+    assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, no hace falta hacer nada/.test(html));
+    assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');
     // sin alertas y con el informe al día: "no hay"; con el informe viejo o vacío del canal: no se puede confirmar
     S('riesgoRio=()=>({c:"verde"});SMN.alertas={};SMN.areas.forEach(a=>{SMN.alertas[a]=[]})');
     H = S('hacerHoy()'); assert.strictEqual(H.filas.length, 0); assert.strictEqual(H.smn, 'ok');

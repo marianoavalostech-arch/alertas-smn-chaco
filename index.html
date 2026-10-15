@@ -59,6 +59,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
 .aviso strong{display:block}
 .aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
+.aviso.info{border-left-color:var(--water);background:var(--water-soft);color:var(--ink)}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
 section{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sombra);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
@@ -216,6 +217,7 @@ footer{font-size:.85rem;color:var(--muted)}
 @media (min-width:600px){.hSit{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .hSit details{border:1.5px solid var(--line);border-radius:10px;background:var(--card);min-width:0}
 .hSit details[open]{grid-column:1/-1;border-color:var(--water)}
+.hSit details#h-mochila{grid-column:1/-1}
 .hSit summary{list-style:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;min-height:92px;text-align:center;border-radius:9px;line-height:1.2}
 .hSit summary::-webkit-details-marker{display:none}
 .hSit summary:hover{background:var(--water-soft)}
@@ -253,7 +255,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
   </header>
 
-  <div class="aviso" role="note">
+  <div class="aviso info" role="note">
     <strong>Este sitio es informativo.</strong>
     No reemplaza las alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
     <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver alertas oficiales del SMN</a>
@@ -330,14 +332,24 @@ footer{font-size:.85rem;color:var(--muted)}
           </ul>
         </details>
         <details id="h-lluvia" data-h="lluvia" name="hacer">
-          <summary><span class="ico" aria-hidden="true">🌧️</span><span class="nom">Lluvia fuerte y crecida del río</span><span class="rige" hidden></span></summary>
+          <summary><span class="ico" aria-hidden="true">🌧️</span><span class="nom">Lluvia fuerte</span><span class="rige" hidden></span></summary>
           <ul>
             <li><b>No cruces calles, caminos ni puentes con agua,</b> ni a pie, ni en moto, ni en auto: no sabés qué hondo está ni qué tan fuerte corre.</li>
             <li><b>No dejes que los chicos jueguen en el agua</b> de la calle, las zanjas o los canales. Nadie se bañe ahí.</li>
             <li><b>Limpiá las zanjas, rejillas y desagües de tu frente.</b> Y no saques la basura: el agua la arrastra y tapa todo.</li>
             <li><b>Si entra agua a tu casa:</b> bajá la llave de la luz, cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
-            <li><b>Si vivís en la costa, fuera de las defensas:</b> tené lista la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button>. Si te dicen que salgas, salí con tiempo: no esperes a que el agua llegue a la puerta.</li>
+            <li><b>Fijate en tus vecinos:</b> si alguien no puede salir solo (abuelos, personas enfermas o en silla de ruedas), avisá a Defensa Civil o al municipio.</li>
+            <li><b>Si hay pozo ciego o letrina, marcalo con un palo o una tela:</b> con el terreno mojado se puede hundir.</li>
+            <li><b>Hacé caso solo a los avisos oficiales</b> de la Provincia y de tu municipio. No reenvíes audios ni mensajes de WhatsApp si no sabés de dónde salieron.</li>
+          </ul>
+        </details>
+        <details id="h-rio" data-h="rio" name="hacer">
+          <summary><span class="ico" aria-hidden="true">🌊</span><span class="nom">Crecida del río</span><span class="rige" hidden></span></summary>
+          <ul>
+            <li><b>Si vivís dentro de las defensas, no hace falta hacer nada.</b> Las defensas del Gran Resistencia protegen hasta unos 9,50 m. Lo que sigue es para las islas y la costa fuera de las defensas.</li>
+            <li><b>Tené lista la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button>.</b> Si te dicen que salgas, salí con tiempo: no esperes a que el agua llegue a la puerta.</li>
             <li><b>Si tenés animales</b> (gallinas, chanchos, caballos, perros), pensá antes adónde llevarlos y sacalos con tiempo.</li>
+            <li><b>Si entra agua a tu casa:</b> bajá la llave de la luz, cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
             <li><b>Fijate en tus vecinos:</b> si alguien no puede salir solo (abuelos, personas enfermas o en silla de ruedas), avisá a Defensa Civil o al municipio.</li>
             <li><b>Si hay pozo ciego o letrina, marcalo con un palo o una tela:</b> con el terreno mojado se puede hundir.</li>
             <li><b>Hacé caso solo a los avisos oficiales</b> de la Provincia y de tu municipio. No reenvíes audios ni mensajes de WhatsApp si no sabés de dónde salieron.</li>
@@ -520,7 +532,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a Google, GitHub, el INA, Open-Meteo y la NASA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; y a la NASA, para las imágenes del mar y del satélite. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
   </section>
 
   <footer>Los horarios están en hora de Argentina.</footer>
@@ -855,11 +867,12 @@ function verSec(el,seco){
 function pintarSemaforo(){
   const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',naranja:'!!',rojo:'!!!',gris:'?'},ORD={rojo:0,naranja:1,amarillo:2,gris:3,verde:4};
   // Cada renglón: color, nombre corto (para la línea de verdes), su renglón completo y cómo se abre (data-j o enlace).
-  const fila=(q,tit,sub,ver,abre)=>({c:q.c,n:tit,abre,html:'<li class="'+q.c+'"'+abre+'><span class="luz" aria-hidden="true">'+LUZ[q.c]+'</span>'
-    +'<span><b>'+tit+'</b>'+(sub?' '+sub:'')+'<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+'</span>'+ver+'</li>'});
+  // Los ríos fuera del verde llevan un ícono de agua (≈) en lugar de signos de exclamación; el Paraná suma la frase de las defensas.
+  const fila=(q,tit,sub,ver,abre,rio)=>({c:q.c,n:tit,abre,html:'<li class="'+q.c+'"'+abre+'><span class="luz" aria-hidden="true">'+(rio&&q.c!=='verde'&&q.c!=='gris'?'≈':LUZ[q.c])+'</span>'
+    +'<span><b>'+tit+'</b>'+(sub?' '+sub:'')+'<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+(rio==='parana'&&q.c!=='verde'&&q.c!=='gris'?' '+DEFENSAS:'')+'</span>'+ver+'</li>'});
   const F=LOCS.map((l,i)=>fila(R[i],l.n,l.sub,'<button class="vermapa" type="button">Ver en el mapa</button>',' data-j="'+i+'"'))
-    .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio">Ver el río</a>',' data-a="#t-rio"'),
-            fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros">Ver el río</a>',' data-a="#t-otros"'));
+    .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio">Ver el río</a>',' data-a="#t-rio"','parana'),
+            fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros">Ver el río</a>',' data-a="#t-otros"','paraguay'));
   // Primero lo que no está en verde (rojo, naranja, amarillo, gris); las verdes, juntas en un solo renglón. El naranja solo lo usa el Paraná.
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
   $('sem').innerHTML=otras.map(f=>f.html).join('')
@@ -883,6 +896,8 @@ const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
 const RIBERA=['Barranqueras','Puerto Vilelas','Isla del Cerrito'];
 // Sala de Situación de la Municipalidad de Puerto Vilelas: solo enlace (sus datos no son públicos para otros sitios).
 const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
+// Frase que tranquiliza cuando el Paraná sale del verde: el riesgo es solo fuera de las defensas.
+const DEFENSAS='Dentro de las defensas del Gran Resistencia no hace falta hacer nada: protegen hasta unos 9,50 m.';
 const ETQ={verde:'Verde',amarillo:'Amarillo',naranja:'Naranja',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const sinTildes=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
@@ -1012,7 +1027,7 @@ function colorDe(i){
 }
 // Párrafo del detalle cuando el color del municipio sale del Paraná.
 const rioInfo=k=>!k.rio?'':'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
-  +(k.rio.c==='naranja'?' El naranja no es una alerta oficial: es lo que prevé el INA.':'')+' Vale para la costa y las islas fuera de las defensas. <a href="#t-rio">Ver el río</a></p>';
+  +(k.rio.c==='naranja'?' El naranja no es una alerta oficial: es lo que prevé el INA.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
   if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}
@@ -1052,7 +1067,7 @@ function pintarInfo(){
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
   if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
-  else if(k.tipo==='gran')h='<p><span class="estado">Gran Resistencia</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>Forma parte del Gran Resistencia y comparte su semáforo. '+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
+  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Forma parte del Gran Resistencia: por la lluvia comparte su semáforo, que está en '+M.R[0].et.toLowerCase()+'. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
     h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
      +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
@@ -1367,7 +1382,7 @@ function pintarNino(){
   const sv=oniServidor(),o=sv?sv.v:ONI,u=o[o.length-1],v=u[2];
   const f=v>=2?'El Niño está activo y es muy fuerte':v>=1.5?'El Niño está activo y es fuerte':v>=1?'El Niño está activo, con fuerza moderada':v>=0.5?'El Niño está activo, pero débil'
     :v<=-0.5?'Hoy no hay El Niño: hay La Niña, que suele traer menos lluvias':'Hoy no hay El Niño: el océano está en condiciones normales';
-  $('nino').innerHTML='<p style="font-size:1.1rem"><b>'+f+'.</b> '+(v>=0.5?'En el trimestre '+u[1]+', el Pacífico ecuatorial estuvo en promedio '+nf(v,1)+' °C más caliente de lo normal. En el Chaco, El Niño suele traer más lluvia que lo habitual en primavera y verano.':'')+'</p>'
+  $('nino').innerHTML='<p style="font-size:1.1rem"><b>'+f+'.</b> '+(v>=0.5?'En el trimestre '+u[1]+', el Pacífico ecuatorial estuvo en promedio '+nf(v,1)+' °C más caliente de lo normal. En el Chaco, El Niño suele traer más lluvia que lo habitual en primavera y verano. Es una tendencia de la temporada, no un aviso: lo que vale día a día son las alertas del SMN.':'')+'</p>'
    +'<p class="meta" style="margin:10px 0 6px">Cuánto más caliente estuvo el Pacífico, por trimestre (índice ONI). Desde +0,5 °C se considera El Niño.</p>'
    +'<div class="onis">'+o.map(p=>'<span>'+p[1]+': '+(p[2]>0?'+':'')+nf(p[2],1)+' °C</span>').join('')+'</div>'
    +'<p class="meta" style="margin-top:10px">'+(sv?'Última actualización: '+fFechaHora(new Date(sv.t))+'. Último trimestre publicado: '+u[1]+' '+u[0]+'.'
@@ -1434,7 +1449,7 @@ function pintar(){
 /* ---------- qué hacer ante una alerta ---------- */
 // Tarjeta de cada fenómeno del SMN (mismos números que SMN_EV). Las nevadas van con el frío.
 const HACER_EV={41:'torm',39:'viento',47:'viento',37:'lluvia',101:'calor',102:'frio',42:'frio',103:'niebla',104:'niebla',105:'niebla'};
-const HACER_ICO={torm:'⛈️',viento:'💨',lluvia:'🌧️',calor:'🌡️',frio:'🥶',niebla:'🌫️'};
+const HACER_ICO={torm:'⛈️',viento:'💨',lluvia:'🌧️',rio:'🌊',calor:'🌡️',frio:'🥶',niebla:'🌫️'};
 const etqHoy=d=>d===hoy?'hoy':d===masDias(hoy,1)?'mañana':'el '+fDiaLargo(d);
 // Lo que rige ahora: alertas del SMN para el Chaco (de hoy en adelante) y ríos fuera del verde.
 // filas: una por fenómeno o río, de la más grave a la más leve ({t: tarjeta, niv: 3 amarillo, 4 naranja, 5 rojo, txt, rige});
@@ -1457,8 +1472,8 @@ function hacerHoy(){
   const NV={amarillo:3,naranja:4,rojo:5};
   [['Paraná',riesgoRio(),'islas y costa fuera de las defensas'],['Paraguay',riesgoParaguay(),'costa e islas de Puerto Bermejo a Isla del Cerrito']].forEach(([rio,r,zona])=>{
     if(!r||!NV[r.c])return;
-    filas.push({t:'lluvia',niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
-    marcar('lluvia',NV[r.c],'Río '+r.c);
+    filas.push({t:'rio',rio,niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
+    marcar('rio',NV[r.c],'Río '+r.c);
   });
   filas.sort((x,y)=>y.niv-x.niv);
   return {filas,marcas,smn};
@@ -1471,6 +1486,7 @@ function pintarHacer(){
   let h;
   if(H.filas.length){
     h='<p class="hEt">Ahora en el Chaco</p><ul>'+H.filas.map(f=>'<li><span>'+HACER_ICO[f.t]+' '+f.txt+'</span><button type="button" class="hIr" data-h="'+f.t+'">Qué hacer</button></li>').join('')+'</ul>'
+      +(H.filas.some(f=>f.rio==='Paraná')?'<p>'+DEFENSAS+'</p>':'')
       +(H.smn==='duda'?'<p class="meta">El informe del SMN está sin renovar: puede haber alertas nuevas. Confirmalas en el '+smnLink+'.</p>':'');
   }else if(H.smn==='ok'){
     h='<p><b>Hoy no hay alertas del SMN para el Chaco'+(riesgoRio().c==='verde'&&riesgoParaguay().c==='verde'?' y los ríos están en verde':'')+'.</b> '
