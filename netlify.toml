@@ -8,12 +8,20 @@
 #   raw.githubusercontent.com (copias de la rama datos), script.google.com y script.googleusercontent.com (script de Google, de respaldo),
 #   gibs.earthdata.nasa.gov (imágenes de la NASA). Después de cambiar index.html: node herramientas/csp.js (las pruebas avisan si falta).
 #   Imágenes: las de la NASA y las capas de lluvia que la página dibuja (data: y blob:).
+#   Letra: solo la Montserrat guardada en fuentes/ (font-src 'self').
+#   frame-ancestors: solo el propio sitio y el portal de Gobierno Abierto del Chaco pueden mostrarlo dentro de su página
+#   (por eso no hay X-Frame-Options: esa cabecera no deja nombrar un sitio permitido).
 # Permissions-Policy: el sitio no usa cámara, micrófono, ubicación ni pagos; quedan apagados.
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-    Content-Security-Policy = "default-src 'none'; script-src 'sha256-fuzrj8Zrk4T3ZBl31edlSoy9KPscvgmsVGqtQnGXh8s='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'"
+    Content-Security-Policy = "default-src 'none'; script-src 'sha256-xT8qY1mFXWuk+283kCgcWrUwiwaKtFoHWfAmK6Ky1J4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+
+# La letra no cambia: el navegador la guarda un año. Si algún día se cambia, cambiarle el nombre al archivo.
+[[headers]]
+  for = "/fuentes/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

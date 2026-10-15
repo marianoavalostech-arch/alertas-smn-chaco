@@ -41,7 +41,8 @@ Si una fuente falla, las demás siguen y se muestra el último dato bueno con su
 | `herramientas/puntos.js` | Genera los puntos interiores de cada municipio (`PUNTOS` en el script). Solo hace falta si cambia el mapa. |
 | `pruebas/reglas.test.js` | Pruebas de las reglas del sitio, del script y del robot. |
 | `.github/workflows/` | Tareas de GitHub: `pruebas.yml` (en cada subida) y `lluvia.yml` (robot). |
-| `netlify.toml` | Publicación y cabeceras de seguridad (regla del navegador con la huella del código, `Permissions-Policy`). |
+| `netlify.toml` | Publicación y cabeceras de seguridad (regla del navegador con la huella del código, `Permissions-Policy`, quién puede mostrar el sitio dentro de su página). |
+| `fuentes/montserrat-wght.woff2` | Letra Montserrat de los títulos (la misma del portal de Gobierno Abierto), guardada en el sitio. Licencia en `fuentes/OFL.txt`. |
 | `CAMBIOS.md` | Historial de cambios. |
 | `LICENSE` | Licencia MIT del código. |
 
@@ -63,11 +64,38 @@ Netlify publica la rama `main` tal cual está. Cada subida a `main` es una publi
 
 ## Seguridad
 
-- La página no carga código de otros sitios. La regla del navegador (`Content-Security-Policy` en `netlify.toml`) solo deja correr el `<script>` de la página (por su huella) y solo deja conectarse a `raw.githubusercontent.com`, `script.google.com`, `script.googleusercontent.com` y `gibs.earthdata.nasa.gov`. Sin formularios, cookies ni estadísticas de visitas.
+- La página no carga código ni letras de otros sitios. La regla del navegador (`Content-Security-Policy` en `netlify.toml`) solo deja correr el `<script>` de la página (por su huella) y solo deja conectarse a `raw.githubusercontent.com`, `script.google.com`, `script.googleusercontent.com` y `gibs.earthdata.nasa.gov`. Sin formularios, cookies ni estadísticas de visitas. Solo el propio sitio y el portal de Gobierno Abierto lo pueden mostrar dentro de su página (`frame-ancestors`).
 - Todo dato que llega se revisa antes de usarlo (`FORMA`, `smnVale`, `copiaVale`); los textos de afuera se escriben con `esc`.
 - La clave de GitHub (`GITHUB_TOKEN`) queda en las propiedades del script de Google; la dirección pública no la devuelve, y si GitHub rechaza la clave solo se publica el número de error (el detalle queda en el registro del script).
 - Las tareas de GitHub usan sus herramientas fijadas por huella; `pruebas.yml` solo puede leer.
 - Revisión completa del 14/10/2026 (cuentas, verificación en dos pasos, vistas previas de Netlify, dominio propio): informe en las notas del proyecto en Claude (`claude/revision-seguridad-oficial-14-10.md`).
+
+## Dentro del portal de Gobierno Abierto
+
+El sitio se puede mostrar dentro de una página de https://gobiernoabierto.chaco.gob.ar (en un marco, `iframe`). La regla del navegador (`frame-ancestors` en `netlify.toml`) solo deja hacerlo al propio sitio y a ese portal; cualquier otra página que lo intente ve el marco vacío.
+
+Dentro del portal la página se da cuenta sola (o con `?embebido=1` en la dirección): fondo transparente, siempre en claro (el portal es blanco), sin márgenes propios y con un enlace "Abrir en una pestaña nueva". Le avisa al portal su alto cada vez que cambia (al llegar los datos o al abrir una sección) para que el marco no tenga barra propia, y le pide que baje cuando se toca un enlace interno ("Qué hacer ante una alerta", "Ver el río", los botones del semáforo). Esos avisos van solo al portal (`PORTAL` en `index.html`).
+
+Para ponerlo, quien administra el portal agrega un bloque HTML (en Elementor, el widget "HTML") con esto:
+
+```html
+<iframe id="rios-y-clima" src="https://panel-alertas-chaco.netlify.app/?embebido=1"
+  title="Ríos y Clima del Chaco: alertas, lluvias y ríos" style="width:100%;border:0;height:1800px;display:block"></iframe>
+<script>
+(function(){
+  var f=document.getElementById('rios-y-clima'), ORIGEN='https://panel-alertas-chaco.netlify.app';
+  window.addEventListener('message',function(e){
+    if(e.origin!==ORIGEN||e.source!==f.contentWindow)return;
+    var d=e.data||{};
+    if(d.tipo==='rios-y-clima:alto'&&d.alto>300)f.style.height=Math.ceil(d.alto)+'px';
+    if(d.tipo==='rios-y-clima:ir'&&typeof d.y==='number')
+      window.scrollTo({top:f.getBoundingClientRect().top+window.scrollY+d.y-90,behavior:'smooth'});
+  });
+})();
+</script>
+```
+
+El `-90` deja lugar para el menú fijo del portal; se ajusta si tapa el título. Sin el `<script>` el sitio igual se ve, con un alto fijo de 1800 px y barra propia. Si el sitio se muda a un dominio del Gobierno, cambiar `ORIGEN` en ese bloque y, si cambia el portal, `PORTAL` en `index.html` y `frame-ancestors` en `netlify.toml` (hay una prueba que lo controla).
 
 ## Instalar el script de Google
 
@@ -207,4 +235,4 @@ En el sitio, "Acerca de este sitio" da el correo marianoavalos.tech@gmail.com y 
 
 ## Licencia
 
-El código está bajo licencia MIT (ver `LICENSE`), © 2026 Mariano Avalos. Los datos que muestra el sitio pertenecen a cada fuente y siguen sus propias condiciones de uso.
+El código está bajo licencia MIT (ver `LICENSE`), © 2026 Mariano Avalos. Los datos que muestra el sitio pertenecen a cada fuente y siguen sus propias condiciones de uso. La letra Montserrat (`fuentes/`) es de The Montserrat Project Authors, con licencia SIL Open Font License 1.1 (`fuentes/OFL.txt`).

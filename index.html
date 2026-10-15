@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#132f38"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#063565"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
@@ -11,35 +11,56 @@
 </style>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
+/* Colores y letra del portal de Gobierno Abierto del Chaco (azul marino, celeste, Montserrat en los títulos).
+   Montserrat va guardada en el sitio (fuentes/, licencia OFL): no se pide a ningún servidor externo. */
+@font-face{font-family:"Montserrat";src:url(fuentes/montserrat-wght.woff2) format("woff2");font-weight:300 800;font-display:swap}
 :root{
-  --bg:#edf1ef; --card:#ffffff; --ink:#132f38; --muted:#56696f; --line:#d3dcd9;
-  --water:#2f7f9e; --water-soft:#d6e8ee; --land:#e3e7d8;
+  --bg:#f1f4f8; --card:#ffffff; --ink:#14273d; --muted:#55657a; --line:#d8e0ea;
+  --water:#2a72b8; --water-soft:#dde9f6; --land:#e6eadb;
+  --marino:#063565; --celeste:#0bbbef; --violeta:#5059bc; --titulo:#063565;
   --verde:#2c8a57; --amarillo:#d99a00; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
   --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
+  --sombra:0 1px 2px rgba(6,53,101,.07),0 3px 10px rgba(6,53,101,.05);
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-tit:"Montserrat",var(--font);
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0f1c21; --card:#18292f; --ink:#e6eeec; --muted:#9db0b3; --line:#2c4048;
-  --water:#62b4d1; --water-soft:#1f3d49; --land:#24363a;
+/* Oscuro solo fuera del portal: dentro de Gobierno Abierto (fondo blanco) queda siempre claro. */
+@media (prefers-color-scheme: dark){:root:not(.emb){
+  --bg:#0c1726; --card:#14243a; --ink:#e6edf6; --muted:#9fb0c4; --line:#283c57;
+  --water:#6aaee8; --water-soft:#1c3554; --land:#23323b;
+  --marino:#0a2a52; --titulo:#a9cff5;
   --verde:#4fbf83; --amarillo:#f0bb33; --naranja:#f28c3c; --rojo:#ef6b60; --gris:#7d8c90;
   --verde-bg:#173a2a; --amarillo-bg:#40330d; --naranja-bg:#45280f; --rojo-bg:#47201d;
-  --aviso-bg:#3a300f; --aviso-ink:#f6e3a6; color-scheme:dark}}
+  --aviso-bg:#3a300f; --aviso-ink:#f6e3a6; --sombra:none; color-scheme:dark}}
+:root.emb{color-scheme:light}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
-h1{font-size:1.6rem;line-height:1.1;margin:0;letter-spacing:-.01em}
-h2{font-size:1.15rem;margin:0;text-wrap:balance}
+h1{font-family:var(--font-tit);font-weight:700;font-size:1.6rem;line-height:1.15;margin:0;letter-spacing:-.01em}
+h2{font-family:var(--font-tit);font-weight:700;font-size:1.12rem;line-height:1.25;color:var(--titulo);margin:0;text-wrap:balance}
 p{margin:0}
 a{color:var(--water)}
 a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
-header p{color:var(--muted);margin-top:4px}
-header{text-align:center}
+/* encabezado: franja azul marino con los triángulos del logo de Gobierno Abierto */
+.cab{position:relative;overflow:hidden;background:var(--marino);color:#fff;border-radius:10px;padding:22px 20px 20px;box-shadow:var(--sombra)}
+.cab::before,.cab::after{content:'';position:absolute;pointer-events:none;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.cab::before{right:0;bottom:0;width:120px;height:120px;background:linear-gradient(135deg,var(--celeste),var(--violeta))}
+.cab::after{right:58px;bottom:0;width:62px;height:62px;background:var(--celeste);opacity:.55}
+.cab>*{position:relative}
+.cab h1{color:#fff;padding-right:72px}
+.cab p{color:#cfe0f3;margin-top:6px;padding-right:72px}
+.cab a{color:#fff;font-weight:600}
+.solo-emb{display:none}.emb .solo-emb{display:block}
+.emb body{background:transparent}
+.emb .wrap{padding:2px 2px 8px}
+.cab .solo-emb{font-size:.9rem;margin-top:10px}
+@media print{.cab{background:none;color:inherit;box-shadow:none}.cab::before,.cab::after{display:none}.cab h1,.cab p{color:inherit}}
 .aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
 .aviso strong{display:block}
 .aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
-section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sombra);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
 .pleg>.tt{flex:1;min-width:0}
@@ -49,7 +70,7 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 .pleg[aria-expanded="true"]:hover>.pv{background:var(--water-soft);filter:none}
 .pleg>.pv::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
 .pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
-.pleg>.tt>small{display:block;font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
+.pleg>.tt>small{display:block;font-family:var(--font);font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
 .pleg[aria-expanded="true"]>.tt>small{display:none}
 @media (prefers-reduced-motion:reduce){.pleg>.pv,.pleg>.pv::after{transition:none}}
 .pleg:focus-visible{outline:3px solid var(--water);outline-offset:4px;border-radius:4px}
@@ -90,7 +111,7 @@ section{background:var(--card);border:1px solid var(--line);border-radius:10px;p
 svg{display:block;width:100%;height:auto}
 .otroRio{display:flex;flex-direction:column;gap:10px}
 .otroRio+.otroRio{border-top:1px solid var(--line);padding-top:18px;margin-top:8px}
-.otroRio h3{margin:0;font-size:1.1rem}
+.otroRio h3{margin:0;font-family:var(--font-tit);font-weight:700;font-size:1.05rem;color:var(--titulo)}
 #otros svg{max-width:580px}
 .leyRio{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.88rem;max-width:580px}
 .leyRio span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
@@ -114,8 +135,8 @@ details ul,.fuentes{margin:8px 0 0;padding-left:20px;display:flex;flex-direction
 .pacif{margin:12px 0 0}
 .pacif-img{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#8c978b}
 .pacif-img img{display:block;width:100%;height:auto}
-.pacif-pt{position:absolute;left:82.4%;top:78.9%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#132f38;border:2px solid #fff}
-.pacif-etq{position:absolute;left:84.2%;top:78.9%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:#132f38;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.pacif-pt{position:absolute;left:82.4%;top:78.9%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#063565;border:2px solid #fff}
+.pacif-etq{position:absolute;left:84.2%;top:78.9%;transform:translateY(-50%);font-size:.8rem;font-weight:700;color:#063565;text-shadow:0 0 3px #fff,0 0 3px #fff}
 .pacif-esc{height:10px;margin-top:8px;border-radius:3px;background:linear-gradient(to right,#6b00db 0%,#2264f1 14%,#00aeff 19%,#03f8fa 24%,#88ff84 34%,#c2cab8 49%,#fff679 59%,#ffaa00 69%,#ff3d00 79%,#f90113 84%,#bf0068 94%,#88000f 100%)}
 .pacif-num{display:flex;justify-content:space-between;margin-top:2px}
 .pacif figcaption{margin-top:6px}
@@ -172,9 +193,10 @@ footer{font-size:.85rem;color:var(--muted)}
 </head><body>
 
 <div class="wrap">
-  <header>
+  <header class="cab">
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
+    <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
   </header>
 
   <div class="aviso" role="note">
@@ -370,6 +392,11 @@ footer{font-size:.85rem;color:var(--muted)}
 </div>
 
 <script>
+// Dentro del portal de Gobierno Abierto (en un marco): fondo transparente, siempre claro, y le avisa al portal su alto
+// para que el marco no tenga barra propia. Solo le habla al portal; en cualquier otro lugar el aviso no sale.
+const PORTAL='https://gobiernoabierto.chaco.gob.ar';
+const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();
+if(EMB&&document.documentElement)document.documentElement.classList.add('emb');
 const ONI_CARGA='2026-10-06';   // día en que se cargó a mano el ONI (independiente de la captura)
 // ONI cargado a mano: se usa si el script de Google no lo trae. [año, trimestre, °C]
 const ONI=[["2026","feb-abr",0.11],["2026","mar-may",0.46],["2026","abr-jun",0.95],["2026","may-jul",1.39],["2026","jun-ago",1.8],["2026","jul-sep",2.16]];
@@ -675,12 +702,21 @@ function iniciarPlegables(){
     sec.addEventListener('click',e=>{if(!PLEG[id].abierta&&!btn.contains(e.target))abrirSec(id,true,true)});
   });
   // Un enlace a una sección cerrada (por ejemplo "Ver el río") la abre antes de ir.
-  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(a)abrirSec(a.getAttribute('href').slice(1),true,false)},true);
-  const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);$(hs).scrollIntoView()}};
+  // Dentro del portal el salto lo hace el portal (el marco no tiene barra propia).
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(!a)return;const id=a.getAttribute('href').slice(1);abrirSec(id,true,false);
+    if(EMB&&$(id)){e.preventDefault();verSec($(id))}},true);
+  const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);verSec($(hs),true)}};
   porHash();addEventListener('hashchange',porHash);
 }
 // Lleva a una sección (y la abre si está cerrada).
-function irSec(id){abrirSec(id,true,false);$(id).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+function irSec(id){abrirSec(id,true,false);verSec($(id))}
+// Lleva la pantalla hasta un elemento. Dentro del portal, si el marco no tiene barra propia, le pide al portal que baje.
+function verSec(el,seco){
+  if(!el)return;
+  if(EMB&&window.parent!==window&&document.documentElement.scrollHeight<=innerHeight+20){
+    try{window.parent.postMessage({tipo:'rios-y-clima:ir',y:Math.round(el.getBoundingClientRect().top+scrollY)},PORTAL)}catch(e){}return}
+  el.scrollIntoView({behavior:seco||matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
 function pintarSemaforo(){
   const R=LOCS.map(riesgo),LUZ={verde:'✓',amarillo:'!',naranja:'!!',rojo:'!!!',gris:'?'},ORD={rojo:0,naranja:1,amarillo:2,gris:3,verde:4};
   // Cada renglón: color, nombre corto (para la línea de verdes), su renglón completo y cómo se abre (data-j o enlace).
@@ -784,7 +820,7 @@ function armarMapa(){
   $('mBuscar').addEventListener('change',buscar);
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
   $('sem').addEventListener('click',e=>{const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
-    if(i>=0){elegir(i,true);$('t-mapa').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}});
+    if(i>=0){elegir(i,true);verSec($('t-mapa'))}});
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
   const soltarFoco=()=>{if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]');
@@ -1409,6 +1445,16 @@ function armarCorreo(){
   a.textContent=c;
 }
 armarCorreo();
+
+// Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
+function avisarAlto(){
+  if(!EMB||window.parent===window)return;
+  const w=document.querySelector('.wrap');let ult=0;
+  const enviar=()=>{const a=Math.ceil(w.getBoundingClientRect().height);if(Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL)}catch(e){}}};
+  if('ResizeObserver' in window)new ResizeObserver(enviar).observe(w);else setInterval(enviar,1000);
+  enviar();addEventListener('load',enviar);
+}
+seguro(avisarAlto);
 </script>
 
 </body></html>

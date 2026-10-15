@@ -713,7 +713,12 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(csp, 'falta la regla en netlify.toml');
     const h = require('../herramientas/csp.js').huella(html), regla = n => (new RegExp('(?:^|; )' + n + ' ([^;]+)').exec(csp) || [])[1] || '';
     assert.strictEqual(regla('script-src'), h, 'la huella quedó vieja: correr  node herramientas/csp.js');
-    assert.ok(/default-src 'none'/.test(csp) && /object-src 'none'/.test(csp) && /frame-ancestors 'none'/.test(csp) && /base-uri 'none'/.test(csp));
+    assert.ok(/default-src 'none'/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp));
+    assert.strictEqual(regla('frame-ancestors'), "'self' https://gobiernoabierto.chaco.gob.ar", 'solo el portal de Gobierno Abierto puede mostrar el sitio en su página');
+    assert.ok(!/X-Frame-Options *=/.test(toml), 'X-Frame-Options no deja nombrar al portal: no tiene que estar');
+    assert.strictEqual(regla('font-src'), "'self'", 'la letra se sirve desde el propio sitio');
+    assert.ok(fs.existsSync(path.join(raiz, 'fuentes', 'montserrat-wght.woff2')) && html.includes('url(fuentes/montserrat-wght.woff2)'), 'falta la letra Montserrat');
+    assert.ok(codigo.includes("PORTAL='https://gobiernoabierto.chaco.gob.ar'") && !/postMessage\([^)]*'\*'/.test(codigo), 'los avisos al portal van solo al portal');
     assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
     const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas/.test(u));   // esos dos son enlaces
     for (const u of hosts) assert.ok(regla('connect-src').split(' ').includes(u), u + ' falta en connect-src');
