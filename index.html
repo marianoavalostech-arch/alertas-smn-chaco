@@ -59,6 +59,8 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .aviso{background:var(--aviso-bg);color:var(--aviso-ink);border-left:5px solid var(--amarillo);padding:10px 12px;border-radius:4px;font-size:.95rem}
 .aviso strong{display:block}
 .aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
+/* defensas de la ciudad en el gráfico del Paraná: marca arriba del gráfico mientras el río está lejos */
+.defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
 .aviso.info{border-left-color:var(--water);background:var(--water-soft);color:var(--ink)}
 .captura{background:var(--water-soft);border-left:5px solid var(--water);padding:10px 12px;border-radius:4px;font-size:.95rem}
 section{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sombra);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -117,6 +119,7 @@ svg{display:block;width:100%;height:auto}
 .leyRio{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.88rem;max-width:580px}
 .leyRio span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .leyRio i{display:inline-block;width:22px;border-top:3px dashed}
+.leyRio span.def{white-space:normal}.leyRio span.def i{flex:none}
 #rio svg{max-width:580px;touch-action:pan-y;cursor:crosshair}
 svg text{fill:var(--muted);font-family:var(--font);font-size:11px}
 /* lluvia */
@@ -704,7 +707,7 @@ function meta(k,fuente,extra){
 }
 
 /* ---------- cálculo ---------- */
-const NIVEL={alerta:6.0,evac:6.5};
+const NIVEL={alerta:6.0,evac:6.5,defensa:9.5};   // defensa: hasta dónde protegen las defensas de la ciudad (estudio de la UNNE, aproximado)
 const diasEntre=(a,b)=>Math.round((new Date(b+'T12:00:00Z')-new Date(a+'T12:00:00Z'))/864e5);
 function resumenRio(k='rio',niv=NIVEL){
   const d=D[k]&&D[k].datos;if(!d||!d.obs.length)return null;
@@ -1239,7 +1242,9 @@ function pintarRio(){
   // pronóstico del INA: se dibujan las fechas posteriores a la última lectura, a la derecha de la línea
   const pn=resumenProno(),pf=pn&&pn.fut?pn.fut.filter(q=>q[0]>o[n][0]):[];
   const spanX=span+(pf.length?diasEntre(o[n][0],pf[pf.length-1][0]):0);
-  const lo=Math.floor(Math.min(...vals,...pf.map(q=>q[1]))-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4,...pf.map(q=>q[3]+0.4));
+  // Defensas de la ciudad: con el río o el pronóstico desde 8 m entran en el gráfico como línea; antes, solo una marca arriba (no aplastan la escala).
+  const verDef=Math.max(...vals,...pf.map(q=>q[3]))>=8;
+  const lo=Math.floor(Math.min(...vals,...pf.map(q=>q[1]))-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4,...pf.map(q=>q[3]+0.4),verDef?NIVEL.defensa+0.3:0);
   const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/spanX,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
   let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+=(m===NIVEL.alerta||m===NIVEL.evac?'':'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/>')+'<text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
   // marcas de fecha cada 7 días, contando hacia atrás desde la última lectura
@@ -1253,7 +1258,7 @@ function pintarRio(){
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
   RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]]).concat(pf.map(q=>[x(q[0]),y(q[2]),q[0],q[2],q]))};
   const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.'+(pf.length?' Pronóstico del INA: '+pf.map(q=>nf(q[2],2)+' metros para el '+fDia(q[0])).join(', ')+'.':'')+'">'+g
-   +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')
+   +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')+(verDef?ref(NIVEL.defensa,'titulo'):'')
    +prono
    +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
@@ -1266,8 +1271,9 @@ function pintarRio(){
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
-   +stats+svg
+   +stats+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
+   +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
    +lineaYacy()

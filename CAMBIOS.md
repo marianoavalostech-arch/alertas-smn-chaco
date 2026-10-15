@@ -2,7 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (informar sin alarmar)
+## 15/10/2026 (defensas de la ciudad en el gráfico del Paraná)
+
+- **Marca de las defensas**: arriba del gráfico del Paraná, una línea punteada azul con el texto "↑ Defensas de la ciudad: unos 9,50 m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera." No estira la escala, así se siguen leyendo bien la alerta (6,00 m) y la evacuación (6,50 m).
+- Si el río o el valor más alto del pronóstico del INA llegan a 8 m, las defensas pasan a ser una línea dentro del gráfico (la escala se estira hasta 9,80 m) con su renglón en la leyenda.
+- Dato aproximado (estudio de la UNNE), como ya decía el sitio. No cambia colores ni reglas. Huella nueva del código. La prueba del río controla los dos casos (sigue en 43). Pedido de Mariano.
+
+## 15/10/2026 (`1385213`: informar sin alarmar)
 
 - **Tranquilidad junto al aviso del río**: cuando el Paraná sale del verde, "Ahora en el Chaco", el renglón del semáforo y el detalle de los municipios de la costa dicen "Dentro de las defensas del Gran Resistencia no hace falta hacer nada: protegen hasta unos 9,50 m". Antes estaba solo dentro de la sección del río.
 - **Detalle de Barranqueras y Puerto Vilelas**: con el color del río dice "Costa del Paraná" y aclara que por la lluvia comparten el semáforo del Gran Resistencia y en qué color está (antes decía "Gran Resistencia · Naranja" con Resistencia en verde).

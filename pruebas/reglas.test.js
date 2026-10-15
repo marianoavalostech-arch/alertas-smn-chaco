@@ -74,6 +74,12 @@ prueba('suma de lluvia: lo caído es antes de hoy, lo que viene incluye hoy', ()
 prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   const rio = (hoy, obs, prono) => S(`hoy='${hoy}';LISTO=true;D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};
     D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};riesgoRio()`);
+  // Gráfico: las defensas de la ciudad (9,50 m) van como marca arriba mientras el río y el pronóstico están debajo de 8 m; desde 8 m, como línea
+  const graf = (obs, prono) => { const e = { style: {} }; elementos.rio = e; rio('2027-03-10', obs, prono); S('pintarRio()'); delete elementos.rio; return e.innerHTML };
+  let gr = graf([['2027-03-07', 5.5], ['2027-03-10', 5.6]]);
+  assert.ok(gr.includes('class="defMarca"') && gr.includes('Defensas de la ciudad: unos 9,50 m') && !gr.includes('var(--titulo)" stroke-width'), 'lejos: solo la marca');
+  gr = graf([['2027-03-07', 7.9], ['2027-03-10', 8.1]]);
+  assert.ok(!gr.includes('class="defMarca"') && gr.includes('stroke="var(--titulo)"') && gr.includes('no protegen las islas ni la costa de afuera'), 'cerca: línea y leyenda');
   // Sin pronóstico
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 4.0], ['2027-03-10', 4.0]]).c, 'verde');
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.5], ['2027-03-10', 5.7]]).c, 'amarillo');   // cerca y creciendo
@@ -749,7 +755,8 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(H.filas[2].txt.includes('Alerta amarilla por calor extremo') && H.filas[2].txt.includes('hoy') && H.filas[2].txt.includes('toda la provincia'));
     assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
     // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas, en la franja y en su tarjeta
-    S('pintarHacer()'); assert.ok(S("$('hHoy').innerHTML").includes(S('DEFENSAS')), 'la franja dice que dentro de las defensas no hace falta hacer nada');
+    const hh = {}; elementos.hHoy = hh; S('pintarHacer()'); delete elementos.hHoy;
+    assert.ok(hh.innerHTML.includes(S('DEFENSAS')), 'la franja dice que dentro de las defensas no hace falta hacer nada');
     assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, no hace falta hacer nada/.test(html));
     assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');
     // sin alertas y con el informe al día: "no hay"; con el informe viejo o vacío del canal: no se puede confirmar
