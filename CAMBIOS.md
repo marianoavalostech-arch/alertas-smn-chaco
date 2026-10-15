@@ -2,7 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 ("Qué hacer ante una alerta", más legible e interactiva)
+## 15/10/2026 (textos de "Qué hacer" pensados para la gente de la costa y los barrios)
+
+- **Redacción más cercana**: palabras de todos los días (salita, garrafa, frazada, plata, abuelos), ejemplos que la gente tiene en la casa y situaciones del Chaco: moto y bici, pesca y canoa, chicos jugando en zanjas, animales (gallinas, chanchos, caballos), pozo ciego o letrina, tereré, quema de basura y pastizales, audios de WhatsApp sin origen. Cables caídos: avisar a SECHEEP o al municipio.
+- **Mochila**: sin chocolate (se derrite con el calor); comida que no se echa a perder (galletitas, pan, latas de picadillo o atún, abrelatas), DNI y libreta de vacunas en bolsa de nylon, teléfonos anotados en papel, muda de ropa y frazada, pañales y leche si hay bebé. Sigue con 12 cosas y lo ya tildado se conserva.
+- **Agua segura sin comprar agua envasada**: hervirla 3 minutos o 2 gotas de lavandina por litro y esperar media hora (Ministerio de Salud). **Brasero**: nunca dormir con él adentro; prenderlo y apagarlo afuera. Después del agua: no andar descalzo en el barro; ratas y víboras.
+- Los tres colores del SMN, con qué hacer concreto en el naranja (preparar la mochila, guardar lo que se vuele, escuchar la radio o al municipio). No cambia colores, reglas ni código (la huella sigue igual). Pedido de Mariano.
+
+## 15/10/2026 (`b077390`: "Qué hacer ante una alerta", más legible e interactiva)
 
 - **"Ahora en el Chaco"**: arriba de la sección, una franja dice qué rige (alertas del SMN de hoy en adelante, con día y cantidad de municipios; Paraná o Paraguay fuera del verde) y cada renglón tiene un botón "Qué hacer" que abre la tarjeta que corresponde. Sin nada vigente y con el informe del SMN al día: "Hoy no hay alertas del SMN para el Chaco". Si el informe está viejo o el canal no listó alertas, no dice que no hay: avisa que no se pudo confirmar. El naranja del Paraná dice "según el pronóstico del INA", nunca "alerta naranja". Usa los datos que la página ya tiene (`hacerHoy`, `pintarHacer`); no pide nada nuevo.
 - **Tarjetas por situación con ícono** (se abre una por vez): Tormenta y rayos; Viento fuerte y granizo; Lluvia fuerte y crecida del río; Cuando baja el agua; y nuevas: **Calor extremo, Frío extremo, Niebla, humo o polvo** (el sitio ya mostraba esas alertas del SMN pero no decía qué hacer) y **Mochila y plan familiar**. La tarjeta de lo que rige queda marcada ("Alerta naranja", "Río naranja") y la más grave se abre sola una vez. Cada consejo empieza con la idea clave en negrita.
