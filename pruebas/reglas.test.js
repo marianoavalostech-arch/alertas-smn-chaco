@@ -792,7 +792,7 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     for (const l of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(fs.existsSync(path.join(raiz, 'fuentes', l)) && html.includes('url(fuentes/' + l + ')'), 'falta la letra ' + l);
     assert.ok(codigo.includes("PORTAL='https://gobiernoabierto.chaco.gob.ar'") && !/postMessage\([^)]*'\*'/.test(codigo), 'los avisos al portal van solo al portal');
     assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
-    const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas|goatcounter/.test(u));   // esos dos son enlaces; el contador va por img-src (su propia prueba)
+    const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas|goatcounter|wa\.me|panel-alertas-chaco/.test(u));   // smn, concejovilelas, wa.me y la dirección del sitio (para compartir) son enlaces; el contador va por img-src (su propia prueba)
     for (const u of hosts) assert.ok(regla('connect-src').split(' ').includes(u), u + ' falta en connect-src');
     assert.ok(regla('connect-src').includes('https://script.googleusercontent.com'), 'el script de Google redirige ahí');
     assert.ok(/Permissions-Policy = "camera=\(\), microphone=\(\), geolocation=\(\)/.test(toml));
@@ -830,6 +830,45 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     H = S('hacerHoy()'); assert.strictEqual(H.filas.length, 0); assert.strictEqual(H.smn, 'ok');
     S('SMN.leidas=0'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
     S('SMN.leidas=5;SMN.capturado=new Date(Date.now()-4*36e5).toISOString()'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
+  });
+  // Botón Compartir (con navegador simulado): se prueba primero y después se revisa el resultado.
+  let errComp = null;
+  {
+    const ev = {}, evCop = {}, caja = { hidden: true }, atr = {};
+    const btn = { hidden: true, addEventListener: (t, f) => { ev[t] = f }, setAttribute: (k, v) => { atr[k] = v } };
+    const opc = { hidden: true }, wa = {}, cop = { addEventListener: (t, f) => { evCop[t] = f } }, aviso = { textContent: '' };
+    Object.assign(elementos, { instalar: caja, btnCompartir: btn, compOpc: opc, compWa: wa, compCopiar: cop, compAviso: aviso });
+    const antesMM = sitio.matchMedia;
+    await (async () => {
+      // computadora: sin menú del teléfono, el botón muestra WhatsApp y copiar enlace
+      let copiado = null;
+      sitio.navigator = { clipboard: { writeText: async t => { copiado = t } } };
+      S('compartirSitio()');
+      assert.ok(!btn.hidden && !caja.hidden, 'el botón se ve');
+      assert.ok(wa.href.startsWith('https://wa.me/?text=') && decodeURIComponent(wa.href.split('text=')[1]).endsWith(' https://panel-alertas-chaco.netlify.app/'), 'WhatsApp con la frase y la dirección');
+      await ev.click(); assert.ok(!opc.hidden && atr['aria-expanded'] === 'true', 'aparecen las opciones');
+      await evCop.click(); assert.strictEqual(copiado, 'https://panel-alertas-chaco.netlify.app/'); assert.ok(aviso.textContent.startsWith('Enlace copiado'));
+      await ev.click(); assert.ok(opc.hidden && aviso.textContent === '', 'se cierran');
+      // celular: abre el menú de compartir del teléfono y no muestra las opciones
+      let compartido = null; opc.hidden = true;
+      sitio.navigator = { share: async d => { compartido = d } }; sitio.matchMedia = q => ({ matches: /coarse/.test(q) });
+      S('compartirSitio()'); await ev.click();
+      assert.ok(compartido && compartido.url === 'https://panel-alertas-chaco.netlify.app/' && compartido.title === 'Ríos y Clima del Chaco', 'menú del teléfono con la dirección');
+      assert.ok(opc.hidden, 'sin opciones extra');
+      // si la persona cierra el menú del teléfono, no pasa nada más
+      sitio.navigator = { share: async () => { const e = new Error('cancelado'); e.name = 'AbortError'; throw e } };
+      S('compartirSitio()'); await ev.click(); assert.ok(opc.hidden);
+    })().catch(e => { errComp = e });
+    sitio.matchMedia = antesMM; delete sitio.navigator;
+    for (const k of ['instalar', 'btnCompartir', 'compOpc', 'compWa', 'compCopiar', 'compAviso']) delete elementos[k];
+  }
+  prueba('compartir: menú del teléfono en el celular, WhatsApp o copiar en la computadora, y la imagen nueva para las redes', () => {
+    assert.ok(html.includes('compartir.png?v=7'), 'la imagen nueva lleva otro número para que las redes no muestren la vieja');
+    const b = fs.readFileSync(path.join(raiz, 'compartir.png'));
+    assert.strictEqual(b.readUInt32BE(16) + 'x' + b.readUInt32BE(20), '1200x630', 'tamaño que piden WhatsApp y Facebook');
+    assert.ok(fs.existsSync(path.join(raiz, 'herramientas', 'compartir.py')), 'el guion que dibuja la imagen');
+    assert.ok(/id="btnCompartir"[^>]*hidden/.test(html), 'empieza oculto: aparece cuando corre el código');
+    if (errComp) throw errComp;
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

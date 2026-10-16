@@ -2,12 +2,19 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (sin subir: contador de visitas)
+## 16/10/2026 (sin subir: botón "Compartir" e imagen nueva para las redes)
+
+- **Botón "Compartir"** en el encabezado, al lado de "Instalar app", con el mismo estilo (borde violeta) y un ícono de tres puntos unidos. En el celular abre el menú de compartir del teléfono (WhatsApp, Facebook, mensajes…); en la computadora muestra "Enviar por WhatsApp" y "Copiar enlace". Comparte la dirección del sitio con una frase corta y tranquila. No manda nada automático. Se ve también en la app instalada; no dentro del portal ni al imprimir.
+- **Imagen nueva para las redes** (`compartir.png?v=7`, antes `?v=6` con los colores viejos): fondo lavanda-rosado, franja del degradado, tarjeta blanca con el ícono de la app, título en Kanit, subtítulo y dirección del sitio. La dibuja el guion nuevo `herramientas/compartir.py`. WhatsApp y otras redes pueden tardar en mostrar la nueva en enlaces ya compartidos.
+- En iPhone la línea de instalar dice "tocá el botón Compartir de Safari (el cuadrado con la flecha)", para no confundirlo con el botón del sitio.
+- El contador suma el evento `compartir` (solo cuántas veces se toca el botón). Huella nueva del código. Prueba nueva (46): botón en computadora y celular, WhatsApp con la frase y la dirección, copiar enlace, imagen de 1200 × 630 y su número nuevo. Probado con la regla del navegador en Chromium (computadora, Android simulado, iPhone y portal): sin bloqueos. Pedido de Mariano.
+
+## 15/10/2026 (`50db23a`, `a6f0597`, `376983f` y `c03ddf5`: contador de visitas)
 
 - **Cuenta las visitas** con GoatCounter (cuenta de Mariano: riosyclimachaco.goatcounter.com): gratis, código abierto, sin cookies. No se carga su script (la regla del navegador solo deja correr el código propio): la página pide una imagen de 1 píxel con **solo qué se abrió**: el sitio (`/`), la app (`/desde-la-app`) o dentro del portal (`/en-el-portal`), y dos eventos (tocó "Instalar app" y la instaló). Sin título, sin de dónde se llegó y sin tamaño de pantalla: a Mariano le interesan solo los conteos.
 - **Privacidad** al día, en una frase: "Cuenta cuántas veces se abre la página con GoatCounter, sin cookies ni datos de quien visita"; GoatCounter también figura en la lista de conexiones. La regla del navegador suma la cuenta solo en `img-src`. Huella nueva. Prueba nueva (45): controla que solo viajen la página y el número al azar. Probado en Chromium con la regla del navegador: los pedidos salen y no hay rechazos. Pedido de Mariano.
 
-## 15/10/2026 (sin subir: botón "Instalar app")
+## 15/10/2026 (`53920da`: botón "Instalar app")
 
 - **El sitio se puede instalar como app**: queda como un ícono más en la pantalla del celular o de la computadora y se abre a pantalla completa, sin la barra del navegador. Pensado para la gente que no usa favoritos pero sí toca íconos.
 - **Ícono nuevo** (elegido por Mariano): degradado violeta-rosa del portal, semáforo a la izquierda, sol detrás de una nube y el río en celeste. También pasa a ser el ícono de la pestaña (`icono.svg`). Los PNG de `iconos/` los dibuja `herramientas/iconos.py`.
