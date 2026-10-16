@@ -617,14 +617,14 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
   const atrasada = S(`({vivo:D.lluvia.vivo,robot:!!D.lluvia.robot,horas:Math.round((Date.now()-D.lluvia.t)/36e5)})`);
   S(`hoy=masDias(diaAR(new Date()),1);LLU_P=Promise.resolve(copiaRobot(0));delete D.lluvia`);
   await S(`cargar('lluvia')`);
-  const deAyer = S(`({vivo:D.lluvia.vivo,robot:!!D.lluvia.robot})`);
+  const deAyer = S(`({vivo:D.lluvia.vivo,robot:!!D.lluvia.robot,cambioDia:D.lluvia.cambioDia})`);
   S(`hoy=diaAR(new Date());LLU_P=Promise.resolve(null);delete D.lluvia;M.todos=null`);
   await S(`cargar('lluvia')`);
   const sinCopia = S(`({datos:D.lluvia.datos,error:!!D.lluvia.error})`);
   await S(`cargarTodos()`);
   prueba('lluvia: nunca se consulta Open-Meteo desde la página, y la copia atrasada se usa con su hora', () => {
     assert.deepStrictEqual(JSON.parse(JSON.stringify(atrasada)), { vivo: true, robot: false, horas: 3 });
-    assert.deepStrictEqual(JSON.parse(JSON.stringify(deAyer)), { vivo: false, robot: true });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(deAyer)), { vivo: false, robot: true, cambioDia: true }, 'recién pasada la medianoche: copia de ayer con menos de 2 horas');
     assert.strictEqual(sinCopia.datos, null); assert.ok(sinCopia.error);
     assert.strictEqual(S(`M.todos`), 'error');
     assert.deepStrictEqual(S(`llamadas.filter(u=>u.includes('api.open-meteo.com'))`).length, 0);
@@ -830,6 +830,17 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     H = S('hacerHoy()'); assert.strictEqual(H.filas.length, 0); assert.strictEqual(H.smn, 'ok');
     S('SMN.leidas=0'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
     S('SMN.leidas=5;SMN.capturado=new Date(Date.now()-4*36e5).toISOString()'); assert.strictEqual(S('hacerHoy()').smn, 'duda');
+  });
+  prueba('cartel de datos viejos: corto, y sin cartel recién pasada la medianoche', () => {
+    const b = { hidden: true, innerHTML: '' }; elementos.bannerCaptura = b;
+    const antes = S('({l:D.lluvia,r:D.rio,listo:LISTO})');
+    const con = (h, extra) => { S(`LISTO=true;delete D.rio;D.lluvia={datos:{},vivo:false,robot:true,t:new Date(Date.now()-${h}*36e5)${extra || ''}};pintarBanner()`); return b; };
+    try {
+      assert.ok(con(0.7, ',cambioDia:true').hidden, 'a las 00:30 con la copia de las 23:52 no hay cartel');
+      con(3); assert.ok(!b.hidden && b.innerHTML.startsWith('<b>Datos del ') && b.innerHTML.endsWith('Todavía no llegaron más nuevos.'));
+      con(40); assert.ok(b.innerHTML.startsWith('<b>Atención: estos datos no son de hoy</b>') && b.innerHTML.includes('No se usan para el color del semáforo.'));
+      assert.ok(b.innerHTML.length < 130, 'frase corta');
+    } finally { delete elementos.bannerCaptura; vm.runInContext('D.lluvia=__a.l;D.rio=__a.r;LISTO=__a.listo', Object.assign(sitio, { __a: antes })); delete sitio.__a; }
   });
   // Botón Compartir (con navegador simulado): se prueba primero y después se revisa el resultado.
   let errComp = null;

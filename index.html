@@ -755,9 +755,11 @@ async function cargar(k){
     else if(g)nuevo={datos:g.datos,vivo:true,t:new Date(g.t)};
     else if(esLluvia(k)){
       // Copia atrasada: si es de hoy se usa como al día (con su hora); si es de otro día, como dato guardado.
+      // Pasada la medianoche, la copia de antes de las 12 tiene menos de 2 horas pero es "de ayer" hasta la corrida siguiente
+      // (cerca de la 1): el semáforo se calcula igual, con su día, pero sin el cartel de datos guardados (cambioDia).
       const v=await copiaVieja(k);if(!v)throw new Error('sin copia');
-      const deHoy=v.dias.indexOf(hoy)===7;
-      nuevo={datos:v,vivo:deHoy,t:new Date(v.t),robot:!deHoy};
+      const deHoy=v.dias.indexOf(hoy)===7,cambioDia=!deHoy&&Date.now()-new Date(v.t)<2*36e5;
+      nuevo={datos:v,vivo:deHoy,t:new Date(v.t),robot:!deHoy,cambioDia};
     }
     else{
       // Sin copia reciente: se usa la última copia aunque tenga más de 2 horas, o lo guardado en este dispositivo si es más nuevo.
@@ -1505,12 +1507,15 @@ function iniciarPacifico(){
   const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();if(abierta('t-nino'))ir();else alAbrir('t-nino',ab=>{if(ab)ir()})}},{rootMargin:'2500px 0px'});o.observe($('t-nino'));
 }
 function pintarBanner(){
-  const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos);
+  const viejos=['lluvia','rio'].filter(k=>D[k]&&!D[k].vivo&&D[k].datos&&!D[k].cambioDia);
   const b=$('bannerCaptura');
   if(!LISTO||!viejos.length){b.hidden=true;return}
   const t=new Date(Math.min(...viejos.map(k=>D[k].t))),horas=(Date.now()-t)/36e5;
   b.hidden=false;
-  b.innerHTML='<b>'+(horas>36?'Atención: estos datos no son de hoy.':'Estás viendo datos guardados.')+'</b> No hay datos más nuevos. Se muestran los de '+(viejos.some(k=>D[k].robot)?'la última copia disponible':'la última consulta que funcionó en este dispositivo')+', del '+fFechaHora(t)+(horas>36?'. Por ser viejos, no se usan para calcular el color del semáforo.':', y el semáforo está calculado con ellos.');
+  const f=fFechaHora(t),propios=!viejos.some(k=>D[k].robot);
+  b.innerHTML=horas>36
+    ?'<b>Atención: estos datos no son de hoy</b> (son del '+f+'). No se usan para el color del semáforo.'
+    :'<b>Datos del '+f+'.</b> Todavía no llegaron más nuevos'+(propios?' (son los guardados en este dispositivo)':'')+'.';
 }
 // Cada sección se pinta por separado. Si un dato inesperado rompe una, las demás siguen;
 // lo guardado de esa fuente se borra para que no vuelva a fallar al recargar, y se pinta de nuevo sin ese dato.
