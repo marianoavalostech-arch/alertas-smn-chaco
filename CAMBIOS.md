@@ -2,7 +2,7 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (aspecto del portal nuevo de Gobierno Abierto)
+## 15/10/2026 (`95b5543`: aspecto del portal nuevo de Gobierno Abierto)
 
 - **Estilo del portal nuevo** (https://gobiernoabierto.chaco.gob.ar/inicio/, todavía no público; antes se había tomado el portal anterior, en azul): títulos en **Kanit** y texto en **Manrope**, guardadas en `fuentes/` (licencia OFL); azul marino `#0b3158`; encabezado en degradado del marino al violeta con la barrita violeta-rosa debajo del título; botones "Mostrar" y "Qué hacer" con el degradado violeta-rosa del portal; fondo lavanda-rosado muy suave; secciones más redondeadas, con sombra suave; enlaces en violeta.
 - El azul queda solo para el agua (ríos del mapa y gráficos del río). Los colores del semáforo y del mapa no cambian. Modo oscuro con los mismos tonos; dentro del portal, siempre claro y con fondo transparente.
