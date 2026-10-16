@@ -288,7 +288,19 @@ footer{font-size:.85rem;color:var(--muted)}
 .hSit details{border-radius:14px;background:var(--fondo-boton);box-shadow:var(--sombra-boton)}
 .hSit details:not([open]):hover{transform:translateY(-2px);box-shadow:var(--sombra-boton-alta);border-color:var(--acento)}
 .hSit summary:hover{background:transparent}
-.hSit details:not([open]) .ico{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffffff 0%,#ece7ff 70%);box-shadow:inset 0 0 0 1.5px #d9d1f7,0 2px 6px rgba(80,89,188,.15);font-size:1.6rem}
+.hSit details:not([open]) .ico{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;font-size:1.6rem;
+  background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.95) 0 14%,rgba(255,255,255,0) 46%),linear-gradient(150deg,var(--ic1) 0%,var(--ic2) 100%);
+  box-shadow:inset 0 0 0 2px var(--ic3),inset 0 -4px 8px rgba(255,255,255,.5),0 3px 8px rgba(80,89,188,.16)}
+/* un tono suave por situación, para que cada círculo tenga su color (solo el fondo del ícono) */
+.hSit details{--ic1:#efeaff;--ic2:#dcd3ff;--ic3:#bfb2f5}
+.hSit details[data-h="viento"]{--ic1:#ebf1ff;--ic2:#d3defc;--ic3:#adc0ef}
+.hSit details[data-h="lluvia"]{--ic1:#e7f3ff;--ic2:#cbe4fa;--ic3:#9fcaee}
+.hSit details[data-h="rio"]{--ic1:#e2f2fb;--ic2:#bfe0f4;--ic3:#8cc4e8}
+.hSit details[data-h="baja"]{--ic1:#e8f6ec;--ic2:#cbead6;--ic3:#9fd3b2}
+.hSit details[data-h="calor"]{--ic1:#fff2e4;--ic2:#ffdcbd;--ic3:#f3b98b}
+.hSit details[data-h="frio"]{--ic1:#ecf8ff;--ic2:#d2ecfd;--ic3:#a6d3f1}
+.hSit details[data-h="niebla"]{--ic1:#f1f0f5;--ic2:#dfdce9;--ic3:#bdb8cd}
+.hSit details[data-h="mochila"]{--ic1:#fdecf9;--ic2:#f9d3ef;--ic3:#eca2d9}
 .hSit details[open]{box-shadow:var(--sombra-boton-alta)}
 @media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}}
 @media print{.hTel a::before{display:none}.btn,.ley,.hTel a,.hSit details,.mas{box-shadow:none}}
