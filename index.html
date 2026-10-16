@@ -1755,7 +1755,9 @@ const CONTADOR='https://riosyclimachaco.goatcounter.com/count';
 function contar(p,t,evento){
   if(location.protocol!=='https:')return;
   const nav=typeof navigator!=='undefined'?navigator:{};
-  const q=new URLSearchParams({p,t,r:evento?'':(document.referrer||''),s:[screen.width,screen.height,devicePixelRatio||1].join(','),rnd:Math.random().toString(36).slice(2)});
+  // De dónde se llegó: solo el sitio (por ejemplo https://l.facebook.com), nunca la dirección completa.
+  let r='';if(!evento)try{r=new URL(document.referrer).origin}catch(e){}
+  const q=new URLSearchParams({p,t,r,s:[screen.width,screen.height,devicePixelRatio||1].join(','),rnd:Math.random().toString(36).slice(2)});
   if(evento)q.set('e','true');
   if(nav.webdriver)q.set('b','153');
   new Image().src=CONTADOR+'?'+q;
