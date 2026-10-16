@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#0b3158"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#f7f5fa"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
@@ -13,11 +13,12 @@
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
 /* Colores y letras del portal de Gobierno Abierto del Chaco: azul marino, degradado violeta-rosa, Kanit en los títulos y Manrope en el texto.
    Las dos letras van guardadas en el sitio (fuentes/, licencia OFL): no se piden a ningún servidor externo.
-   --water es el azul del agua (ríos del mapa y gráficos); --acento, el violeta de botones y enlaces. */
+   --water es el azul del agua (ríos del mapa y gráficos); --acento, el violeta de botones y enlaces.
+   Siempre claro, como el portal: no hay modo oscuro. Texto gris oscuro; el marino queda solo para los títulos. */
 @font-face{font-family:"Kanit";src:url(fuentes/kanit-700.woff2) format("woff2");font-weight:600 800;font-display:swap}
 @font-face{font-family:"Manrope";src:url(fuentes/manrope-wght.woff2) format("woff2");font-weight:200 800;font-display:swap}
 :root{
-  --bg:#f6f4fb; --card:#ffffff; --ink:#1c3357; --muted:#536a8d; --line:#e6e1f2;
+  --bg:#f7f5fa; --card:#ffffff; --ink:#333333; --muted:#5d6470; --line:#ebe6ef;
   --water:#2a72b8; --water-soft:#dde9f6; --land:#e6eadb;
   --acento:#4e4fc4; --acento-soft:#efecfc;
   --marino:#0b3158; --violeta:#5059bc; --rosa:#f26df9; --titulo:#0b3158;
@@ -30,17 +31,7 @@
   --font:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --font-tit:"Kanit",var(--font);
 }
-/* Oscuro solo fuera del portal: dentro de Gobierno Abierto (fondo blanco) queda siempre claro. */
-@media (prefers-color-scheme: dark){:root:not(.emb){
-  --bg:#111a36; --card:#18223f; --ink:#e8e9f6; --muted:#a9b0d2; --line:#2e3768;
-  --water:#6aaee8; --water-soft:#1c3554; --land:#23323b;
-  --acento:#a9a6ff; --acento-soft:#272d5c;
-  --marino:#121d48; --titulo:#cfccff;
-  --fondo:linear-gradient(90deg,#0e1631 0%,#121a38 60%,#1a1739 100%);
-  --verde:#4fbf83; --amarillo:#f0bb33; --naranja:#f28c3c; --rojo:#ef6b60; --gris:#7d8c90;
-  --verde-bg:#173a2a; --amarillo-bg:#40330d; --naranja-bg:#45280f; --rojo-bg:#47201d;
-  --aviso-bg:#3a300f; --aviso-ink:#f6e3a6; --sombra:none; color-scheme:dark}}
-:root.emb{color-scheme:light}
+:root{color-scheme:light}
 *{box-sizing:border-box}
 body{background:var(--bg);background-image:var(--fondo);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
@@ -50,12 +41,13 @@ p{margin:0}
 a{color:var(--acento)}
 a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 /* encabezado: azul marino que pasa a violeta, con la barrita violeta-rosa del portal de Gobierno Abierto debajo del título */
-.cab{position:relative;overflow:hidden;background:linear-gradient(135deg,#0b3158 0%,#26357e 60%,#5059bc 100%);color:#fff;border-radius:20px;padding:22px 20px 20px;box-shadow:var(--sombra)}
+.cab{position:relative;overflow:hidden;background:var(--card);color:var(--ink);border-radius:20px;padding:22px 20px 20px;box-shadow:var(--sombra)}
+.cab::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--degrade)}
 .cab>*{position:relative}
-.cab h1{color:#fff}
+.cab h1{color:var(--titulo)}
 .cab h1::after{content:'';display:block;width:64px;height:4px;border-radius:2px;margin-top:10px;background:linear-gradient(90deg,#5059bc,#f26df9)}
-.cab p{color:#e3e1fb;margin-top:10px}
-.cab a{color:#fff;font-weight:600}
+.cab p{color:var(--muted);margin-top:10px}
+.cab a{color:var(--acento);font-weight:600}
 .solo-emb{display:none}.emb .solo-emb{display:block}
 .emb body{background:transparent;background-image:none}
 .emb .wrap{padding:2px 2px 8px}

@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 15/10/2026 (sin subir: siempre claro, como el portal)
+
+- **Sin modo oscuro**: el sitio ya no se vuelve azul marino cuando el celular o la computadora tienen el tema oscuro. Queda siempre claro, como el portal de Gobierno Abierto (que no tiene modo oscuro).
+- **Encabezado blanco** con la franja del degradado violeta-rosa arriba y el título en marino (antes, bloque azul). La barra del navegador del celular toma el fondo claro (`theme-color` `#f7f5fa`, antes `#0b3158`).
+- **Texto en gris oscuro** `#333333`, como el portal (antes azul marino); textos secundarios y líneas en grises neutros. El marino queda para los títulos y el azul solo para el agua. El semáforo y el mapa no cambian.
+- Solo cambia el estilo: la huella del código sigue igual. La prueba del naranja ahora controla que haya un solo juego de colores y ningún modo oscuro (siguen 43). Pedido de Mariano.
+
 ## 15/10/2026 (`95b5543`: aspecto del portal nuevo de Gobierno Abierto)
 
 - **Estilo del portal nuevo** (https://gobiernoabierto.chaco.gob.ar/inicio/, todavía no público; antes se había tomado el portal anterior, en azul): títulos en **Kanit** y texto en **Manrope**, guardadas en `fuentes/` (licencia OFL); azul marino `#0b3158`; encabezado en degradado del marino al violeta con la barrita violeta-rosa debajo del título; botones "Mostrar" y "Qué hacer" con el degradado violeta-rosa del portal; fondo lavanda-rosado muy suave; secciones más redondeadas, con sombra suave; enlaces en violeta.

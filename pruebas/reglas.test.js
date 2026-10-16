@@ -117,10 +117,11 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   // Con el río arriba de la alerta y el pronóstico sin llegar a la evacuación, no repite "puede alcanzar el nivel de alerta"
   const arriba = rio('2026-10-08', [['2026-10-08', 6.2]], p('2026-10-06', [['2026-10-13', 6.0, 6.2, 6.4]]));
   assert.strictEqual(arriba.c, 'amarillo'); assert.ok(!arriba.por.includes('puede alcanzar'), arriba.por);
-  // El semáforo pone el naranja entre el rojo y el amarillo, con su color en modo claro y oscuro
+  // El semáforo pone el naranja entre el rojo y el amarillo, con su color
   assert.ok(codigo.includes("ORD={rojo:0,naranja:1,amarillo:2,gris:3,verde:4}"), 'orden del semáforo');
   assert.ok(/\.sem li\.naranja\{background:var\(--naranja-bg\)\}/.test(html) && /\.naranja \.luz\{background:var\(--naranja\)/.test(html), 'color del renglón naranja');
-  assert.strictEqual((html.match(/--naranja:#[0-9a-f]{6}/g) || []).length, 2, 'naranja en modo claro y oscuro');
+  assert.strictEqual((html.match(/--naranja:#[0-9a-f]{6}/g) || []).length, 1, 'naranja definido una vez (siempre claro)');
+  assert.ok(!/prefers-color-scheme:\s*dark\)\s*\{/.test(html), 'sin modo oscuro: el sitio es siempre claro, como el portal');
   // El Paraguay no tiene naranja (no hay pronóstico en Puerto Bermejo)
   const py = codigo.slice(codigo.indexOf('function riesgoParaguay'), codigo.indexOf('/* ---------- pantalla'));
   assert.ok(py.length > 100 && !py.includes("'naranja'"));
