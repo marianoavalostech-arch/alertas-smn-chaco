@@ -65,7 +65,7 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; }
 });
 
-prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, sin cargar código de afuera', () => {
+prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, solo el conteo, sin cargar código de afuera', () => {
   const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
   const csp = /Content-Security-Policy = "([^"]+)"/.exec(toml)[1];
   const regla = n => (new RegExp(n + ' ([^;]+)').exec(csp) || [, ''])[1];
@@ -85,9 +85,9 @@ prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, sin cargar 
     assert.strictEqual(pedidos.length, 1);
     const v = pedidos[0];
     assert.strictEqual(v.origin + v.pathname, 'https://riosyclimachaco.goatcounter.com/count');
-    assert.strictEqual(v.searchParams.get('p'), '/'); assert.strictEqual(v.searchParams.get('r'), 'https://l.facebook.com', 'de dónde se llegó: solo el sitio, sin la dirección completa');
-    assert.strictEqual(v.searchParams.get('s'), '390,844,3'); assert.ok(!v.searchParams.has('e'));
-    S("contar('instalar-app-boton','Tocó Instalar app',true)");
+    assert.strictEqual(v.searchParams.get('p'), '/'); assert.ok(!v.searchParams.has('e'));
+    assert.deepStrictEqual([...v.searchParams.keys()].sort(), ['p', 'rnd'], 'solo el conteo: sin título, de dónde se llegó ni pantalla');
+    S("contador('instalar-app-boton',true)");
     assert.strictEqual(pedidos[1].searchParams.get('e'), 'true'); assert.strictEqual(pedidos[1].searchParams.get('p'), 'instalar-app-boton');
     sitio.location = { protocol: 'file:', hash: '' }; S('contarVisita()');
     assert.strictEqual(pedidos.length, 2, 'fuera del sitio publicado no cuenta');

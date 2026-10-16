@@ -4,8 +4,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## 15/10/2026 (sin subir: contador de visitas)
 
-- **Cuenta las visitas** con GoatCounter (cuenta de Mariano: riosyclimachaco.goatcounter.com): gratis, código abierto, sin cookies ni datos personales. No se carga su script (la regla del navegador solo deja correr el código propio): la página pide una imagen de 1 píxel con la página, el título, de dónde se llegó (solo el sitio de origen, nunca la dirección completa) y el tamaño de pantalla. Se ve por separado si se abrió en el navegador (`/`), desde la app (`/desde-la-app`) o dentro del portal (`/en-el-portal`), y cuántos tocaron "Instalar app" o la instalaron (eventos).
-- **Privacidad** al día: dice que cuenta visitas con GoatCounter y qué registra. La regla del navegador suma la cuenta solo en `img-src`. Huella nueva. Prueba nueva (45). Probado en Chromium con la regla del navegador: los pedidos salen y no hay rechazos. Pedido de Mariano.
+- **Cuenta las visitas** con GoatCounter (cuenta de Mariano: riosyclimachaco.goatcounter.com): gratis, código abierto, sin cookies. No se carga su script (la regla del navegador solo deja correr el código propio): la página pide una imagen de 1 píxel con **solo qué se abrió**: el sitio (`/`), la app (`/desde-la-app`) o dentro del portal (`/en-el-portal`), y dos eventos (tocó "Instalar app" y la instaló). Sin título, sin de dónde se llegó y sin tamaño de pantalla: a Mariano le interesan solo los conteos.
+- **Privacidad** al día: dice que la página solo avisa qué se abrió, sin datos de quien visita, y que GoatCounter no usa cookies ni guarda la dirección de internet. La regla del navegador suma la cuenta solo en `img-src`. Huella nueva. Prueba nueva (45): controla que solo viajen la página y el número al azar. Probado en Chromium con la regla del navegador: los pedidos salen y no hay rechazos. Pedido de Mariano.
 
 ## 15/10/2026 (sin subir: botón "Instalar app")
 
