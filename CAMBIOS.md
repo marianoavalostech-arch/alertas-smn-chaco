@@ -2,7 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 15/10/2026 (sin subir: siempre claro, como el portal)
+## 15/10/2026 (sin subir: botón "Instalar app")
+
+- **El sitio se puede instalar como app**: queda como un ícono más en la pantalla del celular o de la computadora y se abre a pantalla completa, sin la barra del navegador. Pensado para la gente que no usa favoritos pero sí toca íconos.
+- **Ícono nuevo** (elegido por Mariano): degradado violeta-rosa del portal, semáforo a la izquierda, sol detrás de una nube y el río en celeste. También pasa a ser el ícono de la pestaña (`icono.svg`). Los PNG de `iconos/` los dibuja `herramientas/iconos.py`.
+- **Botón "Instalar app"** en el encabezado, con el ícono, solo cuando el navegador lo ofrece (Android y computadora, Chrome o Edge). En iPhone y iPad, en su lugar, una línea: "Para tenerlo como app: tocá Compartir y después Agregar a inicio". Nada de esto se ve dentro del portal, al imprimir ni si ya se abrió como app.
+- **No guarda el sitio en el celular** (sin *service worker*): la app es la misma página publicada, con los mismos datos y avisos; no manda notificaciones ni pide permisos. Así no puede mostrar datos viejos como si fueran de hoy (la idea de abrir sin señal se había descartado el 14/10).
+- Archivo nuevo `manifest.webmanifest` (nombre "Ríos y Clima", colores e íconos) servido con su tipo; la regla del navegador suma `manifest-src 'self'`. Huella nueva del código. Prueba nueva (44): archivo, tamaños de los íconos, regla del navegador, que no haya *service worker* y que el botón aparezca solo con el ofrecimiento del navegador, en iPhone la explicación, y nada si ya es app. Probado en Chromium con la regla del navegador y datos reales: Chrome lo da por instalable, sin errores. Pedido de Mariano.
+
+## 15/10/2026 (`105bab5`, `bb26d5c`, `4d88132` y `9c4bdc2`: siempre claro, como el portal)
 
 - **Sin modo oscuro**: el sitio ya no se vuelve azul marino cuando el celular o la computadora tienen el tema oscuro. Queda siempre claro, como el portal de Gobierno Abierto (que no tiene modo oscuro).
 - **Encabezado blanco** con la franja del degradado violeta-rosa arriba y el título en marino (antes, bloque azul). La barra del navegador del celular toma el fondo claro (`theme-color` `#f7f5fa`, antes `#0b3158`).

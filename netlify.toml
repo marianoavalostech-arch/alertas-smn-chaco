@@ -9,6 +9,7 @@
 #   gibs.earthdata.nasa.gov (imágenes de la NASA). Después de cambiar index.html: node herramientas/csp.js (las pruebas avisan si falta).
 #   Imágenes: las de la NASA y las capas de lluvia que la página dibuja (data: y blob:).
 #   Letras: solo Kanit y Manrope, guardadas en fuentes/ (font-src 'self').
+#   manifest-src 'self': el archivo manifest.webmanifest, que permite instalar el sitio como app (ícono en la pantalla del celular).
 #   frame-ancestors: solo el propio sitio y el portal de Gobierno Abierto del Chaco pueden mostrarlo dentro de su página
 #   (por eso no hay X-Frame-Options: esa cabecera no deja nombrar un sitio permitido).
 # Permissions-Policy: el sitio no usa cámara, micrófono, ubicación ni pagos; quedan apagados.
@@ -18,7 +19,13 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-    Content-Security-Policy = "default-src 'none'; script-src 'sha256-xGILuXMZaiY+qfhe8vkvQeFHdrHyo5QXMXbHGQ4FBBw='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+    Content-Security-Policy = "default-src 'none'; script-src 'sha256-zwSEWSzXB3PqT33UDGtwWzWJA/A5Dq6NzRynS96FHG8='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+
+# Archivo para instalar el sitio como app: con su tipo correcto.
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
 
 # La letra no cambia: el navegador la guarda un año. Si algún día se cambia, cambiarle el nombre al archivo.
 [[headers]]

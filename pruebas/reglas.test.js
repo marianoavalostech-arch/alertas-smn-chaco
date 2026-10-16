@@ -32,6 +32,39 @@ prueba('correo de contacto: no está escrito en el HTML y se arma al cargar', ()
   assert.ok(a.href.startsWith('mailto:marianoavalos.tech@gmail.com?subject='));
 });
 
+prueba('instalar app: archivo de instalación, íconos y botón solo cuando el navegador lo ofrece', () => {
+  const man = JSON.parse(fs.readFileSync(path.join(raiz, 'manifest.webmanifest'), 'utf8'));
+  assert.strictEqual(man.short_name, 'Ríos y Clima'); assert.strictEqual(man.display, 'standalone'); assert.strictEqual(man.start_url, '/');
+  const tam = f => { const b = fs.readFileSync(path.join(raiz, f)); assert.strictEqual(b.toString('latin1', 1, 4), 'PNG', f); return b.readUInt32BE(16) + 'x' + b.readUInt32BE(20); };
+  for (const i of man.icons) assert.strictEqual(tam(i.src), i.sizes, i.src);
+  for (const t of ['192x192 any', '512x512 any', '512x512 maskable']) assert.ok(man.icons.some(i => i.sizes + ' ' + i.purpose === t), 'falta ícono ' + t);
+  assert.strictEqual(tam('iconos/icono-apple-180.png'), '180x180');
+  assert.ok(html.includes('<link rel="manifest" href="manifest.webmanifest">') && html.includes('<link rel="apple-touch-icon" href="iconos/icono-apple-180.png">'));
+  const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
+  assert.ok(toml.includes("manifest-src 'self'"), 'la regla del navegador tiene que dejar leer el archivo de instalación');
+  assert.ok(/\.emb \.instalar\{display:none!important\}/.test(html) && /@media print\{\.instalar\{display:none!important\}\}/.test(html), 'nunca en el portal ni al imprimir');
+  assert.ok(!/serviceWorker|caches\./.test(codigo), 'no guarda el sitio en el celular: abre siempre la página publicada');
+  // armado: sin ofrecimiento del navegador no se ve nada; con el ofrecimiento aparece el botón y al tocarlo pide instalar
+  const ev = {}, evBtn = {}, caja = { hidden: true }, btn = { hidden: true, addEventListener: (t, f) => { evBtn[t] = f } }, ios = { hidden: true };
+  Object.assign(elementos, { instalar: caja, btnInstalar: btn, instIos: ios });
+  const antes = sitio.addEventListener; sitio.addEventListener = (t, f) => { ev[t] = f };
+  try {
+    S('instalarApp()');
+    assert.ok(caja.hidden && btn.hidden && ios.hidden, 'sin ofrecimiento no se muestra nada');
+    let pidio = false, frenado = false;
+    ev.beforeinstallprompt({ preventDefault: () => { frenado = true }, prompt: () => { pidio = true }, userChoice: Promise.resolve({ outcome: 'accepted' }) });
+    assert.ok(frenado && !btn.hidden && !caja.hidden && ios.hidden, 'con ofrecimiento aparece el botón');
+    evBtn.click(); assert.ok(pidio, 'el botón pide instalar');
+    ev.appinstalled(); assert.ok(caja.hidden, 'instalada, se oculta');
+    // iPhone: no hay botón, va la explicación
+    caja.hidden = btn.hidden = ios.hidden = true; sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' };
+    S('instalarApp()'); assert.ok(!ios.hidden && !caja.hidden && btn.hidden, 'en iPhone, la explicación');
+    // abierto desde el ícono: nada
+    caja.hidden = ios.hidden = true; sitio.navigator.standalone = true;
+    S('instalarApp()'); assert.ok(caja.hidden && ios.hidden, 'abierto como app no se ofrece');
+  } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; }
+});
+
 prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del río, sin pedirle datos', () => {
   const v = S('VILELAS');
   assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));

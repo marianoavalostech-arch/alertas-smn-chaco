@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#f7f5fa"><link rel="icon" href="icono.svg" type="image/svg+xml"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=6"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#f7f5fa"><link rel="icon" href="icono.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="iconos/icono-apple-180.png"><meta name="apple-mobile-web-app-title" content="Ríos y Clima"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
@@ -304,6 +304,13 @@ footer{font-size:.85rem;color:var(--muted)}
 .hSit details[open]{box-shadow:var(--sombra-boton-alta)}
 @media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}}
 @media print{.hTel a::before{display:none}.btn,.ley,.hTel a,.hSit details,.mas{box-shadow:none}}
+/* instalar app: botón (Android y computadora) o explicación (iPhone); nunca dentro del portal ni al imprimir */
+.instalar{margin-top:14px}
+.btnInst{display:inline-flex;align-items:center;gap:8px;padding:5px 16px 5px 6px}
+.btnInst img{width:28px;height:28px;border-radius:8px;display:block}
+.cab .instIos{margin:0;font-size:.92rem;color:var(--ink);background:var(--acento-soft);border-radius:10px;padding:8px 12px}
+.emb .instalar{display:none!important}
+@media print{.instalar{display:none!important}}
 </style>
 </head><body>
 
@@ -311,6 +318,10 @@ footer{font-size:.85rem;color:var(--muted)}
   <header class="cab">
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
+    <div class="instalar" id="instalar" hidden>
+      <button class="btn btnInst" id="btnInstalar" type="button" hidden><img src="iconos/icono-192.png" alt="" width="28" height="28">Instalar app</button>
+      <p class="instIos" id="instIos" hidden>Para tenerlo como app: tocá <strong>Compartir</strong> y después <strong>Agregar a inicio</strong>.</p>
+    </div>
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
   </header>
 
@@ -1736,6 +1747,22 @@ function armarCorreo(){
   a.textContent=c;
 }
 armarCorreo();
+
+// Instalar app: el botón aparece solo cuando el navegador ofrece instalar (Android y computadora, con Chrome o Edge).
+// En iPhone y iPad no hay botón: se explica Compartir → Agregar a inicio. No se ve dentro del portal ni si ya se abrió como app.
+// No guarda el sitio en el celular: abre siempre la página publicada, con sus datos y sus avisos de siempre.
+function instalarApp(){
+  const caja=$('instalar'),btn=$('btnInstalar'),ios=$('instIos');if(!caja||!btn||!ios||EMB)return;
+  const nav=typeof navigator!=='undefined'?navigator:{};
+  if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true)return;
+  let pedido=null;
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;btn.hidden=false;caja.hidden=false});
+  btn.addEventListener('click',async()=>{if(!pedido)return;const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;caja.hidden=ios.hidden});
+  addEventListener('appinstalled',()=>{caja.hidden=true});
+  const ua=nav.userAgent||'';
+  if(/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1)){ios.hidden=false;caja.hidden=false}
+}
+seguro(instalarApp);
 
 // Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
 function avisarAlto(){
