@@ -6,7 +6,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 - **Sin modo oscuro**: el sitio ya no se vuelve azul marino cuando el celular o la computadora tienen el tema oscuro. Queda siempre claro, como el portal de Gobierno Abierto (que no tiene modo oscuro).
 - **Encabezado blanco** con la franja del degradado violeta-rosa arriba y el título en marino (antes, bloque azul). La barra del navegador del celular toma el fondo claro (`theme-color` `#f7f5fa`, antes `#0b3158`).
-- **Texto en gris oscuro** `#333333`, como el portal (antes azul marino); textos secundarios y líneas en grises neutros. El marino queda para los títulos y el azul solo para el agua. El semáforo y el mapa no cambian.
+- **Letras que se leen bien**: texto casi negro `#1d2333` y un poco más grueso (antes azul marino); textos secundarios en gris oscuro `#454c5c`; enlaces en negrita. El marino queda para los títulos y el azul solo para el agua. El semáforo y el mapa no cambian.
+- **Botones que resaltan**: todo lo que se toca (botones del mapa, buscador, leyenda, teléfonos, tarjetas de "Qué hacer", "Mostrar todo") lleva borde violeta `--borde-boton` `#a9a3dd`, fondo blanco y sombra suave; los números de los teléfonos van en violeta.
 - Solo cambia el estilo: la huella del código sigue igual. La prueba del naranja ahora controla que haya un solo juego de colores y ningún modo oscuro (siguen 43). Pedido de Mariano.
 
 ## 15/10/2026 (`95b5543`: aspecto del portal nuevo de Gobierno Abierto)

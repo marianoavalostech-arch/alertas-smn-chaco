@@ -14,13 +14,14 @@
 /* Colores y letras del portal de Gobierno Abierto del Chaco: azul marino, degradado violeta-rosa, Kanit en los títulos y Manrope en el texto.
    Las dos letras van guardadas en el sitio (fuentes/, licencia OFL): no se piden a ningún servidor externo.
    --water es el azul del agua (ríos del mapa y gráficos); --acento, el violeta de botones y enlaces.
-   Siempre claro, como el portal: no hay modo oscuro. Texto gris oscuro; el marino queda solo para los títulos. */
+   Siempre claro, como el portal: no hay modo oscuro. Texto casi negro y un poco más grueso para que se lea bien;
+   lo que se toca (botones, teléfonos, tarjetas) lleva borde violeta (--borde-boton). */
 @font-face{font-family:"Kanit";src:url(fuentes/kanit-700.woff2) format("woff2");font-weight:600 800;font-display:swap}
 @font-face{font-family:"Manrope";src:url(fuentes/manrope-wght.woff2) format("woff2");font-weight:200 800;font-display:swap}
 :root{
-  --bg:#f7f5fa; --card:#ffffff; --ink:#333333; --muted:#5d6470; --line:#ebe6ef;
+  --bg:#f7f5fa; --card:#ffffff; --ink:#1d2333; --muted:#454c5c; --line:#d6cfe6; --borde-boton:#a9a3dd;
   --water:#2a72b8; --water-soft:#dde9f6; --land:#e6eadb;
-  --acento:#4e4fc4; --acento-soft:#efecfc;
+  --acento:#4446b8; --acento-soft:#efecfc;
   --marino:#0b3158; --violeta:#5059bc; --rosa:#f26df9; --titulo:#0b3158;
   --degrade:linear-gradient(135deg,#5059bc 0%,#8d58e8 55%,#f26df9 100%);
   --fondo:linear-gradient(90deg,#f4f5fa 0%,#f7f5fa 42%,#faf3f9 72%,#fcecf9 100%);
@@ -33,12 +34,12 @@
 }
 :root{color-scheme:light}
 *{box-sizing:border-box}
-body{background:var(--bg);background-image:var(--fondo);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0}
+body{background:var(--bg);background-image:var(--fondo);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:16px;font-weight:500;line-height:1.45;margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--font-tit);font-weight:700;font-size:1.75rem;line-height:1.1;margin:0;letter-spacing:0}
 h2{font-family:var(--font-tit);font-weight:700;font-size:1.2rem;line-height:1.2;color:var(--titulo);margin:0;text-wrap:balance}
 p{margin:0}
-a{color:var(--acento)}
+a{color:var(--acento);font-weight:700}
 a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 /* encabezado: azul marino que pasa a violeta, con la barrita violeta-rosa del portal de Gobierno Abierto debajo del título */
 .cab{position:relative;overflow:hidden;background:var(--card);color:var(--ink);border-radius:20px;padding:22px 20px 20px;box-shadow:var(--sombra)}
@@ -60,7 +61,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
 .captura{background:var(--acento-soft);border-left:5px solid var(--acento);padding:10px 12px;border-radius:4px;font-size:.95rem}
-section{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
 .pleg>.tt{flex:1;min-width:0}
@@ -70,14 +71,14 @@ section{background:var(--card);border:1px solid var(--line);border-radius:20px;b
 .pleg[aria-expanded="true"]:hover>.pv{background:var(--acento-soft);filter:none}
 .pleg>.pv::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s}
 .pleg[aria-expanded="true"]>.pv::after{transform:translateY(2px) rotate(-135deg)}
-.pleg>.tt>small{display:block;font-family:var(--font);font-size:.85rem;font-weight:400;color:var(--muted);margin-top:3px;text-wrap:pretty}
+.pleg>.tt>small{display:block;font-family:var(--font);font-size:.85rem;font-weight:500;color:var(--muted);margin-top:3px;text-wrap:pretty}
 .pleg[aria-expanded="true"]>.tt>small{display:none}
 @media (prefers-reduced-motion:reduce){.pleg>.pv,.pleg>.pv::after{transition:none}}
 .pleg:focus-visible{outline:3px solid var(--acento);outline-offset:4px;border-radius:4px}
 .cuerpo{display:flex;flex-direction:column;gap:12px;min-width:0}
 /* cerrada: se ve el comienzo del contenido, que se desvanece; tocarlo abre la sección */
 .cuerpo.vista{max-height:7.5rem;overflow:hidden;-webkit-mask-image:linear-gradient(#000 25%,transparent);mask-image:linear-gradient(#000 25%,transparent);user-select:none}
-.mas{all:unset;box-sizing:border-box;align-self:center;margin-top:-26px;position:relative;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--acento);padding:6px 14px;border-radius:99px;display:flex;align-items:center;gap:8px}
+.mas{all:unset;box-sizing:border-box;align-self:center;margin-top:-26px;position:relative;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--acento);padding:6px 14px;border-radius:99px;border:1.5px solid var(--borde-boton);background:var(--card);display:flex;align-items:center;gap:8px}
 .mas[hidden]{display:none}
 .mas:hover{background:var(--acento-soft)}
 .mas::after{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
@@ -147,9 +148,9 @@ footer{font-size:.85rem;color:var(--muted)}
 .sem .luz{grid-row:span 3}
 .vermapa{grid-column:2;justify-self:start;font:inherit;font-size:.85rem;font-weight:700;background:none;border:0;padding:2px 0;color:var(--acento);text-decoration:underline;cursor:pointer}
 .mapa-barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.mapa-barra input{flex:1 1 170px;min-width:0;min-height:40px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
-.btn{font:inherit;font-weight:700;min-width:40px;min-height:40px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
-.btn:hover:not(:disabled){border-color:var(--acento)}
+.mapa-barra input{flex:1 1 170px;min-width:0;min-height:40px;font:inherit;padding:6px 10px;border:1.5px solid var(--borde-boton);border-radius:8px;background:var(--card);color:var(--ink)}
+.btn{font:inherit;font-weight:700;min-width:40px;min-height:40px;padding:6px 12px;border:1.5px solid var(--borde-boton);border-radius:8px;background:var(--card);color:var(--acento);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--acento);background:var(--acento-soft)}
 .btn:disabled{opacity:.45;cursor:default}
 .mapa-zoom{display:flex;gap:6px}
 #mapa{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
@@ -184,11 +185,11 @@ footer{font-size:.85rem;color:var(--muted)}
 /* foco: al elegir un municipio o un color de la leyenda, el resto del mapa se apaga (mismo color, más claro) */
 #mapa svg.foco path.mun:not(.on){fill-opacity:.18;stroke-opacity:.4}
 #mapa svg.foco path.mun.on{fill-opacity:.95}
-.ley{font:inherit;color:inherit;text-align:left;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-height:36px;cursor:pointer}
+.ley{font:inherit;color:inherit;text-align:left;background:none;border:1.5px solid var(--borde-boton);border-radius:8px;padding:5px 9px;min-height:36px;cursor:pointer}
 .ley:hover{border-color:var(--acento)}
 .ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
-.irmun{font:inherit;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
+.irmun{font:inherit;font-weight:700;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
 #mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
 /* qué hacer ante una alerta: franja "Ahora en el Chaco", teléfonos para tocar, tarjetas por situación, mochila para tildar */
 .hEt{font-weight:700;margin-bottom:8px}
@@ -207,18 +208,18 @@ footer{font-size:.85rem;color:var(--muted)}
 .hLink{all:unset;cursor:pointer;color:var(--acento);text-decoration:underline;font-weight:inherit}
 .hLink:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 .hTel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.hTel a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;padding:8px 6px;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);text-decoration:none;font-size:.85rem;line-height:1.2;text-align:center}
-.hTel a b{font-family:var(--font-tit);font-size:1.45rem;color:var(--titulo);line-height:1.1}
+.hTel a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;padding:8px 6px;border:1.5px solid var(--borde-boton);border-radius:10px;background:var(--card);box-shadow:0 1px 3px rgba(68,70,184,.12);color:var(--ink);text-decoration:none;font-size:.85rem;font-weight:600;line-height:1.2;text-align:center}
+.hTel a b{font-family:var(--font-tit);font-size:1.45rem;color:var(--acento);line-height:1.1}
 .hTel a.hDc{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:4px 10px;min-height:52px}
 .hTel a.hDc b{font-size:1.1rem}
 .hTel a:hover{border-color:var(--acento)}
 @media (min-width:600px){.hTel{grid-template-columns:repeat(5,minmax(0,1fr))}.hTel a.hDc{grid-column:auto;flex-direction:column}}
 .hSit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row dense;gap:8px}
 @media (min-width:600px){.hSit{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.hSit details{border:1.5px solid var(--line);border-radius:10px;background:var(--card);min-width:0}
+.hSit details{border:1.5px solid var(--borde-boton);border-radius:10px;background:var(--card);box-shadow:0 1px 3px rgba(68,70,184,.12);min-width:0}
 .hSit details[open]{grid-column:1/-1;border-color:var(--acento)}
 .hSit details#h-mochila{grid-column:1/-1}
-.hSit summary{list-style:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;min-height:92px;text-align:center;border-radius:9px;line-height:1.2}
+.hSit summary{color:var(--titulo);list-style:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 8px;min-height:92px;text-align:center;border-radius:9px;line-height:1.2}
 .hSit summary::-webkit-details-marker{display:none}
 .hSit summary:hover{background:var(--acento-soft)}
 .hSit .ico{font-size:1.75rem;line-height:1}
