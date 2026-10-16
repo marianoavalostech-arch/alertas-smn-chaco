@@ -72,7 +72,7 @@ prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, solo el con
   assert.ok(regla('img-src').includes('https://riosyclimachaco.goatcounter.com'), 'la imagen del contador tiene que estar permitida');
   assert.ok(!regla('script-src').includes('goatcounter') && !regla('connect-src').includes('goatcounter'), 'no se carga su código ni se conecta de otra forma');
   assert.ok(!/<script[^>]+src=/.test(html), 'ningún script de afuera');
-  assert.ok(/Privacidad:<\/b>[^<]*GoatCounter|Privacidad:<\/b>[^]*?GoatCounter<\/a>, un contador de código abierto/.test(html), 'Privacidad lo cuenta');
+  assert.ok(/Privacidad:<\/b>[^]*?GoatCounter<\/a>, sin cookies ni datos de quien visita\./.test(html) && /y a GoatCounter, solo para sumar la visita\./.test(html), 'Privacidad lo cuenta');
   const pedidos = [];
   const antes = { location: sitio.location };
   Object.assign(sitio, {
