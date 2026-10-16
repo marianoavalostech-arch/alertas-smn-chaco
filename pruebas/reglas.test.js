@@ -65,6 +65,38 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; }
 });
 
+prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, sin cargar código de afuera', () => {
+  const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
+  const csp = /Content-Security-Policy = "([^"]+)"/.exec(toml)[1];
+  const regla = n => (new RegExp(n + ' ([^;]+)').exec(csp) || [, ''])[1];
+  assert.ok(regla('img-src').includes('https://riosyclimachaco.goatcounter.com'), 'la imagen del contador tiene que estar permitida');
+  assert.ok(!regla('script-src').includes('goatcounter') && !regla('connect-src').includes('goatcounter'), 'no se carga su código ni se conecta de otra forma');
+  assert.ok(!/<script[^>]+src=/.test(html), 'ningún script de afuera');
+  assert.ok(/Privacidad:<\/b>[^<]*GoatCounter|Privacidad:<\/b>[^]*?GoatCounter<\/a>, un contador de código abierto/.test(html), 'Privacidad lo cuenta');
+  const pedidos = [];
+  const antes = { location: sitio.location };
+  Object.assign(sitio, {
+    location: { protocol: 'https:', hash: '' }, screen: { width: 390, height: 844 }, devicePixelRatio: 3, URLSearchParams,
+    Image: class { set src(u) { pedidos.push(new URL(u)) } }
+  });
+  sitio.document.referrer = 'https://l.facebook.com/'; sitio.document.title = 'Ríos y Clima del Chaco';
+  try {
+    S('contarVisita()');
+    assert.strictEqual(pedidos.length, 1);
+    const v = pedidos[0];
+    assert.strictEqual(v.origin + v.pathname, 'https://riosyclimachaco.goatcounter.com/count');
+    assert.strictEqual(v.searchParams.get('p'), '/'); assert.strictEqual(v.searchParams.get('r'), 'https://l.facebook.com/');
+    assert.strictEqual(v.searchParams.get('s'), '390,844,3'); assert.ok(!v.searchParams.has('e'));
+    S("contar('instalar-app-boton','Tocó Instalar app',true)");
+    assert.strictEqual(pedidos[1].searchParams.get('e'), 'true'); assert.strictEqual(pedidos[1].searchParams.get('p'), 'instalar-app-boton');
+    sitio.location = { protocol: 'file:', hash: '' }; S('contarVisita()');
+    assert.strictEqual(pedidos.length, 2, 'fuera del sitio publicado no cuenta');
+  } finally {
+    sitio.location = antes.location; for (const k of ['screen', 'devicePixelRatio', 'URLSearchParams', 'Image']) delete sitio[k];
+    delete sitio.document.referrer; delete sitio.document.title;
+  }
+});
+
 prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del río, sin pedirle datos', () => {
   const v = S('VILELAS');
   assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));
@@ -760,7 +792,7 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     for (const l of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(fs.existsSync(path.join(raiz, 'fuentes', l)) && html.includes('url(fuentes/' + l + ')'), 'falta la letra ' + l);
     assert.ok(codigo.includes("PORTAL='https://gobiernoabierto.chaco.gob.ar'") && !/postMessage\([^)]*'\*'/.test(codigo), 'los avisos al portal van solo al portal');
     assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
-    const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas/.test(u));   // esos dos son enlaces
+    const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas|goatcounter/.test(u));   // esos dos son enlaces; el contador va por img-src (su propia prueba)
     for (const u of hosts) assert.ok(regla('connect-src').split(' ').includes(u), u + ' falta en connect-src');
     assert.ok(regla('connect-src').includes('https://script.googleusercontent.com'), 'el script de Google redirige ahí');
     assert.ok(/Permissions-Policy = "camera=\(\), microphone=\(\), geolocation=\(\)/.test(toml));

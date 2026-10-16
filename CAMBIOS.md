@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 15/10/2026 (sin subir: contador de visitas)
+
+- **Cuenta las visitas** con GoatCounter (cuenta de Mariano: riosyclimachaco.goatcounter.com): gratis, código abierto, sin cookies ni datos personales. No se carga su script (la regla del navegador solo deja correr el código propio): la página pide una imagen de 1 píxel con la página, el título, de dónde se llegó y el tamaño de pantalla. Se ve por separado si se abrió en el navegador (`/`), desde la app (`/desde-la-app`) o dentro del portal (`/en-el-portal`), y cuántos tocaron "Instalar app" o la instalaron (eventos).
+- **Privacidad** al día: dice que cuenta visitas con GoatCounter y qué registra. La regla del navegador suma la cuenta solo en `img-src`. Huella nueva. Prueba nueva (45). Probado en Chromium con la regla del navegador: los pedidos salen y no hay rechazos. Pedido de Mariano.
+
 ## 15/10/2026 (sin subir: botón "Instalar app")
 
 - **El sitio se puede instalar como app**: queda como un ícono más en la pantalla del celular o de la computadora y se abre a pantalla completa, sin la barra del navegador. Pensado para la gente que no usa favoritos pero sí toca íconos.

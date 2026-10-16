@@ -602,7 +602,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni registra quién lo visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; y a la NASA, para las imágenes del mar y del satélite. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta las visitas con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, un contador de código abierto que no identifica a las personas: solo suma cuántas veces se abre la página, desde qué sitio se llegó, el tamaño de la pantalla, el navegador y el país. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del mar y del satélite; y a GoatCounter, para contar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
   </section>
 
   <footer>Los horarios están en hora de Argentina.</footer>
@@ -1748,6 +1748,24 @@ function armarCorreo(){
 }
 armarCorreo();
 
+// Contador de visitas (GoatCounter, sin cookies ni datos personales). No se carga código de afuera:
+// la página pide una imagen de 1 píxel a la cuenta del sitio con la página, el título, de dónde se llegó y el tamaño de pantalla.
+// Tres páginas en el tablero: "/" (navegador), "/desde-la-app" (abierto desde el ícono) y "/en-el-portal" (dentro de Gobierno Abierto).
+const CONTADOR='https://riosyclimachaco.goatcounter.com/count';
+function contar(p,t,evento){
+  if(location.protocol!=='https:')return;
+  const nav=typeof navigator!=='undefined'?navigator:{};
+  const q=new URLSearchParams({p,t,r:evento?'':(document.referrer||''),s:[screen.width,screen.height,devicePixelRatio||1].join(','),rnd:Math.random().toString(36).slice(2)});
+  if(evento)q.set('e','true');
+  if(nav.webdriver)q.set('b','153');
+  new Image().src=CONTADOR+'?'+q;
+}
+function contarVisita(){
+  const app=matchMedia('(display-mode: standalone)').matches||(typeof navigator!=='undefined'&&navigator.standalone===true);
+  contar(EMB?'/en-el-portal':app?'/desde-la-app':'/',document.title);
+}
+seguro(contarVisita);
+
 // Instalar app: el botón aparece solo cuando el navegador ofrece instalar (Android y computadora, con Chrome o Edge).
 // En iPhone y iPad no hay botón: se explica Compartir → Agregar a inicio. No se ve dentro del portal ni si ya se abrió como app.
 // No guarda el sitio en el celular: abre siempre la página publicada, con sus datos y sus avisos de siempre.
@@ -1757,8 +1775,8 @@ function instalarApp(){
   if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true)return;
   let pedido=null;
   addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;btn.hidden=false;caja.hidden=false});
-  btn.addEventListener('click',async()=>{if(!pedido)return;const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;caja.hidden=ios.hidden});
-  addEventListener('appinstalled',()=>{caja.hidden=true});
+  btn.addEventListener('click',async()=>{if(!pedido)return;contar('instalar-app-boton','Tocó Instalar app',true);const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;caja.hidden=ios.hidden});
+  addEventListener('appinstalled',()=>{caja.hidden=true;contar('app-instalada','Instaló la app',true)});
   const ua=nav.userAgent||'';
   if(/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1)){ios.hidden=false;caja.hidden=false}
 }
