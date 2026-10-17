@@ -193,7 +193,7 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   S(`D.prono={datos:null}`);
 });
 
-prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río; Colonia Benítez, al menos amarillo', () => {
+prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río; Colonia Benítez y las zonas bajas, al menos amarillo', () => {
   const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
   const B = idx('Barranqueras'), V = idx('Puerto Vilelas'), C = idx('Isla del Cerrito'), F = idx('Fontana'), R = idx('Resistencia');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas', 'Isla del Cerrito']);
@@ -221,11 +221,19 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.ok(/#mInfo\.naranja\{border-color:var\(--naranja\)\}/.test(html), 'borde del detalle');
   // Colonia Benítez: con el Paraná fuera del verde, al menos amarillo; por el río nunca más que amarillo
   const CB = idx('Colonia Benítez'); assert.ok(CB >= 0);
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA_PISO'))), ['Colonia Benítez']);
+  assert.deepStrictEqual(Object.keys(JSON.parse(JSON.stringify(S('RIBERA_PISO')))), ['Colonia Benítez', 'La Leonesa', 'Las Palmas', 'Puerto Bermejo', 'General Vedia', 'Basail']);
+  assert.ok(Object.keys(S('RIBERA_PISO')).every(n => idx(n) >= 0), 'todos están en el mapa');
   const cb = (lluvia, obs, prono) => { col(lluvia, obs, prono); return JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,!!k.piso,rioInfo(k)]))(colorDe(${CB}))`)); };
   let r = cb('verde', obs13, pr13);   // río en naranja (caso real del 13/10)
   assert.deepStrictEqual(r.slice(0, 3), ['amarillo', true, true]);
   assert.ok(r[3].includes('Amarillo por el río Paraná') && r[3].includes('San Pedro Pescador') && r[3].includes('#t-rio') && !r[3].includes('defensas'), r[3]);
+  // Los demás municipios con zonas bajas: amarillo con su propia aclaración
+  for (const [n, z] of [['La Leonesa', 'río Paraguay'], ['Puerto Bermejo', 'Puerto Bermejo Viejo'], ['Basail', 'zona rural'], ['General Vedia', 'Bermejo'], ['Las Palmas', 'río Paraguay']]) {
+    const q = JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,rioInfo(k)]))(colorDe(${idx(n)}))`));
+    assert.deepStrictEqual(q.slice(0, 2), ['amarillo', true], n);
+    assert.ok(q[2].includes(z) && q[2].includes('alertas oficiales') && !q[2].includes('San Pedro'), n + ': ' + q[2]);
+  }
+  assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(${idx('Basail')}).c)`)), 'amarillo');
   assert.deepStrictEqual(cb('verde', [['2026-10-13', 6.6]]).slice(0, 2), ['amarillo', true]);   // río en rojo: igual amarillo
   assert.deepStrictEqual(cb('rojo', obs13, pr13).slice(0, 2), ['rojo', false]);                // la lluvia en rojo gana
   assert.deepStrictEqual(cb('amarillo', obs13, pr13).slice(0, 2), ['amarillo', false]);        // ya amarillo por lluvia: no cambia

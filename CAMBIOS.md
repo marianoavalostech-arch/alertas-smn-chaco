@@ -2,7 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 16/10/2026, noche (sin subir: Colonia Benítez sigue al Paraná, como mucho en amarillo)
+## 17/10/2026 (sin subir: más zonas bajas siguen al Paraná, como mucho en amarillo)
+
+- **La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail pasan al menos a amarillo cuando el renglón del Paraná no está en verde**, igual que Colonia Benítez. Por el río nunca pasan de amarillo. Motivo: el comunicado oficial del Gobierno del Chaco del 17/10 (alerta roja por la crecida del Paraná) los pone en alerta amarilla por sus zonas bajas. El color sigue saliendo solo del INA; el sitio no copia el comunicado.
+- Cada uno tiene su aclaración en el detalle (`RIBERA_PISO` pasa a ser una lista nombre → aclaración): costa y bajos cerca del Paraguay (que con el Paraná alto baja más lento), Puerto Bermejo Viejo, los ríos Paraguay y Bermejo en General Vedia, la zona rural en Basail. El detalle agrega que las alertas oficiales por la crecida incluyen zonas del municipio y remite a los avisos del Gobierno, del municipio y de Defensa Civil. Textos debajo del mapa y en "¿Cómo se decide el color?" al día.
+- Huella nueva del código. La prueba de la costa suma los cinco municipios (amarillo con su aclaración). 47 pruebas. Probado en Chromium con la regla del navegador y los datos del 17/10 12:51: sin rechazos. Pedido de Mariano.
+
+## 16/10/2026, noche (`ae6820e`: Colonia Benítez sigue al Paraná, como mucho en amarillo)
 
 - **Colonia Benítez pasa al menos a amarillo cuando el renglón del Paraná no está en verde** (`RIBERA_PISO` en `colorDe`). Por el río nunca pasa de amarillo; la lluvia o una alerta del SMN sí pueden subirla. Motivo: con la crecida de octubre se inunda su costa (San Pedro Pescador, Antequera) y se corta la ruta provincial 63, pero el pueblo está en zona más alta. Margarita Belén, Fontana y Resistencia siguen sin mirar el río.
 - El detalle del municipio dice "Amarillo por el río Paraná (…), no por la lluvia", con el estado del río, que es por la costa (San Pedro Pescador, Antequera y la ruta 63), que el pueblo está en zona más alta y que para caminos cortados y evacuaciones valen los avisos del municipio y de Defensa Civil. Sin la frase de las defensas (Colonia Benítez no está dentro). También se actualizaron el texto debajo del mapa y "¿Cómo se decide el color?".
