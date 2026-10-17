@@ -533,7 +533,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <ul>
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
-        <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no. El naranja no es una alerta oficial: es lo que prevé el INA. El rojo sale solo de lo que mide el río.</li>
+        <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
         <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre rojo por el río.</li>
         <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
@@ -863,8 +863,9 @@ const pronoAtraso=p=>diasEntre(p.emitido,hoy)>=3?' Es del '+fDia(p.emitido)+': n
 const pronoTxt=p=>'El INA prevé '+p.fut.map(r=>nf(r[2],2)+' m para el '+fDia(r[0])+(r[3]>r[1]?' (entre '+nf(r[1],2)+' y '+nf(r[3],2)+')':'')).join('; ')+'.';
 // Renglón propio del río: vale para la zona ribereña, fuera de las defensas del Gran Resistencia.
 // Verde, amarillo (el río cerca o arriba de la alerta, o el valor más alto del pronóstico llega a la alerta),
-// naranja (el valor más probable del pronóstico del INA pasa la evacuación, y el río todavía no) y rojo (el río pasó la evacuación).
-// El naranja sale solo del pronóstico oficial del INA y del nivel oficial de evacuación.
+// naranja (el valor más probable del pronóstico del INA pasa la evacuación, y el río todavía no llegó a la alerta) y rojo (el río pasó la evacuación,
+// o ya pasó la alerta y el valor más probable del INA pasa la evacuación: desde el 17/10/2026, como el comunicado oficial de ese día).
+// El naranja y el rojo por pronóstico salen solo del pronóstico oficial del INA y de los niveles oficiales de alerta y evacuación.
 function riesgoRio(){
   const r=resumenRio(),p=resumenProno(),a=!!(p&&p.alerta),viejo=r&&r.atraso>=4;
   const viejoTxt=()=>'La última lectura del río es del '+fDia(r.dia)+' ('+nf(r.h,2)+' m): es demasiado vieja para calcular el color.';
@@ -879,9 +880,11 @@ function riesgoRio(){
       :'El Paraná está en '+nf(r.h,2)+' m en Barranqueras, a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.');
     if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
   }else por.push('Falta la lectura de la altura del río.');
-  if(caso==='evac')por.push('El pronóstico del INA prevé '+pronoCen(p)+': pasaría el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).');
+  const pr=caso==='evac'&&n<3&&r&&!viejo&&r.h>=NIVEL.alerta;   // rojo por pronóstico
+  if(pr)n=3;
+  if(caso==='evac')por.push('El pronóstico del INA prevé '+pronoCen(p)+': pasaría el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).'+(pr?' Con el río ya sobre la alerta, queda en rojo.':''));
   else if(caso==='puede')por.push('El pronóstico del INA llega hasta '+nf(p.mx[3],2)+' m hacia el '+fDia(p.mx[0])+', en el valor más alto de su rango: puede alcanzar el nivel de '+nivelNombre(p.mx[3])+'.');
-  return {c:['verde','amarillo','naranja','rojo'][n],et:['Verde','Amarillo','Naranja','Rojo'][n],por:por.join(' ')};
+  return {c:['verde','amarillo','naranja','rojo'][n],et:['Verde','Amarillo','Naranja','Rojo'][n],por:por.join(' '),pr};
 }
 
 // Renglón del río Paraguay: costa e islas del este, de Puerto Bermejo a Isla del Cerrito. Sin pronóstico (el INA no lo publica para esta estación).
@@ -1130,7 +1133,7 @@ function colorDe(i){
 const rioInfo=k=>!k.rio?'':k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
   +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' '+DEFENSAS.replace(' Igual, seguí los avisos oficiales.',''):'')+' Las alertas oficiales por la crecida del Paraná incluyen zonas de este municipio. Para caminos cortados y evacuaciones, valen los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
-  +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
+  +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':k.rio.pr?' El rojo sale de la altura de hoy y de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
   if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}
@@ -1581,7 +1584,7 @@ function hacerHoy(){
   const NV={amarillo:3,naranja:4,rojo:5};
   [['Paraná',riesgoRio(),'islas y costa fuera de las defensas'],['Paraguay',riesgoParaguay(),'costa e islas de Puerto Bermejo a Isla del Cerrito']].forEach(([rio,r,zona])=>{
     if(!r||!NV[r.c])return;
-    filas.push({t:'rio',rio,niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
+    filas.push({t:'rio',rio,niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':r.pr?': rojo según la altura de hoy y el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
     marcar('rio',NV[r.c],'Río '+r.c);
   });
   filas.sort((x,y)=>y.niv-x.niv);

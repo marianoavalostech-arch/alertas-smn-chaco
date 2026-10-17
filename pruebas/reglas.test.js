@@ -198,7 +198,7 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   const B = idx('Barranqueras'), V = idx('Puerto Vilelas'), C = idx('Isla del Cerrito'), F = idx('Fontana'), R = idx('Resistencia');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas']);
   assert.ok([B, V, C, F, R].every(i => i >= 0));
-  const col = (lluvia, obs, prono) => JSON.parse(S(`hoy='2026-10-13';LISTO=true;SMN=SMN_VACIO;
+  const col = (lluvia, obs, prono, dia = '2026-10-13') => JSON.parse(S(`hoy='${dia}';LISTO=true;SMN=SMN_VACIO;
     D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};
     M.R=${lluvia ? `LOCS.map(()=>({c:'${lluvia}',et:ETQ['${lluvia}'],por:'x'}))` : '[]'};
     M.est=${lluvia ? `Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'${lluvia}',ll:{cayo:0,viene:0,max:0}}]))` : '{}'};M.tEst=Date.now();M.todos=${lluvia ? "'listo'" : "''"};
@@ -213,6 +213,15 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.deepStrictEqual(col('amarillo', [['2026-10-13', 4.0]]).slice(0, 3).map(x => x[0] + x[2]), ['amarillofalse', 'amarillofalse', 'amarillofalse']);
   // Río sobre la evacuación: rojo aunque la lluvia esté en amarillo
   assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).map(x => x[0]), ['rojo', 'rojo', 'amarillo', 'amarillo', 'naranja']);   // Isla del Cerrito y Resistencia, con techo
+  // Caso real del 17/10: río sobre la alerta (6,08 m) y el INA prevé pasar la evacuación (7,23 m): renglón en rojo, como el comunicado oficial
+  const obs17 = [['2026-10-11', 5.01], ['2026-10-14', 5.4], ['2026-10-16', 6.08]];
+  const pr17 = { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-16', 6.08, 6.08, 6.08], ['2026-10-20', 7, 7.23, 7.8]] };
+  assert.deepStrictEqual(col('verde', obs17, pr17, '2026-10-17').map(x => x[0]), ['rojo', 'rojo', 'amarillo', 'verde', 'naranja']);   // Isla del Cerrito y Resistencia con su techo
+  const rr = JSON.parse(S(`JSON.stringify(riesgoRio())`));
+  assert.ok(rr.pr && rr.por.includes('queda en rojo'), rr.por);
+  assert.ok(JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${B})))`)).includes('El rojo sale de la altura de hoy y de lo que prevé el INA'));
+  // Río sobre la alerta, pero el pronóstico no pasa la evacuación: sigue amarillo
+  assert.strictEqual(col('verde', obs17, { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-20', 6.0, 6.3, 6.45]] }, '2026-10-17')[0][0], 'amarillo');
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'amarillorio']);
   // Leyenda con el naranja, aclarando que no es una alerta del SMN
