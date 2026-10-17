@@ -128,12 +128,24 @@ prueba('umbrales de lluvia', () => {
   assert.strictEqual(n(0, 10, 80), 2);
   assert.strictEqual(n(100, 70, 0), 2);
   assert.strictEqual(n(100, 69, 0), 1);
+  // Desde el 17/10/2026 el rojo mira solo hoy y los 2 días siguientes; el amarillo, los 7 días
+  const n3 = (cayo, viene, max, viene3, max3) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max},viene3:${viene3},max3:${max3}})`);
+  assert.strictEqual(n3(16, 130, 115, 10, 5), 1);     // caso real de La Leonesa, 17/10: 115 mm a 6 días → amarillo
+  assert.strictEqual(n3(0, 130, 40, 120, 40), 2);     // 120 mm en 3 días → rojo
+  assert.strictEqual(n3(0, 90, 85, 85, 85), 2);       // 80 mm o más en un día dentro de los 3 → rojo
+  assert.strictEqual(n3(100, 90, 30, 70, 30), 2);     // cayeron 100 y vienen 70 en 3 días → rojo
+  assert.strictEqual(n3(100, 90, 30, 69, 30), 1);
+  assert.strictEqual(n3(0, 50, 30, 20, 10), 0);       // el amarillo no cambia
+  assert.ok(S(`rojoLejos({cayo:16,viene:130,max:115,viene3:10,max3:5})`) && !S(`rojoLejos({cayo:0,viene:130,max:85,viene3:120,max3:85})`));
+  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && /cuenta solo la lluvia prevista para hoy y los 2 días siguientes/.test(html));
 });
 
 prueba('suma de lluvia: lo caído es antes de hoy, lo que viene incluye hoy', () => {
   const r = S(`sumarLluvia(['2026-10-05','2026-10-06','2026-10-07','2026-10-08'],[10,20,5,40],'2026-10-07')`);
   assert.strictEqual(r.cayo, 30); assert.strictEqual(r.viene, 45);
   assert.strictEqual(r.max, 40); assert.strictEqual(r.maxDia, '2026-10-08');
+  const t = S(`sumarLluvia(['2026-10-16','2026-10-17','2026-10-18','2026-10-19','2026-10-20','2026-10-21'],[3,1,2,4,50,9],'2026-10-17')`);
+  assert.strictEqual(t.viene, 66); assert.strictEqual(t.viene3, 7); assert.strictEqual(t.max3, 4); assert.strictEqual(t.max, 50);   // hoy y 2 días más
 });
 
 prueba('río: colores según altura, tendencia y pronóstico del INA', () => {

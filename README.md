@@ -183,9 +183,9 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 ## Reglas del color
 
-**Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes.
+**Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes. **Desde el 17/10/2026, el rojo mira solo hoy y los 2 días siguientes** (`viene3` y `max3` de `sumarLluvia`; pedido de Mariano, porque un pronóstico a 4 o más días cambia mucho: el 17/10 La Leonesa salía en rojo por 115 mm previstos para el 23/10). El amarillo sigue mirando los 7 días. Si con los 7 días sería rojo pero lo fuerte llega en más de 3 días, el texto lo dice (`ROJO_LEJOS`): "por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque".
 
-| Color | Viene en 7 días | En un solo día | Con lo ya caído |
+| Color | Viene (rojo: en 3 días; amarillo: en 7) | En un solo día (rojo: dentro de los 3 días) | Con lo ya caído |
 |---|---|---|---|
 | Rojo | 120 mm o más | 80 mm o más | cayeron 100 y vienen 70 |
 | Amarillo | 70 mm o más | 45 mm o más | cayó + viene suman 120 |

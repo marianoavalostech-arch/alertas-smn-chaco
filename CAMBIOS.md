@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 17/10/2026, tarde (sin subir: el rojo por lluvia mira solo 3 días)
+
+- **El rojo por lluvia mira solo hoy y los 2 días siguientes** (antes, los 7 días). El amarillo sigue mirando los 7 días. Motivo: un pronóstico para dentro de 4 días o más cambia mucho; el 17/10 La Leonesa, Colonia Benítez e Isla del Cerrito salían en rojo por lluvia prevista para el 22 y 23/10 (La Leonesa: 115 mm el 23). Con los datos del 17/10 14:40, cuatro municipios pasan de rojo a amarillo por lluvia: La Leonesa, Las Palmas, Colonia Benítez e Isla del Cerrito (en los tres días próximos no se prevé lluvia; lo fuerte es del 21 al 23/10). En el mapa, Colonia Benítez sigue en rojo e Isla del Cerrito en naranja por el Paraná; La Leonesa y Las Palmas quedan en amarillo. Las 6 localidades del semáforo no cambian. Si con los 7 días sería rojo, el detalle agrega "Lo más fuerte llega en más de 3 días: por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque". `sumarLluvia` suma `viene3` y `max3`. Vale para las 6 localidades del semáforo y los 70 municipios. "¿Cómo se decide el color?" lo explica. Huella nueva del código. Pruebas de umbrales y de suma al día (47). Pedido de Mariano.
+
 ## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa, "solo claro" y techos de la costa revisados)
 
 - **Techos de la costa revisados con el texto completo del comunicado del Comité Provincial de Emergencia del 17/10** (el que publicaron los diarios): **Isla del Cerrito pasa de amarillo a naranja** (en la placa de Instagram figuraba en amarillo; en el texto, en naranja) y **Colonia Benítez puede llegar a rojo** (antes, hasta naranja), porque la alerta roja fuera del cordón de defensa incluye San Pedro Pescador y Puerto Antequeras, que son de Colonia Benítez. Cuando las versiones difieren se toma la más alta, para no mostrar menos que lo oficial. El color sigue saliendo solo del INA. Textos debajo del mapa, "¿Cómo se decide el color?" y detalle de Colonia Benítez al día. Huella nueva del código (`sha256-C/Jil5Ja/PDcmBJag4Bf7yJ3GRIyL3uSKujCALbB37Y=`). Prueba de la costa al día (47 pruebas).

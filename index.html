@@ -527,11 +527,12 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista en 7 días</th><th>En un solo día</th><th>Con lo ya caído</th></tr></thead><tbody>
+      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo ya caído</th></tr></thead><tbody>
         <tr><td><b>Rojo</b></td><td>120 mm o más</td><td>80 mm o más</td><td>cayeron 100 mm y vienen 70</td></tr>
         <tr><td><b>Amarillo</b></td><td>70 mm o más</td><td>45 mm o más</td><td>lo caído y lo que viene suman 120 mm</td></tr>
       </tbody></table></div>
       <ul>
+        <li>Para el rojo cuenta solo la lluvia prevista para hoy y los 2 días siguientes; para el amarillo, la de hoy y los 6 días siguientes. Un pronóstico para dentro de 4 días o más todavía puede cambiar mucho.</li>
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
@@ -805,14 +806,20 @@ function resumenLluvia(i){
   const ref=D.lluvia.vivo?hoy:diaAR(D.lluvia.t);
   return sumarLluvia(d.dias,d.mm[i],ref);
 }
+// "viene3" y "max3": hoy y los 2 días siguientes (lo que cuenta para el rojo).
 function sumarLluvia(dias,mm,ref){
-  let cayo=0,viene=0,max=0,maxDia='';
-  dias.forEach((dia,j)=>{const v=mm[j];if(dia<ref)cayo+=v;else{viene+=v;if(v>max){max=v;maxDia=dia}}});
-  return {cayo,viene,max,maxDia,ref};
+  let cayo=0,viene=0,max=0,maxDia='',viene3=0,max3=0,k=0;
+  dias.forEach((dia,j)=>{const v=mm[j];if(dia<ref)cayo+=v;else{viene+=v;if(v>max){max=v;maxDia=dia}if(k++<3){viene3+=v;if(v>max3)max3=v}}});
+  return {cayo,viene,max,maxDia,viene3,max3,ref};
 }
 // Mismos umbrales de lluvia para los municipios con seguimiento y para la estimación del resto.
 // Calibrados el 12/10/2026 con la lluvia diaria de 1991 a 2026 (archivo de Open-Meteo): amarillo unas 5 veces por año en el interior y 8 en Resistencia; rojo 1 o 2 (enero de 2019 queda en rojo).
-const nivelLluvia=ll=>(ll.viene>=120||ll.max>=80||(ll.cayo>=100&&ll.viene>=70))?2:(ll.viene>=70||ll.max>=45||ll.cayo+ll.viene>=120)?1:0;
+// Desde el 17/10/2026 el rojo mira solo hoy y los 2 días siguientes (viene3, max3): un pronóstico a 4 o más días cambia mucho. El amarillo sigue mirando los 7 días.
+const nivelLluvia=ll=>{const v3=ll.viene3!=null?ll.viene3:ll.viene,m3=ll.max3!=null?ll.max3:ll.max;
+  return (v3>=120||m3>=80||(ll.cayo>=100&&v3>=70))?2:(ll.viene>=70||ll.max>=45||ll.cayo+ll.viene>=120)?1:0};
+// Sería rojo con los 7 días, pero lo fuerte llega en 3 días o más: se avisa en el texto.
+const ROJO_LEJOS=' Lo más fuerte llega en más de 3 días: por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque.';
+const rojoLejos=ll=>ll.viene3!=null&&nivelLluvia(ll)<2&&nivelLluvia({cayo:ll.cayo,viene:ll.viene,max:ll.max})===2;
 // Captura guardada de lluvia con más de 36 horas: ya no sirve para calcular el riesgo.
 const lluviaVieja=()=>!D.lluvia||!D.lluvia.datos||(!D.lluvia.vivo&&Date.now()-D.lluvia.t>36*36e5);
 // Piso oficial: con alerta amarilla o naranja del SMN el color no baja de amarillo; con roja, es rojo.
@@ -830,7 +837,7 @@ function riesgo(loc,i){
     nivel=nivelLluvia(ll);
     let t='Llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '+nf(ll.viene)+' mm '+(ll.ref===hoy?'entre hoy':'entre el '+fDia(ll.ref))+' y los 6 días siguientes';
     if(ll.max>=45)t+=', con '+nf(ll.max)+' mm en un solo día ('+fDia(ll.maxDia)+')';
-    por.push(t+'.');
+    por.push(t+'.'+(rojoLejos(ll)&&!(s&&s.n>=2)?ROJO_LEJOS:''));
   }else por.push(D.lluvia&&D.lluvia.datos?'Los datos de lluvia guardados son del '+fFechaHora(D.lluvia.t)+' y ya no sirven para calcular el riesgo.':LISTO?'No se pudo consultar la lluvia.':'Consultando la lluvia…');
   if(s&&s.n>nivel){nivel=s.n;por.push(pisoTxt(s))}
   if(nivel<0)return {c:'gris',et:'Sin datos',por:por.join(' ')};
@@ -1177,7 +1184,7 @@ function pintarInfo(){
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Forma parte del Gran Resistencia: por la lluvia comparte su semáforo, que está en '+M.R[0].et.toLowerCase()+'. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
     h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
-     +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
+     +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(rojoLejos(s)&&k.c==='amarillo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
   else if(k.tipo==='rio')h='<p><span class="estado">Río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
