@@ -166,7 +166,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .irRio{align-self:flex-start;font-weight:700}
 #mapa .rioChip .fondo{fill:var(--water);stroke:var(--card);stroke-width:2}
 #mapa .rioChip .hit{fill:transparent}
-#mapa .rioChip text{fill:#fff;font-size:21px;font-weight:700}
+#mapa .rioChip text{fill:#fff;font-size:17px;font-weight:700}
 #mapa .rioChip:active .fondo,#mapa .rioChip:hover .fondo{filter:brightness(.88)}
 #mapa g[data-rio]{pointer-events:auto;cursor:pointer}
 #mTip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-150%);z-index:2}
@@ -986,7 +986,7 @@ function pintarSemaforo(){
 /* ---------- mapa interactivo ---------- */
 // Las formas vienen en décimas de unidad (por eso el scale(.1)); la vista se mueve cambiando el viewBox.
 const PX=lon=>(lon+63.7)*100,PY=lat=>(-24-lat)*112;
-const BASE={x:20,y:0,w:530,h:510},ZMAX=14;
+const BASE={x:20,y:0,w:530,h:496},ZMAX=14;
 // Los ríos se dibujan con tramos del contorno provincial: el Bermejo es el límite norte; el Paraguay y el Paraná, el límite este.
 const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
   for(let i=0;i<n.length;i+=2){x=i?x+n[i]:n[i];y=i?y+n[i+1]:n[i+1];P.push(x+' '+y)}
@@ -1011,7 +1011,7 @@ const RIBERA_PISO={
 const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
 // Frase cuando el Paraná sale del verde: el agua del río queda afuera de las defensas, pero valen los avisos oficiales.
 // Lugar de las etiquetas de los ríos (x, y del mapa, y hacia dónde crece el texto).
-const RCHIP={parana:[532,486,'end'],paraguay:[532,166,'end'],bermejo:[318,92,'start']};
+const RCHIP={parana:[538,478,'end'],paraguay:[538,174,'end'],bermejo:[322,100,'start']};
 const DEFENSAS='Dentro de las defensas del Gran Resistencia el agua del río queda afuera: protegen hasta unos 9,50 m. Igual, seguí los avisos oficiales.';
 const ETQ={verde:'Verde',amarillo:'Amarillo',naranja:'Naranja',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
@@ -1026,7 +1026,7 @@ const M={vb:{...BASE},sel:-1,rio:null,tipo:'',R:[],est:{},pts:new Map(),activo:f
 
 function armarMapa(){
   const caja=$('mapa'),borde='paint-order:stroke;stroke:var(--card);stroke-linejoin:round;';
-  caja.innerHTML='<svg viewBox="20 0 530 510" role="img" aria-label="Mapa interactivo del Chaco con sus '+GEO.mun.length+' municipios. Con teclado, usá el buscador de arriba para elegir un municipio.">'
+  caja.innerHTML='<svg viewBox="20 0 530 496" role="img" aria-label="Mapa interactivo del Chaco con sus '+GEO.mun.length+' municipios. Con teclado, usá el buscador de arriba para elegir un municipio.">'
    +'<g transform="scale(.1)">'
    // La zona sensible de los ríos va debajo de los municipios: así solo se toca del lado de afuera y no le saca lugar a ninguno.
    +'<path class="rioT" data-rio="Río Bermejo" data-ir="t-otros" d="'+RIOS.bermejo+'"/><path class="rioT" data-rio="Río Paraguay" data-ir="t-otros" d="'+RIOS.paraguay+'"/><path class="rioT" data-rio="Río Paraná" d="'+RIOS.parana+'"/>'
@@ -1045,8 +1045,8 @@ function armarMapa(){
    +'</g></svg><div id="mCarga" hidden>Pintando el mapa con la lluvia de cada municipio…</div><div id="mTip" hidden></div>';
   const svg=M.svg=caja.querySelector('svg');
   svg.querySelectorAll('.rioChip').forEach(g=>{const t=g.querySelector('text'),r=g.querySelector('.fondo'),z=g.querySelector('.hit');let b={x:0,y:-9,width:90,height:18};try{b=t.getBBox()}catch(_){}
-    const h=b.height+16;r.setAttribute('x',b.x-14);r.setAttribute('y',b.y-8);r.setAttribute('width',b.width+28);r.setAttribute('height',h);r.setAttribute('rx',h/2);
-    z.setAttribute('x',b.x-22);z.setAttribute('y',b.y-16);z.setAttribute('width',b.width+44);z.setAttribute('height',h+16)});
+    const h=b.height+8;r.setAttribute('x',b.x-9);r.setAttribute('y',b.y-4);r.setAttribute('width',b.width+18);r.setAttribute('height',h);r.setAttribute('rx',h/2);
+    z.setAttribute('x',b.x-20);z.setAttribute('y',b.y-16);z.setAttribute('width',b.width+40);z.setAttribute('height',h+24)});
   M.paths=[...svg.querySelectorAll('path.mun')];M.puntos=[...svg.querySelectorAll('.pto')];
   M.hov=svg.querySelector('#mHover');M.selP=svg.querySelector('#mSel');
   M.cajas=M.paths.map(p=>{let b={x:0,y:0,width:0,height:0};try{b=p.getBBox()}catch(_){}return {x:b.x/10,y:b.y/10,w:b.width/10,h:b.height/10}});
