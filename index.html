@@ -164,6 +164,10 @@ footer{font-size:.85rem;color:var(--muted)}
 #mapa .rioT{fill:none;stroke:var(--water);stroke-opacity:0;stroke-width:28;stroke-linecap:round;stroke-linejoin:round;pointer-events:stroke;cursor:pointer;vector-effect:non-scaling-stroke}
 #mapa .rioT:hover,#mapa .rioT.sel{stroke-opacity:.25}
 .irRio{align-self:flex-start;font-weight:700}
+/* Botón "Volver al mapa" arriba a la derecha de las secciones de los ríos */
+.filaRio{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.filaRio>h2{flex:1;min-width:0}.filaRio.abajo{justify-content:flex-end;margin-top:-4px}
+.volver{flex:none;font-size:.88rem;padding:5px 12px;min-height:36px;white-space:nowrap}
+@media print{.volver{display:none}}
 #mapa .rioChip .fondo{fill:var(--water);stroke:var(--card);stroke-width:2}
 #mapa .rioChip .hit{fill:transparent}
 #mapa .rioChip text{fill:#fff;font-size:17px;font-weight:700}
@@ -550,12 +554,13 @@ footer{font-size:.85rem;color:var(--muted)}
   </section>
 
   <section aria-labelledby="t-rio">
-    <h2 id="t-rio">Río Paraná en Puerto Barranqueras</h2>
+    <div class="filaRio"><h2 id="t-rio">Río Paraná en Puerto Barranqueras</h2><button class="btn volver" type="button" data-volver>↑ Volver al mapa</button></div>
     <div id="rio"><p class="nodisp">Consultando…</p></div>
   </section>
 
   <section aria-labelledby="t-otros" class="plegable" data-cerrada data-pista="Altura de los ríos y pronóstico de Formosa y Pilcomayo">
     <h2 id="t-otros">Ríos Paraguay y Bermejo</h2>
+    <div class="filaRio abajo"><button class="btn volver" type="button" data-volver>↑ Volver al mapa</button></div>
     <div id="otros"><p class="nodisp">Consultando…</p></div>
   </section>
 
@@ -956,6 +961,8 @@ function iniciarPlegables(){
   const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);verSec($(hs),true)}};
   porHash();addEventListener('hashchange',porHash);
 }
+// "Volver al mapa" en las secciones de los ríos.
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-volver]'))verSec($('t-mapa'))});
 // Lleva a una sección (y la abre si está cerrada).
 function irSec(id){abrirSec(id,true,false);verSec($(id))}
 // Lleva la pantalla hasta un elemento. Dentro del portal, si el marco no tiene barra propia, le pide al portal que baje.
