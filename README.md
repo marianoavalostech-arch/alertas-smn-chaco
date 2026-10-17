@@ -192,6 +192,8 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 **Alerta del SMN:** es un piso. Amarilla o naranja → al menos amarillo; roja → rojo.
 
+**Amarillo del mapa** (desde el 17/10/2026; pedido de Mariano): los municipios, los puntos de las localidades y la muestra de la leyenda usan `--amarillo-mapa` (#f0c419), más claro que el `--amarillo` del resto del sitio (#d99a00), porque con la transparencia del mapa el amarillo oscuro se parecía al naranja. Letras, bordes y el semáforo siguen con `--amarillo`, que se lee mejor sobre blanco.
+
 **Cómo se muestra el semáforo** (`pintarSemaforo`): primero los renglones en rojo, naranja (solo el Paraná), amarillo y gris, con su explicación; las localidades y zonas ribereñas en verde van juntas en un solo renglón, con un botón por nombre que abre su detalle. Si todo está en verde, ese renglón dice "Todo en verde".
 
 **Solo informativos (no cambian ningún color):** la lluvia medida en estaciones (detalle de cada municipio: la estación más cercana a su centro, o a la ciudad en las 6 localidades del semáforo, a menos de 50 km y con datos de las últimas 24 horas; `MEDIDA_KM`, `MEDIDA_H`) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo (aviso si el máximo del rango llega a menos de 50 cm de su nivel de alerta, o lo supera; no se usa si tiene más de 7 días).

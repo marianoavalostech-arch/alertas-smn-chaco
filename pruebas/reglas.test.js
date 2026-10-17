@@ -187,6 +187,8 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(/\.sem li\.naranja\{background:var\(--naranja-bg\)\}/.test(html) && /\.naranja \.luz\{background:var\(--naranja\)/.test(html), 'color del renglón naranja');
   assert.strictEqual((html.match(/--naranja:#[0-9a-f]{6}/g) || []).length, 1, 'naranja definido una vez (siempre claro)');
   assert.ok(!/prefers-color-scheme:\s*dark\)\s*\{/.test(html), 'sin modo oscuro: el sitio es siempre claro, como el portal');
+  // En el mapa, el amarillo es más claro que en el resto del sitio, para que no se confunda con el naranja
+  assert.ok(/--amarillo-mapa:#f0c419/.test(html) && codigo.includes("k.c==='amarillo'?'amarillo-mapa'") && codigo.includes("c==='amarillo'?'amarillo-mapa'") && /data-c="amarillo"[^>]*><i style="background:var\(--amarillo-mapa\)/.test(html), 'amarillo claro en el mapa, sus puntos y la leyenda');
   // El Paraguay no tiene naranja (no hay pronóstico en Puerto Bermejo)
   const py = codigo.slice(codigo.indexOf('function riesgoParaguay'), codigo.indexOf('/* ---------- pantalla'));
   assert.ok(py.length > 100 && !py.includes("'naranja'"));

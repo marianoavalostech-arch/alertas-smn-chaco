@@ -25,7 +25,7 @@
   --marino:#0b3158; --violeta:#5059bc; --rosa:#f26df9; --titulo:#0b3158;
   --degrade:linear-gradient(135deg,#5059bc 0%,#8d58e8 55%,#f26df9 100%);
   --fondo:linear-gradient(90deg,#f4f5fa 0%,#f7f5fa 42%,#faf3f9 72%,#fcecf9 100%);
-  --verde:#2c8a57; --amarillo:#d99a00; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
+  --verde:#2c8a57; --amarillo:#d99a00; --amarillo-mapa:#f0c419; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
   --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
   --sombra:0 1px 2px rgba(80,89,188,.06),0 8px 24px rgba(80,89,188,.08);
@@ -362,7 +362,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
       <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</button>
-      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</button>
+      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</button>
       <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja: solo en la costa del Paraná, cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es una alerta del SMN</button>
       <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte o alerta roja del SMN</button>
       <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</button>
@@ -1290,9 +1290,9 @@ function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
   // Mismo tono para todos los municipios (lluvia y SMN; en la costa del Paraná, también el río); gris = sin datos.
   M.paths.forEach((p,i)=>{const k=colorDe(i);
-    p.setAttribute('fill','var(--'+(k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
+    p.setAttribute('fill','var(--'+(k.c==='amarillo'?'amarillo-mapa':k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
     if(smnVigente()&&smnDe(i).length)p.setAttribute('data-smn','1');else p.removeAttribute('data-smn');});
-  M.puntos.forEach((p,j)=>p.setAttribute('fill','var(--'+(M.R[j]?M.R[j].c:'gris')+')'));
+  M.puntos.forEach((p,j)=>{const c=M.R[j]?M.R[j].c:'gris';p.setAttribute('fill','var(--'+(c==='amarillo'?'amarillo-mapa':c)+')')});
   resaltar();pintarInfo();
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }

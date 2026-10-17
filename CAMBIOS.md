@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa)
+
+- **El amarillo del mapa es más claro** (#f0c419 en lugar de #d99a00) en los municipios, los puntos de las localidades y la muestra de la leyenda: con la transparencia del mapa, el amarillo de antes se veía parecido al naranja. El resto del sitio (letras, bordes, semáforo) sigue con el amarillo de siempre, que se lee mejor sobre blanco. Huella nueva del código. La prueba del naranja controla también el amarillo del mapa (siguen 47). Probado en Chromium con la regla del navegador y los datos del 17/10. Pedido de Mariano.
+
 ## 17/10/2026 (`e234741`, `6c0c635` y `d0cc059`: el mapa sigue los colores del comunicado oficial por la crecida del Paraná)
 
 - **Con el renglón del Paraná fuera del verde, más municipios siguen al río hasta un techo**, como en el comunicado oficial del Gobierno del Chaco y del Comité de Emergencia del 17/10 (alerta roja por la crecida del Paraná): **Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo**. Barranqueras y Puerto Vilelas siguen al río sin techo. Isla del Cerrito antes seguía al río sin techo; Colonia Benítez llegaba solo a amarillo. El color sigue saliendo solo del INA; el sitio no copia el comunicado. Cambia la decisión del 14/10 de no pintar Resistencia (pedido de Mariano).
