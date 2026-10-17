@@ -2,7 +2,7 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 17/10/2026 (sin subir: el mapa sigue los colores del comunicado oficial por la crecida del Paraná)
+## 17/10/2026 (`e234741`, `6c0c635` y `d0cc059`: el mapa sigue los colores del comunicado oficial por la crecida del Paraná)
 
 - **Con el renglón del Paraná fuera del verde, más municipios siguen al río hasta un techo**, como en el comunicado oficial del Gobierno del Chaco y del Comité de Emergencia del 17/10 (alerta roja por la crecida del Paraná): **Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo**. Barranqueras y Puerto Vilelas siguen al río sin techo. Isla del Cerrito antes seguía al río sin techo; Colonia Benítez llegaba solo a amarillo. El color sigue saliendo solo del INA; el sitio no copia el comunicado. Cambia la decisión del 14/10 de no pintar Resistencia (pedido de Mariano).
 - Cada uno tiene su aclaración en el detalle (`RIBERA_PISO`: nombre → techo y aclaración): costa fuera de las defensas, bajos cerca del Paraguay (que con el Paraná alto baja más lento), Puerto Bermejo Viejo, la zona rural en Basail. Dice "<color> por el río Paraná (…), no por la lluvia", que las alertas oficiales por la crecida incluyen zonas del municipio y que valen los avisos del Gobierno, del municipio y de Defensa Civil.
@@ -10,7 +10,7 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 - **Rojo del Paraná también por pronóstico**: si el río ya pasó la alerta (6,00 m) y el valor más probable del INA llega a la evacuación (6,50 m), el renglón queda en rojo (antes, naranja hasta que el río medido llegara a 6,50 m). Con los datos de hoy (6,08 m; INA 7,23 m para el 20/10) Barranqueras y Puerto Vilelas quedan en rojo, como en el comunicado. "Ahora en el Chaco": "rojo según la altura de hoy y el pronóstico del INA".
 - Textos debajo del mapa y en "¿Cómo se decide el color?" al día. Huella nueva del código. Pruebas de la costa y de "Qué hacer" al día (47; la de la costa suma el caso del 17/10). Probado en Chromium con la regla del navegador y los datos del 17/10 12:51: sin rechazos. Pedido de Mariano.
 
-## 16/10/2026, noche (`ae6820e`: Colonia Benítez sigue al Paraná, como mucho en amarillo)
+## 16/10/2026, noche (`ae6820e`: Colonia Benítez sigue al Paraná, como mucho en amarillo; desde el 17/10, hasta naranja)
 
 - **Colonia Benítez pasa al menos a amarillo cuando el renglón del Paraná no está en verde** (`RIBERA_PISO` en `colorDe`). Por el río nunca pasa de amarillo; la lluvia o una alerta del SMN sí pueden subirla. Motivo: con la crecida de octubre se inunda su costa (San Pedro Pescador, Antequera) y se corta la ruta provincial 63, pero el pueblo está en zona más alta. Margarita Belén, Fontana y Resistencia siguen sin mirar el río.
 - El detalle del municipio dice "Amarillo por el río Paraná (…), no por la lluvia", con el estado del río, que es por la costa (San Pedro Pescador, Antequera y la ruta 63), que el pueblo está en zona más alta y que para caminos cortados y evacuaciones valen los avisos del municipio y de Defensa Civil. Sin la frase de las defensas (Colonia Benítez no está dentro). También se actualizaron el texto debajo del mapa y "¿Cómo se decide el color?".
