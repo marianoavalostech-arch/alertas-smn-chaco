@@ -369,7 +369,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras, Puerto Vilelas e Isla del Cerrito también mira el Paraná: queda el color más alto entre la lluvia y el río. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras, Puerto Vilelas e Isla del Cerrito también mira el Paraná: queda el color más alto entre la lluvia y el río. Colonia Benítez pasa al menos a amarillo cuando el Paraná sale del verde, por su costa. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -535,6 +535,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no. El naranja no es una alerta oficial: es lo que prevé el INA. El rojo sale solo de lo que mide el río.</li>
         <li>En el mapa, Barranqueras, Puerto Vilelas e Isla del Cerrito, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre naranja.</li>
+        <li>Colonia Benítez, por su costa sobre el Paraná (San Pedro Pescador, Antequera), pasa al menos a amarillo cuando el renglón del Paraná no está en verde. Por el río no pasa de amarillo: el pueblo está en zona más alta.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
@@ -978,6 +979,9 @@ const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
 const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
 // Costa del Paraná: en el mapa toman el color más alto entre su lluvia (con el piso del SMN) y el renglón del Paraná.
 const RIBERA=['Barranqueras','Puerto Vilelas','Isla del Cerrito'];
+// Colonia Benítez: el pueblo está en zona alta, pero su costa (San Pedro Pescador, Antequera, ruta provincial 63) no.
+// Con el renglón del Paraná fuera del verde queda al menos en amarillo; por el río nunca pasa de amarillo.
+const RIBERA_PISO=['Colonia Benítez'];
 // Sala de Situación de la Municipalidad de Puerto Vilelas: solo enlace (sus datos no son públicos para otros sitios).
 const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
 // Frase que tranquiliza cuando el Paraná sale del verde: el riesgo es solo fuera de las defensas.
@@ -985,11 +989,12 @@ const DEFENSAS='Dentro de las defensas del Gran Resistencia no hace falta hacer 
 const ETQ={verde:'Verde',amarillo:'Amarillo',naranja:'Naranja',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const sinTildes=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
-const MON={},GRANI={},RIBI={};
+const MON={},GRANI={},RIBI={},RIPI={};
 const MUNI=LOCS.map(l=>GEO.mun.findIndex(m=>m[0]===(l.mun||l.n)));   // municipio de cada localidad del semáforo
 MUNI.forEach((i,j)=>{if(i>=0)MON[i]=j});
 GRAN.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)GRANI[i]=true});
 RIBERA.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)RIBI[i]=true});
+RIBERA_PISO.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)RIPI[i]=true});
 const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false,filtro:'',antes:null};
 
 function armarMapa(){
@@ -1101,16 +1106,21 @@ function colorBase(i){
 }
 // Al color por lluvia se le aplica el piso de la alerta oficial del SMN.
 // En la costa del Paraná (RIBERA) queda el color más alto entre ese y el renglón del Paraná (amarillo, naranja o rojo).
+// En RIBERA_PISO, con el Paraná fuera del verde, al menos amarillo.
 const NIVELES=['verde','amarillo','naranja','rojo'];
 function colorDe(i){
   const k=colorBase(i),s=pisoSMN(i);
   if(s&&['verde','amarillo','rojo'].indexOf(k.c)<s.n){k.c=['','amarillo','rojo'][s.n];k.smn=s;if(k.tipo!=='seg'&&k.tipo!=='gran'&&k.tipo!=='est')k.tipo='smn'}
   if(RIBI[i]){const r=riesgoRio(),n=NIVELES.indexOf(r.c);
     if(n>0&&n>NIVELES.indexOf(k.c)){k.c=r.c;k.rio=r;if(!k.tipo)k.tipo='rio'}}
+  else if(RIPI[i]){const r=riesgoRio();
+    if(NIVELES.indexOf(r.c)>0&&NIVELES.indexOf(k.c)<1){k.c='amarillo';k.rio=r;k.piso=true;if(!k.tipo)k.tipo='rio'}}
   return k;
 }
 // Párrafo del detalle cuando el color del municipio sale del Paraná.
-const rioInfo=k=>!k.rio?'':'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
+const rioInfo=k=>!k.rio?'':k.piso?'<p><b>Amarillo por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
+  +' Es por la costa del municipio: San Pedro Pescador, Antequera y la ruta provincial 63. El pueblo está en zona más alta. Para caminos cortados y evacuaciones, valen los avisos del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
+  :'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
   +(k.rio.c==='naranja'?' El naranja no es una alerta oficial: es lo que prevé el INA.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
@@ -1154,7 +1164,7 @@ function pintarInfo(){
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Forma parte del Gran Resistencia: por la lluvia comparte su semáforo, que está en '+M.R[0].et.toLowerCase()+'. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
     h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
-     +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
+     +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
   else if(k.tipo==='rio')h='<p><span class="estado">Río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';

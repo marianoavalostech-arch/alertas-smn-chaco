@@ -193,7 +193,7 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   S(`D.prono={datos:null}`);
 });
 
-prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río', () => {
+prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río; Colonia Benítez, al menos amarillo', () => {
   const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
   const B = idx('Barranqueras'), V = idx('Puerto Vilelas'), C = idx('Isla del Cerrito'), F = idx('Fontana'), R = idx('Resistencia');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas', 'Isla del Cerrito']);
@@ -219,6 +219,21 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja: solo en la costa del Paraná[^<]*No es una alerta del SMN<\/button>/.test(html), 'leyenda');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
   assert.ok(/#mInfo\.naranja\{border-color:var\(--naranja\)\}/.test(html), 'borde del detalle');
+  // Colonia Benítez: con el Paraná fuera del verde, al menos amarillo; por el río nunca más que amarillo
+  const CB = idx('Colonia Benítez'); assert.ok(CB >= 0);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA_PISO'))), ['Colonia Benítez']);
+  const cb = (lluvia, obs, prono) => { col(lluvia, obs, prono); return JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,!!k.piso,rioInfo(k)]))(colorDe(${CB}))`)); };
+  let r = cb('verde', obs13, pr13);   // río en naranja (caso real del 13/10)
+  assert.deepStrictEqual(r.slice(0, 3), ['amarillo', true, true]);
+  assert.ok(r[3].includes('Amarillo por el río Paraná') && r[3].includes('San Pedro Pescador') && r[3].includes('#t-rio') && !r[3].includes('defensas'), r[3]);
+  assert.deepStrictEqual(cb('verde', [['2026-10-13', 6.6]]).slice(0, 2), ['amarillo', true]);   // río en rojo: igual amarillo
+  assert.deepStrictEqual(cb('rojo', obs13, pr13).slice(0, 2), ['rojo', false]);                // la lluvia en rojo gana
+  assert.deepStrictEqual(cb('amarillo', obs13, pr13).slice(0, 2), ['amarillo', false]);        // ya amarillo por lluvia: no cambia
+  assert.deepStrictEqual(cb('verde', [['2026-10-13', 4.0]]).slice(0, 2), ['verde', false]);     // río en verde: nada
+  assert.deepStrictEqual(cb(null, obs13, pr13).slice(0, 2), ['amarillo', true]);               // sin lluvia todavía
+  // Margarita Belén, Fontana y Resistencia no siguen al río
+  assert.deepStrictEqual(col('verde', obs13, pr13).slice(3).map(x => x[0]), ['verde', 'verde']);
+  assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(GEO.mun.findIndex(m=>m[0]==='Margarita Belén')).c)`)), 'verde');
   S(`D.prono={datos:null};M.R=[];M.est={};M.todos=''`);
 });
 

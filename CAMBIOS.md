@@ -2,7 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 16/10/2026 (sin subir: botón "Compartir" e imagen nueva para las redes)
+## 16/10/2026, noche (sin subir: Colonia Benítez sigue al Paraná, como mucho en amarillo)
+
+- **Colonia Benítez pasa al menos a amarillo cuando el renglón del Paraná no está en verde** (`RIBERA_PISO` en `colorDe`). Por el río nunca pasa de amarillo; la lluvia o una alerta del SMN sí pueden subirla. Motivo: con la crecida de octubre se inunda su costa (San Pedro Pescador, Antequera) y se corta la ruta provincial 63, pero el pueblo está en zona más alta. Margarita Belén, Fontana y Resistencia siguen sin mirar el río.
+- El detalle del municipio dice "Amarillo por el río Paraná (…), no por la lluvia", con el estado del río, que es por la costa (San Pedro Pescador, Antequera y la ruta 63), que el pueblo está en zona más alta y que para caminos cortados y evacuaciones valen los avisos del municipio y de Defensa Civil. Sin la frase de las defensas (Colonia Benítez no está dentro). También se actualizaron el texto debajo del mapa y "¿Cómo se decide el color?".
+- Huella nueva del código. La prueba de la costa suma Colonia Benítez (amarillo con el río en naranja o en rojo, la lluvia en rojo gana, río verde no cambia nada, sin lluvia igual pinta; Margarita Belén no cambia). 47 pruebas. Probado en Chromium con la regla del navegador y los datos del 16/10 21:51 (Paraná 6,08 m, INA 7,23 m para el 20/10): Colonia Benítez en amarillo, Margarita Belén y Resistencia en verde, sin rechazos. Pedido de Mariano.
+
+## 16/10/2026 (`5d542a5` y `0c1dccf`: botón "Compartir", imagen nueva y cartel de datos viejos)
 
 - **Botón "Compartir"** en el encabezado, al lado de "Instalar app", con el mismo estilo (borde violeta) y un ícono de tres puntos unidos. En el celular abre el menú de compartir del teléfono (WhatsApp, Facebook, mensajes…); en la computadora muestra "Enviar por WhatsApp" y "Copiar enlace". Comparte la dirección del sitio con una frase corta y tranquila. No manda nada automático. Se ve también en la app instalada; no dentro del portal ni al imprimir.
 - **Imagen nueva para las redes** (`compartir.png?v=7`, antes `?v=6` con los colores viejos): fondo lavanda-rosado, franja del degradado, tarjeta blanca con el ícono de la app, título en Kanit, subtítulo y dirección del sitio. La dibuja el guion nuevo `herramientas/compartir.py`. WhatsApp y otras redes pueden tardar en mostrar la nueva en enlaces ya compartidos.
