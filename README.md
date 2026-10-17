@@ -198,6 +198,8 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 **Solo informativos (no cambian ningún color):** la lluvia medida en estaciones (detalle de cada municipio: la estación más cercana a su centro, o a la ciudad en las 6 localidades del semáforo, a menos de 50 km y con datos de las últimas 24 horas; `MEDIDA_KM`, `MEDIDA_H`) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo (aviso si el máximo del rango llega a menos de 50 cm de su nivel de alerta, o lo supera; no se usa si tiene más de 7 días).
 
+**Tocar un río en el mapa** (desde el 17/10/2026; pedido de Mariano): la página no salta sola a la sección del río. En el celular, si a menos de unos 8 píxeles del toque hay un municipio, se elige el municipio (`munCerca`); si no, el río queda marcado y el cuadro de abajo del mapa dice cuál es, con el botón "Ver el río … ↓" para ir a su altura (`verRio`). Con el mouse, tocar el río o su nombre muestra ese mismo cuadro.
+
 **Ríos** (renglones propios en el semáforo; el del Paraná también pinta la costa en el mapa, ver abajo):
 
 | Río | Estación (serie INA) | Amarillo | Naranja | Rojo |

@@ -162,7 +162,8 @@ footer{font-size:.85rem;color:var(--muted)}
 #mapa .ov{fill:none;pointer-events:none;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 #mapa .rio{fill:none;pointer-events:none;stroke:var(--water);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 #mapa .rioT{fill:none;stroke:var(--water);stroke-opacity:0;stroke-width:28;stroke-linecap:round;stroke-linejoin:round;pointer-events:stroke;cursor:pointer;vector-effect:non-scaling-stroke}
-#mapa .rioT:hover{stroke-opacity:.25}
+#mapa .rioT:hover,#mapa .rioT.sel{stroke-opacity:.25}
+.irRio{align-self:flex-start;font-weight:700}
 #mapa g[data-rio]{pointer-events:auto;cursor:pointer}
 #mTip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-150%);z-index:2}
 .leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
@@ -191,7 +192,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
 .irmun{font:inherit;font-weight:700;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
-#mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
+#mInfo.rio{border-color:var(--water)}#mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
 /* qué hacer ante una alerta: franja "Ahora en el Chaco", teléfonos para tocar, tarjetas por situación, mochila para tildar */
 .hEt{font-weight:700;margin-bottom:8px}
 .hEt .meta{font-weight:400;margin-left:4px}
@@ -1015,7 +1016,7 @@ MUNI.forEach((i,j)=>{if(i>=0)MON[i]=j});
 GRAN.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)GRANI[i]=true});
 RIBERA.forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)RIBI[i]=true});
 Object.keys(RIBERA_PISO).forEach(n=>{const i=GEO.mun.findIndex(m=>m[0]===n);if(i>=0)RIPI[i]=n});
-const M={vb:{...BASE},sel:-1,R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false,filtro:'',antes:null};
+const M={vb:{...BASE},sel:-1,rio:null,tipo:'',R:[],est:{},pts:new Map(),activo:false,movio:false,anim:0,todos:'',ok:false,filtro:'',antes:null};
 
 function armarMapa(){
   const caja=$('mapa'),borde='paint-order:stroke;stroke:var(--card);stroke-linejoin:round;';
@@ -1045,7 +1046,7 @@ function armarMapa(){
   $('mLista').innerHTML=GEO.mun.map(m=>'<option value="'+esc(m[0])+'">').join('');
 
   const soltar=e=>{M.pts.delete(e.pointerId);if(!M.pts.size)svg.classList.remove('arrastra')};
-  svg.addEventListener('pointerdown',e=>{M.activo=true;M.movio=false;M.pts.set(e.pointerId,[e.clientX,e.clientY])});
+  svg.addEventListener('pointerdown',e=>{M.activo=true;M.movio=false;M.tipo=e.pointerType;M.pts.set(e.pointerId,[e.clientX,e.clientY])});
   svg.addEventListener('pointermove',e=>{
     const p=M.pts.get(e.pointerId);
     if(!p){if(e.pointerType==='mouse')sobre(e);return}
@@ -1064,7 +1065,11 @@ function armarMapa(){
   svg.addEventListener('pointerup',soltar);svg.addEventListener('pointercancel',soltar);
   svg.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){M.activo=false;sobre(null)}});
   svg.addEventListener('click',e=>{if(M.movio){M.movio=false;return}
-    if(e.target.closest('[data-rio]')){irSec(e.target.closest('[data-rio]').dataset.ir||'t-rio');return}
+    // Tocar un río no salta de golpe: en el celular, si hay un municipio a un dedo de distancia, gana el municipio;
+    // si no, el detalle de abajo muestra el río con un botón para ir a su altura.
+    const rr=e.target.closest('[data-rio]');
+    if(rr){if(M.tipo!=='mouse'&&rr.classList.contains('rioT')){const j=munCerca(e.clientX,e.clientY);if(j>=0){elegir(j===M.sel?-1:j,j!==M.sel);return}}
+      verRio(rr.dataset.rio,rr.dataset.ir||'t-rio');return}
     if(e.detail>1)return;   // el segundo toque de un doble toque solo acerca
     const t=e.target.closest('[data-m]'),i=t?+t.dataset.m:-1;elegir(i===M.sel?-1:i,i!==M.sel)});
   svg.addEventListener('dblclick',e=>{e.preventDefault();const c=aSvg(e.clientX,e.clientY);zoom(2,c[0],c[1],true)});
@@ -1081,9 +1086,9 @@ function armarMapa(){
   $('sem').addEventListener('click',e=>{const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
     if(i>=0){elegir(i,true);verSec($('t-mapa'))}});
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
-  const soltarFoco=()=>{if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
-  $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]');
-    if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
+  const soltarFoco=()=>{if(M.rio)verRio(null);else if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
+  $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
+    if(rv)irSec(rv.dataset.irrio);else if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
   addEventListener('resize',()=>aplicar(M.vb));
   M.ok=true;aplicar({...BASE});
@@ -1151,7 +1156,19 @@ function sobre(e){
   tip.hidden=false;
   tip.style.left=Math.min(r.width-70,Math.max(70,e.clientX-r.left))+'px';tip.style.top=Math.max(34,e.clientY-r.top)+'px';
 }
+// Municipio más cercano al toque (hasta unos 8 px), para cuando el dedo cae sobre la franja del río.
+function munCerca(x,y){
+  for(const r of [0,4,8])for(let a=0;a<(r?8:1);a++){const px=x+r*Math.cos(a*Math.PI/4),py=y+r*Math.sin(a*Math.PI/4);
+    const el=document.elementsFromPoint(px,py).find(n=>n.matches&&n.matches('#mapa path.mun'));if(el)return +el.dataset.m}
+  return -1}
+// Río tocado en el mapa: se marca y el detalle ofrece ir a su altura (null lo quita).
+function verRio(n,ir){
+  if(n&&M.sel>=0)elegir(-1);
+  M.rio=n?{n,ir}:null;
+  M.svg.querySelectorAll('.rioT').forEach(p=>p.classList.toggle('sel',!!n&&p.dataset.rio===n));
+  pintarInfo()}
 function elegir(i,enf){
+  if(M.rio){M.rio=null;M.svg.querySelectorAll('.rioT.sel').forEach(p=>p.classList.remove('sel'))}
   const habia=M.sel>=0;
   if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
@@ -1166,6 +1183,7 @@ function resaltar(){
   M.paths.forEach((p,i)=>p.classList.toggle('on',hay&&(i===M.sel||enFiltro(i))));
 }
 function filtrar(c){
+  if(M.rio)verRio(null);
   M.filtro=M.filtro===c?'':c;
   document.querySelectorAll('.ley').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===M.filtro));
   if(M.sel>=0){M.antes=null;elegir(-1)}else{resaltar();pintarInfo()}
@@ -1178,6 +1196,10 @@ function pintarInfo(){
     el.className=f==='gris'?'':f;
     el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+(L.length?L.length+(L.length===1?' municipio ':' municipios ')+en:'Ningún municipio '+en+' ahora')+'</b>'+x+'</div>'
      +(L.length?'<div>'+L.map(j=>'<button class="irmun" type="button" data-ir="'+j+'">'+esc(GEO.mun[j][0])+'</button>').join('')+'</div>':'');return}
+  if(i<0&&M.rio){const n=M.rio.n;el.className='rio';
+    el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem;color:var(--water)">'+esc(n)+'</b>'+x.replace('Quitar el filtro de color','Quitar la selección')+'</div>'
+     +'<p>La altura, el pronóstico y los niveles de alerta del '+esc(n.replace('Río','río'))+' están más abajo. Si querías ver un municipio, tocalo un poco más adentro del mapa.</p>'
+     +'<button class="btn irRio" type="button" data-irrio="'+M.rio.ir+'">Ver el '+esc(n.replace('Río','río'))+' ↓</button>';return}
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
   if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
