@@ -2,7 +2,9 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa)
+## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa y "solo claro")
+
+- **Pide a los navegadores que no lo oscurezcan solos**: en algunos celulares los colores se veían oscuros por el modo oscuro automático del navegador. Ahora la página declara "solo claro" (`color-scheme: only light`, en el encabezado y en los estilos), que es lo que pide Chrome para no tocarla. Samsung Internet con su modo oscuro prendido puede oscurecerla igual (no da forma de evitarlo). La huella del código no cambia. Prueba nueva dentro de la del naranja (siguen 47). Pedido de Mariano.
 
 - **El amarillo del mapa es más claro** (#f0c419 en lugar de #d99a00) en los municipios, los puntos de las localidades y la muestra de la leyenda: con la transparencia del mapa, el amarillo de antes se veía parecido al naranja. El resto del sitio (letras, bordes, semáforo) sigue con el amarillo de siempre, que se lee mejor sobre blanco. Huella nueva del código. La prueba del naranja controla también el amarillo del mapa (siguen 47). Probado en Chromium con la regla del navegador y los datos del 17/10. Pedido de Mariano.
 
