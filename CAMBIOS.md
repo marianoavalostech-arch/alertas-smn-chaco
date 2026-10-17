@@ -2,11 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 17/10/2026 (sin subir: más zonas bajas siguen al Paraná, como mucho en amarillo)
+## 17/10/2026 (sin subir: el mapa sigue los colores del comunicado oficial por la crecida del Paraná)
 
-- **La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail pasan al menos a amarillo cuando el renglón del Paraná no está en verde**, igual que Colonia Benítez. Por el río nunca pasan de amarillo. Motivo: el comunicado oficial del Gobierno del Chaco del 17/10 (alerta roja por la crecida del Paraná) los pone en alerta amarilla por sus zonas bajas. El color sigue saliendo solo del INA; el sitio no copia el comunicado.
-- Cada uno tiene su aclaración en el detalle (`RIBERA_PISO` pasa a ser una lista nombre → aclaración): costa y bajos cerca del Paraguay (que con el Paraná alto baja más lento), Puerto Bermejo Viejo, los ríos Paraguay y Bermejo en General Vedia, la zona rural en Basail. El detalle agrega que las alertas oficiales por la crecida incluyen zonas del municipio y remite a los avisos del Gobierno, del municipio y de Defensa Civil. Textos debajo del mapa y en "¿Cómo se decide el color?" al día.
-- Huella nueva del código. La prueba de la costa suma los cinco municipios (amarillo con su aclaración). 47 pruebas. Probado en Chromium con la regla del navegador y los datos del 17/10 12:51: sin rechazos. Pedido de Mariano.
+- **Con el renglón del Paraná fuera del verde, más municipios siguen al río hasta un techo**, como en el comunicado oficial del Gobierno del Chaco y del Comité de Emergencia del 17/10 (alerta roja por la crecida del Paraná): **Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo**. Barranqueras y Puerto Vilelas siguen al río sin techo. Isla del Cerrito antes seguía al río sin techo; Colonia Benítez llegaba solo a amarillo. El color sigue saliendo solo del INA; el sitio no copia el comunicado. Cambia la decisión del 14/10 de no pintar Resistencia (pedido de Mariano).
+- Cada uno tiene su aclaración en el detalle (`RIBERA_PISO`: nombre → techo y aclaración): costa fuera de las defensas, bajos cerca del Paraguay (que con el Paraná alto baja más lento), Puerto Bermejo Viejo, la zona rural en Basail. Dice "<color> por el río Paraná (…), no por la lluvia", que las alertas oficiales por la crecida incluyen zonas del municipio y que valen los avisos del Gobierno, del municipio y de Defensa Civil.
+- **Sin "no hace falta hacer nada"**: la frase de las defensas (`DEFENSAS`) dice "Dentro de las defensas del Gran Resistencia el agua del río queda afuera: protegen hasta unos 9,50 m. Igual, seguí los avisos oficiales.", y la tarjeta "Crecida del río" empieza con "Si vivís dentro de las defensas, el agua del río queda afuera". En el detalle del naranja de la costa: "El naranja sale de lo que prevé el INA, no de una alerta del SMN".
+- Textos debajo del mapa y en "¿Cómo se decide el color?" al día. Huella nueva del código. Pruebas de la costa y de "Qué hacer" al día (47). Probado en Chromium con la regla del navegador y los datos del 17/10 12:51: sin rechazos. Pedido de Mariano.
 
 ## 16/10/2026, noche (`ae6820e`: Colonia Benítez sigue al Paraná, como mucho en amarillo)
 

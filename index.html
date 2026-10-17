@@ -369,7 +369,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras, Puerto Vilelas e Isla del Cerrito también mira el Paraná: queda el color más alto entre la lluvia y el río. Colonia Benítez, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail pasan al menos a amarillo cuando el Paraná sale del verde, por sus zonas bajas. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Resistencia, Margarita Belén y Colonia Benítez lo siguen hasta naranja, e Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -428,7 +428,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <details id="h-rio" data-h="rio" name="hacer">
           <summary><span class="ico" aria-hidden="true">🌊</span><span class="nom">Crecida del río</span><span class="rige" hidden></span></summary>
           <ul>
-            <li><b>Si vivís dentro de las defensas, no hace falta hacer nada.</b> Las defensas del Gran Resistencia protegen hasta unos 9,50 m. Lo que sigue es para las islas y la costa fuera de las defensas.</li>
+            <li><b>Si vivís dentro de las defensas, el agua del río queda afuera.</b> Las defensas del Gran Resistencia protegen hasta unos 9,50 m. Igual, seguí los avisos oficiales. Lo que sigue es para las islas y la costa fuera de las defensas.</li>
             <li><b>Tené lista la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button>.</b> Si te dicen que salgas, salí con tiempo: no esperes a que el agua llegue a la puerta.</li>
             <li><b>Si tenés animales</b> (gallinas, chanchos, caballos, perros), pensá antes adónde llevarlos y sacalos con tiempo.</li>
             <li><b>Si entra agua a tu casa:</b> bajá la llave de la luz, cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
@@ -534,8 +534,8 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no. El naranja no es una alerta oficial: es lo que prevé el INA. El rojo sale solo de lo que mide el río.</li>
-        <li>En el mapa, Barranqueras, Puerto Vilelas e Isla del Cerrito, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre naranja.</li>
-        <li>Colonia Benítez, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail pasan al menos a amarillo cuando el renglón del Paraná no está en verde: las alertas oficiales por la crecida incluyen sus zonas bajas (costa, bajos cerca del Paraguay o zona rural). Por el río no pasan de amarillo: los pueblos están más altos o lejos del agua. El detalle de cada uno dice qué zona es.</li>
+        <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre rojo por el río.</li>
+        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
@@ -978,20 +978,23 @@ const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
   return {bermejo:t(0,1112),paraguay:t(1112,1189),parana:t(1189,1241)}})();
 const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
 // Costa del Paraná: en el mapa toman el color más alto entre su lluvia (con el piso del SMN) y el renglón del Paraná.
-const RIBERA=['Barranqueras','Puerto Vilelas','Isla del Cerrito'];
-// Municipios con zonas bajas que las alertas oficiales por la crecida del Paraná incluyen, pero con el pueblo más alto o lejos del río.
-// Con el renglón del Paraná fuera del verde quedan al menos en amarillo; por el río nunca pasan de amarillo. Cada uno con su aclaración.
+const RIBERA=['Barranqueras','Puerto Vilelas'];
+// Municipios con zonas que las alertas oficiales por la crecida del Paraná incluyen (comunicado del Gobierno del Chaco del 17/10/2026).
+// Con el renglón del Paraná fuera del verde siguen al río, pero por el río no pasan de su techo (t), como en el comunicado. Cada uno con su aclaración (x).
 const RIBERA_PISO={
-  'Colonia Benítez':'Es por la costa del municipio: San Pedro Pescador, Antequera y la ruta provincial 63. El pueblo está en zona más alta.',
-  'La Leonesa':'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.',
-  'Las Palmas':'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.',
-  'Puerto Bermejo':'Es por la costa, Puerto Bermejo Viejo y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.',
-  'General Vedia':'Es por los bajos cerca de los ríos Paraguay y Bermejo: con el Paraná alto, el agua baja más lento.',
-  'Basail':'Es por la zona rural baja del municipio, no por el pueblo.'};
+  'Resistencia':{t:'naranja',x:'Es por las zonas de la costa fuera de las defensas.'},
+  'Margarita Belén':{t:'naranja',x:'Es por las zonas bajas cerca del Paraná y los riachos, lejos del pueblo.'},
+  'Colonia Benítez':{t:'naranja',x:'Es por la costa del municipio: San Pedro Pescador, Antequera y la ruta provincial 63. El pueblo está en zona más alta.'},
+  'Isla del Cerrito':{t:'amarillo',x:'Es por las zonas bajas de la costa del municipio.'},
+  'La Leonesa':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
+  'Las Palmas':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
+  'Puerto Bermejo':{t:'amarillo',x:'Es por la costa, Puerto Bermejo Viejo y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
+  'General Vedia':{t:'amarillo',x:'Es por los bajos cerca de los ríos Paraguay y Bermejo: con el Paraná alto, el agua baja más lento.'},
+  'Basail':{t:'amarillo',x:'Es por la zona rural baja del municipio, no por el pueblo.'}};
 // Sala de Situación de la Municipalidad de Puerto Vilelas: solo enlace (sus datos no son públicos para otros sitios).
 const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
-// Frase que tranquiliza cuando el Paraná sale del verde: el riesgo es solo fuera de las defensas.
-const DEFENSAS='Dentro de las defensas del Gran Resistencia no hace falta hacer nada: protegen hasta unos 9,50 m.';
+// Frase cuando el Paraná sale del verde: el agua del río queda afuera de las defensas, pero valen los avisos oficiales.
+const DEFENSAS='Dentro de las defensas del Gran Resistencia el agua del río queda afuera: protegen hasta unos 9,50 m. Igual, seguí los avisos oficiales.';
 const ETQ={verde:'Verde',amarillo:'Amarillo',naranja:'Naranja',rojo:'Rojo',gris:'Sin datos'};
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const sinTildes=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
@@ -1112,22 +1115,22 @@ function colorBase(i){
 }
 // Al color por lluvia se le aplica el piso de la alerta oficial del SMN.
 // En la costa del Paraná (RIBERA) queda el color más alto entre ese y el renglón del Paraná (amarillo, naranja o rojo).
-// En RIBERA_PISO, con el Paraná fuera del verde, al menos amarillo.
+// En RIBERA_PISO, con el Paraná fuera del verde, sigue al río hasta su techo (amarillo o naranja).
 const NIVELES=['verde','amarillo','naranja','rojo'];
 function colorDe(i){
   const k=colorBase(i),s=pisoSMN(i);
   if(s&&['verde','amarillo','rojo'].indexOf(k.c)<s.n){k.c=['','amarillo','rojo'][s.n];k.smn=s;if(k.tipo!=='seg'&&k.tipo!=='gran'&&k.tipo!=='est')k.tipo='smn'}
   if(RIBI[i]){const r=riesgoRio(),n=NIVELES.indexOf(r.c);
     if(n>0&&n>NIVELES.indexOf(k.c)){k.c=r.c;k.rio=r;if(!k.tipo)k.tipo='rio'}}
-  else if(RIPI[i]){const r=riesgoRio();
-    if(NIVELES.indexOf(r.c)>0&&NIVELES.indexOf(k.c)<1){k.c='amarillo';k.rio=r;k.piso=RIPI[i];if(!k.tipo)k.tipo='rio'}}
+  else if(RIPI[i]){const r=riesgoRio(),n=Math.min(NIVELES.indexOf(r.c),NIVELES.indexOf(RIBERA_PISO[RIPI[i]].t));
+    if(n>0&&n>NIVELES.indexOf(k.c)){k.c=NIVELES[n];k.rio=r;k.piso=RIPI[i];if(!k.tipo)k.tipo='rio'}}
   return k;
 }
 // Párrafo del detalle cuando el color del municipio sale del Paraná.
-const rioInfo=k=>!k.rio?'':k.piso?'<p><b>Amarillo por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
-  +' '+RIBERA_PISO[k.piso]+' Las alertas oficiales por la crecida del Paraná incluyen zonas de este municipio. Para caminos cortados y evacuaciones, valen los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
+const rioInfo=k=>!k.rio?'':k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
+  +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' '+DEFENSAS.replace(' Igual, seguí los avisos oficiales.',''):'')+' Las alertas oficiales por la crecida del Paraná incluyen zonas de este municipio. Para caminos cortados y evacuaciones, valen los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
-  +(k.rio.c==='naranja'?' El naranja no es una alerta oficial: es lo que prevé el INA.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
+  +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
   if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}

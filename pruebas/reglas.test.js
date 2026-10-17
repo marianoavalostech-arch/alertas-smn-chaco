@@ -193,10 +193,10 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   S(`D.prono={datos:null}`);
 });
 
-prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río; Colonia Benítez y las zonas bajas, al menos amarillo', () => {
+prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el río; los demás municipios con zonas bajas lo siguen hasta su techo', () => {
   const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
   const B = idx('Barranqueras'), V = idx('Puerto Vilelas'), C = idx('Isla del Cerrito'), F = idx('Fontana'), R = idx('Resistencia');
-  assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas', 'Isla del Cerrito']);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(S('RIBERA'))), ['Barranqueras', 'Puerto Vilelas']);
   assert.ok([B, V, C, F, R].every(i => i >= 0));
   const col = (lluvia, obs, prono) => JSON.parse(S(`hoy='2026-10-13';LISTO=true;SMN=SMN_VACIO;
     D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};
@@ -206,42 +206,45 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   const obs13 = [['2026-10-06', 4.27], ['2026-10-10', 4.88], ['2026-10-13', 5.27]];
   const pr13 = { emitido: '2026-10-13T03:00:00.000Z', p: [['2026-10-13', 5.2, 5.3, 5.4], ['2026-10-20', 6.75, 7.3, 7.55]] };
   // Caso real del 13/10: el renglón del Paraná en naranja pinta la costa; Fontana y Resistencia siguen con su lluvia
-  assert.deepStrictEqual(col('verde', obs13, pr13), [['naranja', 'gran', true], ['naranja', 'gran', true], ['naranja', 'est', true], ['verde', 'gran', false], ['verde', 'seg', false]]);
+  assert.deepStrictEqual(col('verde', obs13, pr13), [['naranja', 'gran', true], ['naranja', 'gran', true], ['amarillo', 'est', true], ['verde', 'gran', false], ['naranja', 'seg', true]]);
   // La lluvia en rojo gana al naranja del río
-  assert.deepStrictEqual(col('rojo', obs13, pr13).slice(0, 3).map(x => x[0] + x[2]), ['rojofalse', 'rojofalse', 'rojofalse']);
+  assert.deepStrictEqual(col('rojo', obs13, pr13).map(x => x[0] + x[2]), ['rojofalse', 'rojofalse', 'rojofalse', 'rojofalse', 'rojofalse']);
   // Río en verde: no cambia nada
   assert.deepStrictEqual(col('amarillo', [['2026-10-13', 4.0]]).slice(0, 3).map(x => x[0] + x[2]), ['amarillofalse', 'amarillofalse', 'amarillofalse']);
   // Río sobre la evacuación: rojo aunque la lluvia esté en amarillo
-  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).slice(0, 3).map(x => x[0]), ['rojo', 'rojo', 'rojo']);
+  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).map(x => x[0]), ['rojo', 'rojo', 'amarillo', 'amarillo', 'naranja']);   // Isla del Cerrito y Resistencia, con techo
   // Sin datos de lluvia todavía, el río igual pinta la costa
-  assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
+  assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'amarillorio']);
   // Leyenda con el naranja, aclarando que no es una alerta del SMN
   assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja: solo en la costa del Paraná[^<]*No es una alerta del SMN<\/button>/.test(html), 'leyenda');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
   assert.ok(/#mInfo\.naranja\{border-color:var\(--naranja\)\}/.test(html), 'borde del detalle');
   // Colonia Benítez: con el Paraná fuera del verde, al menos amarillo; por el río nunca más que amarillo
   const CB = idx('Colonia Benítez'); assert.ok(CB >= 0);
-  assert.deepStrictEqual(Object.keys(JSON.parse(JSON.stringify(S('RIBERA_PISO')))), ['Colonia Benítez', 'La Leonesa', 'Las Palmas', 'Puerto Bermejo', 'General Vedia', 'Basail']);
+  const RP = JSON.parse(JSON.stringify(S('RIBERA_PISO')));
+  assert.deepStrictEqual(Object.keys(RP).map(n => n + ':' + RP[n].t), ['Resistencia:naranja', 'Margarita Belén:naranja', 'Colonia Benítez:naranja', 'Isla del Cerrito:amarillo', 'La Leonesa:amarillo', 'Las Palmas:amarillo', 'Puerto Bermejo:amarillo', 'General Vedia:amarillo', 'Basail:amarillo']);
   assert.ok(Object.keys(S('RIBERA_PISO')).every(n => idx(n) >= 0), 'todos están en el mapa');
   const cb = (lluvia, obs, prono) => { col(lluvia, obs, prono); return JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,!!k.piso,rioInfo(k)]))(colorDe(${CB}))`)); };
-  let r = cb('verde', obs13, pr13);   // río en naranja (caso real del 13/10)
-  assert.deepStrictEqual(r.slice(0, 3), ['amarillo', true, true]);
-  assert.ok(r[3].includes('Amarillo por el río Paraná') && r[3].includes('San Pedro Pescador') && r[3].includes('#t-rio') && !r[3].includes('defensas'), r[3]);
+  let r = cb('verde', obs13, pr13);   // río en naranja (caso real del 13/10): Colonia Benítez llega a naranja
+  assert.deepStrictEqual(r.slice(0, 3), ['naranja', true, true]);
+  assert.ok(r[3].includes('Naranja por el río Paraná') && r[3].includes('San Pedro Pescador') && r[3].includes('#t-rio') && !r[3].includes('defensas'), r[3]);
   // Los demás municipios con zonas bajas: amarillo con su propia aclaración
   for (const [n, z] of [['La Leonesa', 'río Paraguay'], ['Puerto Bermejo', 'Puerto Bermejo Viejo'], ['Basail', 'zona rural'], ['General Vedia', 'Bermejo'], ['Las Palmas', 'río Paraguay']]) {
     const q = JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,rioInfo(k)]))(colorDe(${idx(n)}))`));
-    assert.deepStrictEqual(q.slice(0, 2), ['amarillo', true], n);
+    assert.deepStrictEqual(q.slice(0, 2), ['amarillo', true], n);   // río en naranja: techo amarillo
     assert.ok(q[2].includes(z) && q[2].includes('alertas oficiales') && !q[2].includes('San Pedro'), n + ': ' + q[2]);
   }
   assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(${idx('Basail')}).c)`)), 'amarillo');
-  assert.deepStrictEqual(cb('verde', [['2026-10-13', 6.6]]).slice(0, 2), ['amarillo', true]);   // río en rojo: igual amarillo
+  assert.deepStrictEqual(cb('verde', [['2026-10-13', 6.6]]).slice(0, 2), ['naranja', true]);   // río en rojo: hasta naranja
   assert.deepStrictEqual(cb('rojo', obs13, pr13).slice(0, 2), ['rojo', false]);                // la lluvia en rojo gana
-  assert.deepStrictEqual(cb('amarillo', obs13, pr13).slice(0, 2), ['amarillo', false]);        // ya amarillo por lluvia: no cambia
+  assert.deepStrictEqual(cb('amarillo', obs13, pr13).slice(0, 2), ['naranja', true]);          // amarillo por lluvia: el río la sube a naranja
   assert.deepStrictEqual(cb('verde', [['2026-10-13', 4.0]]).slice(0, 2), ['verde', false]);     // río en verde: nada
-  assert.deepStrictEqual(cb(null, obs13, pr13).slice(0, 2), ['amarillo', true]);               // sin lluvia todavía
-  // Margarita Belén, Fontana y Resistencia no siguen al río
-  assert.deepStrictEqual(col('verde', obs13, pr13).slice(3).map(x => x[0]), ['verde', 'verde']);
-  assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(GEO.mun.findIndex(m=>m[0]==='Margarita Belén')).c)`)), 'verde');
+  assert.deepStrictEqual(cb(null, obs13, pr13).slice(0, 2), ['naranja', true]);                // sin lluvia todavía
+  // Fontana no sigue al río; Resistencia y Margarita Belén, hasta naranja; Resistencia dice lo de las defensas
+  assert.deepStrictEqual(col('verde', obs13, pr13).slice(3).map(x => x[0]), ['verde', 'naranja']);
+  assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(GEO.mun.findIndex(m=>m[0]==='Margarita Belén')).c)`)), 'naranja');
+  const rs = JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${R})))`));
+  assert.ok(rs.includes('fuera de las defensas') && rs.includes('el agua del río queda afuera') && !rs.includes('no hace falta hacer nada'), rs);
   S(`D.prono={datos:null};M.R=[];M.est={};M.todos=''`);
 });
 
@@ -845,8 +848,8 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
     // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas, en la franja y en su tarjeta
     const hh = {}; elementos.hHoy = hh; S('pintarHacer()'); delete elementos.hHoy;
-    assert.ok(hh.innerHTML.includes(S('DEFENSAS')), 'la franja dice que dentro de las defensas no hace falta hacer nada');
-    assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, no hace falta hacer nada/.test(html));
+    assert.ok(hh.innerHTML.includes(S('DEFENSAS')) && S('DEFENSAS').includes('avisos oficiales') && !S('DEFENSAS').includes('no hace falta'), 'la franja dice que el agua del río queda afuera de las defensas y que valen los avisos oficiales');
+    assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, el agua del río queda afuera/.test(html) && !/no hace falta hacer nada/.test(html));
     assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');
     // sin alertas y con el informe al día: "no hay"; con el informe viejo o vacío del canal: no se puede confirmar
     S('riesgoRio=()=>({c:"verde"});SMN.alertas={};SMN.areas.forEach(a=>{SMN.alertas[a]=[]})');
