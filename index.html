@@ -370,7 +370,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Resistencia, Margarita Belén y Colonia Benítez lo siguen hasta naranja, e Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez lo sigue hasta rojo, Resistencia, Margarita Belén e Isla del Cerrito hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -536,7 +536,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
         <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre rojo por el río.</li>
-        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Resistencia, Margarita Belén y Colonia Benítez hasta naranja; Isla del Cerrito, La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
+        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Colonia Benítez hasta rojo (por San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa); Resistencia, Margarita Belén e Isla del Cerrito hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
@@ -988,8 +988,8 @@ const RIBERA=['Barranqueras','Puerto Vilelas'];
 const RIBERA_PISO={
   'Resistencia':{t:'naranja',x:'Es por las zonas de la costa fuera de las defensas.'},
   'Margarita Belén':{t:'naranja',x:'Es por las zonas bajas cerca del Paraná y los riachos, lejos del pueblo.'},
-  'Colonia Benítez':{t:'naranja',x:'Es por la costa del municipio: San Pedro Pescador, Antequera y la ruta provincial 63. El pueblo está en zona más alta.'},
-  'Isla del Cerrito':{t:'amarillo',x:'Es por las zonas bajas de la costa del municipio.'},
+  'Colonia Benítez':{t:'rojo',x:'Es por la costa del municipio: San Pedro Pescador y Puerto Antequeras, que están fuera del cordón de defensa, y la ruta provincial 63. El pueblo está en zona más alta.'},
+  'Isla del Cerrito':{t:'naranja',x:'Es por las zonas bajas de la costa del municipio.'},
   'La Leonesa':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
   'Las Palmas':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
   'Puerto Bermejo':{t:'amarillo',x:'Es por la costa, Puerto Bermejo Viejo y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
@@ -1119,7 +1119,7 @@ function colorBase(i){
 }
 // Al color por lluvia se le aplica el piso de la alerta oficial del SMN.
 // En la costa del Paraná (RIBERA) queda el color más alto entre ese y el renglón del Paraná (amarillo, naranja o rojo).
-// En RIBERA_PISO, con el Paraná fuera del verde, sigue al río hasta su techo (amarillo o naranja).
+// En RIBERA_PISO, con el Paraná fuera del verde, sigue al río hasta su techo (amarillo, naranja o rojo).
 const NIVELES=['verde','amarillo','naranja','rojo'];
 function colorDe(i){
   const k=colorBase(i),s=pisoSMN(i);

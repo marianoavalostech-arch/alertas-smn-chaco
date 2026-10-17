@@ -2,7 +2,9 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa y "solo claro")
+## 17/10/2026, tarde (sin subir: amarillo más claro en el mapa, "solo claro" y techos de la costa revisados)
+
+- **Techos de la costa revisados con el texto completo del comunicado del Comité Provincial de Emergencia del 17/10** (el que publicaron los diarios): **Isla del Cerrito pasa de amarillo a naranja** (en la placa de Instagram figuraba en amarillo; en el texto, en naranja) y **Colonia Benítez puede llegar a rojo** (antes, hasta naranja), porque la alerta roja fuera del cordón de defensa incluye San Pedro Pescador y Puerto Antequeras, que son de Colonia Benítez. Cuando las versiones difieren se toma la más alta, para no mostrar menos que lo oficial. El color sigue saliendo solo del INA. Textos debajo del mapa, "¿Cómo se decide el color?" y detalle de Colonia Benítez al día. Huella nueva del código (`sha256-C/Jil5Ja/PDcmBJag4Bf7yJ3GRIyL3uSKujCALbB37Y=`). Prueba de la costa al día (47 pruebas).
 
 - **Pide a los navegadores que no lo oscurezcan solos**: en algunos celulares los colores se veían oscuros por el modo oscuro automático del navegador. Ahora la página declara "solo claro" (`color-scheme: only light`, en el encabezado y en los estilos), que es lo que pide Chrome para no tocarla. Samsung Internet con su modo oscuro prendido puede oscurecerla igual (no da forma de evitarlo). La huella del código no cambia. Prueba nueva dentro de la del naranja (siguen 47). Pedido de Mariano.
 
