@@ -350,6 +350,16 @@ prueba('SMN: si el informe lleva más de 3 horas sin renovar, se avisa', () => {
   S('SMN=SMN_VACIO');
 });
 
+prueba('SMN: la franja dice para qué día es la alerta y avisa si la página del SMN todavía no la muestra', () => {
+  S("hoy='2026-10-18'");
+  assert.strictEqual(S("smnDiasTxt(new Set(['2026-10-21']))"), 'el miércoles 21/10');
+  assert.strictEqual(S("smnDiasTxt(new Set(['2026-10-19','2026-10-18']))"), 'hoy y mañana');
+  assert.strictEqual(S("smnLejos(new Set(['2026-10-18','2026-10-20']))"), '');
+  const l = S("smnLejos(new Set(['2026-10-21']))");
+  assert.ok(l.includes('la alerta del miércoles 21/10 se va a ver ahí desde el lunes 19/10'), l);
+  assert.strictEqual(S("smnMeta(undefined).includes('solo hoy')"), false);
+});
+
 /* ---------- script de Google ---------- */
 const gs = vm.createContext({ console, JSON, Math, Date, Number, String, Array, Error, RegExp, isFinite, isNaN });
 vm.runInContext(fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8'), gs);

@@ -1285,18 +1285,25 @@ const smnChip=a=>{const f=SMN_EV[a.ev]||'otro fenómeno';return '<span class="sm
 function pintarBanda(G){
   const bd=$('smnBanda');
   if(!G||!G.size){bd.hidden=true;bd.innerHTML='';return}
-  const tipos=new Map(),mun=new Set();let max=3;
-  [...G.values()].forEach(g=>{const k=g.a.ev;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:0,x:0,parcial:false,n:0});const t=tipos.get(k);if(t.n++&&t.x!==g.a.x)t.parcial=true;t.x|=g.a.x;if(g.a.niv>t.niv)t.niv=g.a.niv;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
+  const tipos=new Map(),mun=new Set(),dias=new Set();let max=3;
+  [...G.values()].forEach(g=>{dias.add(g.a.dia);const k=g.a.ev;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:0,x:0,parcial:false,n:0});const t=tipos.get(k);if(t.n++&&t.x!==g.a.x)t.parcial=true;t.x|=g.a.x;if(g.a.niv>t.niv)t.niv=g.a.niv;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
   const n=mun.size,T=GEO.mun.length;
   bd.className='n'+max;
-  bd.innerHTML='<b>Alertas del SMN vigentes:</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
+  // Dice para qué días es: una alerta para dentro de 3 días no es para ahora.
+  bd.innerHTML='<b>'+(tipos.size>1?'Alertas':'Alerta')+' del SMN para '+smnDiasTxt(dias)+':</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
     +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'. <a href="#t-smn">Ver días y horarios</a></span>';
   bd.hidden=false;
 }
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
+// Días de las alertas en palabras: "hoy", "mañana", "el miércoles 21/10", unidos con comas e "y".
+const smnDiasTxt=dias=>{const l=[...dias].sort().map(etqHoy);return l.length>1?l.slice(0,-1).join(', ')+' y '+l[l.length-1]:l[0]||''};
+// La página del SMN muestra solo hoy y los 2 días siguientes; el canal CAP trae un día más.
+// Si hay alertas más lejos, se avisa desde cuándo se van a ver ahí.
+const smnLejos=dias=>{const l=[...(dias||[])].filter(d=>d>masDias(hoy,2)).sort();if(!l.length)return '';
+  return ' La página del SMN muestra solo hoy y los 2 días siguientes: '+(l.length>1?'las alertas del '+l.map(fDiaLargo).join(' y del '):'la alerta del '+fDiaLargo(l[0]))+' se va'+(l.length>1?'n':'')+' a ver ahí desde el '+fDiaLargo(masDias(l[0],-2))+'.'};
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
 // Con más de 3 horas sin renovar se avisa: puede haber alertas nuevas que todavía no se leyeron.
-const smnMeta=()=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
+const smnMeta=dias=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.'+smnLejos(dias)+'</p>';
 function pintarSMN(){
   const el=$('smn');
   if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
@@ -1318,7 +1325,7 @@ function pintarSMN(){
         return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
           +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul></div>').join('');
   }
-  el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'.</p>';
+  el.innerHTML=h+smnMeta(new Set([...G.values()].map(g=>g.a.dia)))+'<p class="meta">Informe para los días '+rango+'.</p>';
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
 function smnInfo(i){

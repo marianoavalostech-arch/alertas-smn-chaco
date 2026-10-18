@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 18/10/2026, noche (sin subir: la franja del SMN dice para qué día es la alerta)
+
+- **La franja de arriba ya no dice "Alertas del SMN vigentes".** Ahora dice para qué día es: "Alerta del SMN para hoy", "para mañana" o "para el miércoles 21/10" (`smnDiasTxt`). Caso real del 18/10: el SMN emitió alerta amarilla por tormentas con posible granizo para el miércoles 21 a la tarde en el este del Chaco, y la franja parecía decir que era para ahora.
+- **Aviso cuando la página del SMN todavía no muestra la alerta.** La página de alertas del SMN muestra solo hoy y los 2 días siguientes, pero el canal CAP que lee el script trae un día más. Si hay una alerta más lejos, después del enlace "Ver las alertas en el SMN" se aclara: "La página del SMN muestra solo hoy y los 2 días siguientes: la alerta del miércoles 21/10 se va a ver ahí desde el lunes 19/10" (`smnLejos`). Comprobado el 18/10 a las 20:25 en smn.gob.ar/alertas (solo botones Domingo 18, Lunes 19 y Martes 20) y en el canal CAP (tormenta, polígono del este del Chaco, desde el 21/10 a las 15:00).
+- Huella nueva del código. Prueba nueva (48 pruebas). Pedido de Mariano.
+
 ## 17/10/2026, tarde (sin subir: tocar el río en el mapa ya no lleva de golpe a su sección, etiquetas de los ríos y "Volver al mapa")
 
 - **En el celular, tocar cerca de la costa ya no lleva al río sin querer.** El río tiene una franja invisible para que sea fácil tocarlo, y al querer ver un municipio de la costa (Barranqueras, Puerto Vilelas, Isla del Cerrito…) el dedo caía a veces sobre ella y la página bajaba sola a la sección del río. Ahora: si a menos de unos 8 píxeles del toque hay un municipio, se elige el municipio (`munCerca`); si no, el río queda marcado en el mapa y el cuadro de abajo dice "Río Paraná" (o Paraguay, o Bermejo), con el botón "Ver el río Paraná ↓" y la aclaración "Si querías ver un municipio, tocalo un poco más adentro del mapa" (`verRio`). La página solo baja con ese botón. Con el mouse pasa lo mismo, sin la búsqueda del municipio cercano. La ✕ o Escape quitan el cuadro. Huella nueva del código. 47 pruebas bien. Probado en Chromium como celular (390 px, toques reales) con los datos del 17/10: tocando sobre el Paraná o 5 px afuera se elige el municipio; 12 px afuera aparece el cuadro del río; nunca salta sola. Pedido de Mariano.
