@@ -350,14 +350,15 @@ prueba('SMN: si el informe lleva más de 3 horas sin renovar, se avisa', () => {
   S('SMN=SMN_VACIO');
 });
 
-prueba('SMN: la franja dice para qué día es la alerta y avisa si la página del SMN todavía no la muestra', () => {
+prueba('SMN: la franja dice para qué día es la alerta y muestra solo hoy y 2 días más, como la página del SMN', () => {
   S("hoy='2026-10-18'");
-  assert.strictEqual(S("smnDiasTxt(new Set(['2026-10-21']))"), 'el miércoles 21/10');
+  assert.strictEqual(S("smnDiasTxt(new Set(['2026-10-20']))"), 'el martes 20/10');
   assert.strictEqual(S("smnDiasTxt(new Set(['2026-10-19','2026-10-18']))"), 'hoy y mañana');
-  assert.strictEqual(S("smnLejos(new Set(['2026-10-18','2026-10-20']))"), '');
-  const l = S("smnLejos(new Set(['2026-10-21']))");
-  assert.ok(l.includes('la alerta del miércoles 21/10 se va a ver ahí desde el lunes 19/10'), l);
-  assert.strictEqual(S("smnMeta(undefined).includes('solo hoy')"), false);
+  S(`SMN={emitido:'2026-10-18T20:00:00Z',capturado:new Date().toISOString(),fechas:['2026-10-18','2026-10-19','2026-10-20','2026-10-21'],areas:GEO.mun.map(()=>0),alertas:{0:[['2026-10-20',41,0,0,3,0,1],['2026-10-21',41,0,0,3,0,1]]}}`);
+  assert.strictEqual(S('smnDe(0).map(a=>a.dia).join()'), '2026-10-20', 'el cuarto día queda afuera');
+  S("SMN.alertas={0:[['2026-10-21',37,0,0,4,0,0]]}");
+  assert.strictEqual(S('smnDe(0).length'), 0);
+  S('SMN=SMN_VACIO');
 });
 
 /* ---------- script de Google ---------- */

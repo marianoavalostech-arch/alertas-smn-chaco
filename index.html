@@ -617,7 +617,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso.</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
-      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
+      <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Se muestran las de hoy y los 2 días siguientes, igual que el mapa del SMN. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
       <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
     </ul>
   </section>
@@ -1273,7 +1273,7 @@ const smnVigente=()=>SMN.fechas.length&&SMN.fechas[SMN.fechas.length-1]>=hoy;
 function smnDe(i){   // alertas vigentes del municipio i, una por cada nivel: [{dia,ev,niv,fr}]
   const out=[],h=horaAR();
   // De las alertas de hoy no cuentan las franjas que ya terminaron (cada franja dura 6 horas).
-  (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy).forEach(a=>{const l=a.slice(2,6).map((v,k)=>a[0]===hoy&&(k+1)*6<=h?0:(v||0));
+  (SMN.alertas[SMN.areas[i]]||[]).filter(a=>a[0]>=hoy&&a[0]<=smnTope()).forEach(a=>{const l=a.slice(2,6).map((v,k)=>a[0]===hoy&&(k+1)*6<=h?0:(v||0));
     [5,4,3].forEach(niv=>{const fr=SMN_FR.filter((_,k)=>l[k]===niv);if(fr.length)out.push({dia:a[0],ev:a[1],niv,fr,x:a[6]||0})})});
   return out;
 }
@@ -1297,20 +1297,19 @@ function pintarBanda(G){
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 // Días de las alertas en palabras: "hoy", "mañana", "el miércoles 21/10", unidos con comas e "y".
 const smnDiasTxt=dias=>{const l=[...dias].sort().map(etqHoy);return l.length>1?l.slice(0,-1).join(', ')+' y '+l[l.length-1]:l[0]||''};
-// La página del SMN muestra solo hoy y los 2 días siguientes; el canal CAP trae un día más.
-// Si hay alertas más lejos, se avisa desde cuándo se van a ver ahí.
-const smnLejos=dias=>{const l=[...(dias||[])].filter(d=>d>masDias(hoy,2)).sort();if(!l.length)return '';
-  return ' La página del SMN muestra solo hoy y los 2 días siguientes: '+(l.length>1?'las alertas del '+l.map(fDiaLargo).join(' y del '):'la alerta del '+fDiaLargo(l[0]))+' se va'+(l.length>1?'n':'')+' a ver ahí desde el '+fDiaLargo(masDias(l[0],-2))+'.'};
+// Se muestran las alertas de hoy y los 2 días siguientes, igual que la página del SMN.
+// El canal CAP trae un día más: ese día se deja afuera para que el enlace al SMN muestre lo mismo.
+const SMN_DIAS=3,smnTope=()=>masDias(hoy,SMN_DIAS-1);
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
 // Con más de 3 horas sin renovar se avisa: puede haber alertas nuevas que todavía no se leyeron.
-const smnMeta=dias=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.'+smnLejos(dias)+'</p>';
+const smnMeta=()=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
 function pintarSMN(){
   const el=$('smn');
   if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
     :'<p><span class="estado falla">Sin informe vigente</span>El último informe guardado es del '+fFechaHora(new Date(SMN.emitido))+' y ya venció. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultá las alertas en el SMN</a>.</p>';return}
   const G=new Map();
   GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{const k=a.dia+'|'+a.ev+'|'+a.niv+'|'+a.x+'|'+a.fr.join(', ');if(!G.has(k))G.set(k,{a,mun:[]});G.get(k).mun.push(m[0])}));
-  const fs=SMN.fechas.filter(d=>d>=hoy),rango='entre el '+fDia(fs[0])+' y el '+fDia(fs[fs.length-1]);
+  const fs=SMN.fechas.filter(d=>d>=hoy&&d<=smnTope()),rango='entre el '+fDia(fs[0])+' y el '+fDia(fs[fs.length-1]);
   let h;pintarBanda(G);
   if(!G.size)h=SMN.leidas===0?'<p><b>No se pudo confirmar si hay alertas.</b> En la última lectura el canal del SMN no listó ninguna alerta para todo el país, y eso puede ser una falla del canal. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Confirmalo en el SMN</a>.</p>'
     :(Date.now()-new Date(SMN.capturado))/36e5>6
@@ -1325,7 +1324,7 @@ function pintarSMN(){
         return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
           +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul></div>').join('');
   }
-  el.innerHTML=h+smnMeta(new Set([...G.values()].map(g=>g.a.dia)))+'<p class="meta">Informe para los días '+rango+'.</p>';
+  el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'.</p>';
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
 function smnInfo(i){

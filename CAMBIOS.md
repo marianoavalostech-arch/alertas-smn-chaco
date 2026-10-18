@@ -2,7 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 18/10/2026, noche (sin subir: la franja del SMN dice para qué día es la alerta)
+## 18/10/2026, noche, segunda subida (alertas del SMN: hoy y 2 días más, como la página del SMN)
+
+- **Las alertas del SMN se muestran solo para hoy y los 2 días siguientes** (`SMN_DIAS`, `smnTope`, en `smnDe`), igual que smn.gob.ar/alertas. El canal CAP trae un cuarto día, que la página del SMN todavía no muestra: al abrir el enlace, la alerta no aparecía. Ese día ya no cuenta para la franja, la lista, "Ahora en el Chaco", el detalle de cada municipio ni el piso del color del mapa; entra solo cuando la página del SMN también lo muestra. "Informe para los días…" también corta en 3 días. Pedido de Mariano.
+- Se quita el aviso "La página del SMN muestra solo hoy y los 2 días siguientes…" (`smnLejos`) de la subida anterior: ya no hace falta. La franja sigue diciendo para qué día es.
+- Línea nueva en "Acerca de este sitio". Huella nueva del código. Prueba de la franja al día (48 pruebas). Con los datos del 18/10 a las 19:51: "Sin alertas del SMN para el Chaco entre el 18/10 y el 20/10" (la tormenta del 21/10 aparece el lunes).
+
+## 18/10/2026, noche (subido en `cf1f0b5`: la franja del SMN dice para qué día es la alerta)
 
 - **La franja de arriba ya no dice "Alertas del SMN vigentes".** Ahora dice para qué día es: "Alerta del SMN para hoy", "para mañana" o "para el miércoles 21/10" (`smnDiasTxt`). Caso real del 18/10: el SMN emitió alerta amarilla por tormentas con posible granizo para el miércoles 21 a la tarde en el este del Chaco, y la franja parecía decir que era para ahora.
 - **Aviso cuando la página del SMN todavía no muestra la alerta.** La página de alertas del SMN muestra solo hoy y los 2 días siguientes, pero el canal CAP que lee el script trae un día más. Si hay una alerta más lejos, después del enlace "Ver las alertas en el SMN" se aclara: "La página del SMN muestra solo hoy y los 2 días siguientes: la alerta del miércoles 21/10 se va a ver ahí desde el lunes 19/10" (`smnLejos`). Comprobado el 18/10 a las 20:25 en smn.gob.ar/alertas (solo botones Domingo 18, Lunes 19 y Martes 20) y en el canal CAP (tormenta, polígono del este del Chaco, desde el 21/10 a las 15:00).
