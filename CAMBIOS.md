@@ -2,6 +2,19 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, mediodía (computadora: índice junto al nombre y mejor uso del espacio)
+
+Pedido de Mariano: mejorar la vista en computadora, integrar mejor el índice y aprovechar los espacios. Solo desde 1100 px de ancho; en el celular, la tablet, el portal y al imprimir no cambia nada (comprobado: la captura del celular a 390 px queda idéntica, píxel por píxel).
+- **El índice va junto al nombre del sitio**: el encabezado pasa a la columna de la izquierda, fija al bajar, con el nombre, Compartir y debajo "En esta página". El contenido empieza arriba de todo y el mapa se ve sin bajar.
+- **Puntos de color en el índice** (`marcasLado`): al lado de "Alertas del SMN", "Río Paraná" y "Otros ríos", con el color de su franja de arriba, mientras la franja está a la vista.
+- **Franjas del SMN y del río una al lado de la otra** (cuando están las dos).
+- **Mapa más grande** (1,45 a 1 con su detalle).
+- **Río Paraná: el gráfico a la izquierda y a su derecha** Yacyretá, Hidroalerta Vilelas y las fuentes (`.rioCuerpo`).
+- **Teléfonos y tarjetas de "¿Qué está pasando?" en 5 columnas**: las 9 tarjetas entran en dos filas (Mochila ocupa dos lugares).
+- **"Riesgo por localidad" usa todo el ancho.**
+- **Secciones cerradas de a dos** (`acomodarPlegables`): la que se abre pasa a lo ancho; una que quedaría sola, también. Al abrir o cerrar con un toque, la pantalla sigue a la sección para que no salte.
+- A 1440 px la página pasa de unos 5.360 a 4.080 px de alto. Probado con Chromium a 1440, 1280, 1100, 1024 y 390 px con datos reales y la regla del navegador de `netlify.toml`, sin avisos ni desbordes. Huella nueva del código. 56 pruebas (la de navegación controla la columna fija, las franjas y secciones de a dos, el río, las tarjetas y los puntos).
+
 ## 19/10/2026, mañana (tarjetas cerradas, pico del Paraná, índice lateral y pantalla ancha)
 
 Pedidos de Mariano, todo en una sola subida.

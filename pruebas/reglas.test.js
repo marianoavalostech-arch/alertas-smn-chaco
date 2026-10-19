@@ -332,7 +332,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   // Índice lateral (computadora, desde 1100 px): mismos destinos que el de arriba, que en esa pantalla se esconde junto con "↑ Índice";
   // en el celular, en el portal y al imprimir no se ve; el mapa va al lado de su detalle
   const l0 = html.indexOf('id="lado"'), lado = html.slice(l0, html.indexOf('</nav>', l0));
-  assert.ok(l0 > 0 && l0 < html.indexOf('<header'), 'el índice lateral va primero');
+  assert.ok(l0 > html.indexOf('<header') && l0 < html.indexOf('</header>'), 'el índice lateral va en la columna del nombre del sitio');
   assert.deepStrictEqual([...lado.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]), destinos, 'mismos destinos que el índice de arriba');
   assert.ok(/\.lado\{display:none\}/.test(html) && html.includes('@media screen and (min-width:1100px){'), 'solo en pantallas anchas y en pantalla (no al imprimir)');
   const ancho = html.slice(html.indexOf('@media screen and (min-width:1100px){'));
@@ -340,6 +340,12 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(ancho.includes('section[aria-labelledby="t-mapa"]>#mapa{grid-column:1'), 'mapa al lado de su detalle');
   assert.ok(/function indiceLateral\(\)\{\s*const nav=\$\('lado'\);if\(!nav\|\|EMB/.test(codigo) && codigo.includes("setAttribute('aria-current','location')"), 'marca la sección actual, no en el portal');
   assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces del índice abren la sección cerrada');
+  // Computadora (19/10): columna fija con nombre, Compartir e índice; franjas de a dos; río al lado de sus datos; tarjetas en 2 filas; secciones cerradas de a dos
+  assert.ok(ancho.includes('html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky'), 'nombre del sitio e índice en la columna fija');
+  assert.ok(ancho.includes('>:is(#smnBanda,#rioBanda){grid-column:auto') && ancho.includes('main>section.plegable.cerrada:not(.solo){grid-column:auto}'), 'franjas y secciones cerradas de a dos');
+  assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
+  assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
+  assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));
   assert.ok(html.includes('.emb .aIndice,.emb .indice{display:none}') && html.includes('@media print{.indice,.aIndice,.bAcc{display:none!important}}'));

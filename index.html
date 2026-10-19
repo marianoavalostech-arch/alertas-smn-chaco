@@ -186,24 +186,43 @@ footer{font-size:.85rem;color:var(--muted)}
 .bBtn{display:inline-flex;align-items:center;min-height:44px;font-size:.95rem;text-decoration:none}
 @media print{.indice,.aIndice,.bAcc{display:none!important}}
 .lado{display:none}
-/* Computadora (desde 1100 px): índice lateral fijo a la izquierda, que marca la sección donde está la persona, y página más ancha.
-   El mapa va al lado de su detalle y el gráfico del río crece. En el celular, en el portal y al imprimir no cambia nada (pedido de Mariano, 19/10/2026). */
+/* Computadora (desde 1100 px): columna fija a la izquierda con el nombre del sitio, Compartir y el índice, que marca la sección donde está la persona
+   y lleva un punto de color en las alertas y los ríos que salen del verde. Página más ancha: las dos franjas de arriba van una al lado de la otra,
+   el mapa al lado de su detalle, el gráfico del río al lado de sus datos, las tarjetas de "¿Qué está pasando?" en dos filas y las secciones cerradas de a dos.
+   En el celular, en el portal y al imprimir no cambia nada (pedidos de Mariano, 19/10/2026). */
 @media screen and (min-width:1100px){
-  html:not(.emb) .wrap{max-width:1240px;display:grid;grid-template-columns:168px minmax(0,1fr);column-gap:24px;row-gap:16px;align-items:start}
+  html:not(.emb) .wrap{max-width:1320px;display:grid;grid-template-columns:236px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:24px;row-gap:16px;align-items:start}
   html:not(.emb) .wrap>*{grid-column:2}
-  html:not(.emb) .lado{display:flex;flex-direction:column;gap:2px;grid-column:1;grid-row:1/span 3;position:sticky;top:16px;padding:14px 10px;background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra)}
+  html:not(.emb) .wrap>main{grid-row:1}
+  html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 14px 14px}
+  html:not(.emb) .cab h1{font-size:1.5rem;line-height:1.15}
+  html:not(.emb) .cab>p{font-size:.92rem;margin-top:8px}
+  html:not(.emb) .cab .instalar{margin-top:12px;gap:8px}
+  html:not(.emb) .lado{display:flex;flex-direction:column;gap:2px;margin:16px -4px 0;padding-top:12px;border-top:1px solid var(--line)}
   .lado .ladoTit{font-weight:700;color:var(--muted);font-size:.85rem;padding:0 8px 6px}
-  .lado a{display:block;padding:7px 8px;border-left:3px solid transparent;border-radius:6px;color:var(--ink);font-weight:600;font-size:.92rem;text-decoration:none;line-height:1.25}
+  .lado a{display:flex;align-items:center;gap:8px;padding:7px 8px;border-left:3px solid transparent;border-radius:6px;color:var(--ink);font-weight:600;font-size:.92rem;text-decoration:none;line-height:1.25}
+  .lado .ladoPt{flex:none;width:10px;height:10px;border-radius:50%;margin-left:auto;box-shadow:0 0 0 2px var(--card)}
   .lado a:hover{background:var(--bg);color:var(--acento)}
   .lado a[aria-current]{border-left-color:var(--acento);background:var(--bg);color:var(--acento);font-weight:800}
   html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
-  html:not(.emb) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
+  html:not(.emb) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
   html:not(.emb) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
   html:not(.emb) section[aria-labelledby="t-mapa"]>#mapa{grid-column:1;grid-row:3/-1}
   html:not(.emb) section[aria-labelledby="t-mapa"]>:is(#mInfo,.leyenda,p.meta,#d-colores,.fila){grid-column:2}
   html:not(.emb) #rio svg,html:not(.emb) #rio .leyRio,html:not(.emb) #rio .defMarca{max-width:640px}
-  html:not(.emb) main section :is(p,li){max-width:88ch}
+  html:not(.emb) #rio .rioCuerpo{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:12px 28px;align-items:start}
+  html:not(.emb) #rio :is(.rioGraf,.rioLado){display:flex;flex-direction:column;gap:12px;min-width:0}
+  html:not(.emb) #rio .rioLado{padding-left:20px;border-left:1px solid var(--line)}
+  html:not(.emb) main section :is(p,li):not(.sem>li){max-width:88ch}
+  html:not(.emb) main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  html:not(.emb) main>*{grid-column:1/-1}
+  html:not(.emb) main:has(>#smnBanda:not([hidden])):has(>#rioBanda:not([hidden]))>:is(#smnBanda,#rioBanda){grid-column:auto;align-content:flex-start}
+  html:not(.emb) main>section.plegable.cerrada:not(.solo){grid-column:auto}
+  html:not(.emb) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
+  html:not(.emb) .hSit details#h-mochila:not([open]){grid-column:span 2}
 }
+/* En el celular las cajas del gráfico del río no cambian nada: sus partes siguen una debajo de la otra. */
+.rioCuerpo,.rioGraf,.rioLado{display:contents}
 .volver{flex:none;font-size:.88rem;padding:5px 12px;min-height:36px;white-space:nowrap}
 @media print{.volver{display:none}}
 #mapa .rioChip .fondo{fill:var(--water);stroke:var(--card);stroke-width:2}
@@ -373,10 +392,6 @@ footer{font-size:.85rem;color:var(--muted)}
 </head><body>
 
 <div class="wrap">
-  <nav class="lado" id="lado" aria-label="Índice lateral">
-    <span class="ladoTit">En esta página</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
-  </nav>
   <header class="cab">
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
@@ -391,6 +406,10 @@ footer{font-size:.85rem;color:var(--muted)}
       <p class="instIos" id="instIos" hidden>Para tenerlo como app: tocá el botón <strong>Compartir de Safari</strong> (el cuadrado con la flecha) y después <strong>Agregar a inicio</strong>.</p>
     </div>
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
+    <nav class="lado" id="lado" aria-label="Índice lateral">
+      <span class="ladoTit">En esta página</span>
+      <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+    </nav>
   </header>
 
   <main>
@@ -996,9 +1015,22 @@ const plegGuardadas=()=>{try{const o=JSON.parse(localStorage.getItem(PLEG_K));re
 const abierta=id=>!PLEG[id]||PLEG[id].abierta;
 function abrirSec(id,abrir,guardar){
   const p=PLEG[id];if(!p||p.abierta===abrir)return;
+  const y0=guardar?p.sec.getBoundingClientRect().top:0;
   p.abierta=abrir;p.cuerpo.classList.toggle('vista',!abrir);p.cuerpo.inert=!abrir;p.mas.hidden=abrir;p.sec.classList.toggle('cerrada',!abrir);p.btn.setAttribute('aria-expanded',abrir);p.txt.textContent=abrir?'Ocultar':'Mostrar';
   if(guardar){const g=plegGuardadas();g[id]=abrir;try{localStorage.setItem(PLEG_K,JSON.stringify(g))}catch(e){}}
   (AL_ABRIR[id]||[]).forEach(f=>seguro(()=>f(abrir)));
+  acomodarPlegables();
+  // En computadora, al abrir o cerrar con un toque la sección puede cambiar de lugar (de a dos ↔ a lo ancho): la pantalla la sigue.
+  if(guardar){const d=p.sec.getBoundingClientRect().top-y0;if(Math.abs(d)>2)scrollBy({top:d,behavior:'instant'})}
+}
+// En computadora las secciones cerradas van de a dos; una que quedaría sola en su fila (la siguiente está abierta o no hay) va a lo ancho.
+function acomodarPlegables(){
+  const l=[...document.querySelectorAll('main>section.plegable')];let par=false;
+  l.forEach((s,i)=>{let solo=false;
+    if(!s.classList.contains('cerrada'))par=false;
+    else if(par)par=false;
+    else{const b=l[i+1];if(b&&b.classList.contains('cerrada'))par=true;else solo=true}
+    s.classList.toggle('solo',solo)});
 }
 const alAbrir=(id,f)=>(AL_ABRIR[id]=AL_ABRIR[id]||[]).push(f);
 // Desplegables de las secciones de arriba (details.det): cada navegador recuerda cuáles abrió; al imprimir se ven todos abiertos.
@@ -1568,17 +1600,17 @@ function pintarRio(){
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
-   +stats+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
+   +stats+'<div class="rioCuerpo"><div class="rioGraf">'+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
-   +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p>'
+   +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
    +lineaYacy()
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
-     :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>');
+     :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
 
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
 }
@@ -2062,6 +2094,26 @@ function indiceLateral(){
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
 seguro(indiceLateral);
+// Índice lateral: un punto con el color de la franja de arriba al lado de "Alertas del SMN", "Río Paraná" y "Otros ríos" (Paraguay) cuando salen del verde.
+const LADO_COL={3:'amarillo',4:'naranja',5:'rojo'};
+function marcasLado(){
+  const nav=$('lado'),s=$('smnBanda'),r=$('rioBanda');if(!nav||!s||!r)return;
+  const nS=s.hidden?0:Number((/n(\d)/.exec(s.className||'')||[])[1]||0),rios={};
+  if(!r.hidden)for(const b of r.querySelectorAll('.rbL1 b')){const m=/Río (Paraná|Paraguay) en (\w+)/.exec(b.textContent||'');if(m)rios[m[1]]=m[2]}
+  [['#t-smn',LADO_COL[nS],'Alertas del SMN: hay alerta '+(LADO_COL[nS]||'')],['#t-rio',rios['Paraná'],'Río Paraná en '+rios['Paraná']],['#t-otros',rios['Paraguay'],'Río Paraguay en '+rios['Paraguay']]].forEach(([h,c,t])=>{
+    const a=nav.querySelector('a[href="'+h+'"]');if(!a)return;
+    let i=a.querySelector('.ladoPt');
+    if(!c){if(i)i.remove();a.removeAttribute('title');return}
+    if(!i){i=document.createElement('i');i.className='ladoPt';i.setAttribute('aria-hidden','true');a.appendChild(i)}
+    i.style.background='var(--'+c+')';a.title=t});
+}
+function iniciarMarcasLado(){
+  if(EMB||typeof MutationObserver!=='function')return;
+  const o=new MutationObserver(()=>seguro(marcasLado));
+  ['smnBanda','rioBanda'].forEach(id=>{const e=$(id);if(e)o.observe(e,{attributes:true,childList:true,subtree:true,characterData:true})});
+  marcasLado();
+}
+seguro(iniciarMarcasLado);
 
 // Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
 function avisarAlto(){
