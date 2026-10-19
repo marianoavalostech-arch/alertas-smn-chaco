@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, tarde (Teléfonos en el índice; explicación del Paraná y de Yacyretá)
+
+Pedidos de Mariano.
+- **"Teléfonos" en el índice**: en el de arriba y en el menú lateral de la computadora (📞), después de "Qué hacer". Lleva directo a los números (`#t-tel`), igual que "Más teléfonos" del cartel de arriba. En el menú lateral se marca desde donde empiezan los números. El pie del menú queda en un renglón (911 y "↑ Arriba"), para que en notebooks de 768 px de alto siga entrando entero.
+- **Paraná, la frase de la situación en centímetros**: "Está 48 cm arriba del nivel de evacuación (6,50 m)." en vez de "Superó el nivel de evacuación". Igual para el Paraguay.
+- **Desplegable "¿Qué quieren decir estos números?"** (cerrado): la altura es lo que marca la regla del puerto, no lo hondo del río; qué son el nivel de alerta, el de evacuación y las defensas; cómo leer el rango del pronóstico del INA.
+- **Yacyretá en palabras**: "cerca del triple de lo normal para octubre (unos 13.100) y más que hace una semana (27.200)". Desplegable "¿Qué tiene que ver Yacyretá?": no frena una crecida (el agua que le llega tiene que seguir), si suelta más el río tiende a subir unos días después, pero también cuentan el río Paraguay y la lluvia, y lo que vale es el pronóstico del INA. No cambia ningún color.
+- Huella nueva del código. 59 pruebas (la de navegación cuenta 10 destinos; la de Yacyretá controla la frase, la comparación en palabras, la situación en centímetros y los dos desplegables).
+
 ## 19/10/2026, tarde (botón de WhatsApp de SECHEEP)
 
 Pedido de Mariano: en los teléfonos, un botón para escribirle a SECHEEP por WhatsApp.

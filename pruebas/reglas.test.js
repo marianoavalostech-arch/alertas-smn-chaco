@@ -358,7 +358,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
   // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance, 911 y "↑ Arriba"
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
-  assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<a class="btn" href="#t-tel">Teléfonos</a>'), 'Teléfonos lleva directo a los números');
+  assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>'), 'Teléfonos lleva directo a los números');
   assert.ok(codigo.includes("x.tagName!=='H2'?x:"), 'en el índice lateral, Teléfonos se marca desde donde empiezan los números y no tapa a Qué hacer');
   assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 10 && (lado.match(/class="ladoSub"/g) || []).length === 10, 'un ícono y un renglón por destino');
   assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');
@@ -970,9 +970,31 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba:</b> la represa de Yacyretá está soltando unos 32.800 m³ de agua por segundo. Lo normal en octubre es unos 13.100, y una semana antes soltaba 21.800. Esa agua tarda unos 3 días en llegar a Barranqueras.</p><p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
+    const y13 = l('2026-10-13', o);
+    assert.ok(y13.startsWith('<p><b>Río arriba, Yacyretá:</b> la represa está soltando unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre (unos 13.100) y más que hace una semana (21.800). Esa agua llega a Barranqueras en unos 3 días.</p>'), y13);
+    assert.ok(y13.includes('<details class="det" id="d-rio-yacy"><summary>¿Qué tiene que ver Yacyretá?</summary>') && y13.includes('no frena una crecida') && y13.includes('río Paraguay') && y13.includes('lo que vale es el pronóstico del INA'), 'explica sin pronosticar por su cuenta');
+    assert.ok(y13.endsWith('<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>'));
     assert.ok(l('2026-10-14', o).includes('soltaba el 13/10 unos 32.800'));      // el dato de hoy todavía no está
-    assert.ok(!l('2026-10-13', o.slice(1)).includes('una semana antes') && l('2026-10-13', o.slice(1)).includes('es unos 13.100. Esa'));   // sin lectura de hace una semana, no compara
+    assert.ok(!l('2026-10-13', o.slice(1)).includes('hace una semana') && l('2026-10-13', o.slice(1)).includes('(unos 13.100). Esa'));   // sin lectura de hace una semana, no compara
+    // comparación en palabras
+    const vn = (v, n) => S(`yacyVsNormal(${v},${n})`), va = (v, a) => S(`yacyVsAntes(${v},${a})`);
+    assert.deepStrictEqual([vn(9000, 13100), vn(13000, 13100), vn(18000, 13100), vn(26000, 13100), vn(36200, 13100), vn(50000, 13100)],
+      ['menos de lo normal', 'parecido a lo normal', 'bastante más de lo normal', 'cerca del doble de lo normal', 'cerca del triple de lo normal', 'más del triple de lo normal']);
+    assert.deepStrictEqual([va(36200, 27200), va(20000, 27200), va(27500, 27200)], ['más que', 'menos que', 'casi lo mismo que']);
+    // dónde está el río respecto de sus niveles, en centímetros
+    const N = S('NIVEL'), sit = h => S(`rioSit(${h},NIVEL)`);
+    assert.strictEqual(sit(6.98), 'Está 48 cm arriba del nivel de evacuación (6,50 m).');
+    assert.strictEqual(sit(6.5), 'Llegó al nivel de evacuación (6,50 m).');
+    assert.strictEqual(sit(6.2), 'Está 20 cm arriba del nivel de alerta (6,00 m). Le faltan 30 cm para el de evacuación (6,50 m).');
+    assert.strictEqual(sit(5.4), 'Le faltan 60 cm para el nivel de alerta (6,00 m) y 1,10 m para el de evacuación (6,50 m).');
+    assert.strictEqual(sit(7.6), 'Está 1,10 m arriba del nivel de evacuación (6,50 m).');
+    assert.ok(N.evac === 6.5);
+    // qué quieren decir los números: desplegable cerrado que explica altura, alerta, evacuación, defensas y rango del INA
+    const num = S('RIO_NUMEROS()');
+    assert.ok(num.startsWith('<details class="det" id="d-rio-numeros"><summary>¿Qué quieren decir estos números?</summary>'));
+    for (const t of ['regla del puerto de Barranqueras', 'Nivel de alerta, 6,00 m', 'Nivel de evacuación, 6,50 m', 'Defensas, unos 9,50 m', 'lo más bajo y lo más alto']) assert.ok(num.includes(t), t);
+    assert.ok(!/alerta naranja/.test(num + y13), 'el río nunca dice "alerta naranja"');
+    assert.ok(/\+RIO_NUMEROS\(\)/.test(codigo) && codigo.includes('const sit=rioSit(r.h,NIVEL)'), 'van en la sección del río');
     assert.strictEqual(S('YACY_NORMAL.length'), 12);
     assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
     assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');

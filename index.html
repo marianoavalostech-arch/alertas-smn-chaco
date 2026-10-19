@@ -66,6 +66,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 /* desplegables de las secciones de arriba: lo principal a la vista, el detalle al tocar */
 details.det>summary{color:var(--acento);padding:10px 0;font-size:.95rem}
 details.det[open]>summary{padding-bottom:4px}
+#rio details.det p+p{margin-top:6px}
 .leyLista{list-style:none;padding-left:0!important}
 .smnLinea{margin:6px 0 0;font-size:.95rem}
 .smnGrupo details.det>summary{padding:8px 0 2px}
@@ -220,6 +221,7 @@ footer{font-size:.85rem;color:var(--muted)}
   .ladoPie .ladoTel:hover{background:var(--card)}
   .ladoPie .ladoFila{display:flex;gap:6px}
   .ladoPie .ladoFila>*{flex:1;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;min-height:38px;padding:6px 8px;text-decoration:none;white-space:nowrap}
+  .ladoPie .ladoFila>.ladoTel{flex:1.4;gap:6px;min-height:44px}.ladoPie .ladoFila>.btn{flex:none}
   @media (max-height:860px){html:not(.emb) .cab{padding-top:16px}html:not(.emb) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:not(.emb) .cab .instalar{margin-top:10px}html:not(.emb) .lado{margin-top:12px;padding-top:10px}html:not(.emb) .ladoPie{margin-top:10px;padding-top:10px}}
   @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:3px}.lado .ladoSub{display:none}}
   html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
@@ -457,8 +459,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <a href="#t-acerca"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Acerca<small class="ladoSub"></small></span></a>
     </nav>
     <div class="ladoPie">
-      <a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a>
-      <div class="ladoFila"><a class="btn" href="#t-tel">Teléfonos</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
+      <div class="ladoFila"><a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
     </div>
   </header>
 
@@ -1603,14 +1604,20 @@ function leerRio(e){
   $('rioLee').innerHTML=(p[4]?'<b>Previsto por el INA para el '+fDia(p[2])+': '+nf(p[3],2)+' m</b> (entre '+nf(p[4][1],2)+' y '+nf(p[4][3],2)+' m)':'<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>')+', a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
 }
 ['pointermove','pointerdown'].forEach(t=>$('rio').addEventListener(t,leerRio));
+// Dónde está el río respecto de sus niveles, en centímetros (en metros desde 1 m): más fácil de entender que dos alturas.
+function rioSit(h,N){
+  const c=v=>{const x=Math.round(v*100);return x>=100?nf(x/100,2)+' m':x+' cm'};
+  return h>=N.evac?(Math.round((h-N.evac)*100)?'Está '+c(h-N.evac)+' arriba del nivel de evacuación ('+nf(N.evac,2)+' m).':'Llegó al nivel de evacuación ('+nf(N.evac,2)+' m).')
+    :h>=N.alerta?(Math.round((h-N.alerta)*100)?'Está '+c(h-N.alerta)+' arriba del nivel de alerta ('+nf(N.alerta,2)+' m)':'Llegó al nivel de alerta ('+nf(N.alerta,2)+' m)')+'. Le faltan '+c(N.evac-h)+' para el de evacuación ('+nf(N.evac,2)+' m).'
+    :'Le faltan '+c(N.alerta-h)+' para el nivel de alerta ('+nf(N.alerta,2)+' m) y '+c(N.evac-h)+' para el de evacuación ('+nf(N.evac,2)+' m).';
+}
 function pintarRio(){
   const r=resumenRio();
   if(!r){$('rio').innerHTML=meta('rio','el INA');return}
   const o=D.rio.datos.obs;
   const pk=r.pico;
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
-  const sit=r.h>=NIVEL.evac?'Superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).':r.h>=NIVEL.alerta?'Superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
-    :'Le faltan '+nf(r.falta,2)+' m para el nivel de alerta ('+nf(NIVEL.alerta,2)+' m) y '+nf(NIVEL.evac-r.h,2)+' m para el de evacuación ('+nf(NIVEL.evac,2)+' m).';
+  const sit=rioSit(r.h,NIVEL);
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+'). El río puede haber cambiado desde entonces.</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
   const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
@@ -1651,6 +1658,7 @@ function pintarRio(){
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
+   +RIO_NUMEROS()
    +stats+'<div class="rioCuerpo"><div class="rioGraf">'+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
@@ -1670,16 +1678,34 @@ function pintarRio(){
 // Normal de cada mes (enero a diciembre): mediana de las lecturas diarias del INA (serie 937) de 2011 a 2025, redondeada a 100.
 const YACY_NORMAL=[13000,12800,13000,12000,11700,11900,11800,11100,11000,13100,13600,13100];
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+// Comparación en palabras, para quien no sabe cuánto es un metro cúbico por segundo: frente a lo normal del mes y frente a una semana antes.
+function yacyVsNormal(v,n){const q=v/n;return q<0.8?'menos de lo normal':q<1.2?'parecido a lo normal':q<1.75?'bastante más de lo normal':q<2.5?'cerca del doble de lo normal':q<3.5?'cerca del triple de lo normal':'más del triple de lo normal'}
+function yacyVsAntes(v,a){const q=v/a;return q>1.1?'más que':q<0.9?'menos que':'casi lo mismo que'}
 function lineaYacy(){
   const o=D.yacy&&D.yacy.datos&&D.yacy.datos.obs;if(!o||!o.length)return '';
   const [dia,v]=o[o.length-1];if(diasEntre(dia,hoy)>4)return '';
   const red=x=>nf(Math.round(x/100)*100);
   let antes=null;for(const p of o)if(p[0]<=masDias(dia,-7)&&diasEntre(p[0],dia)<=9)antes=p;
   const mes=Number(dia.slice(5,7))-1;
-  return '<p><b>Río arriba:</b> la represa de Yacyretá '+(dia===hoy?'está soltando':'soltaba el '+fDia(dia))+' unos '+red(v)+' m³ de agua por segundo. '
-    +'Lo normal en '+MESES[mes]+' es unos '+red(YACY_NORMAL[mes])+(antes?', y una semana antes soltaba '+red(antes[1]):'')+'. Esa agua tarda unos 3 días en llegar a Barranqueras.</p>'
+  return '<p><b>Río arriba, Yacyretá:</b> la represa '+(dia===hoy?'está soltando':'soltaba el '+fDia(dia))+' unos '+red(v)+' m³ de agua por segundo: '
+    +yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+' (unos '+red(YACY_NORMAL[mes])+')'
+    +(antes?' y '+yacyVsAntes(v,antes[1])+' hace una semana ('+red(antes[1])+')':'')+'. Esa agua llega a Barranqueras en unos 3 días.</p>'
+    +YACY_QUE()
     +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del '+fDia(dia)+'.</p>';
 }
+// Explicaciones del río (19/10, pedido de Mariano): desplegables cerrados; cada navegador recuerda si los abrió, aunque la sección se vuelva a pintar.
+const detAbierto=id=>{try{return !!(JSON.parse(localStorage.getItem(DET_K))||{})[id]}catch(e){return false}};
+const det=(id,tit,cuerpo)=>'<details class="det" id="'+id+'"'+(detAbierto(id)?' open':'')+'><summary>'+tit+'</summary>'+cuerpo+'</details>';
+const RIO_NUMEROS=()=>det('d-rio-numeros','¿Qué quieren decir estos números?',
+  '<p><b>La altura</b> es lo que marca la regla del puerto de Barranqueras (el hidrómetro). No es lo hondo que está el río: sirve para comparar un día con otro.</p>'
+  +'<p><b>Nivel de alerta, '+nf(NIVEL.alerta,2)+' m:</b> es el aviso oficial para estar atentos en la costa y las islas, fuera de las defensas.</p>'
+  +'<p><b>Nivel de evacuación, '+nf(NIVEL.evac,2)+' m:</b> desde esta altura, en las zonas más bajas de la costa puede hacer falta salir de la casa. Seguí lo que digan Defensa Civil y tu municipio.</p>'
+  +'<p><b>Defensas, unos '+nf(NIVEL.defensa,2)+' m:</b> los terraplenes y muros que rodean el Gran Resistencia dejan el agua del río afuera hasta esa altura. No protegen las islas ni la costa de afuera.</p>'
+  +'<p><b>Pronóstico del INA:</b> el primer número es el más probable; entre paréntesis, lo más bajo y lo más alto que puede llegar. El INA lo renueva los martes y viernes.</p>');
+const YACY_QUE=()=>det('d-rio-yacy','¿Qué tiene que ver Yacyretá?',
+  '<p>Yacyretá no frena una crecida: el agua que le llega desde Brasil por el Alto Paraná tiene que seguir de largo. Por eso, si suelta más, unos días después el Paraná tiende a subir en Barranqueras; si suelta menos, a bajar.</p>'
+  +'<p>Pero no es lo único: antes de Corrientes se le suma el río Paraguay, y también cuenta la lluvia de la zona. Para saber hasta dónde puede llegar el río, lo que vale es el pronóstico del INA.</p>');
+
 // Paraguay y Bermejo: altura, tendencia, cambios y un gráfico chico de 30 días (con los niveles oficiales si los hay).
 function bloqueOtro(k){
   const o=OTROS[k],N=o.nivel,r=resumenRio(k,N),t='<h3>Río '+o.rio+' en '+o.lugar+'</h3>';
@@ -1688,8 +1714,7 @@ function bloqueOtro(k){
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
   const nota=k==='paraguay'?'<p class="meta">El color del renglón del Paraguay sale solo de la última lectura en Puerto Bermejo: el INA no publica pronóstico para ese puerto. Vale para la costa y las islas, de Puerto Bermejo a Isla del Cerrito.</p>':'';
   const sit=!N?'El INA no publica niveles de alerta para esta estación: sirve para ver si el río crece o baja.'
-    :r.h>=N.evac?'Superó el nivel de evacuación ('+nf(N.evac,2)+' m).':r.h>=N.alerta?'Superó el nivel de alerta ('+nf(N.alerta,2)+' m).'
-    :'Le faltan '+nf(r.falta,2)+' m para el nivel de alerta ('+nf(N.alerta,2)+' m) y '+nf(N.evac-r.h,2)+' m para el de evacuación ('+nf(N.evac,2)+' m).';
+    :rioSit(r.h,N);
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+').</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
   const stats='<dl class="datos">'+[['En 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
