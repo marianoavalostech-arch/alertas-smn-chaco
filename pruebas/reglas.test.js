@@ -111,7 +111,7 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
   const v = S('VILELAS');
   assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));
   assert.ok(/m\[0\]==='Puerto Vilelas'\?'<p>[^']*'\+VILELAS/.test(codigo), 'falta en el detalle del municipio');
-  assert.ok(/lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
+  assert.ok(/\+lineaYacy\(\)\+RIO_LEER\(\)\+\(pf\.length\?RIO_PRONO\(\):''\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
   assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
 });
 
@@ -167,14 +167,17 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(gr.includes('class="defMarca"') && gr.includes('Defensas de la ciudad: unos 9,50 m') && !gr.includes('var(--titulo)" stroke-width'), 'lejos: solo la marca');
   gr = graf([['2027-03-07', 7.9], ['2027-03-10', 8.1]]);
   assert.ok(!gr.includes('class="defMarca"') && gr.includes('stroke="var(--titulo)"') && gr.includes('no protegen las islas ni la costa de afuera'), 'cerca: línea y leyenda');
-  // El pico previsto lleva su número (como el 18/10/2026: 6,80 hoy, 7,23 m pasado mañana, 6,37 m a la semana); si el último es el más alto, no se repite
+  // Cada fecha prevista lleva su altura más probable y su rango (como el 19/10/2026: 7,23 m entre 7,00 y 7,80; 6,37 m entre 5,80 y 6,60)
   const pr = (f) => ({ emitido: '2027-03-08T03:00:00.000Z', p: f });
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-08', 6.5, 6.5, 6.5], ['2027-03-12', 7, 7.23, 7.8], ['2027-03-17', 5.8, 6.37, 6.6]]));
-  assert.ok(/class="rioPico"[^>]*>7,23 m</.test(gr) && gr.includes('>6,37 m<'), 'pico con número');
+  assert.ok(/class="rioPrev"[^>]*>7,23 m</.test(gr) && /class="rioRango"[^>]*>7,00 a 7,80</.test(gr) && /class="rioPrev"[^>]*>6,37 m</.test(gr) && /class="rioRango"[^>]*>5,80 a 6,60</.test(gr), 'cada fecha con su altura y su rango');
+  assert.ok(gr.includes('Previsto por el INA y su rango') && gr.includes('id="d-rio-prono"'), 'leyenda y explicación del pronóstico');
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 7, 7.1, 7.3], ['2027-03-17', 7.2, 7.4, 7.6]]));
-  assert.ok(!gr.includes('rioPico') && gr.includes('>7,40 m<'), 'el último es el pico: un solo número');
+  assert.strictEqual((gr.match(/class="rioPrev"/g) || []).length, 2); assert.ok(gr.includes('>7,40 m<') && gr.includes('>7,20 a 7,60<'));
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 6.5, 6.6, 6.7], ['2027-03-17', 6, 6.2, 6.4]]));
-  assert.ok(!gr.includes('rioPico'), 'si el pronóstico baja, no se marca pico');
+  assert.ok(gr.includes('>6,60 m<') && gr.includes('>6,20 m<'), 'también cuando el pronóstico baja');
+  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]]);
+  assert.ok(!gr.includes('rioPrev') && !gr.includes('d-rio-prono'), 'sin pronóstico, ni números previstos ni explicación');
   // Sin pronóstico
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 4.0], ['2027-03-10', 4.0]]).c, 'verde');
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.5], ['2027-03-10', 5.7]]).c, 'amarillo');   // cerca y creciendo
@@ -967,37 +970,32 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
   con(orig); delete elementos.pacNino;
 });
 
-prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', () => {
+prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en el pronóstico; explicaciones del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    const y13 = l('2026-10-13', o);
-    assert.ok(y13.startsWith('<p><b>Río arriba, Yacyretá:</b> la represa está soltando unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre (unos 13.100) y más que hace una semana (21.800). Esa agua llega a Barranqueras en unos 3 días.</p>'), y13);
-    assert.ok(y13.includes('<details class="det" id="d-rio-yacy"><summary>¿Qué tiene que ver Yacyretá?</summary>') && y13.includes('no frena una crecida') && y13.includes('río Paraguay') && y13.includes('lo que vale es el pronóstico del INA'), 'explica sin pronosticar por su cuenta');
-    assert.ok(y13.endsWith('<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>'));
+    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba, Yacyretá</b> suelta unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p><p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
     assert.ok(l('2026-10-14', o).includes('soltaba el 13/10 unos 32.800'));      // el dato de hoy todavía no está
-    assert.ok(!l('2026-10-13', o.slice(1)).includes('hace una semana') && l('2026-10-13', o.slice(1)).includes('(unos 13.100). Esa'));   // sin lectura de hace una semana, no compara
-    // comparación en palabras
-    const vn = (v, n) => S(`yacyVsNormal(${v},${n})`), va = (v, a) => S(`yacyVsAntes(${v},${a})`);
+    assert.strictEqual(S('YACY_NORMAL.length'), 12);
+    assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
+    assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');
+    assert.ok(!/graficoYacy|yacySvg/.test(codigo), 'sin gráfico de Yacyretá');
+    const vn = (v, n) => S(`yacyVsNormal(${v},${n})`);
     assert.deepStrictEqual([vn(9000, 13100), vn(13000, 13100), vn(18000, 13100), vn(26000, 13100), vn(36200, 13100), vn(50000, 13100)],
       ['menos de lo normal', 'parecido a lo normal', 'bastante más de lo normal', 'cerca del doble de lo normal', 'cerca del triple de lo normal', 'más del triple de lo normal']);
-    assert.deepStrictEqual([va(36200, 27200), va(20000, 27200), va(27500, 27200)], ['más que', 'menos que', 'casi lo mismo que']);
     // dónde está el río respecto de sus niveles, en centímetros
-    const N = S('NIVEL'), sit = h => S(`rioSit(${h},NIVEL)`);
+    const sit = h => S(`rioSit(${h},NIVEL)`);
     assert.strictEqual(sit(6.98), 'Está 48 cm arriba del nivel de evacuación (6,50 m).');
     assert.strictEqual(sit(6.5), 'Llegó al nivel de evacuación (6,50 m).');
     assert.strictEqual(sit(6.2), 'Está 20 cm arriba del nivel de alerta (6,00 m). Le faltan 30 cm para el de evacuación (6,50 m).');
     assert.strictEqual(sit(5.4), 'Le faltan 60 cm para el nivel de alerta (6,00 m) y 1,10 m para el de evacuación (6,50 m).');
     assert.strictEqual(sit(7.6), 'Está 1,10 m arriba del nivel de evacuación (6,50 m).');
-    assert.ok(N.evac === 6.5);
-    // qué quieren decir los números: desplegable cerrado que explica altura, alerta, evacuación, defensas y rango del INA
-    const num = S('RIO_NUMEROS()');
-    assert.ok(num.startsWith('<details class="det" id="d-rio-numeros"><summary>¿Qué quieren decir estos números?</summary>'));
-    for (const t of ['regla del puerto de Barranqueras', 'Nivel de alerta, 6,00 m', 'Nivel de evacuación, 6,50 m', 'Defensas, unos 9,50 m', 'lo más bajo y lo más alto']) assert.ok(num.includes(t), t);
-    assert.ok(!/alerta naranja/.test(num + y13), 'el río nunca dice "alerta naranja"');
-    assert.ok(/\+RIO_NUMEROS\(\)/.test(codigo) && codigo.includes('const sit=rioSit(r.h,NIVEL)'), 'van en la sección del río');
-    assert.strictEqual(S('YACY_NORMAL.length'), 12);
-    assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
-    assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');
+    // dos desplegables cerrados: cómo leer los números y cómo calcula el INA la altura de los próximos días
+    const leer = S('RIO_LEER()'), prono = S('RIO_PRONO()');
+    assert.ok(leer.startsWith('<details class="det" id="d-rio-numeros"><summary>¿Cómo leer estos números?</summary>'));
+    for (const t of ['regla del puerto de Barranqueras', 'Alerta (6,00 m)', 'Evacuación (6,50 m)', 'unos 9,50 m']) assert.ok(leer.includes(t), t);
+    assert.ok(prono.startsWith('<details class="det" id="d-rio-prono"><summary>¿Cómo calcula el INA la altura de los próximos días?</summary>'));
+    for (const t of ['lo que suelta Yacyretá', 'unos 3 días', 'deja pasar el agua que le llega', 'Iguazú', 'río Paraguay', 'lluvia prevista', 'altura más probable', 'el rango', 'martes y los viernes', 'no calcula nada propio']) assert.ok(prono.includes(t), t);
+    assert.ok(!/alerta naranja/.test(leer + prono), 'el río nunca dice "alerta naranja"');
   });
 
   // Muchas visitas: la página nunca consulta las fuentes; usa la copia de GitHub, el script de respaldo o lo guardado

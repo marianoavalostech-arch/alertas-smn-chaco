@@ -1623,9 +1623,10 @@ function pintarRio(){
   const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
-  const W=340,H=170,L=30,Rt=46,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
+  const W=340,H=170,L=30,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
   // pronóstico del INA: se dibujan las fechas posteriores a la última lectura, a la derecha de la línea
   const pn=resumenProno(),pf=pn&&pn.fut?pn.fut.filter(q=>q[0]>o[n][0]):[];
+  const Rt=pf.length?62:46;   // con pronóstico, más lugar a la derecha para la altura prevista y su rango
   const spanX=span+(pf.length?diasEntre(o[n][0],pf[pf.length-1][0]):0);
   // Defensas de la ciudad: con el río o el pronóstico desde 8 m entran en el gráfico como línea; antes, solo una marca arriba (no aplastan la escala).
   const verDef=Math.max(...vals,...pf.map(q=>q[3]))>=8;
@@ -1639,9 +1640,11 @@ function pintarRio(){
   const ref=(v,c)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="1.5" stroke-dasharray="5 4"/>';
   const prono=!pf.length?'':'<polyline points="'+[[o[n][0],o[n][1]]].concat(pf.map(q=>[q[0],q[2]])).map(q=>x(q[0]).toFixed(1)+','+y(q[1]).toFixed(1)).join(' ')+'" fill="none" stroke="var(--water)" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round"/>'
     +pf.map(q=>'<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(q[3])+'" y2="'+y(q[1])+'" stroke="var(--water)" stroke-width="5" stroke-linecap="round" opacity=".35"/><circle cx="'+x(q[0])+'" cy="'+y(q[2])+'" r="3.2" fill="var(--card)" stroke="var(--water)" stroke-width="2"/>').join('')
-    +(q=>'<text x="'+(x(q[0])+8)+'" y="'+(y(q[2])+4)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf[pf.length-1])
-    // el pico previsto también lleva su número, arriba a la derecha de su punto, si no es el último y queda más alto que hoy
-    +(q=>q===pf[pf.length-1]||q[2]<=o[n][1]?'':'<text class="rioPico" x="'+(x(q[0])+5)+'" y="'+(y(q[2])-7)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf.reduce((m,q)=>q[2]>m[2]?q:m,pf[0]));
+    // Cada fecha prevista lleva escrita su altura más probable y, debajo, su rango (19/10, pedido de Mariano).
+    // El último punto, a su derecha; los de antes, arriba a la derecha, para no pisar la línea que baja o sube hacia el siguiente.
+    +pf.map((q,k)=>{const ult=k===pf.length-1,dy=ult?1:q[2]>=(pf[k+1]||q)[2]?-13:15;
+      return '<text class="rioPrev" x="'+(x(q[0])+7)+'" y="'+(y(q[2])+dy)+'" style="fill:var(--water);font-weight:700;font-size:11px">'+nf(q[2],2)+' m</text>'
+        +'<text class="rioRango" x="'+(x(q[0])+7)+'" y="'+(y(q[2])+dy+11)+'" style="fill:var(--water);font-size:9.5px">'+nf(q[1],2)+' a '+nf(q[3],2)+'</text>'}).join('');
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
   RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]]).concat(pf.map(q=>[x(q[0]),y(q[2]),q[0],q[2],q]))};
   const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.'+(pf.length?' Pronóstico del INA: '+pf.map(q=>nf(q[2],2)+' metros para el '+fDia(q[0])).join(', ')+'.':'')+'">'+g
@@ -1658,13 +1661,12 @@ function pintarRio(){
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo+'<p>'+sit+'</p>'
    +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
-   +RIO_NUMEROS()
    +stats+'<div class="rioCuerpo"><div class="rioGraf">'+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
-   +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA, con su rango</span>':'')+'</div>'
+   +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA y su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
-   +lineaYacy()
+   +lineaYacy()+RIO_LEER()+(pf.length?RIO_PRONO():'')
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
@@ -1678,33 +1680,28 @@ function pintarRio(){
 // Normal de cada mes (enero a diciembre): mediana de las lecturas diarias del INA (serie 937) de 2011 a 2025, redondeada a 100.
 const YACY_NORMAL=[13000,12800,13000,12000,11700,11900,11800,11100,11000,13100,13600,13100];
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-// Comparación en palabras, para quien no sabe cuánto es un metro cúbico por segundo: frente a lo normal del mes y frente a una semana antes.
+// Comparación en palabras, para quien no sabe cuánto es un metro cúbico por segundo.
 function yacyVsNormal(v,n){const q=v/n;return q<0.8?'menos de lo normal':q<1.2?'parecido a lo normal':q<1.75?'bastante más de lo normal':q<2.5?'cerca del doble de lo normal':q<3.5?'cerca del triple de lo normal':'más del triple de lo normal'}
-function yacyVsAntes(v,a){const q=v/a;return q>1.1?'más que':q<0.9?'menos que':'casi lo mismo que'}
+// Yacyretá: solo el último valor medido, en una frase, y que el INA lo usa para su pronóstico (19/10, pedido de Mariano: sin gráfico).
 function lineaYacy(){
   const o=D.yacy&&D.yacy.datos&&D.yacy.datos.obs;if(!o||!o.length)return '';
   const [dia,v]=o[o.length-1];if(diasEntre(dia,hoy)>4)return '';
-  const red=x=>nf(Math.round(x/100)*100);
-  let antes=null;for(const p of o)if(p[0]<=masDias(dia,-7)&&diasEntre(p[0],dia)<=9)antes=p;
   const mes=Number(dia.slice(5,7))-1;
-  return '<p><b>Río arriba, Yacyretá:</b> la represa '+(dia===hoy?'está soltando':'soltaba el '+fDia(dia))+' unos '+red(v)+' m³ de agua por segundo: '
-    +yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+' (unos '+red(YACY_NORMAL[mes])+')'
-    +(antes?' y '+yacyVsAntes(v,antes[1])+' hace una semana ('+red(antes[1])+')':'')+'. Esa agua llega a Barranqueras en unos 3 días.</p>'
-    +YACY_QUE()
+  return '<p><b>Río arriba, Yacyretá</b> '+(dia===hoy?'suelta':'soltaba el '+fDia(dia))+' unos '+nf(Math.round(v/100)*100)+' m³ de agua por segundo: '
+    +yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+'. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p>'
     +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del '+fDia(dia)+'.</p>';
 }
 // Explicaciones del río (19/10, pedido de Mariano): desplegables cerrados; cada navegador recuerda si los abrió, aunque la sección se vuelva a pintar.
 const detAbierto=id=>{try{return !!(JSON.parse(localStorage.getItem(DET_K))||{})[id]}catch(e){return false}};
 const det=(id,tit,cuerpo)=>'<details class="det" id="'+id+'"'+(detAbierto(id)?' open':'')+'><summary>'+tit+'</summary>'+cuerpo+'</details>';
-const RIO_NUMEROS=()=>det('d-rio-numeros','¿Qué quieren decir estos números?',
-  '<p><b>La altura</b> es lo que marca la regla del puerto de Barranqueras (el hidrómetro). No es lo hondo que está el río: sirve para comparar un día con otro.</p>'
-  +'<p><b>Nivel de alerta, '+nf(NIVEL.alerta,2)+' m:</b> es el aviso oficial para estar atentos en la costa y las islas, fuera de las defensas.</p>'
-  +'<p><b>Nivel de evacuación, '+nf(NIVEL.evac,2)+' m:</b> desde esta altura, en las zonas más bajas de la costa puede hacer falta salir de la casa. Seguí lo que digan Defensa Civil y tu municipio.</p>'
-  +'<p><b>Defensas, unos '+nf(NIVEL.defensa,2)+' m:</b> los terraplenes y muros que rodean el Gran Resistencia dejan el agua del río afuera hasta esa altura. No protegen las islas ni la costa de afuera.</p>'
-  +'<p><b>Pronóstico del INA:</b> el primer número es el más probable; entre paréntesis, lo más bajo y lo más alto que puede llegar. El INA lo renueva los martes y viernes.</p>');
-const YACY_QUE=()=>det('d-rio-yacy','¿Qué tiene que ver Yacyretá?',
-  '<p>Yacyretá no frena una crecida: el agua que le llega desde Brasil por el Alto Paraná tiene que seguir de largo. Por eso, si suelta más, unos días después el Paraná tiende a subir en Barranqueras; si suelta menos, a bajar.</p>'
-  +'<p>Pero no es lo único: antes de Corrientes se le suma el río Paraguay, y también cuenta la lluvia de la zona. Para saber hasta dónde puede llegar el río, lo que vale es el pronóstico del INA.</p>');
+const RIO_LEER=()=>det('d-rio-numeros','¿Cómo leer estos números?',
+  '<p><b>La altura</b> es lo que marca la regla del puerto de Barranqueras, no lo hondo del río.</p>'
+  +'<p><b>Alerta ('+nf(NIVEL.alerta,2)+' m):</b> estar atentos en la costa y las islas. <b>Evacuación ('+nf(NIVEL.evac,2)+' m):</b> en las zonas más bajas puede hacer falta salir de la casa; seguí lo que digan Defensa Civil y tu municipio.</p>'
+  +'<p><b>Las defensas</b> protegen la ciudad hasta unos '+nf(NIVEL.defensa,2)+' m. No protegen las islas ni la costa de afuera.</p>');
+const RIO_PRONO=()=>det('d-rio-prono','¿Cómo calcula el INA la altura de los próximos días?',
+  '<p>El INA (Instituto Nacional del Agua) sigue el agua que ya viene bajando por los ríos. Uno de los datos principales es lo que suelta Yacyretá, que deja pasar el agua que le llega: tarda unos 3 días en llegar a Barranqueras. También suma lo que traen el Iguazú y el río Paraguay, y la lluvia prevista para la semana.</p>'
+  +'<p>Cada fecha prevista tiene la altura más probable y, debajo, el rango: el río puede quedar en cualquier altura de ese rango. Cuanto más lejos la fecha, más puede cambiar.</p>'
+  +'<p>El INA lo renueva los martes y los viernes. Este sitio no calcula nada propio: muestra el del INA tal cual.</p>');
 
 // Paraguay y Bermejo: altura, tendencia, cambios y un gráfico chico de 30 días (con los niveles oficiales si los hay).
 function bloqueOtro(k){
