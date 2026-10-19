@@ -337,7 +337,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   const i0 = html.indexOf('id="indice"');
   assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 > html.indexOf('id="smnBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
   const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
-  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-nino', 't-acerca']);
+  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-nino', 't-acerca']);
   for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
   // Índice lateral (computadora, desde 1100 px): mismos destinos que el de arriba, que en esa pantalla se esconde junto con "↑ Índice";
   // en el celular, en el portal y al imprimir no se ve; el mapa va al lado de su detalle
@@ -358,7 +358,9 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
   // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance, 911 y "↑ Arriba"
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
-  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 9 && (lado.match(/class="ladoSub"/g) || []).length === 9, 'un ícono y un renglón por destino');
+  assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<a class="btn" href="#t-tel">Teléfonos</a>'), 'Teléfonos lleva directo a los números');
+  assert.ok(codigo.includes("x.tagName!=='H2'?x:"), 'en el índice lateral, Teléfonos se marca desde donde empiezan los números y no tapa a Qué hacer');
+  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 10 && (lado.match(/class="ladoSub"/g) || []).length === 10, 'un ícono y un renglón por destino');
   assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));
@@ -380,7 +382,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   // Cartel informativo en una línea, siempre a la vista (no es un desplegable)
   const av = /<div class="aviso info" role="note" data-corto>([\s\S]*?)<\/div>/.exec(html);
   assert.ok(av, 'cartel corto');
-  assert.ok(av[1].includes('<b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.') && av[1].includes('href="tel:911"') && av[1].includes('href="#t-hacer"') && av[1].includes('href="https://www.smn.gob.ar/alertas"'));
+  assert.ok(av[1].includes('<b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.') && av[1].includes('href="tel:911"') && av[1].includes('href="#t-tel"') && av[1].includes('href="https://www.smn.gob.ar/alertas"'));
   assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="smnBanda"'))), 'el cartel no se esconde');
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));

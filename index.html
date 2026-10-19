@@ -448,6 +448,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <a href="#t-mapa"><span class="ladoIco" aria-hidden="true">🗺️</span><span class="ladoTx">Mapa<small class="ladoSub"></small></span></a>
       <a href="#t-smn"><span class="ladoIco" aria-hidden="true">⚠️</span><span class="ladoTx">Alertas del SMN<small class="ladoSub"></small></span></a>
       <a href="#t-hacer"><span class="ladoIco" aria-hidden="true">🧭</span><span class="ladoTx">Qué hacer<small class="ladoSub"></small></span></a>
+      <a href="#t-tel"><span class="ladoIco" aria-hidden="true">📞</span><span class="ladoTx">Teléfonos<small class="ladoSub"></small></span></a>
       <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Por localidad<small class="ladoSub"></small></span></a>
       <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
       <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
@@ -457,13 +458,13 @@ footer{font-size:.85rem;color:var(--muted)}
     </nav>
     <div class="ladoPie">
       <a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a>
-      <div class="ladoFila"><a class="btn" href="#t-hacer">Teléfonos</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
+      <div class="ladoFila"><a class="btn" href="#t-tel">Teléfonos</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
     </div>
   </header>
 
   <main>
   <div class="aviso info" role="note" data-corto>
-    <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales. Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-hacer">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a>
+    <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales. Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-tel">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a>
   </div>
 
   <div id="smnBanda" role="status" hidden></div>
@@ -473,7 +474,7 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
   </nav>
 
   <section aria-labelledby="t-mapa">
@@ -521,7 +522,7 @@ footer{font-size:.85rem;color:var(--muted)}
   <section aria-labelledby="t-hacer">
     <h2 id="t-hacer">Qué hacer ante una alerta</h2>
     <div id="hHoy" class="hHoy gris" aria-live="polite"><p class="nodisp">Consultando las alertas…</p></div>
-    <div>
+    <div id="t-tel">
       <p class="hEt">Teléfonos de emergencia en el Chaco <span class="meta">Tocá para llamar o escribir</span></p>
       <div class="hTel">
         <a href="tel:911"><b>911</b>Policía</a>
@@ -2157,9 +2158,10 @@ function botonIndice(){
 }
 seguro(botonIndice);
 // Índice lateral (solo se ve en computadora): marca la sección que está en la pantalla, la última cuyo comienzo ya pasó el primer tercio.
+// Los títulos (h2) marcan su sección entera; "Teléfonos" (t-tel) es un bloque dentro de "Qué hacer" y se marca desde donde empieza.
 function indiceLateral(){
   const nav=$('lado');if(!nav||EMB||typeof innerHeight!=='number')return;
-  const L=[...nav.querySelectorAll('a[href^="#t-"]')].map(a=>[a,($(a.getAttribute('href').slice(1))||{}).closest?.('section')]).filter(x=>x[1]);
+  const L=[...nav.querySelectorAll('a[href^="#t-"]')].map(a=>[a,(x=>x&&x.tagName!=='H2'?x:(x||{}).closest?.('section'))($(a.getAttribute('href').slice(1)))]).filter(x=>x[1]);
   let pend=false,act=null;
   const ver=()=>{pend=false;if(getComputedStyle(nav).display==='none')return;
     let q=null;for(const [a,sec] of L)if(sec.getBoundingClientRect().top<=innerHeight*0.33)q=a;
