@@ -1,5 +1,6 @@
 # Robot de la lluvia: pide la lluvia a Open-Meteo y deja lluvia.json en la rama "datos".
 # Después renueva, cada 3 horas como mucho, la grilla del mapa animado (grilla.json). Si la grilla falla, la lluvia se guarda igual.
+# Cada 7 días baja de la NASA la imagen del Pacífico de la sección El Niño (pacifico.jpg y pacifico.json). Si falla, queda la anterior.
 # También copia el resultado del script de Google (servidor.json): la página lee esa copia primero, para que las visitas no carguen al script.
 # Lo lanza el script de Google en cada renovación (cada hora). El horario de abajo queda de respaldo: GitHub lo cumple muy poco.
 # El sitio lee ese archivo. Netlify solo publica la rama main, así que esto no publica ni gasta créditos.
@@ -33,6 +34,13 @@ jobs:
         run: |
           curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/grilla.json" -o grilla-anterior.json || true
           node robot/grilla.js grilla-anterior.json salida/grilla.json
+      - name: Renovar la imagen del Pacífico (NASA), cada 7 días
+        continue-on-error: true
+        run: |
+          mkdir -p pacifico-anterior
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/pacifico.json" -o pacifico-anterior/pacifico.json || true
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/pacifico.jpg" -o pacifico-anterior/pacifico.jpg || true
+          node robot/pacifico.js pacifico-anterior salida
       - name: Copiar el resultado del script de Google
         id: copia
         continue-on-error: true
@@ -49,6 +57,7 @@ jobs:
           git add lluvia.json
           if [ -s grilla.json ]; then git add grilla.json; fi
           if [ -s servidor.json ]; then git add servidor.json; fi
+          if [ -s pacifico.json ] && [ -s pacifico.jpg ]; then git add pacifico.json pacifico.jpg; fi
           git commit -q -m "Lluvia [skip ci] [skip netlify]"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" datos
       - name: Avisar si el script de Google lleva más de 6 horas sin renovar

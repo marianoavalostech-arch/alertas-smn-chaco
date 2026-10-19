@@ -843,6 +843,59 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
     assert.strictEqual(S(`FORMA.grilla(${JSON.stringify({ ...d, h0: 'ayer' })})`), false);
   });
 
+  // Robot del Pacífico: PNG armados acá (transparente = día sin publicar), NASA simulada
+  const pc = require('../robot/pacifico.js'), zl = require('zlib');
+  const crc = b => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };
+  const trozo = (t, d) => { const l = Buffer.alloc(4), r = Buffer.alloc(4), td = Buffer.concat([Buffer.from(t, 'latin1'), d]); l.writeUInt32BE(d.length); r.writeUInt32BE(crc(td)); return Buffer.concat([l, td, r]); };
+  // png(tipo, profundidad, filas de bytes ya armadas, tRNS opcional), 4x2, filtro 1 (Sub) en la segunda fila para probar el desfiltrado
+  const png = (tipo, prof, filas, trns) => {
+    const ih = Buffer.alloc(13); ih.writeUInt32BE(4, 0); ih.writeUInt32BE(2, 4); ih[8] = prof; ih[9] = tipo;
+    const bpp = Math.max(1, ({ 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[tipo] * prof) >> 3);
+    const datos = Buffer.concat(filas.map((f, y) => { const b = Buffer.from(f); if (y === 0) return Buffer.concat([Buffer.from([0]), b]);
+      const s = Buffer.from(b.map((v, x) => (v - (x >= bpp ? b[x - bpp] : 0)) & 255)); return Buffer.concat([Buffer.from([1]), s]); }));
+    return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), trozo('IHDR', ih), ...(trns ? [trozo('PLTE', Buffer.alloc(6)), trozo('tRNS', Buffer.from(trns))] : []), trozo('IDAT', zl.deflateSync(datos)), trozo('IEND', Buffer.alloc(0))]);
+  };
+  const rgbaVacio = png(6, 8, [Array(16).fill(0), Array(16).fill(0)]);
+  const rgbaAlgo = png(6, 8, [Array(16).fill(0), [0, 0, 0, 0, 0, 0, 0, 0, 200, 30, 10, 255, 0, 0, 0, 0]]);
+  const palVacio = png(3, 8, [[0, 0, 0, 0], [0, 0, 0, 0]], [0, 255]), palAlgo = png(3, 8, [[0, 0, 0, 0], [0, 0, 1, 0]], [0, 255]);
+  const pal2Algo = png(3, 2, [[0b00000000], [0b00000100]], [0, 255]);   // 2 bits por punto: el tercero de la fila 2 es el color 1
+  const jpg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(80000, 7)]);
+  let nasa = [], publicados = new Set(['2026-10-17']);
+  global.fetch = async url => { nasa.push(url); const d = /TIME=([\d-]+)/.exec(url)[1];
+    const b = url.includes('FORMAT=image/png') ? (publicados.has(d) ? rgbaAlgo : rgbaVacio) : jpg;
+    return { ok: true, arrayBuffer: async () => b.buffer.slice(b.byteOffset, b.byteOffset + b.length) }; };
+  const p1 = await pc.armarPacifico(null, new Date('2026-10-19T15:00:00Z'));
+  const pedidos1 = nasa.length; nasa = [];
+  const p2 = await pc.armarPacifico(p1.salida, new Date('2026-10-25T15:00:00Z'));            // 6 días: no pide
+  publicados = new Set();
+  const p3 = await pc.armarPacifico(p1.salida, new Date('2026-10-26T16:00:00Z'));            // 7 días y la NASA sin imágenes: queda la anterior
+  const p4 = await pc.armarPacifico(p3.salida, new Date('2026-10-26T20:00:00Z'));            // 4 horas después: no reintenta
+  publicados = new Set(['2026-10-24']);
+  const p5 = await pc.armarPacifico(p3.salida, new Date('2026-10-26T22:30:00Z'));            // 6 horas y media: reintenta y la consigue
+  global.fetch = async () => ({ ok: false, status: 503 });
+  const p6 = await pc.armarPacifico(null, new Date('2026-10-19T15:00:00Z'));                 // falla sin anterior: no hay archivo
+  global.fetch = async () => ({ ok: true, arrayBuffer: async () => new ArrayBuffer(10) });
+  const p7 = await pc.armarPacifico(null, new Date('2026-10-19T15:00:00Z'));                 // respuesta rota
+  global.fetch = real;
+  prueba('robot del Pacífico: imagen de la NASA cada 7 días, salta los días sin publicar y si falla queda la anterior', () => {
+    assert.strictEqual(pc.CADA_D, 7);
+    assert.strictEqual(pc.pngTieneAlgo(rgbaVacio), false); assert.strictEqual(pc.pngTieneAlgo(rgbaAlgo), true);
+    assert.strictEqual(pc.pngTieneAlgo(palVacio), false); assert.strictEqual(pc.pngTieneAlgo(palAlgo), true); assert.strictEqual(pc.pngTieneAlgo(pal2Algo), true);
+    assert.strictEqual(p1.bien, true); assert.strictEqual(p1.salida.json.dia, '2026-10-17', 'ayer (18/10) sin publicar: usa el 17/10');
+    assert.strictEqual(pedidos1, 3, 'dos pruebas chicas y la imagen');
+    assert.deepStrictEqual(Object.keys(p1.salida.json).sort(), ['dia', 'error', 'fuente', 'img', 't']); assert.strictEqual(p1.salida.json.img, 'pacifico.jpg');
+    assert.ok(p1.salida.jpg.equals(jpg));
+    assert.strictEqual(p2.pidio, false); assert.strictEqual(nasa.length, 7, 'p3: 4 pruebas sin imagen; p5: 2 pruebas y la imagen');
+    assert.strictEqual(p3.bien, false); assert.strictEqual(p3.salida.json.dia, '2026-10-17'); assert.ok(/últimos 4 días/.test(p3.salida.json.error)); assert.ok(p3.salida.jpg.equals(jpg));
+    assert.strictEqual(p4.pidio, false); assert.strictEqual(p4.salida.json.dia, '2026-10-17');
+    assert.strictEqual(p5.bien, true); assert.strictEqual(p5.salida.json.dia, '2026-10-24'); assert.strictEqual(p5.salida.json.error, null); assert.strictEqual(p5.salida.json.intento, undefined);
+    assert.strictEqual(p6.salida, null); assert.strictEqual(p6.error, 'HTTP 503');
+    assert.strictEqual(p7.bien, false); assert.strictEqual(p7.salida, null);
+    // Mismo recorte y tamaño que pedía la página
+    assert.ok(pc.urlImagen('2026-10-17').includes('BBOX=-180,-40,-35,25&WIDTH=870&HEIGHT=390&FORMAT=image/jpeg&TIME=2026-10-17&TRANSPARENT=FALSE&BGCOLOR=0x8C978B'));
+    assert.ok(html.includes("pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B'"));
+  });
+
   // La página nunca le pide la lluvia a Open-Meteo: usa la copia del robot aunque esté atrasada
   S(`var llamadas=[];fetch=u=>{llamadas.push(String(u));return Promise.reject(new Error('sin red'))};
      var copiaRobot=h=>{const t=new Date(Date.now()-h*36e5),d0=diaAR(t),dias=Array.from({length:14},(_,i)=>masDias(d0,i-7));
@@ -1141,8 +1194,24 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
   });
   prueba('El Niño: la consulta a la NASA espera a que termine de cargar la página, para que no quede "cargando"', () => {
     const f = html.slice(html.indexOf('function iniciarPacifico'), html.indexOf('function pintarBanner'));
-    assert.ok(/readyState==='complete'/.test(f) && /addEventListener\('load'/.test(f) && /\.then\(buscarDiaPac\)/.test(f), 'la prueba chica se lanza después del evento de carga');
-    assert.ok(!/const dia=buscarDiaPac\(\)/.test(f), 'no se pide antes de que cargue');
+    assert.ok(/readyState==='complete'/.test(f) && /addEventListener\('load'/.test(f) && /\.then\(\(\)=>fetch\(PAC_COPIA/.test(f), 'la copia (y si falta, la NASA) se piden después del evento de carga');
+    assert.ok(!/const dia=buscarDiaPac\(\)/.test(f) && !/const dia=fetch/.test(f), 'no se pide antes de que cargue');
+  });
+  prueba('El Niño: la página usa la imagen que guarda el robot y, si falta o es vieja, la de la NASA', () => {
+    const ahora = Date.parse('2026-10-19T15:00:00Z'), c = j => S(`pacCopia(${JSON.stringify(j)},${ahora})`);
+    assert.strictEqual(c({ dia: '2026-10-17', img: 'pacifico.jpg' }), '2026-10-17');
+    assert.strictEqual(c({ dia: '2026-10-01', img: 'pacifico.jpg' }), '2026-10-01', 'con 18 días todavía sirve');
+    assert.strictEqual(c({ dia: '2026-09-25', img: 'pacifico.jpg' }), null, 'con más de 21 días el robot se detuvo: se va a la NASA');
+    assert.strictEqual(c({ dia: '2026-10-17', img: 'otra.jpg' }), null);
+    assert.strictEqual(c({ dia: 'ayer', img: 'pacifico.jpg' }), null);
+    assert.strictEqual(c(null), null);
+    const f = html.slice(html.indexOf('function mostrarPac'), html.indexOf('function iniciarPacifico'));
+    assert.ok(/DATOS_URL\+'pacifico\.jpg\?d='\+d/.test(f), 'la imagen guardada lleva la fecha, para no ver una vieja');
+    assert.ok(/if\(copia\)buscarDiaPac\(\)/.test(f), 'si la copia no carga, se busca en la NASA');
+    const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
+    assert.ok(/img-src [^;]*https:\/\/raw\.githubusercontent\.com/.test(toml), 'la regla del navegador deja mostrar imágenes de la rama datos');
+    const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
+    assert.ok(yml.includes('node robot/pacifico.js pacifico-anterior salida') && yml.includes('git add pacifico.json pacifico.jpg'), 'el robot corre y guarda los dos archivos');
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

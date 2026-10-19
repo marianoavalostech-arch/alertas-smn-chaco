@@ -744,7 +744,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
-      <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso.</li>
+      <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso. Una copia se guarda en GitHub y se renueva cada 7 días: por eso la imagen puede tener hasta una semana y unos días.</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Se muestran las de hoy y los 2 días siguientes, igual que el mapa del SMN. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
       <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
@@ -756,7 +756,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del mar y del satélite; y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
   </section>
 
   </main>
@@ -1775,7 +1775,15 @@ function pintarNino(){
     :'Cuando hay El Niño, sobre el ecuador frente a Sudamérica aparece una mancha roja larga.';
 }
 // Mapa del Pacífico: imagen de la NASA (GIBS) con la temperatura del mar comparada con lo normal (unos 90 KB).
+// El robot de GitHub la baja cada 7 días y la deja en la rama datos (pacifico.jpg, con su fecha en pacifico.json): la página la lee de ahí.
+// Si esa copia falta, no carga o tiene más de 21 días (el robot se detuvo), se pide a la NASA como antes.
 // Se pide recién cuando la sección está por verse. Si no hay imagen, la figura queda oculta.
+const PAC_COPIA=DATOS_URL+'pacifico.json',PAC_MAX_D=21;
+// Fecha de la copia del robot si sirve, o null.
+function pacCopia(j,ahora=Date.now()){
+  if(!j||j.img!=='pacifico.jpg'||!/^\d{4}-\d\d-\d\d$/.test(j.dia))return null;
+  const edad=(ahora-Date.parse(j.dia+'T12:00:00Z'))/864e5;return edad>-2&&edad<PAC_MAX_D?j.dia:null;
+}
 const PAC='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies&STYLES=&SRS=EPSG:4326';
 const pacUrl=(dia,bbox,w,h,f)=>PAC+'&BBOX='+bbox+'&WIDTH='+w+'&HEIGHT='+h+'&FORMAT=image/'+f+'&TIME='+dia;
 const diaAntes=n=>new Date(Date.now()-n*864e5).toISOString().slice(0,10);
@@ -1784,19 +1792,22 @@ function pacHay(dia){return new Promise(ok=>{const i=new Image();i.crossOrigin='
   i.onload=()=>{try{const c=document.createElement('canvas');c.width=4;c.height=2;const x=c.getContext('2d');x.drawImage(i,0,0);ok(x.getImageData(0,0,4,2).data.some((v,k)=>k%4===3&&v>0))}catch(e){ok(false)}};
   i.onerror=()=>ok(false);i.src=pacUrl(dia,'-170,-5,-120,5',4,2,'png')})}
 async function buscarDiaPac(){for(const n of [1,2,3,4]){const d=diaAntes(n);if(await pacHay(d))return d}return null}
-function mostrarPac(d){
-  const im=$('pacImg');im.onerror=()=>{$('pacifico').hidden=true};
+// copia=true: la imagen guardada en GitHub; si no carga, se busca en la NASA.
+function mostrarPac(d,copia){
+  const im=$('pacImg');im.onerror=()=>{if(copia)buscarDiaPac().then(x=>{if(x)mostrarPac(x,false);else $('pacifico').hidden=true});else $('pacifico').hidden=true};
   im.alt='Mapa del océano Pacífico y Sudamérica del '+fDia(d)+', con el agua más caliente de lo normal en rojo y la más fría en azul.';
-  im.src=pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;
+  im.src=copia?DATOS_URL+'pacifico.jpg?d='+d:pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;
 }
-const cargarPacifico=()=>buscarDiaPac().then(d=>{if(d)mostrarPac(d)});
-// La prueba chica (unos cientos de bytes) se hace apenas termina de cargar la página: si se pidiera antes y la NASA
-// tardara (el 19/10 tardó 47 s), el navegador se quedaría mostrando que la página sigue cargando. La imagen se pide cuando la sección
-// está a unos 2500 px (varias pantallas de celular), para que al llegar ya esté lista.
+// La fecha de la copia (unos 100 bytes) y, si hace falta, la prueba chica a la NASA se piden apenas termina de cargar la página:
+// si se pidieran antes y la NASA tardara (el 19/10 tardó 47 s), el navegador se quedaría mostrando que la página sigue cargando.
+// La imagen se pide cuando la sección está a unos 2500 px (varias pantallas de celular), para que al llegar ya esté lista.
 function iniciarPacifico(){
   if(typeof Image==='undefined')return;
-  const dia=new Promise(ok=>{if(document.readyState==='complete')ok();else addEventListener('load',()=>ok(),{once:true})}).then(buscarDiaPac);let pedida=false;
-  const ir=()=>{if(pedida)return;pedida=true;dia.then(d=>{if(d)mostrarPac(d)}).catch(e=>console.error(e))};
+  const nasa=()=>buscarDiaPac().then(d=>d&&{d,copia:false});
+  const dia=new Promise(ok=>{if(document.readyState==='complete')ok();else addEventListener('load',()=>ok(),{once:true})})
+    .then(()=>fetch(PAC_COPIA,{cache:'no-cache'})).then(r=>r.ok?r.json():null).catch(()=>null)
+    .then(j=>{const d=pacCopia(j);return d?{d,copia:true}:nasa()});let pedida=false;
+  const ir=()=>{if(pedida)return;pedida=true;dia.then(x=>{if(x)mostrarPac(x.d,x.copia)}).catch(e=>console.error(e))};
   if(typeof IntersectionObserver==='undefined'){ir();return}
   // Con la sección cerrada no se pide: se espera a que la abran.
   const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();if(abierta('t-nino'))ir();else alAbrir('t-nino',ab=>{if(ab)ir()})}},{rootMargin:'2500px 0px'});o.observe($('t-nino'));

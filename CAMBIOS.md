@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, tarde (imagen del Pacífico guardada en GitHub, renovada cada 7 días)
+
+Pedido de Mariano: guardar la imagen de la NASA y traerla cada tantos días, en vez de que cada visita se la pida a la NASA.
+- **Robot nuevo** (`robot/pacifico.js`, en la tarea "Lluvia"): cada 7 días baja de la NASA la imagen de la sección El Niño (temperatura del mar comparada con lo normal) y la guarda en la rama `datos` (`pacifico.jpg` y `pacifico.json` con su fecha). Busca el último día publicado (hasta 4 días atrás). Si la NASA falla, queda la anterior y reintenta a las 6 horas. No publica ni gasta créditos de Netlify.
+- **La página la lee de GitHub**: carga más rápido y la NASA ya no recibe un pedido por visita. Si la copia falta, no carga o tiene más de 21 días, la pide a la NASA como antes. La imagen puede tener hasta una semana y unos días (lo dice "De dónde salen los datos"; la fecha sigue debajo de la imagen).
+- Regla del navegador: deja mostrar imágenes de raw.githubusercontent.com. Privacidad: a la NASA solo por el satélite (y el Pacífico si falta la copia). Las imágenes del satélite del mapa animado no cambian.
+- Huella nueva del código. 59 pruebas (nuevas: el robot con imágenes armadas, días sin publicar, cada 7 días, falla y reintento; la página con la copia, la copia vieja y la vuelta a la NASA).
+
 ## 19/10/2026, tarde (la página ya no queda "cargando" en la computadora)
 
 Aviso de Mariano: en la PC el navegador se quedaba cargando.
