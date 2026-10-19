@@ -62,6 +62,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
 .captura{background:var(--acento-soft);border-left:5px solid var(--acento);padding:10px 12px;border-radius:4px;font-size:.95rem}
+main{display:flex;flex-direction:column;gap:16px;min-width:0}
 section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
@@ -154,7 +155,8 @@ footer{font-size:.85rem;color:var(--muted)}
 .btn:hover:not(:disabled){border-color:var(--acento);background:var(--acento-soft)}
 .btn:disabled{opacity:.45;cursor:default}
 .mapa-zoom{display:flex;gap:6px}
-#mapa{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+#mapa{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg);box-sizing:content-box;aspect-ratio:530/496}
+#mapa>svg{display:block;width:100%;height:100%}
 #mapa svg{cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 #mapa svg.arrastra{cursor:grabbing}
 #mapa path.mun{cursor:pointer;stroke:var(--card);stroke-width:1;stroke-linejoin:round;vector-effect:non-scaling-stroke;transition:fill .25s,fill-opacity .25s}
@@ -317,6 +319,8 @@ footer{font-size:.85rem;color:var(--muted)}
 /* instalar app: botón (Android y computadora) o explicación (iPhone); compartir: botón en todos lados.
    La caja (#instalar) tiene los dos; nunca se ve dentro del portal ni al imprimir */
 .instalar{margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+/* Hasta que corre el código, el lugar del botón Compartir queda reservado (invisible): así la página no salta cuando aparece. */
+@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir{display:inline-flex!important}}
 .btnInst{display:inline-flex;align-items:center;gap:8px;padding:5px 16px 5px 6px}
 .btnInst img{width:28px;height:28px;border-radius:8px;display:block}
 .btnComp{padding:5px 16px 5px 12px}
@@ -335,7 +339,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
     <div class="instalar" id="instalar" hidden>
-      <button class="btn btnInst" id="btnInstalar" type="button" hidden><img src="iconos/icono-192.png" alt="" width="28" height="28">Instalar app</button>
+      <button class="btn btnInst" id="btnInstalar" type="button" hidden><img src="icono.svg" alt="" width="28" height="28">Instalar app</button>
       <button class="btn btnInst btnComp" id="btnCompartir" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>
       <div class="compOpc" id="compOpc" hidden>
         <a class="btn" id="compWa" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
@@ -347,6 +351,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
   </header>
 
+  <main>
   <div class="aviso info" role="note">
     <strong>Este sitio es informativo.</strong>
     No reemplaza las alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
@@ -372,9 +377,9 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
       <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</button>
-      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo: lluvia importante o alerta amarilla/naranja del SMN</button>
-      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja: solo en la costa del Paraná, cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es una alerta del SMN</button>
-      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte o alerta roja del SMN</button>
+      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo: lluvia importante, alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas</button>
+      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja: solo en la costa del Paraná, por la altura del río y el pronóstico del INA. No es una alerta del SMN</button>
+      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte, alerta roja del SMN, o el Paraná muy alto en la costa</button>
       <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</button>
       <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
     </div>
@@ -429,7 +434,7 @@ footer{font-size:.85rem;color:var(--muted)}
             <li><b>No cruces calles, caminos ni puentes con agua,</b> ni a pie, ni en moto, ni en auto: no sabés qué hondo está ni qué tan fuerte corre.</li>
             <li><b>No dejes que los chicos jueguen en el agua</b> de la calle, las zanjas o los canales. Nadie se bañe ahí.</li>
             <li><b>Limpiá las zanjas, rejillas y desagües de tu frente.</b> Y no saques la basura: el agua la arrastra y tapa todo.</li>
-            <li><b>Si entra agua a tu casa:</b> bajá la llave de la luz, cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
+            <li><b>Si entra agua a tu casa:</b> si podés llegar sin pisar agua, bajá la llave de la luz; cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
             <li><b>Fijate en tus vecinos:</b> si alguien no puede salir solo (abuelos, personas enfermas o en silla de ruedas), avisá a Defensa Civil o al municipio.</li>
             <li><b>Si hay pozo ciego o letrina, marcalo con un palo o una tela:</b> con el terreno mojado se puede hundir.</li>
             <li><b>Hacé caso solo a los avisos oficiales</b> de la Provincia y de tu municipio. No reenvíes audios ni mensajes de WhatsApp si no sabés de dónde salieron.</li>
@@ -441,7 +446,7 @@ footer{font-size:.85rem;color:var(--muted)}
             <li><b>Si vivís dentro de las defensas, el agua del río queda afuera.</b> Las defensas del Gran Resistencia protegen hasta unos 9,50 m. Igual, seguí los avisos oficiales. Lo que sigue es para las islas y la costa fuera de las defensas.</li>
             <li><b>Tené lista la <button type="button" class="hLink" data-h="mochila">mochila de emergencia</button>.</b> Si te dicen que salgas, salí con tiempo: no esperes a que el agua llegue a la puerta.</li>
             <li><b>Si tenés animales</b> (gallinas, chanchos, caballos, perros), pensá antes adónde llevarlos y sacalos con tiempo.</li>
-            <li><b>Si entra agua a tu casa:</b> bajá la llave de la luz, cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
+            <li><b>Si entra agua a tu casa:</b> si podés llegar sin pisar agua, bajá la llave de la luz; cerrá la garrafa o el gas, y subí lo que puedas a lo alto (colchones, ropa, mercadería). No toques nada eléctrico con los pies mojados.</li>
             <li><b>Fijate en tus vecinos:</b> si alguien no puede salir solo (abuelos, personas enfermas o en silla de ruedas), avisá a Defensa Civil o al municipio.</li>
             <li><b>Si hay pozo ciego o letrina, marcalo con un palo o una tela:</b> con el terreno mojado se puede hundir.</li>
             <li><b>Hacé caso solo a los avisos oficiales</b> de la Provincia y de tu municipio. No reenvíes audios ni mensajes de WhatsApp si no sabés de dónde salieron.</li>
@@ -545,7 +550,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
-        <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná. Es la única forma de que el mapa muestre rojo por el río.</li>
+        <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná: por el río pueden llegar a rojo.</li>
         <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Colonia Benítez hasta rojo (por San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa); Resistencia, Margarita Belén e Isla del Cerrito hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
@@ -609,7 +614,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
-      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, nunca a rojo.</li>
+      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m).</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
       <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
@@ -629,6 +634,8 @@ footer{font-size:.85rem;color:var(--muted)}
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
     <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del mar y del satélite; y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
   </section>
+
+  </main>
 
   <footer>Los horarios están en hora de Argentina.</footer>
 </div>
@@ -653,9 +660,11 @@ const LOCS=[
  {n:'Las Breñas',lat:-27.09,lon:-61.08,dx:0,dy:-17,a:'middle'}
 ];
 const TZ='America/Argentina/Buenos_Aires';
-const nf=(v,d=0)=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
-const diaAR=d=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ}).format(d);
-const fFechaHora=d=>new Intl.DateTimeFormat('es-AR',{timeZone:TZ,day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(d)+' h';
+// Los formatos de fecha y número se arman una sola vez: armarlos en cada uso trababa la página casi un segundo en los celulares lentos.
+const NF={},nf=(v,d=0)=>(NF[d]||(NF[d]=new Intl.NumberFormat('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}))).format(Number(v));
+const F_DIA=new Intl.DateTimeFormat('en-CA',{timeZone:TZ}),diaAR=d=>F_DIA.format(d);
+const F_FH=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),fFechaHora=d=>F_FH.format(d)+' h';
+const F_HH=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'});
 const fDia=s=>{const [y,m,d]=s.slice(0,10).split('-');return Number(d)+'/'+Number(m)};
 const masDias=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 
@@ -1219,7 +1228,8 @@ function pintarInfo(){
      +'<button class="btn irRio" type="button" data-irrio="'+M.rio.ir+'">Ver el '+esc(n.replace('Río','río'))+' ↓</button>';return}
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
-  if(k.tipo==='seg')h='<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
+  if(k.tipo==='seg')h=k.rio?'<p><span class="estado">Lluvia y río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>'+(M.R[k.j].c==='gris'?'':'Por la lluvia, su semáforo está en '+M.R[k.j].et.toLowerCase()+'. ')+M.R[k.j].por+'</p>'
+    :'<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Forma parte del Gran Resistencia: por la lluvia comparte su semáforo, que está en '+M.R[0].et.toLowerCase()+'. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
     h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
@@ -1267,8 +1277,8 @@ const SMN_URL='https://script.google.com/macros/s/AKfycbwCmRXbp0zTNVfDDLMmRGwaKp
 const SMN_VACIO={emitido:null,capturado:null,fechas:[],areas:[],alertas:{}};
 const smnVale=j=>!!j&&Array.isArray(j.areas)&&j.areas.length===GEO.mun.length&&!!j.alertas&&Array.isArray(j.fechas)&&j.fechas.length>0&&!isNaN(new Date(j.capturado))&&!isNaN(new Date(j.emitido));
 let SMN=(g=>g&&smnVale(g.datos)?g.datos:SMN_VACIO)(MEM.leer('smn')),SMN_VIVO=false,SMN_LISTO=false;
-let horaAR=()=>Number(new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'}).format(new Date()));
-const fDiaLargo=s=>new Intl.DateTimeFormat('es-AR',{weekday:'long',timeZone:'UTC'}).format(new Date(s+'T12:00:00Z'))+' '+fDia(s);
+const F_HORA=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'});let horaAR=()=>Number(F_HORA.format(new Date()));
+const F_SEM=new Intl.DateTimeFormat('es-AR',{weekday:'long',timeZone:'UTC'}),fDiaLargo=s=>F_SEM.format(new Date(s+'T12:00:00Z'))+' '+fDia(s);
 const smnVigente=()=>SMN.fechas.length&&SMN.fechas[SMN.fechas.length-1]>=hoy;
 function smnDe(i){   // alertas vigentes del municipio i, una por cada nivel: [{dia,ev,niv,fr}]
   const out=[],h=horaAR();
@@ -1760,7 +1770,7 @@ function armarAnim(){
 function etqDia(dia){const d=Math.round((new Date(dia+'T12:00:00Z')-new Date(hoy+'T12:00:00Z'))/864e5);return d===0?'Hoy':d===-1?'Ayer':d===1?'Mañana':fDia(dia)}
 function mostrar(k){
   const g=A.g;k=Math.max(0,Math.min(g.n-1,k));A.k=k;
-  const t=horaDe(k),dia=diaAR(t),hh=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'}).format(t);
+  const t=horaDe(k),dia=diaAR(t),hh=F_HH.format(t);
   const ya=t.getTime()+36e5<=Date.now(),ahora=!ya&&t.getTime()<=Date.now();
   $('aHora').value=k;
   $('aEtq').innerHTML='<b>'+etqDia(dia)+' '+fDia(dia)+', '+hh+' h</b> · '+(ya?'ya pasó: lluvia estimada por el modelo'+(conSat(k)?', nubes del satélite':''):ahora?'ahora: lluvia prevista':'pronóstico');

@@ -1,7 +1,12 @@
 # Sitio estático: no hay nada que compilar. Netlify publica la carpeta tal cual.
+# Antes de publicar corre las pruebas: si alguna falla, no publica y queda la versión anterior
+# (una publicación fallida no gasta créditos). Las pruebas necesitan Node 22 o más nuevo.
 [build]
   publish = "."
-  command = ""
+  command = "node pruebas/reglas.test.js"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 # Cabeceras de seguridad.
 # Content-Security-Policy: el navegador solo corre el código de la página (identificado por su huella) y solo se conecta a:
@@ -20,7 +25,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-    Content-Security-Policy = "default-src 'none'; script-src 'sha256-YLvEZV6GdMnwHZzDdFH3uABF7EGHgTFikETSjQ1bN7s='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+    Content-Security-Policy = "default-src 'none'; script-src 'sha256-waQCPxaIPuDTOAAUvE+DVDUBmskroPeMDn7QO1f2CpI='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
 
 # Archivo para instalar el sitio como app: con su tipo correcto.
 [[headers]]

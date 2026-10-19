@@ -236,12 +236,21 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   const rr = JSON.parse(S(`JSON.stringify(riesgoRio())`));
   assert.ok(rr.pr && rr.por.includes('queda en rojo'), rr.por);
   assert.ok(JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${B})))`)).includes('El rojo sale de la altura de hoy y de lo que prevé el INA'));
+  // El detalle de Resistencia (localidad del semáforo) dice el color del mapa (naranja por el río) y aparte el de la lluvia
+  const inf = {}; elementos.mInfo = inf; S(`M.sel=${R};pintarInfo();M.sel=-1`); delete elementos.mInfo;
+  assert.ok(inf.innerHTML.includes('<b>Naranja</b>') && !inf.innerHTML.includes('<b>Verde</b>'), 'el color grande es el del mapa: ' + inf.innerHTML.slice(0, 300));
+  assert.ok(inf.innerHTML.includes('Por la lluvia, su semáforo está en verde.') && inf.innerHTML.includes('Naranja por el río Paraná'), inf.innerHTML.slice(0, 400));
+  col('verde', [['2026-10-17', 4.0]], null, '2026-10-17'); const inf2 = {}; elementos.mInfo = inf2; S(`M.sel=${R};pintarInfo();M.sel=-1`); delete elementos.mInfo;
+  assert.ok(inf2.innerHTML.includes('Localidad del semáforo') && inf2.innerHTML.includes('<b>Verde</b>'), 'sin el río, como siempre: ' + inf2.innerHTML.slice(0, 200));
   // Río sobre la alerta, pero el pronóstico no pasa la evacuación: sigue amarillo
   assert.strictEqual(col('verde', obs17, { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-20', 6.0, 6.3, 6.45]] }, '2026-10-17')[0][0], 'amarillo');
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja, aclarando que no es una alerta del SMN
   assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja: solo en la costa del Paraná[^<]*No es una alerta del SMN<\/button>/.test(html), 'leyenda');
+  assert.ok(/data-c="amarillo"[^>]*><i [^>]*><\/i>Amarillo: [^<]*el Paraná alto[^<]*<\/button>/.test(html) && /data-c="rojo"[^>]*><i [^>]*><\/i>Rojo: [^<]*el Paraná muy alto[^<]*<\/button>/.test(html), 'la leyenda nombra al río también en amarillo y en rojo');
+  assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
+  assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
   assert.ok(/#mInfo\.naranja\{border-color:var\(--naranja\)\}/.test(html), 'borde del detalle');
   // Colonia Benítez: con el Paraná fuera del verde sigue al río, también en rojo (San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa)
@@ -274,6 +283,35 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   const rs = JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${R})))`));
   assert.ok(rs.includes('fuera de las defensas') && rs.includes('el agua del río queda afuera') && !rs.includes('no hace falta hacer nada'), rs);
   S(`D.prono={datos:null};M.R=[];M.est={};M.todos=''`);
+});
+
+prueba('celulares lentos: formatos armados una sola vez, la página no salta al cargar y el ícono liviano', () => {
+  // Armar un formato de fecha o de número en cada uso trababa la página casi un segundo en un celular lento
+  assert.ok(!/new Intl\.\w+\([^)]*\)\.format\(/.test(codigo) && !codigo.includes('toLocaleString('), 'ningún formato se arma en cada uso');
+  assert.strictEqual(S("nf(1234.5,1)"), '1.234,5'); assert.strictEqual(S("nf(6.8,2)"), '6,80'); assert.strictEqual(S("nf(38000)"), '38.000');
+  assert.strictEqual(S("fFechaHora(new Date('2026-10-18T22:51:00Z'))"), '18/10, 19:51 h');
+  assert.strictEqual(S("diaAR(new Date('2026-10-19T02:30:00Z'))"), '2026-10-18'); assert.strictEqual(S("fDiaLargo('2026-10-21')"), 'miércoles 21/10');
+  // El lugar del botón Compartir queda reservado hasta que corre el código (el botón sigue empezando oculto), y el del mapa también
+  assert.ok(html.includes('@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir{display:inline-flex!important}}'), 'lugar reservado para Compartir');
+  const base = S('BASE'), ar = /#mapa\{[^}]*aspect-ratio:(\d+)\/(\d+)\}/.exec(html);
+  assert.ok(ar && Number(ar[1]) === base.w && Number(ar[2]) === base.h, 'el lugar del mapa tiene la misma forma que BASE (si cambia BASE, cambiar aspect-ratio)');
+  // El botón "Instalar app" usa el ícono liviano (el mismo dibujo que los íconos de la app), que ya está en caché como ícono de la pestaña
+  assert.ok(html.includes('<img src="icono.svg" alt="" width="28" height="28">Instalar app') && html.includes('<link rel="icon" href="icono.svg"'), 'ícono liviano en el botón');
+  assert.ok(fs.statSync(path.join(raiz, 'icono.svg')).size < 3000, 'icono.svg es liviano');
+});
+
+prueba('publicar: Netlify corre las pruebas antes de publicar, con Node 22', () => {
+  const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
+  assert.ok(/\[build\]\s+publish = "\."\s+command = "node pruebas\/reglas\.test\.js"/.test(toml), 'si una prueba falla, Netlify no publica');
+  assert.ok(/\[build\.environment\]\s+NODE_VERSION = "22"/.test(toml), 'Node 22 en Netlify');
+});
+
+prueba('accesibilidad y textos: parte principal de la página y la llave de la luz solo sin pisar agua', () => {
+  assert.strictEqual((html.match(/<main>/g) || []).length, 1); assert.strictEqual((html.match(/<\/main>/g) || []).length, 1);
+  assert.ok(html.indexOf('<main>') < html.indexOf('class="aviso info"') && html.indexOf('</main>') < html.indexOf('<footer>') && html.indexOf('</header>') < html.indexOf('<main>'), 'el encabezado y el pie quedan afuera');
+  assert.ok(/main\{display:flex;flex-direction:column;gap:16px/.test(html), 'mismo espacio entre secciones que antes');
+  assert.strictEqual((html.match(/si podés llegar sin pisar agua, bajá la llave de la luz/g) || []).length, 2, 'lluvia fuerte y crecida del río');
+  assert.ok(!html.includes('<b>Si entra agua a tu casa:</b> bajá la llave'), 'sin la versión anterior');
 });
 
 prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () => {
