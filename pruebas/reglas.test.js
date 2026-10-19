@@ -820,6 +820,27 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.strictEqual(sv.urlScript(), S('SMN_URL'), 'la dirección del script sale de la página');
     assert.ok(S(`copiaVale(${JSON.stringify(s1.salida)})`), 'la página acepta lo que guarda el robot');
   });
+  prueba('robot de la copia: avisa si la copia del script de Google tiene más de 6 horas (el script puede estar detenido)', () => {
+    const ahora = new Date('2026-10-14T20:00:00Z');
+    assert.strictEqual(sv.AVISO_H, 6);
+    assert.strictEqual(sv.atrasada(copiaSv('2026-10-14T15:00:00Z'), ahora), false, '5 horas: todavía no avisa');
+    assert.strictEqual(sv.atrasada(copiaSv('2026-10-14T13:30:00Z'), ahora), true, 'seis horas y media: avisa');
+    assert.strictEqual(sv.atrasada(null, ahora), true, 'sin ninguna copia: avisa');
+    const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
+    assert.ok(/id: copia\n/.test(yml) && yml.includes("if: steps.copia.outputs.atrasada == 'si'"), 'la tarea lee el aviso del robot y termina con error');
+    assert.ok(yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.atrasada'), 'primero guarda la copia, después avisa');
+  });
+  prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
+    for (const f of ['lluvia.yml', 'pruebas.yml']) {
+      const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');
+      const usos = [...y.matchAll(/uses: ([\w.-]+\/[\w.-]+)@(\S+)(?: # v(\d+)\S*)?/g)];
+      assert.ok(usos.length >= 2, f + ': usa checkout y setup-node');
+      for (const [, n, ref, v] of usos) {
+        assert.ok(/^[0-9a-f]{40}$/.test(ref), f + ': ' + n + ' fijada por huella');
+        assert.ok(Number(v) >= 5, f + ': ' + n + ' en la versión 5 o más nueva (corren con Node 24)');
+      }
+    }
+  });
 
   // Script: lanza el robot después de guardar y no publica el texto de error de GitHub
   const orden = [], guardado = () => JSON.parse(vm.runInContext('leerGuardado()', gs));

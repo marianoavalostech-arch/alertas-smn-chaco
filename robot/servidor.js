@@ -19,6 +19,15 @@ function hora(j) {
   return isNaN(t) ? null : t;
 }
 
+// El script de Google corre cada hora. Si la copia que queda tiene más de AVISO_H horas (o no hay ninguna),
+// el script puede haberse detenido: la tarea termina marcada con error y GitHub le avisa por correo a quien la mantiene.
+// Sin esto nadie se entera, porque el robot copia lo mismo ("sin novedades") y el correo del script lo manda el propio script.
+const AVISO_H = 6;
+function atrasada(j, ahora, horas = AVISO_H) {
+  const t = hora(j);
+  return !t || ahora - t > horas * 36e5;
+}
+
 // Forma mínima: la misma revisión que hace la página antes de usarla, más las alertas.
 function vale(j) {
   return !!j && typeof j === 'object' && !Array.isArray(j) && !j.error && !!hora(j) &&
@@ -51,12 +60,17 @@ async function armarCopia(anterior, url, pausa) {
   return { salida: j, bien: true, motivo: 'copia renovada' };
 }
 
-module.exports = { urlScript, hora, vale, armarCopia };
+module.exports = { urlScript, hora, vale, armarCopia, atrasada, AVISO_H };
 if (require.main === module) (async () => {
   let anterior = null;
   try { anterior = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')); } catch (e) {}
   const r = await armarCopia(anterior, urlScript(), 15000);
   console.log('Copia del servidor: ' + r.motivo + '.');
   if (r.salida) fs.writeFileSync(process.argv[3], JSON.stringify(r.salida));
+  // La tarea de GitHub lee "atrasada" y, después de guardar, termina con error (así llega el aviso por correo).
+  if (atrasada(r.salida, new Date())) {
+    console.log('Atención: la copia del script de Google tiene más de ' + AVISO_H + ' horas. Puede estar detenido: mirar en script.google.com sus Ejecuciones y Activadores.');
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'atrasada=si\n');
+  }
   if (!r.bien) process.exit(1);
 })();

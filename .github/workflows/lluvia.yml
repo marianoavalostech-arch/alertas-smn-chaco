@@ -3,6 +3,8 @@
 # También copia el resultado del script de Google (servidor.json): la página lee esa copia primero, para que las visitas no carguen al script.
 # Lo lanza el script de Google en cada renovación (cada hora). El horario de abajo queda de respaldo: GitHub lo cumple muy poco.
 # El sitio lee ese archivo. Netlify solo publica la rama main, así que esto no publica ni gasta créditos.
+# Si la copia del script de Google tiene más de 6 horas, la corrida termina con error (después de guardar):
+# así GitHub avisa por correo que el script puede haberse detenido.
 name: Lluvia
 on:
   schedule:
@@ -15,8 +17,8 @@ jobs:
   lluvia:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - name: Consultar la lluvia
@@ -32,6 +34,7 @@ jobs:
           curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/grilla.json" -o grilla-anterior.json || true
           node robot/grilla.js grilla-anterior.json salida/grilla.json
       - name: Copiar el resultado del script de Google
+        id: copia
         continue-on-error: true
         run: |
           curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/datos/servidor.json" -o servidor-anterior.json || true
@@ -48,6 +51,11 @@ jobs:
           if [ -s servidor.json ]; then git add servidor.json; fi
           git commit -q -m "Lluvia [skip ci] [skip netlify]"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" datos
+      - name: Avisar si el script de Google lleva más de 6 horas sin renovar
+        if: steps.copia.outputs.atrasada == 'si'
+        run: |
+          echo "::error::La copia del script de Google tiene más de 6 horas: puede estar detenido. Mirar en script.google.com sus Ejecuciones y Activadores."
+          exit 1
       - name: Marcar la corrida si Open-Meteo no respondió
         if: steps.consulta.outcome == 'failure'
         run: exit 1
