@@ -329,6 +329,16 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
   assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-nino', 't-acerca']);
   for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
+  // Índice lateral (computadora, desde 1100 px): mismos destinos que el de arriba, que en esa pantalla se esconde junto con "↑ Índice";
+  // en el celular, en el portal y al imprimir no se ve; el mapa va al lado de su detalle
+  const l0 = html.indexOf('id="lado"'), lado = html.slice(l0, html.indexOf('</nav>', l0));
+  assert.ok(l0 > 0 && l0 < html.indexOf('<header'), 'el índice lateral va primero');
+  assert.deepStrictEqual([...lado.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]), destinos, 'mismos destinos que el índice de arriba');
+  assert.ok(/\.lado\{display:none\}/.test(html) && html.includes('@media screen and (min-width:1100px){'), 'solo en pantallas anchas y en pantalla (no al imprimir)');
+  const ancho = html.slice(html.indexOf('@media screen and (min-width:1100px){'));
+  assert.ok(ancho.includes('html:not(.emb) .lado{display:flex') && ancho.includes('html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}'), 'en el portal no; arriba se esconde el otro índice');
+  assert.ok(ancho.includes('section[aria-labelledby="t-mapa"]>#mapa{grid-column:1'), 'mapa al lado de su detalle');
+  assert.ok(/function indiceLateral\(\)\{\s*const nav=\$\('lado'\);if\(!nav\|\|EMB/.test(codigo) && codigo.includes("setAttribute('aria-current','location')"), 'marca la sección actual, no en el portal');
   assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces del índice abren la sección cerrada');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));

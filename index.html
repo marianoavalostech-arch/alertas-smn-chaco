@@ -185,6 +185,25 @@ footer{font-size:.85rem;color:var(--muted)}
 .bAcc{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:8px}
 .bBtn{display:inline-flex;align-items:center;min-height:44px;font-size:.95rem;text-decoration:none}
 @media print{.indice,.aIndice,.bAcc{display:none!important}}
+.lado{display:none}
+/* Computadora (desde 1100 px): índice lateral fijo a la izquierda, que marca la sección donde está la persona, y página más ancha.
+   El mapa va al lado de su detalle y el gráfico del río crece. En el celular, en el portal y al imprimir no cambia nada (pedido de Mariano, 19/10/2026). */
+@media screen and (min-width:1100px){
+  html:not(.emb) .wrap{max-width:1240px;display:grid;grid-template-columns:168px minmax(0,1fr);column-gap:24px;row-gap:16px;align-items:start}
+  html:not(.emb) .wrap>*{grid-column:2}
+  html:not(.emb) .lado{display:flex;flex-direction:column;gap:2px;grid-column:1;grid-row:1/span 3;position:sticky;top:16px;padding:14px 10px;background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra)}
+  .lado .ladoTit{font-weight:700;color:var(--muted);font-size:.85rem;padding:0 8px 6px}
+  .lado a{display:block;padding:7px 8px;border-left:3px solid transparent;border-radius:6px;color:var(--ink);font-weight:600;font-size:.92rem;text-decoration:none;line-height:1.25}
+  .lado a:hover{background:var(--bg);color:var(--acento)}
+  .lado a[aria-current]{border-left-color:var(--acento);background:var(--bg);color:var(--acento);font-weight:800}
+  html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
+  html:not(.emb) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
+  html:not(.emb) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
+  html:not(.emb) section[aria-labelledby="t-mapa"]>#mapa{grid-column:1;grid-row:3/-1}
+  html:not(.emb) section[aria-labelledby="t-mapa"]>:is(#mInfo,.leyenda,p.meta,#d-colores,.fila){grid-column:2}
+  html:not(.emb) #rio svg,html:not(.emb) #rio .leyRio,html:not(.emb) #rio .defMarca{max-width:640px}
+  html:not(.emb) main section :is(p,li){max-width:88ch}
+}
 .volver{flex:none;font-size:.88rem;padding:5px 12px;min-height:36px;white-space:nowrap}
 @media print{.volver{display:none}}
 #mapa .rioChip .fondo{fill:var(--water);stroke:var(--card);stroke-width:2}
@@ -354,6 +373,10 @@ footer{font-size:.85rem;color:var(--muted)}
 </head><body>
 
 <div class="wrap">
+  <nav class="lado" id="lado" aria-label="Índice lateral">
+    <span class="ladoTit">En esta página</span>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+  </nav>
   <header class="cab">
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
@@ -2027,6 +2050,18 @@ function botonIndice(){
   addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});ver();
 }
 seguro(botonIndice);
+// Índice lateral (solo se ve en computadora): marca la sección que está en la pantalla, la última cuyo comienzo ya pasó el primer tercio.
+function indiceLateral(){
+  const nav=$('lado');if(!nav||EMB||typeof innerHeight!=='number')return;
+  const L=[...nav.querySelectorAll('a[href^="#t-"]')].map(a=>[a,($(a.getAttribute('href').slice(1))||{}).closest?.('section')]).filter(x=>x[1]);
+  let pend=false,act=null;
+  const ver=()=>{pend=false;if(getComputedStyle(nav).display==='none')return;
+    let q=null;for(const [a,sec] of L)if(sec.getBoundingClientRect().top<=innerHeight*0.33)q=a;
+    if(q!==act){if(act)act.removeAttribute('aria-current');if(q)q.setAttribute('aria-current','location');act=q}};
+  addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});
+  addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
+}
+seguro(indiceLateral);
 
 // Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
 function avisarAlto(){

@@ -2,13 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 19/10/2026, mañana (número en el pico previsto del Paraná)
+## 19/10/2026, mañana (tarjetas cerradas, pico del Paraná, índice lateral y pantalla ancha)
 
-- **Gráfico del Paraná:** el punto más alto del pronóstico del INA lleva su altura escrita (hoy, "7,23 m" para el 20/10), además del último (6,37 m). Solo si es más alto que la lectura de hoy y no es el último punto. Antes se veía solo tocando el gráfico. Huella nueva del código. 56 pruebas (la del río controla el número del pico).
-
-## 19/10/2026, mañana ("¿Qué está pasando?" no se abre sola)
-
-- **Las tarjetas de "¿Qué está pasando?" ya no se despliegan solas** (pedido de Mariano). Antes, con algo fuera del verde (hoy, el Paraná en rojo), la tarjeta más grave se abría sola al cargar y ocupaba media pantalla. Ahora todas empiezan cerradas; las que rigen siguen marcadas con su color y su etiqueta ("Río rojo", "Alerta amarilla"), y se abren tocándolas o con el botón "Qué hacer" de "Ahora en el Chaco" y de las franjas. Huella nueva del código. 56 pruebas (la de "Qué hacer" controla que no se abran solas).
+Pedidos de Mariano, todo en una sola subida.
+- **Las tarjetas de "¿Qué está pasando?" ya no se despliegan solas.** Antes, con algo fuera del verde (hoy, el Paraná en rojo), la tarjeta más grave se abría sola al cargar y ocupaba media pantalla. Ahora todas empiezan cerradas; las que rigen siguen marcadas con su color y su etiqueta ("Río rojo", "Alerta amarilla"), y se abren tocándolas o con el botón "Qué hacer" de "Ahora en el Chaco" y de las franjas.
+- **Gráfico del Paraná:** el punto más alto del pronóstico del INA lleva su altura escrita (hoy, "7,23 m" para el 20/10), además del último (6,37 m). Solo si es más alto que la lectura de hoy y no es el último punto (`rioPico`). Antes se veía solo tocando el gráfico.
+- **Índice lateral en computadora** (desde 1100 px de ancho; `#lado`, `indiceLateral`): a la izquierda, fijo al bajar, con los mismos 9 destinos que el índice de arriba ("En esta página"). Marca en violeta la sección que está en la pantalla. En esa pantalla no se ven el índice de arriba ni "↑ Índice". Abre las secciones cerradas como los otros enlaces.
+- **Página más ancha en computadora** (desde 1100 px): la columna pasa de 720 a unos 1.000 px. El mapa va a la izquierda y su detalle, la leyenda y "¿Qué significa cada color?" a la derecha, así se ven juntos sin bajar. El gráfico del río crece a 640 px. Los párrafos largos quedan en unos 88 caracteres por renglón para que se lean bien.
+- En el celular, en la tablet (menos de 1100 px), dentro del portal y al imprimir no cambia nada. Probado con Chromium a 1440, 1280, 1100, 1024 y 390 px, con datos reales, sin avisos de la regla del navegador. Huella nueva del código. 56 pruebas (la de "Qué hacer" controla que no se abran solas; la del río, el número del pico; la de navegación, el índice lateral).
 
 ## 19/10/2026, mañana (secciones de arriba más cortas)
 
