@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, mañana ("¿Qué está pasando?" no se abre sola)
+
+- **Las tarjetas de "¿Qué está pasando?" ya no se despliegan solas** (pedido de Mariano). Antes, con algo fuera del verde (hoy, el Paraná en rojo), la tarjeta más grave se abría sola al cargar y ocupaba media pantalla. Ahora todas empiezan cerradas; las que rigen siguen marcadas con su color y su etiqueta ("Río rojo", "Alerta amarilla"), y se abren tocándolas o con el botón "Qué hacer" de "Ahora en el Chaco" y de las franjas. Huella nueva del código. 56 pruebas (la de "Qué hacer" controla que no se abran solas).
+
 ## 19/10/2026, mañana (secciones de arriba más cortas)
 
 Pedido de Mariano: lo principal a la vista y el detalle desplegable, para llegar antes al río.
@@ -152,7 +156,7 @@ Revisión de navegabilidad del 19/10 (Chromium como celular, 390 × 844, datos r
 ## 15/10/2026 (`b077390`: "Qué hacer ante una alerta", más legible e interactiva)
 
 - **"Ahora en el Chaco"**: arriba de la sección, una franja dice qué rige (alertas del SMN de hoy en adelante, con día y cantidad de municipios; Paraná o Paraguay fuera del verde) y cada renglón tiene un botón "Qué hacer" que abre la tarjeta que corresponde. Sin nada vigente y con el informe del SMN al día: "Hoy no hay alertas del SMN para el Chaco". Si el informe está viejo o el canal no listó alertas, no dice que no hay: avisa que no se pudo confirmar. El naranja del Paraná dice "según el pronóstico del INA", nunca "alerta naranja". Usa los datos que la página ya tiene (`hacerHoy`, `pintarHacer`); no pide nada nuevo.
-- **Tarjetas por situación con ícono** (se abre una por vez): Tormenta y rayos; Viento fuerte y granizo; Lluvia fuerte y crecida del río; Cuando baja el agua; y nuevas: **Calor extremo, Frío extremo, Niebla, humo o polvo** (el sitio ya mostraba esas alertas del SMN pero no decía qué hacer) y **Mochila y plan familiar**. La tarjeta de lo que rige queda marcada ("Alerta naranja", "Río naranja") y la más grave se abre sola una vez. Cada consejo empieza con la idea clave en negrita.
+- **Tarjetas por situación con ícono** (se abre una por vez): Tormenta y rayos; Viento fuerte y granizo; Lluvia fuerte y crecida del río; Cuando baja el agua; y nuevas: **Calor extremo, Frío extremo, Niebla, humo o polvo** (el sitio ya mostraba esas alertas del SMN pero no decía qué hacer) y **Mochila y plan familiar**. La tarjeta de lo que rige queda marcada ("Alerta naranja", "Río naranja") y la más grave se abre sola una vez. (Desde el 19/10/2026 ya no se abre sola.) Cada consejo empieza con la idea clave en negrita.
 - **Mochila para tildar** (12 cosas, según el kit del SINAGIR): lo tildado queda solo en ese navegador (`anc-mochila`).
 - **Teléfonos como botones** que llaman al tocarlos: 911, 100, 107 y Defensa Civil (0362) 444-8000, interno 103.
 - Los tres colores del SMN, como tarjetas con su color. Al imprimir se ven todas las tarjetas abiertas.

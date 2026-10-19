@@ -1759,7 +1759,7 @@ function hacerHoy(){
   filas.sort((x,y)=>y.niv-x.niv);
   return {filas,marcas,smn};
 }
-let HACER_TOCADO=false,HACER_IMPR=false;
+let HACER_IMPR=false;
 function pintarHacer(){
   const el=$('hHoy');if(!el)return;
   const H=hacerHoy(),max=H.filas.reduce((m,f)=>Math.max(m,f.niv),0);
@@ -1776,20 +1776,18 @@ function pintarHacer(){
     :'<p><b>No se pudo confirmar si hay alertas del SMN ahora.</b> Consultalas en el '+smnLink+'. Mientras tanto, abajo tenés qué hacer en cada caso.</p>';
   el.className='hHoy '+(H.filas.length?'n'+max:H.smn==='ok'?'':'gris');
   el.innerHTML=h;
-  // Las tarjetas de lo que rige quedan marcadas; la más grave se abre sola una vez, si la persona todavía no tocó ninguna.
+  // Las tarjetas de lo que rige quedan marcadas con su color y etiqueta; ninguna se abre sola (Mariano, 19/10).
   document.querySelectorAll('.hSit details').forEach(d=>{const m=H.marcas.get(d.dataset.h),r=d.querySelector('.rige');
     d.classList.remove('n3','n4','n5');if(m)d.classList.add('n'+m.niv);if(r){r.hidden=!m;r.textContent=m?m.et:''}});
-  if(H.filas.length&&!HACER_TOCADO){const d=$('h-'+H.filas[0].t);if(d&&!d.open){d.open=true;HACER_TOCADO=true}}
 }
 const MOCH_K='anc-mochila';
 function iniciarHacer(){
   const D_=[...document.querySelectorAll('.hSit details')];
   // Una tarjeta abierta por vez (el atributo name lo hace solo en los navegadores nuevos).
   D_.forEach(d=>d.addEventListener('toggle',()=>{if(!d.open||HACER_IMPR)return;D_.forEach(o=>{if(o!==d&&o.open)o.open=false})}));
-  D_.forEach(d=>{const s=d.querySelector('summary');if(s)s.addEventListener('click',()=>{HACER_TOCADO=true})});
   // Botones "Qué hacer" y enlaces a otra tarjeta: la abren y la muestran.
   document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-h]');if(!b)return;
-    const d=$('h-'+b.dataset.h);if(!d)return;HACER_TOCADO=true;d.open=true;marcarSalto();verSec(d)});
+    const d=$('h-'+b.dataset.h);if(!d)return;d.open=true;marcarSalto();verSec(d)});
   // Mochila: lo tildado queda en este navegador (si no se puede guardar, igual se puede tildar).
   const L=[...document.querySelectorAll('#hMochLista input')];
   let g=[];try{g=JSON.parse(localStorage.getItem(MOCH_K))||[]}catch(e){}

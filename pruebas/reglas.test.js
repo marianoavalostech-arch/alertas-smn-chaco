@@ -1040,6 +1040,8 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
     // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas, en la franja y en su tarjeta
     const hh = {}; elementos.hHoy = hh; S('pintarHacer()'); delete elementos.hHoy;
+    // ninguna tarjeta de "¿Qué está pasando?" se abre sola (Mariano, 19/10): solo con el botón "Qué hacer" o tocándola
+    assert.ok(!/\.open\s*=\s*true/.test(S('pintarHacer.toString()')), 'pintarHacer no abre tarjetas');
     assert.ok(hh.innerHTML.includes(S('DEFENSAS')) && S('DEFENSAS').includes('avisos oficiales') && !S('DEFENSAS').includes('no hace falta'), 'la franja dice que el agua del río queda afuera de las defensas y que valen los avisos oficiales');
     assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, el agua del río queda afuera/.test(html) && !/no hace falta hacer nada/.test(html));
     assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');
