@@ -380,13 +380,15 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
   const pr16 = { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-16', 6.08, 6.08, 6.08], ['2026-10-20', 7, 7.23, 7.8], ['2026-10-27', 5.8, 6.37, 6.6]] };
   poner('2026-10-18', [['2026-10-15', 5.61], ['2026-10-16', 6.08], ['2026-10-17', 6.5], ['2026-10-18', 6.8]], pr16);
   assert.strictEqual(fr.hidden, false); assert.strictEqual(fr.className, 'n5', 'rojo, como el renglón');
-  for (const t of ['Río Paraná en rojo', 'islas y costa fuera de las defensas', 'superó el nivel de evacuación (6,50 m)', 'El INA prevé 7,23 m para el 20/10.', S('DEFENSAS_CORTA'), 'data-h="rio"', 'href="#t-rio"'])
-    assert.ok(fr.innerHTML.includes(t), 'falta: ' + t);
+  for (const t of ['Río Paraná en rojo</b> · 6,80 m en Barranqueras (evacuación: 6,50 m)</p>', 'Islas y costa fuera de las defensas. ' + S('DEFENSAS_CORTA'), 'data-h="rio"', 'href="#t-rio"'])
+    assert.ok(fr.innerHTML.includes(t), 'falta: ' + t + '\n' + fr.innerHTML);
+  // Corta (19/10): sin el texto largo del renglón ni el pronóstico cuando el color no sale de él
+  assert.ok(!fr.innerHTML.includes('superó el nivel') && !fr.innerHTML.includes('INA'), 'franja corta: ' + fr.innerHTML);
   assert.ok(!/alerta (roja|naranja|amarilla)|alerta del río/i.test(fr.innerHTML), 'no dice "alerta": los colores salen del INA');
   // Naranja por el pronóstico (caso del 13/10): lo dice así y el pronóstico no se repite
   poner('2026-10-13', [['2026-10-06', 4.27], ['2026-10-10', 4.88], ['2026-10-13', 5.27]], { emitido: '2026-10-13T03:00:00.000Z', p: [['2026-10-13', 5.2, 5.3, 5.4], ['2026-10-20', 6.75, 7.3, 7.55]] });
   assert.strictEqual(fr.className, 'n4');
-  assert.ok(fr.innerHTML.includes('Río Paraná: naranja según el pronóstico del INA') && (fr.innerHTML.match(/7,30 m/g) || []).length === 1, fr.innerHTML);
+  assert.ok(fr.innerHTML.includes('Río Paraná en naranja</b> · 5,27 m en Barranqueras (alerta: 6,00 m), creciendo · el INA prevé 7,30 m para el 20/10</p>') && (fr.innerHTML.match(/7,30 m/g) || []).length === 1, fr.innerHTML);
   // Ríos en verde: no hay franja
   poner('2026-10-18', [['2026-10-18', 4.0]], null);
   assert.strictEqual(fr.hidden, true);
@@ -394,7 +396,7 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
   poner('2026-10-18', [['2026-10-18', 4.0]], null, [['2026-10-15', 5.7], ['2026-10-18', 6.1]]);
   assert.ok(!fr.hidden && fr.className === 'n3' && fr.innerHTML.includes('Río Paraguay en amarillo') && fr.innerHTML.includes('Puerto Bermejo a Isla del Cerrito')
     && fr.innerHTML.includes('href="#t-otros"') && !fr.innerHTML.includes(S('DEFENSAS_CORTA')), fr.innerHTML);
-  assert.ok(!S('DEFENSAS_CORTA').includes('no hace falta') && S('DEFENSAS_CORTA').includes('Seguí los avisos oficiales'), 'la frase corta no dice menos que lo oficial');
+  assert.ok(!S('DEFENSAS_CORTA').includes('no hace falta') && S('DEFENSAS_CORTA').includes('seguí los avisos oficiales'), 'la frase corta no dice menos que lo oficial');
   // Con la franja del SMN también a la vista: primero la más grave (si son iguales, la del SMN)
   sb.hidden = false; sb.className = 'n5'; S('ordenBandas()'); assert.strictEqual(orden, 'SMN primero');
   sb.className = 'n3'; poner('2026-10-18', [['2026-10-18', 6.8]], null); assert.strictEqual(orden, 'río primero');

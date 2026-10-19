@@ -210,7 +210,7 @@ footer{font-size:.85rem;color:var(--muted)}
 #smnBanda.n4,#rioBanda.n4{border-color:var(--naranja)}#smnBanda.n5,#rioBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
 #smnBanda b,#rioBanda b{font-size:1.02rem}
 #rioBanda .rbRio{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}#rioBanda .rbRio+.rbRio{border-top:1px solid var(--line);padding-top:8px}
-#rioBanda .rbTxt{flex:1 1 100%;font-size:.95rem}#rioBanda .rbZona{color:var(--muted)}
+#rioBanda .rbTxt{flex:1 1 100%;font-size:.95rem;margin:0}#rioBanda .rbL1{flex:1 1 100%;margin:0;font-size:.95rem}
 #mapa path.mun[data-smn]{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3}
 .leyenda i.punteado{background:none;border:1.6px dashed var(--ink)}
 /* foco: al elegir un municipio o un color de la leyenda, el resto del mapa se apaga (mismo color, más claro) */
@@ -1366,19 +1366,28 @@ function pintarBanda(G){
 const RIO_ZONA={'Paraná':'islas y costa fuera de las defensas','Paraguay':'costa e islas de Puerto Bermejo a Isla del Cerrito'};
 const RIO_NV={amarillo:3,naranja:4,rojo:5};
 // En la franja va la frase de las defensas en corto, para que ocupe poco lugar arriba de todo (la completa sigue en el renglón y en el detalle).
-const DEFENSAS_CORTA='Dentro de las defensas del Gran Resistencia el agua del río queda afuera. Seguí los avisos oficiales.';
+const DEFENSAS_CORTA='Dentro de las defensas el agua queda afuera; seguí los avisos oficiales.';
+// Dato corto de la franja (19/10/2026, pedido de Mariano: que ocupe menos): altura de hoy con el nivel que importa
+// y, solo si el color sale del pronóstico, lo que prevé el INA. El texto completo sigue en el renglón, en "Ahora en el Chaco" y en la sección del río.
+function rioDato(rio){
+  const P=rio==='Paraná',N=P?NIVEL:OTROS.paraguay.nivel,r=resumenRio(P?'rio':'paraguay',N),ok=r&&r.atraso<4,l=[];
+  if(ok)l.push(nf(r.h,2)+' m en '+(P?'Barranqueras':OTROS.paraguay.lugar)+' ('+(r.h>=N.alerta?'evacuación: '+nf(N.evac,2):'alerta: '+nf(N.alerta,2))+' m'
+    +(r.atraso>=3?'; lectura del '+fDia(r.dia):'')+')'+(r.h<N.alerta&&r.d3>0.05?', creciendo':''));
+  if(P){const p=resumenProno(),c=casoProno(p,ok?r.h:-Infinity);
+    if(c==='evac')l.push('el INA prevé '+nf(p.cen[2],2)+' m para el '+fDia(p.cen[0]));
+    else if(c==='puede')l.push('el INA llega hasta '+nf(p.mx[3],2)+' m hacia el '+fDia(p.mx[0]))}
+  return l.join(' · ');
+}
 const rioTit=(rio,r)=>'Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':r.pr?': rojo según la altura de hoy y el pronóstico del INA':' en '+r.c);
 function pintarRioBanda(){
   const bd=$('rioBanda');if(!bd)return;
   const filas=[];
   [['Paraná',riesgoRio(),'#t-rio'],['Paraguay',riesgoParaguay(),'#t-otros']].forEach(([rio,r,ver])=>{
     if(!r||!RIO_NV[r.c])return;
-    let extra='';
-    if(rio==='Paraná'){const rr=resumenRio(),pn=resumenProno();
-      if(rr&&pn&&pn.fut&&!casoProno(pn,rr.atraso>=4?-Infinity:rr.h)&&pn.cen[2]>rr.h)extra=' El INA prevé '+nf(pn.cen[2],2)+' m para el '+fDia(pn.cen[0])+'.'}
-    filas.push({n:RIO_NV[r.c],html:'<div class="rbRio"><b><span aria-hidden="true">≈ </span>'+rioTit(rio,r)+'</b><span class="rbZona">'+RIO_ZONA[rio]+'</span>'
-      +'<span class="rbTxt">'+r.por+extra+'</span>'
-      +(rio==='Paraná'?'<span class="rbTxt">'+DEFENSAS_CORTA+'</span>':'')
+    // Tres renglones: color y dato; zona (y en el Paraná, la frase de las defensas); botones.
+    const z=RIO_ZONA[rio],dato=rioDato(rio);
+    filas.push({n:RIO_NV[r.c],html:'<div class="rbRio"><p class="rbL1"><b><span aria-hidden="true">≈ </span>Río '+rio+' en '+r.c+'</b>'+(dato?' · '+dato:'')+'</p>'
+      +'<p class="rbTxt">'+z.charAt(0).toUpperCase()+z.slice(1)+'.'+(rio==='Paraná'?' '+DEFENSAS_CORTA:'')+'</p>'
       +'<span class="bAcc"><button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'+ver+'">Ver el río</a></span></div>'});
   });
   if(!filas.length){bd.hidden=true;bd.innerHTML='';return}
