@@ -973,7 +973,15 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en el pronóstico; explicaciones del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba, Yacyretá</b> suelta unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p><p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
+    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba, Yacyretá</b> suelta unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p>'
+      + '<p>El INA marca para lo que suelta Yacyretá alerta desde 25.000 y evacuación desde 30.000: hoy está por encima de la evacuación. Esos niveles son para el río junto a la represa; para la costa del Chaco valen los de Barranqueras.</p>'
+      + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
+    // niveles del INA para Yacyretá: solo se nombran desde la alerta, y nunca cambian colores
+    assert.deepStrictEqual(JSON.parse(S('JSON.stringify(YACY_NIVEL)')), { alerta: 25000, evac: 30000 });
+    assert.strictEqual(S(`yacyNivel(24900,'hoy')`), '');
+    assert.ok(S(`yacyNivel(27000,'el 12/10')`).includes('el 12/10 está por encima de la alerta.'));
+    assert.ok(S(`yacyNivel(30000,'hoy')`).includes('hoy está por encima de la evacuación.'));
+    assert.ok(!/YACY_NIVEL/.test(codigo.slice(codigo.indexOf('function riesgoRio'), codigo.indexOf('function riesgoRio') + 3000)), 'no entra en el color del río');
     assert.ok(l('2026-10-14', o).includes('soltaba el 13/10 unos 32.800'));      // el dato de hoy todavía no está
     assert.strictEqual(S('YACY_NORMAL.length'), 12);
     assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra

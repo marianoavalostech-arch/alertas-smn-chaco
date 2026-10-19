@@ -1689,7 +1689,18 @@ function lineaYacy(){
   const mes=Number(dia.slice(5,7))-1;
   return '<p><b>Río arriba, Yacyretá</b> '+(dia===hoy?'suelta':'soltaba el '+fDia(dia))+' unos '+nf(Math.round(v/100)*100)+' m³ de agua por segundo: '
     +yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+'. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p>'
+    +yacyNivel(v,dia===hoy?'hoy':'el '+fDia(dia))
     +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del '+fDia(dia)+'.</p>';
+}
+// Niveles del INA para lo que sale de Yacyretá ("Yacyretá efluente", m³/s), tomados de su informe diario (confirmado el 16/10/2026).
+// La serie 937 no los trae (nivel_alerta y nivel_evacuacion vacíos): si el INA los cambia, hay que cambiarlos acá.
+// Solo se nombran cuando se pasa el de alerta. Son para el río junto a la represa: no cambian ningún color del Chaco.
+const YACY_NIVEL={alerta:25000,evac:30000};
+function yacyNivel(v,cuando){
+  if(v<YACY_NIVEL.alerta)return '';
+  const ev=v>=YACY_NIVEL.evac;
+  return '<p>El INA marca para lo que suelta Yacyretá alerta desde '+nf(YACY_NIVEL.alerta)+' y evacuación desde '+nf(YACY_NIVEL.evac)+': '+cuando+' está por encima de '+(ev?'la evacuación':'la alerta')+'. '
+    +'Esos niveles son para el río junto a la represa; para la costa del Chaco valen los de Barranqueras.</p>';
 }
 // Explicaciones del río (19/10, pedido de Mariano): desplegables cerrados; cada navegador recuerda si los abrió, aunque la sección se vuelva a pintar.
 const detAbierto=id=>{try{return !!(JSON.parse(localStorage.getItem(DET_K))||{})[id]}catch(e){return false}};
