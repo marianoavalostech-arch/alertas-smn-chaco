@@ -25,7 +25,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-    Content-Security-Policy = "default-src 'none'; script-src 'sha256-3QO4MSyS6kC7Bb2TZjkcZvatNqKmL5CpZcgGc9Jy8dk='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+    Content-Security-Policy = "default-src 'none'; script-src 'sha256-r7UkmruAg5W+I0x1U0eun3bbz1op/NVvijlCn8OsHgw='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
 
 # Archivo para instalar el sitio como app: con su tipo correcto.
 [[headers]]

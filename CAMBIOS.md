@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, mañana (navegación: índice, volver al índice, Atrás y botones grandes)
+
+Revisión de navegabilidad del 19/10 (Chromium como celular, 390 × 844, datos reales): la página mide unas 10 pantallas y el río Paraná quedaba en la pantalla 7 sin atajos.
+- **Índice** debajo de las franjas y arriba del mapa (`#indice`): Mapa, Alertas del SMN, Qué hacer, Por localidad, Río Paraná, Otros ríos, Lluvias, El Niño y Acerca. Abre la sección si está cerrada. No cambia el orden de las secciones.
+- **Botón "↑ Índice"** en la esquina (`#aIndice`, `botonIndice`): aparece cuando el índice ya quedó arriba fuera de la pantalla.
+- **El botón Atrás vuelve adonde estabas:** "↑ Volver al mapa", "Ver en el mapa" y los nombres en verde del semáforo, las etiquetas de los ríos y los botones "Qué hacer" no dejaban marca en el historial, y Atrás sacaba del sitio. Ahora dejan una (`marcarSalto`), como los enlaces. En el portal no.
+- **Buscar un municipio muestra el resultado:** antes el mapa y el detalle quedaban debajo de la pantalla; ahora la página baja hasta el mapa y se cierra el teclado.
+- **Botones grandes en las franjas:** "Qué hacer", "Ver el río" y "Ver días y horarios" eran enlaces de 21-22 px de alto; ahora son botones de 44 px (`.bBtn`).
+- Nada de esto se ve en el portal ni al imprimir. Huella nueva del código. 55 pruebas (1 nueva).
+
 ## 18/10/2026, noche (franja del río arriba de todo)
 
 - **Franja del río arriba de todo** (pedido de Mariano): cuando el Paraná o el Paraguay salen del verde (desde amarillo), debajo del cartel "Este sitio es informativo" y antes del mapa aparece una franja con el color de su renglón y el mismo aspecto que la del SMN (`pintarRioBanda`, `#rioBanda`). Con los datos del 18/10: "≈ Río Paraná en rojo · islas y costa fuera de las defensas. El Paraná está en 6,80 m en Barranqueras: superó el nivel de evacuación (6,50 m). El INA prevé 7,23 m para el 20/10. Dentro de las defensas del Gran Resistencia el agua del río queda afuera. Seguí los avisos oficiales. Qué hacer · Ver el río".

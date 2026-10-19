@@ -314,6 +314,30 @@ prueba('accesibilidad y textos: parte principal de la página y la llave de la l
   assert.ok(!html.includes('<b>Si entra agua a tu casa:</b> bajá la llave'), 'sin la versión anterior');
 });
 
+prueba('navegación: índice arriba del mapa, botón para volver al índice, Atrás vuelve adonde estaba y botones grandes en las franjas', () => {
+  // Índice: debajo de las franjas, antes del mapa; cada botón lleva a una sección que existe
+  const i0 = html.indexOf('id="indice"');
+  assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 > html.indexOf('id="smnBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
+  const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
+  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-nino', 't-acerca']);
+  for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
+  assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces del índice abren la sección cerrada');
+  // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
+  assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));
+  assert.ok(html.includes('.emb .aIndice,.emb .indice{display:none}') && html.includes('@media print{.indice,.aIndice,.bAcc{display:none!important}}'));
+  assert.ok(codigo.includes('seguro(botonIndice)'));
+  // Saltos con botón: dejan marca en el historial (Atrás vuelve), salvo en el portal
+  assert.ok(/function marcarSalto\(\)\{if\(EMB\)return;try\{history\.pushState/.test(codigo));
+  for (const t of ["{marcarSalto();verSec($('t-mapa'))}", 'function irSec(id){abrirSec(id,true,false);marcarSalto();verSec($(id))}',
+    "if(i>=0){elegir(i,true);marcarSalto();verSec($('t-mapa'))}", 'd.open=true;marcarSalto();verSec(d)'])
+    assert.ok(codigo.includes(t), 'falta la marca en: ' + t);
+  // Buscador: al encontrar el municipio cierra el teclado y baja hasta el mapa
+  assert.ok(codigo.includes("elegir(i,true);$('mBuscar').blur()") && /if\(t<-4\|\|t>8\)\{marcarSalto\(\);verSec\(\$\('t-mapa'\)\)\}/.test(codigo));
+  // Franjas: las acciones son botones de 44 px, no enlaces chicos dentro del texto
+  assert.ok(html.includes('.bBtn{display:inline-flex;align-items:center;min-height:44px'));
+  assert.ok(codigo.includes('<a class="btn bBtn" href="#t-smn">Ver días y horarios</a>') && codigo.includes('<button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'));
+});
+
 prueba('franja del río arriba de todo: desde amarillo, con el color y el texto del renglón; primero la más grave', () => {
   const fr = {}, sb = { hidden: true, className: '' }; let orden = '';
   sb.before = () => { orden = 'río primero' }; sb.after = () => { orden = 'SMN primero' };

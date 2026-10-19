@@ -168,6 +168,15 @@ footer{font-size:.85rem;color:var(--muted)}
 .irRio{align-self:flex-start;font-weight:700}
 /* Botón "Volver al mapa" arriba a la derecha de las secciones de los ríos */
 .filaRio{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.filaRio>h2{flex:1;min-width:0}.filaRio.abajo{justify-content:flex-end;margin-top:-4px}
+.indice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.indice .indTit{font-weight:700;color:var(--muted);margin-right:2px}
+.indice a{display:inline-flex;align-items:center;min-height:40px;padding:2px 11px;border:1.5px solid var(--borde-boton);border-radius:99px;background:var(--fondo-boton,var(--card));box-shadow:var(--sombra-boton,none);color:var(--acento);font-weight:700;font-size:.88rem;text-decoration:none}
+.indice a:hover{border-color:var(--acento)}
+.aIndice{position:fixed;right:16px;bottom:16px;z-index:20;display:inline-flex;align-items:center;min-height:44px;padding:6px 16px;border:1.5px solid var(--borde-boton);border-radius:99px;background:var(--card);color:var(--acento);font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(11,49,88,.18)}
+.aIndice[hidden],.emb .aIndice,.emb .indice{display:none}
+.bAcc{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:8px}
+.bBtn{display:inline-flex;align-items:center;min-height:44px;font-size:.95rem;text-decoration:none}
+@media print{.indice,.aIndice,.bAcc{display:none!important}}
 .volver{flex:none;font-size:.88rem;padding:5px 12px;min-height:36px;white-space:nowrap}
 @media print{.volver{display:none}}
 #mapa .rioChip .fondo{fill:var(--water);stroke:var(--card);stroke-width:2}
@@ -364,6 +373,11 @@ footer{font-size:.85rem;color:var(--muted)}
   <div id="rioBanda" role="status" hidden></div>
 
   <div class="captura" id="bannerCaptura" hidden></div>
+
+  <nav class="indice" id="indice" aria-label="Índice de la página">
+    <span class="indTit">Ir a:</span>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+  </nav>
 
   <section aria-labelledby="t-mapa">
     <h2 id="t-mapa">Mapa de la provincia</h2>
@@ -641,6 +655,7 @@ footer{font-size:.85rem;color:var(--muted)}
   </main>
 
   <footer>Los horarios están en hora de Argentina.</footer>
+  <a class="aIndice" id="aIndice" href="#indice" hidden>↑ Índice</a>
 </div>
 
 <script>
@@ -974,9 +989,12 @@ function iniciarPlegables(){
   porHash();addEventListener('hashchange',porHash);
 }
 // "Volver al mapa" en las secciones de los ríos.
-document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-volver]'))verSec($('t-mapa'))});
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-volver]')){marcarSalto();verSec($('t-mapa'))}});
+// Antes de un salto con un botón deja una marca en el historial, como hacen los enlaces:
+// así el botón Atrás del celular vuelve adonde estaba la persona en lugar de salir del sitio. Dentro del portal no (el historial es del portal).
+function marcarSalto(){if(EMB)return;try{history.pushState({salto:1},'')}catch(e){}}
 // Lleva a una sección (y la abre si está cerrada).
-function irSec(id){abrirSec(id,true,false);verSec($(id))}
+function irSec(id){abrirSec(id,true,false);marcarSalto();verSec($(id))}
 // Lleva la pantalla hasta un elemento. Dentro del portal, si el marco no tiene barra propia, le pide al portal que baje.
 function verSec(el,seco){
   if(!el)return;
@@ -1109,11 +1127,13 @@ function armarMapa(){
   $('mTodos').onclick=cargarTodos;
   const buscar=()=>{const q=sinTildes($('mBuscar').value);if(!q)return;const N=GEO.mun.map(m=>sinTildes(m[0]));
     let i=N.indexOf(q);if(i<0)i=N.findIndex(n=>n.startsWith(q));if(i<0)i=N.findIndex(n=>n.includes(q));
-    if(i>=0){$('mBuscar').value=GEO.mun[i][0];elegir(i,true)}else{elegir(-1);$('mInfo').innerHTML='<span class="nodisp">No hay ningún municipio del Chaco con ese nombre.</span>'}};
+    if(i>=0){$('mBuscar').value=GEO.mun[i][0];elegir(i,true);$('mBuscar').blur()}else{elegir(-1);$('mInfo').innerHTML='<span class="nodisp">No hay ningún municipio del Chaco con ese nombre.</span>'}
+    // Baja hasta el mapa: en el celular el resultado (mapa y detalle) quedaba debajo de la pantalla. Se cierra el teclado al encontrarlo.
+    const t=$('t-mapa').getBoundingClientRect().top;if(t<-4||t>8){marcarSalto();verSec($('t-mapa'))}};
   $('mBuscar').addEventListener('change',buscar);
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
   $('sem').addEventListener('click',e=>{const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
-    if(i>=0){elegir(i,true);verSec($('t-mapa'))}});
+    if(i>=0){elegir(i,true);marcarSalto();verSec($('t-mapa'))}});
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
   const soltarFoco=()=>{if(M.rio)verRio(null);else if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
@@ -1304,7 +1324,7 @@ function pintarBanda(G){
   bd.className='n'+max;
   // Dice para qué días es: una alerta para dentro de 3 días no es para ahora.
   bd.innerHTML='<b>'+(tipos.size>1?'Alertas':'Alerta')+' del SMN para '+smnDiasTxt(dias)+':</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
-    +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'. <a href="#t-smn">Ver días y horarios</a></span>';
+    +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'.</span><span class="bAcc"><a class="btn bBtn" href="#t-smn">Ver días y horarios</a></span>';
   bd.hidden=false;ordenBandas();
 }
 // Franja de arriba del río (pedido de Mariano, 18/10/2026): aparece cuando el Paraná o el Paraguay salen del verde, desde amarillo,
@@ -1325,7 +1345,8 @@ function pintarRioBanda(){
       if(rr&&pn&&pn.fut&&!casoProno(pn,rr.atraso>=4?-Infinity:rr.h)&&pn.cen[2]>rr.h)extra=' El INA prevé '+nf(pn.cen[2],2)+' m para el '+fDia(pn.cen[0])+'.'}
     filas.push({n:RIO_NV[r.c],html:'<div class="rbRio"><b><span aria-hidden="true">≈ </span>'+rioTit(rio,r)+'</b><span class="rbZona">'+RIO_ZONA[rio]+'</span>'
       +'<span class="rbTxt">'+r.por+extra+'</span>'
-      +'<span class="rbTxt">'+(rio==='Paraná'?DEFENSAS_CORTA+' ':'')+'<button type="button" class="hLink" data-h="rio">Qué hacer</button> · <a href="'+ver+'">Ver el río</a></span></div>'});
+      +(rio==='Paraná'?'<span class="rbTxt">'+DEFENSAS_CORTA+'</span>':'')
+      +'<span class="bAcc"><button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'+ver+'">Ver el río</a></span></div>'});
   });
   if(!filas.length){bd.hidden=true;bd.innerHTML='';return}
   filas.sort((x,y)=>y.n-x.n);
@@ -1717,7 +1738,7 @@ function iniciarHacer(){
   D_.forEach(d=>{const s=d.querySelector('summary');if(s)s.addEventListener('click',()=>{HACER_TOCADO=true})});
   // Botones "Qué hacer" y enlaces a otra tarjeta: la abren y la muestran.
   document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-h]');if(!b)return;
-    const d=$('h-'+b.dataset.h);if(!d)return;HACER_TOCADO=true;d.open=true;verSec(d)});
+    const d=$('h-'+b.dataset.h);if(!d)return;HACER_TOCADO=true;d.open=true;marcarSalto();verSec(d)});
   // Mochila: lo tildado queda en este navegador (si no se puede guardar, igual se puede tildar).
   const L=[...document.querySelectorAll('#hMochLista input')];
   let g=[];try{g=JSON.parse(localStorage.getItem(MOCH_K))||[]}catch(e){}
@@ -1947,6 +1968,14 @@ function compartirSitio(){
   });
 }
 seguro(compartirSitio);
+// Índice (pedido de Mariano, 19/10/2026): el botón "↑ Índice" de la esquina aparece cuando el índice ya quedó arriba, fuera de la pantalla.
+function botonIndice(){
+  const b=$('aIndice'),ind=$('indice');if(!b||!ind||EMB||typeof innerHeight!=='number')return;
+  let pend=false;
+  const ver=()=>{pend=false;b.hidden=ind.getBoundingClientRect().bottom>-innerHeight*0.5};
+  addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});ver();
+}
+seguro(botonIndice);
 
 // Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
 function avisarAlto(){
