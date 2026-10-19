@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, tarde (la página ya no queda "cargando" en la computadora)
+
+Aviso de Mariano: en la PC el navegador se quedaba cargando.
+- **Causa**: la prueba chica de la imagen del Pacífico (El Niño, NASA GIBS) se pedía apenas abría la página. La NASA tardó 47 segundos en contestar (19/10) y, mientras tanto, el navegador seguía mostrando que la página cargaba, aunque los datos ya estaban (llegaban en milisegundos).
+- **Arreglo**: esa prueba se lanza recién cuando la página terminó de cargar (`iniciarPacifico`). La imagen aparece igual al abrir la sección El Niño. Probado con una NASA que tarda 20 s: antes, más de 30 s "cargando"; ahora, 0,3 s.
+- Huella nueva del código. 57 pruebas (una nueva controla que la consulta a la NASA espere a la carga).
+
 ## 19/10/2026, tarde (botón "Instalar app" también en iPhone)
 
 Pedido de Mariano: que en iPhone haya lo mismo que en Android.

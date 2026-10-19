@@ -1139,5 +1139,10 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     assert.ok(/id="btnCompartir"[^>]*hidden/.test(html), 'empieza oculto: aparece cuando corre el código');
     if (errComp) throw errComp;
   });
+  prueba('El Niño: la consulta a la NASA espera a que termine de cargar la página, para que no quede "cargando"', () => {
+    const f = html.slice(html.indexOf('function iniciarPacifico'), html.indexOf('function pintarBanner'));
+    assert.ok(/readyState==='complete'/.test(f) && /addEventListener\('load'/.test(f) && /\.then\(buscarDiaPac\)/.test(f), 'la prueba chica se lanza después del evento de carga');
+    assert.ok(!/const dia=buscarDiaPac\(\)/.test(f), 'no se pide antes de que cargue');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

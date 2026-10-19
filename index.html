@@ -1790,11 +1790,12 @@ function mostrarPac(d){
   im.src=pacUrl(d,'-180,-40,-35,25',870,390,'jpeg')+'&TRANSPARENT=FALSE&BGCOLOR=0x8C978B';$('pacFecha').textContent='Imagen del '+fDia(d)+'.';$('pacifico').hidden=false;
 }
 const cargarPacifico=()=>buscarDiaPac().then(d=>{if(d)mostrarPac(d)});
-// La prueba chica (unos cientos de bytes) se hace apenas carga la página. La imagen se pide cuando la sección
+// La prueba chica (unos cientos de bytes) se hace apenas termina de cargar la página: si se pidiera antes y la NASA
+// tardara (el 19/10 tardó 47 s), el navegador se quedaría mostrando que la página sigue cargando. La imagen se pide cuando la sección
 // está a unos 2500 px (varias pantallas de celular), para que al llegar ya esté lista.
 function iniciarPacifico(){
   if(typeof Image==='undefined')return;
-  const dia=buscarDiaPac();let pedida=false;
+  const dia=new Promise(ok=>{if(document.readyState==='complete')ok();else addEventListener('load',()=>ok(),{once:true})}).then(buscarDiaPac);let pedida=false;
   const ir=()=>{if(pedida)return;pedida=true;dia.then(d=>{if(d)mostrarPac(d)}).catch(e=>console.error(e))};
   if(typeof IntersectionObserver==='undefined'){ir();return}
   // Con la sección cerrada no se pide: se espera a que la abran.
