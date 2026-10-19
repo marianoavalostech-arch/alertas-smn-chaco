@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, mañana (secciones de arriba más cortas)
+
+Pedido de Mariano: lo principal a la vista y el detalle desplegable, para llegar antes al río.
+- **Cartel informativo en una línea:** "Sitio informativo: no reemplaza las alertas del SMN ni los avisos oficiales. Emergencias: 911 · Más teléfonos · Alertas oficiales del SMN" (el 911 se toca para llamar). Sigue siempre a la vista.
+- **Mapa:** la leyenda queda en botones cortos (Verde, Amarillo, Naranja, Rojo, Sin datos y el borde punteado), que siguen resaltando los municipios de ese color. Lo que significa cada color y el párrafo de la costa del Paraná pasan a "¿Qué significa cada color?" (`#d-colores`).
+- **Alertas del SMN:** una línea por fenómeno con su color más alto, para qué días y cuántos municipios ("Para el miércoles 21/10 · 20 de 70 municipios"). Los días, horarios, niveles y municipios, en "Ver horarios y municipios". "Ver días y horarios" de la franja los abre.
+- **Qué hacer:** "Ahora en el Chaco", los teléfonos y las tarjetas quedan igual. "Qué significa cada color del SMN" y las fuentes pasan a "Más información" (`#d-hacer-mas`).
+- Cada navegador recuerda qué desplegables abrió (`anc-desplegables`; los del SMN, mientras la página está abierta). Al imprimir se ven todos abiertos. Huella nueva del código. 56 pruebas (1 nueva).
+
 ## 19/10/2026, mañana (navegación: índice, volver al índice, Atrás y botones grandes)
 
 Revisión de navegabilidad del 19/10 (Chromium como celular, 390 × 844, datos reales): la página mide unas 10 pantallas y el río Paraná quedaba en la pantalla 7 sin atajos.

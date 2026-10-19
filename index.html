@@ -61,6 +61,14 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 /* defensas de la ciudad en el gráfico del Paraná: marca arriba del gráfico mientras el río está lejos */
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
+/* cartel informativo en una línea (19/10/2026) */
+.aviso[data-corto]{font-size:.9rem;padding:8px 12px;line-height:1.5}.aviso[data-corto] a{white-space:nowrap}
+/* desplegables de las secciones de arriba: lo principal a la vista, el detalle al tocar */
+details.det>summary{color:var(--acento);padding:10px 0;font-size:.95rem}
+details.det[open]>summary{padding-bottom:4px}
+.leyLista{list-style:none;padding-left:0!important}
+.smnLinea{margin:6px 0 0;font-size:.95rem}
+.smnGrupo details.det>summary{padding:8px 0 2px}
 .captura{background:var(--acento-soft);border-left:5px solid var(--acento);padding:10px 12px;border-radius:4px;font-size:.95rem}
 main{display:flex;flex-direction:column;gap:16px;min-width:0}
 section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -363,10 +371,8 @@ footer{font-size:.85rem;color:var(--muted)}
   </header>
 
   <main>
-  <div class="aviso info" role="note">
-    <strong>Este sitio es informativo.</strong>
-    No reemplaza las alertas oficiales de Defensa Civil ni del Servicio Meteorológico Nacional. Ante una emergencia llamá al 911 (más teléfonos en <a href="#t-hacer">Qué hacer ante una alerta</a>).
-    <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver alertas oficiales del SMN</a>
+  <div class="aviso info" role="note" data-corto>
+    <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales. Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-hacer">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a>
   </div>
 
   <div id="smnBanda" role="status" hidden></div>
@@ -393,15 +399,27 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="mapa"></div>
     <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
-      <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde: sin lluvia fuerte ni alerta del SMN</button>
-      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo: lluvia importante, alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas</button>
-      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja: solo en la costa del Paraná, por la altura del río y el pronóstico del INA. No es una alerta del SMN</button>
-      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo: lluvia muy fuerte, alerta roja del SMN, o el Paraná muy alto en la costa</button>
-      <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Gris: sin datos</button>
-      <span><i class="punteado"></i>Borde punteado: hay alerta del SMN vigente</span>
+      <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde</button>
+      <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo</button>
+      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja</button>
+      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo</button>
+      <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Sin datos</button>
+      <span><i class="punteado"></i>Borde punteado: alerta del SMN</span>
     </div>
+    <p class="meta">Tocá un municipio para ver su detalle, o un color para resaltar los municipios de ese color.</p>
+    <details class="det" id="d-colores">
+      <summary>¿Qué significa cada color?</summary>
+      <ul class="leyLista">
+        <li data-c="verde"><b>Verde:</b> sin lluvia fuerte ni alerta del SMN.</li>
+        <li data-c="amarillo"><b>Amarillo:</b> lluvia importante, alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas.</li>
+        <li data-c="naranja"><b>Naranja:</b> solo en la costa del Paraná, por la altura del río y el pronóstico del INA. No es una alerta del SMN.</li>
+        <li data-c="rojo"><b>Rojo:</b> lluvia muy fuerte, alerta roja del SMN, o el Paraná muy alto en la costa.</li>
+        <li data-c="gris"><b>Gris:</b> sin datos.</li>
+        <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
+      </ul>
+      <p class="meta">El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez lo sigue hasta rojo, Resistencia, Margarita Belén e Isla del Cerrito hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+    </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
-    <p class="meta">Tocá un municipio para ver su detalle, o un color de la leyenda para resaltar los municipios de ese color. El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez lo sigue hasta rojo, Resistencia, Margarita Belén e Isla del Cerrito hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
   </section>
 
   <section aria-labelledby="t-smn">
@@ -541,16 +559,17 @@ footer{font-size:.85rem;color:var(--muted)}
         </details>
       </div>
     </div>
-    <div>
-      <p class="hEt">Qué significa cada color del SMN</p>
+    <details class="det" id="d-hacer-mas">
+      <summary>Más información: qué significa cada color del SMN y de dónde salen estos consejos</summary>
+      <p class="hEt" style="margin-top:10px">Qué significa cada color del SMN</p>
       <ul class="hNiv">
         <li class="n3"><b>Amarilla: informate.</b> Puede haber algunos daños o cortes de luz por un rato. Mirá el pronóstico antes de salir.</li>
         <li class="n4"><b>Naranja: preparate.</b> Puede haber daños. Prepará la mochila, guardá lo que se pueda volar y escuchá las novedades oficiales en la radio o el municipio.</li>
         <li class="n5"><b>Roja: seguí las instrucciones oficiales.</b> Viene un tiempo muy fuera de lo común, que puede causar daños importantes. Hacé caso a Defensa Civil y a tu municipio.</li>
       </ul>
       <p class="meta" style="margin-top:6px">Definiciones completas en el <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">sitio del SMN</a>.</p>
-    </div>
-    <p class="meta">Significado de cada color: SMN, explicado con palabras simples. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR), Ministerio de Salud de la Nación y Agencia Nacional de Seguridad Vial, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-de-calor/que-hacer" target="_blank" rel="noopener">calor</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-polar/que-hacer" target="_blank" rel="noopener">frío</a>, <a href="https://www.argentina.gob.ar/sinagir/niebla/que-hacer" target="_blank" rel="noopener">niebla</a>, <a href="https://www.argentina.gob.ar/noticias/recomendaciones-del-ministerio-de-salud-por-la-presencia-de-humo-en-varias-provincias-del" target="_blank" rel="noopener">humo</a>, <a href="https://www.argentina.gob.ar/sinagir/kit-de-emergencias" target="_blank" rel="noopener">mochila</a> y <a href="https://www.argentina.gob.ar/sinagir/plan-familiar-de-emergencias" target="_blank" rel="noopener">plan familiar</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
+      <p class="meta" style="margin-top:10px">Significado de cada color: SMN, explicado con palabras simples. Recomendaciones: Sistema Nacional para la Gestión Integral del Riesgo (SINAGIR), Ministerio de Salud de la Nación y Agencia Nacional de Seguridad Vial, resumidas. Teléfonos: Policía del Chaco y <a href="https://mapadelestado.chaco.gob.ar/dependencia/ver/279" target="_blank" rel="noopener">Mapa del Estado del Chaco</a>. Más detalle: <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/tormentas-electricas/que-hacer" target="_blank" rel="noopener">tormentas</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/vientos-intensos/que-hacer" target="_blank" rel="noopener">viento</a>, <a href="https://www.argentina.gob.ar/sinagir/granizo/que-hacer" target="_blank" rel="noopener">granizo</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/inundacion/que-hacer" target="_blank" rel="noopener">inundación</a>, <a href="https://www.argentina.gob.ar/salud/dinesa/recomendaciones/control-vientos-lluvia" target="_blank" rel="noopener">después de la lluvia</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-de-calor/que-hacer" target="_blank" rel="noopener">calor</a>, <a href="https://www.argentina.gob.ar/sinagir/riesgos-frecuentes/ola-polar/que-hacer" target="_blank" rel="noopener">frío</a>, <a href="https://www.argentina.gob.ar/sinagir/niebla/que-hacer" target="_blank" rel="noopener">niebla</a>, <a href="https://www.argentina.gob.ar/noticias/recomendaciones-del-ministerio-de-salud-por-la-presencia-de-humo-en-varias-provincias-del" target="_blank" rel="noopener">humo</a>, <a href="https://www.argentina.gob.ar/sinagir/kit-de-emergencias" target="_blank" rel="noopener">mochila</a> y <a href="https://www.argentina.gob.ar/sinagir/plan-familiar-de-emergencias" target="_blank" rel="noopener">plan familiar</a>. Alertas de todo el país: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">mapa del SMN</a>.</p>
+    </details>
   </section>
 
   <section aria-labelledby="t-sem">
@@ -959,6 +978,19 @@ function abrirSec(id,abrir,guardar){
   (AL_ABRIR[id]||[]).forEach(f=>seguro(()=>f(abrir)));
 }
 const alAbrir=(id,f)=>(AL_ABRIR[id]=AL_ABRIR[id]||[]).push(f);
+// Desplegables de las secciones de arriba (details.det): cada navegador recuerda cuáles abrió; al imprimir se ven todos abiertos.
+const DET_K='anc-desplegables';let DET_IMPR=false;
+function iniciarDesplegables(){
+  let g={};try{g=JSON.parse(localStorage.getItem(DET_K))||{}}catch(e){}
+  document.querySelectorAll('details.det[id]').forEach(d=>{if(g[d.id])d.open=true});
+  // "toggle" no sube por la página: se escucha en la captura, así sirve también para los del SMN, que se pintan después.
+  document.addEventListener('toggle',e=>{const d=e.target;if(DET_IMPR||!d.classList||!d.classList.contains('det'))return;
+    if(d.dataset.ev){if(d.open)SMN_ABIERTOS.add(d.dataset.ev);else SMN_ABIERTOS.delete(d.dataset.ev);return}
+    if(d.id){g[d.id]=d.open;try{localStorage.setItem(DET_K,JSON.stringify(g))}catch(e){}}},true);
+  let antes=[];
+  addEventListener('beforeprint',()=>{DET_IMPR=true;antes=[...document.querySelectorAll('details.det')].map(d=>[d,d.open]);antes.forEach(([d])=>{d.open=true})});
+  addEventListener('afterprint',()=>{antes.forEach(([d,o])=>{d.open=o});setTimeout(()=>{DET_IMPR=false},0)});
+}
 function iniciarPlegables(){
   const g=plegGuardadas();
   document.querySelectorAll('section.plegable').forEach(sec=>{
@@ -984,6 +1016,7 @@ function iniciarPlegables(){
   // Un enlace a una sección cerrada (por ejemplo "Ver el río") la abre antes de ir.
   // Dentro del portal el salto lo hace el portal (el marco no tiene barra propia).
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(!a)return;const id=a.getAttribute('href').slice(1);abrirSec(id,true,false);
+    if(id==='t-smn'&&a.classList.contains('bBtn'))document.querySelectorAll('#smn details.det').forEach(d=>{d.open=true});
     if(EMB&&$(id)){e.preventDefault();verSec($(id))}},true);
   const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);verSec($(hs),true)}};
   porHash();addEventListener('hashchange',porHash);
@@ -1368,6 +1401,8 @@ const SMN_DIAS=3,smnTope=()=>masDias(hoy,SMN_DIAS-1);
 const smnViejo=()=>(Date.now()-new Date(SMN.capturado))/36e5>3;
 // Con más de 3 horas sin renovar se avisa: puede haber alertas nuevas que todavía no se leyeron.
 const smnMeta=()=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del SMN está sin renovar.</b> Puede haber alertas nuevas. ':'')+'Última actualización: '+fFechaHora(new Date(SMN.capturado))+'. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Ver las alertas en el SMN</a>.</p>';
+// Qué fenómenos del SMN dejó abiertos la persona: la sección se vuelve a pintar cada 30 minutos y no se tienen que cerrar solos.
+const SMN_ABIERTOS=new Set();
 function pintarSMN(){
   const el=$('smn');
   if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
@@ -1384,12 +1419,19 @@ function pintarSMN(){
     // Un bloque por fenómeno: la etiqueta una sola vez y debajo cada día y horario con su nivel.
     const F=new Map();
     [...G.values()].sort((x,y)=>x.a.dia<y.a.dia?-1:x.a.dia>y.a.dia?1:y.a.niv-x.a.niv).forEach(g=>{if(!F.has(g.a.ev))F.set(g.a.ev,{x:0,max:0,l:[]});const f=F.get(g.a.ev);f.x|=g.a.x;if(g.a.niv>f.max)f.max=g.a.niv;f.l.push(g)});
-    h=[...F.entries()].sort((x,y)=>y[1].max-x[1].max).map(([ev,f])=>'<div class="smnGrupo">'+smnChip({ev,niv:0,x:0})
-      +'<ul>'+f.l.map(g=>{const n=g.mun.length,todos=n===GEO.mun.length;
-        return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
-          +(todos?'Toda la provincia.':'<details style="display:inline-block;vertical-align:top"><summary>'+n+' de '+GEO.mun.length+' municipios</summary>'+g.mun.map(esc).join(', ')+'.</details>')+'</li>'}).join('')+'</ul></div>').join('');
+    // A la vista: el fenómeno con su color más alto, para qué días y cuántos municipios. Al desplegar: cada día y horario con su nivel y sus municipios.
+    const T=GEO.mun.length;
+    h=[...F.entries()].sort((x,y)=>y[1].max-x[1].max).map(([ev,f])=>{
+      const dias=new Set(f.l.map(g=>g.a.dia)),mun=new Set();f.l.forEach(g=>g.mun.forEach(m=>mun.add(m)));const n=mun.size;
+      return '<div class="smnGrupo">'+smnChip({ev,niv:f.max,x:f.x})
+        +'<p class="smnLinea">Para '+smnDiasTxt(dias)+' · '+(n===T?'toda la provincia':n+' de '+T+' municipios')+'.</p>'
+        +'<details class="det" data-ev="'+ev+'"'+(SMN_ABIERTOS.has(String(ev))?' open':'')+'><summary>Ver horarios y municipios</summary>'
+        +'<ul>'+f.l.map(g=>{const k=g.mun.length;
+          return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
+            +(k===T?'Toda la provincia.':k+' de '+T+' municipios: '+g.mun.map(esc).join(', ')+'.')+'</li>'}).join('')+'</ul>'
+        +'<p class="meta">Informe para los días '+rango+'.</p></details></div>'}).join('');
   }
-  el.innerHTML=h+smnMeta()+'<p class="meta">Informe para los días '+rango+'.</p>';
+  el.innerHTML=h+smnMeta();
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
 function smnInfo(i){
@@ -1876,7 +1918,7 @@ function iniciarAnim(){
   alAbrir('t-anim',ab=>{if(!ab)parar();else if(A.g&&A.k>=0)mostrar(A.k)});
 }
 
-seguro(iniciarPlegables);
+seguro(iniciarPlegables);seguro(iniciarDesplegables);
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);seguro(iniciarHacer);seguro(pintarHacer);cargarSMN();
 seguro(iniciarAnim);cargarGrilla();seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.

@@ -247,8 +247,8 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja, aclarando que no es una alerta del SMN
-  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja: solo en la costa del Paraná[^<]*No es una alerta del SMN<\/button>/.test(html), 'leyenda');
-  assert.ok(/data-c="amarillo"[^>]*><i [^>]*><\/i>Amarillo: [^<]*el Paraná alto[^<]*<\/button>/.test(html) && /data-c="rojo"[^>]*><i [^>]*><\/i>Rojo: [^<]*el Paraná muy alto[^<]*<\/button>/.test(html), 'la leyenda nombra al río también en amarillo y en rojo');
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && /<li data-c="naranja"><b>Naranja:<\/b> solo en la costa del Paraná[^<]*No es una alerta del SMN\.<\/li>/.test(html), 'leyenda');
+  assert.ok(/<li data-c="amarillo"><b>Amarillo:<\/b> [^<]*el Paraná alto[^<]*<\/li>/.test(html) && /<li data-c="rojo"><b>Rojo:<\/b> [^<]*el Paraná muy alto[^<]*<\/li>/.test(html), 'la leyenda nombra al río también en amarillo y en rojo');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
@@ -336,6 +336,37 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   // Franjas: las acciones son botones de 44 px, no enlaces chicos dentro del texto
   assert.ok(html.includes('.bBtn{display:inline-flex;align-items:center;min-height:44px'));
   assert.ok(codigo.includes('<a class="btn bBtn" href="#t-smn">Ver días y horarios</a>') && codigo.includes('<button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'));
+});
+
+prueba('secciones de arriba compactas: lo principal a la vista y el detalle desplegable', () => {
+  // Cartel informativo en una línea, siempre a la vista (no es un desplegable)
+  const av = /<div class="aviso info" role="note" data-corto>([\s\S]*?)<\/div>/.exec(html);
+  assert.ok(av, 'cartel corto');
+  assert.ok(av[1].includes('<b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.') && av[1].includes('href="tel:911"') && av[1].includes('href="#t-hacer"') && av[1].includes('href="https://www.smn.gob.ar/alertas"'));
+  assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="smnBanda"'))), 'el cartel no se esconde');
+  // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
+  const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
+  for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
+  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Colonia Benítez lo sigue hasta rojo'));
+  assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
+  // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
+  const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
+  assert.ok(mas > hacer.indexOf('id="hHoy"') && mas > hacer.indexOf('href="tel:+543624448000"') && mas > hacer.indexOf('id="h-mochila"'));
+  assert.ok(hacer.indexOf('class="hNiv"') > mas && hacer.indexOf('SINAGIR') > mas && hacer.lastIndexOf('</details>') > hacer.indexOf('SINAGIR'));
+  // Desplegables: se recuerdan, se abren al imprimir y "Ver días y horarios" abre los del SMN
+  assert.ok(codigo.includes('seguro(iniciarPlegables);seguro(iniciarDesplegables);') && codigo.includes("addEventListener('beforeprint',()=>{DET_IMPR=true;"));
+  assert.ok(codigo.includes("if(id==='t-smn'&&a.classList.contains('bBtn'))document.querySelectorAll('#smn details.det').forEach(d=>{d.open=true});"));
+  // SMN: una línea por fenómeno con su color más alto; día, horario y municipios al desplegar
+  S("hoy='2026-10-19'");
+  S(`SMN={emitido:new Date().toISOString(),capturado:new Date().toISOString(),leidas:5,fechas:['2026-10-19','2026-10-20','2026-10-21'],areas:GEO.mun.map((m,i)=>i),alertas:{}}`);
+  S("SMN.alertas[0]=[['2026-10-21',41,0,0,3,0,1]];SMN.alertas[1]=[['2026-10-21',41,0,0,3,0,1],['2026-10-20',41,0,0,4,0,0]]");
+  const el = { style: {} }, bd = {}; Object.assign(elementos, { smn: el, smnBanda: bd }); S('pintarSMN()'); delete elementos.smn; delete elementos.smnBanda;
+  const T = S('GEO.mun.length'), h = el.innerHTML;
+  assert.strictEqual((h.match(/class="smnGrupo"/g) || []).length, 1, 'un bloque por fenómeno');
+  assert.ok(h.includes('<p class="smnLinea">Para mañana y el miércoles 21/10 · 2 de ' + T + ' municipios.</p>'), h.slice(0, 600));
+  assert.ok(/class="smnChip n4"/.test(h) && h.includes('alerta naranja</small>'), 'el color más alto a la vista');
+  assert.ok(/<details class="det" data-ev="41"><summary>Ver horarios y municipios<\/summary>/.test(h) && h.indexOf('municipios: ') > h.indexOf('Ver horarios'), 'los municipios al desplegar');
+  S("SMN_ABIERTOS.add('41');pintarSMN()"); S('SMN_ABIERTOS.clear();SMN=SMN_VACIO');
 });
 
 prueba('franja del río arriba de todo: desde amarillo, con el color y el texto del renglón; primero la más grave', () => {
