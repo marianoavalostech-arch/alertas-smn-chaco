@@ -45,8 +45,9 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   assert.ok(/\.emb \.instalar\{display:none!important\}/.test(html) && /@media print\{\.instalar\{display:none!important\}\}/.test(html), 'nunca en el portal ni al imprimir');
   assert.ok(!/serviceWorker|caches\./.test(codigo), 'no guarda el sitio en el celular: abre siempre la página publicada');
   // armado: sin ofrecimiento del navegador no se ve nada; con el ofrecimiento aparece el botón y al tocarlo pide instalar
-  const ev = {}, evBtn = {}, caja = { hidden: true }, btn = { hidden: true, addEventListener: (t, f) => { evBtn[t] = f } }, ios = { hidden: true };
-  Object.assign(elementos, { instalar: caja, btnInstalar: btn, instIos: ios });
+  const ev = {}, evBtn = {}, caja = { hidden: true }, btn = { hidden: true, at: {}, setAttribute(k, v) { this.at[k] = v }, addEventListener: (t, f) => { evBtn[t] = f } }, ios = { hidden: true };
+  const donde = { innerHTML: 'en la barra de Safari' }, abrir = { hidden: true };
+  Object.assign(elementos, { instalar: caja, btnInstalar: btn, instIos: ios, instIosDonde: donde, instIosAbrir: abrir });
   const antes = sitio.addEventListener; sitio.addEventListener = (t, f) => { ev[t] = f };
   try {
     S('instalarApp()');
@@ -56,13 +57,22 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
     assert.ok(frenado && !btn.hidden && !caja.hidden && ios.hidden, 'con ofrecimiento aparece el botón');
     evBtn.click(); assert.ok(pidio, 'el botón pide instalar');
     ev.appinstalled(); assert.ok(caja.hidden, 'instalada, se oculta');
-    // iPhone: no hay botón, va la explicación
-    caja.hidden = btn.hidden = ios.hidden = true; sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' };
-    S('instalarApp()'); assert.ok(!ios.hidden && !caja.hidden && btn.hidden, 'en iPhone, la explicación');
+    // iPhone: el mismo botón abre y cierra los pasos (Apple no deja instalar desde la página)
+    caja.hidden = btn.hidden = ios.hidden = true; sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1' };
+    S('instalarApp()'); assert.ok(!btn.hidden && !caja.hidden && ios.hidden && btn.at['aria-expanded'] === 'false', 'en iPhone, el botón con los pasos cerrados');
+    assert.ok(abrir.hidden && donde.innerHTML.includes('Safari'), 'en Safari no hace falta abrir otro navegador');
+    evBtn.click(); assert.ok(!ios.hidden && btn.at['aria-expanded'] === 'true', 'al tocarlo se ven los pasos');
+    evBtn.click(); assert.ok(ios.hidden && btn.at['aria-expanded'] === 'false', 'al tocarlo otra vez se cierran');
+    assert.ok(/Agregar a pantalla de inicio<\/strong> o <strong>Agregar a inicio/.test(html) && html.includes('<strong>⋯</strong>'), 'los pasos nombran las dos formas de la opción y el menú ⋯');
+    // Chrome en iPhone: Compartir del navegador; con iOS anterior a 16.4, primero abrir en Safari
+    caja.hidden = btn.hidden = ios.hidden = true; sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) CriOS/130.0 Mobile/15E148 Safari/604.1' };
+    S('instalarApp()'); assert.ok(abrir.hidden && donde.innerHTML.includes('Chrome'), 'Chrome con iOS 17: desde el mismo Chrome');
+    sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_3 like Mac OS X) CriOS/120.0 Mobile/15E148 Safari/604.1' };
+    S('instalarApp()'); assert.ok(!abrir.hidden && donde.innerHTML.includes('Safari'), 'Chrome con iOS 16.3: abrir en Safari');
     // abierto desde el ícono: nada
     caja.hidden = ios.hidden = true; sitio.navigator.standalone = true;
     S('instalarApp()'); assert.ok(caja.hidden && ios.hidden, 'abierto como app no se ofrece');
-  } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; }
+  } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; delete elementos.instIosDonde; delete elementos.instIosAbrir; }
 });
 
 prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, solo el conteo, sin cargar código de afuera', () => {

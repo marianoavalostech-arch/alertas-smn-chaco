@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, tarde (botón "Instalar app" también en iPhone)
+
+Pedido de Mariano: que en iPhone haya lo mismo que en Android.
+- **En iPhone y iPad aparece el botón "Instalar app"**, como en Android. Apple no deja que una página se instale sola, así que el botón abre (y al tocarlo de nuevo cierra) los pasos: 1) tocar **Compartir** (el cuadrado con la flecha) en la barra de Safari, o dentro de **⋯** si no se ve; 2) elegir **Agregar a pantalla de inicio** o **Agregar a inicio**; 3) tocar **Agregar**. Reemplaza la línea suelta de antes.
+- Según el navegador (`pasosIos`): en Chrome dice que Compartir está arriba, al lado de la dirección; con Chrome, Edge o Firefox en un iOS anterior a 16.4 (que no dejan agregar a inicio) suma primero "Abrí esta página en Safari".
+- Abrir los pasos cuenta como `instalar-app-boton` en GoatCounter (el mismo evento que en Android). Nada cambia en Android, la computadora, el portal ni al imprimir.
+- Huella nueva del código. 56 pruebas (la de instalar app controla el botón en iPhone, abrir y cerrar, y los textos de Safari y Chrome).
+
 ## 19/10/2026, mediodía (computadora: índice junto al nombre y mejor uso del espacio)
 
 Pedido de Mariano: mejorar la vista en computadora, integrar mejor el índice y aprovechar los espacios. Solo desde 1100 px de ancho; en el celular, la tablet, el portal y al imprimir no cambia nada (comprobado: la captura del celular a 390 px queda idéntica, píxel por píxel).

@@ -404,7 +404,12 @@ footer{font-size:.85rem;color:var(--muted)}
 .compOpc{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .compOpc a.btn{display:inline-flex;align-items:center;text-decoration:none}
 .compAviso{font-size:.92rem;color:var(--ink);font-weight:600}
-.cab .instIos{flex:1 1 100%;margin:0;font-size:.92rem;color:var(--ink);background:var(--acento-soft);border-radius:10px;padding:8px 12px}
+.cab .instIos{flex:1 1 100%;margin:0;font-size:.92rem;color:var(--ink);background:var(--acento-soft);border-radius:10px;padding:10px 14px}
+.cab .instIos p{margin:0}
+.cab .instIos ol{margin:6px 0;padding-left:1.4em}
+.cab .instIos li{margin:4px 0}
+.cab .instIos li[hidden]{display:none}
+.cab .instIos .instIosNota{font-size:.85rem}
 .emb .instalar{display:none!important}
 @media print{.instalar{display:none!important}}
 </style>
@@ -422,7 +427,16 @@ footer{font-size:.85rem;color:var(--muted)}
         <button class="btn" id="compCopiar" type="button">Copiar enlace</button>
         <span class="compAviso" id="compAviso" role="status"></span>
       </div>
-      <p class="instIos" id="instIos" hidden>Para tenerlo como app: tocá el botón <strong>Compartir de Safari</strong> (el cuadrado con la flecha) y después <strong>Agregar a inicio</strong>.</p>
+      <div class="instIos" id="instIos" hidden>
+        <p><strong>Para tenerlo como app:</strong></p>
+        <ol>
+          <li id="instIosAbrir" hidden>Abrí esta página en <strong>Safari</strong>.</li>
+          <li>Tocá el botón <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba) <span id="instIosDonde">en la barra de Safari. Si no lo ves, tocá <strong>⋯</strong> y ahí aparece.</span></li>
+          <li>Elegí <strong>Agregar a pantalla de inicio</strong> o <strong>Agregar a inicio</strong> (a veces hay que deslizar hacia abajo en el menú).</li>
+          <li>Tocá <strong>Agregar</strong>. Listo: queda el ícono en la pantalla, como cualquier app.</li>
+        </ol>
+        <p class="instIosNota">Es el botón Compartir del navegador, no el de este sitio.</p>
+      </div>
     </div>
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
     <nav class="lado" id="lado" aria-label="Índice lateral">
@@ -2063,20 +2077,32 @@ function contarVisita(){
 seguro(contarVisita);
 
 // Instalar app: el botón aparece solo cuando el navegador ofrece instalar (Android y computadora, con Chrome o Edge).
-// En iPhone y iPad no hay botón: se explica Compartir → Agregar a inicio. No se ve dentro del portal ni si ya se abrió como app.
+// En iPhone y iPad Apple no deja que la página instale sola: el mismo botón abre (y cierra) los pasos Compartir → Agregar a inicio,
+// según el navegador (Safari, o Chrome y Edge desde iOS 16.4; antes, hay que abrirla en Safari). No se ve dentro del portal ni si ya se abrió como app.
 // No guarda el sitio en el celular: abre siempre la página publicada, con sus datos y sus avisos de siempre.
 function instalarApp(){
   const caja=$('instalar'),btn=$('btnInstalar'),ios=$('instIos');if(!caja||!btn||!ios||EMB)return;
   const nav=typeof navigator!=='undefined'?navigator:{};
   if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true)return;
   let pedido=null;
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;btn.hidden=false;cajaCab()});
-  btn.addEventListener('click',async()=>{if(!pedido)return;contador('instalar-app-boton',true);const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;cajaCab()});
-  addEventListener('appinstalled',()=>{btn.hidden=ios.hidden=true;cajaCab();contador('app-instalada',true)});
   const ua=nav.userAgent||'';
-  if(/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1)){ios.hidden=false;cajaCab()}
+  const esIos=/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;btn.hidden=false;cajaCab()});
+  btn.addEventListener('click',async()=>{
+    if(esIos){const ab=ios.hidden;ios.hidden=!ab;btn.setAttribute('aria-expanded',String(ab));if(ab)contador('instalar-app-boton',true);return}
+    if(!pedido)return;contador('instalar-app-boton',true);const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;cajaCab()});
+  addEventListener('appinstalled',()=>{btn.hidden=ios.hidden=true;cajaCab();contador('app-instalada',true)});
+  if(esIos){pasosIos(ua);btn.setAttribute('aria-controls','instIos');btn.setAttribute('aria-expanded','false');btn.hidden=false;cajaCab()}
 }
-// La caja del encabezado se ve solo si tiene algo a la vista: el botón de instalar, la explicación de iPhone o el de compartir.
+// Pasos de iPhone según el navegador: en Safari, Compartir está en su barra (en iOS 26 puede estar dentro de ⋯);
+// Chrome, Edge y Firefox agregan a inicio desde iOS 16.4; con un iOS anterior, primero hay que abrir la página en Safari.
+function pasosIos(ua){
+  const otro=/CriOS|EdgiOS|FxiOS/.test(ua),v=/OS (\d+)_(\d+)/.exec(ua),viejo=v&&(+v[1]<16||(+v[1]===16&&+v[2]<4));
+  const donde=$('instIosDonde'),abrir=$('instIosAbrir');
+  if(otro&&donde)donde.innerHTML=viejo?'en la barra de Safari. Si no lo ves, tocá <strong>⋯</strong> y ahí aparece.':'del navegador (en Chrome está arriba, al lado de la dirección). Si no lo ves, buscalo en el menú <strong>⋯</strong>.';
+  if(abrir)abrir.hidden=!(otro&&viejo);
+}
+// La caja del encabezado se ve solo si tiene algo a la vista: el botón de instalar (con los pasos de iPhone) o el de compartir.
 function cajaCab(){const c=$('instalar');if(c)c.hidden=['btnInstalar','instIos','btnCompartir'].every(id=>{const e=$(id);return !e||!!e.hidden})}
 seguro(instalarApp);
 
