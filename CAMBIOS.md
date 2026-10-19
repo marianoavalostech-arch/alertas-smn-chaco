@@ -2,7 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 18/10/2026, noche (revisión integral: el mapa nombra al río, la página carga más rápido y Netlify corre las pruebas antes de publicar)
+## 18/10/2026, noche (franja del río arriba de todo)
+
+- **Franja del río arriba de todo** (pedido de Mariano): cuando el Paraná o el Paraguay salen del verde (desde amarillo), debajo del cartel "Este sitio es informativo" y antes del mapa aparece una franja con el color de su renglón y el mismo aspecto que la del SMN (`pintarRioBanda`, `#rioBanda`). Con los datos del 18/10: "≈ Río Paraná en rojo · islas y costa fuera de las defensas. El Paraná está en 6,80 m en Barranqueras: superó el nivel de evacuación (6,50 m). El INA prevé 7,23 m para el 20/10. Dentro de las defensas del Gran Resistencia el agua del río queda afuera. Seguí los avisos oficiales. Qué hacer · Ver el río".
+- Usa el mismo texto del renglón, el título de "Ahora en el Chaco" (`rioTit`, que ahora comparten) y la zona (`RIO_ZONA`). La frase de las defensas va en corto (`DEFENSAS_CORTA`). No dice "alerta": los colores salen del INA. Si también está la franja del SMN, va primero la más grave (`ordenBandas`).
+- Como la del SMN, aparece cuando corre el código o llegan los datos: mientras está, la página baja un poco al cargar (medido con el río en rojo, a 390 px: 0,16).
+- Huella nueva del código. 54 pruebas (1 nueva).
+
+## 18/10/2026, noche (`4aac9e4` y `24d3f87`: revisión integral: el mapa nombra al río, la página carga más rápido y Netlify corre las pruebas antes de publicar)
 
 - **La leyenda del mapa nombra al río.** Con el Paraná en 6,80 m (18/10), Barranqueras, Puerto Vilelas y Colonia Benítez estaban en rojo por el río y la leyenda decía "Rojo: lluvia muy fuerte o alerta roja del SMN". Ahora el amarillo dice "… o el Paraná alto en la costa y zonas bajas", el naranja "… por la altura del río y el pronóstico del INA" (antes: "cuando el pronóstico del INA prevé pasar el nivel de evacuación", que no vale con el río ya sobre 6,50 m) y el rojo "… o el Paraná muy alto en la costa".
 - **Detalle de Resistencia:** decía "Verde" (su semáforo, por la lluvia) con el mapa en naranja por el río. Ahora el color grande es el del mapa ("Lluvia y río Paraná", "Naranja") y abajo dice "Por la lluvia, su semáforo está en verde." Solo cambia cuando sigue al río (rama `seg` con `k.rio` en `pintarInfo`).

@@ -188,10 +188,12 @@ footer{font-size:.85rem;color:var(--muted)}
 .smnChip.n3{border-color:var(--amarillo)}.smnChip.n3 small{color:var(--amarillo)}
 .smnChip.n4{border-color:var(--naranja)}.smnChip.n4 small{color:var(--naranja)}
 .smnChip.n5{border-color:var(--rojo);background:var(--rojo-bg)}.smnChip.n5 small{color:var(--rojo)}
-#smnBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-#smnBanda[hidden]{display:none}
-#smnBanda.n4{border-color:var(--naranja)}#smnBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
-#smnBanda b{font-size:1.02rem}
+#smnBanda,#rioBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+#smnBanda[hidden],#rioBanda[hidden]{display:none}
+#smnBanda.n4,#rioBanda.n4{border-color:var(--naranja)}#smnBanda.n5,#rioBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
+#smnBanda b,#rioBanda b{font-size:1.02rem}
+#rioBanda .rbRio{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}#rioBanda .rbRio+.rbRio{border-top:1px solid var(--line);padding-top:8px}
+#rioBanda .rbTxt{flex:1 1 100%;font-size:.95rem}#rioBanda .rbZona{color:var(--muted)}
 #mapa path.mun[data-smn]{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3}
 .leyenda i.punteado{background:none;border:1.6px dashed var(--ink)}
 /* foco: al elegir un municipio o un color de la leyenda, el resto del mapa se apaga (mismo color, más claro) */
@@ -359,6 +361,7 @@ footer{font-size:.85rem;color:var(--muted)}
   </div>
 
   <div id="smnBanda" role="status" hidden></div>
+  <div id="rioBanda" role="status" hidden></div>
 
   <div class="captura" id="bannerCaptura" hidden></div>
 
@@ -1302,7 +1305,38 @@ function pintarBanda(G){
   // Dice para qué días es: una alerta para dentro de 3 días no es para ahora.
   bd.innerHTML='<b>'+(tipos.size>1?'Alertas':'Alerta')+' del SMN para '+smnDiasTxt(dias)+':</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
     +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'. <a href="#t-smn">Ver días y horarios</a></span>';
-  bd.hidden=false;
+  bd.hidden=false;ordenBandas();
+}
+// Franja de arriba del río (pedido de Mariano, 18/10/2026): aparece cuando el Paraná o el Paraguay salen del verde, desde amarillo,
+// con el color de su renglón y el mismo texto. Los colores salen del INA y de sus niveles oficiales: no dice "alerta"
+// (las alertas del río las declaran la APA y el Gobierno). En el Paraná suma lo que prevé el INA si el renglón no lo dice, y la frase de las defensas.
+const RIO_ZONA={'Paraná':'islas y costa fuera de las defensas','Paraguay':'costa e islas de Puerto Bermejo a Isla del Cerrito'};
+const RIO_NV={amarillo:3,naranja:4,rojo:5};
+// En la franja va la frase de las defensas en corto, para que ocupe poco lugar arriba de todo (la completa sigue en el renglón y en el detalle).
+const DEFENSAS_CORTA='Dentro de las defensas del Gran Resistencia el agua del río queda afuera. Seguí los avisos oficiales.';
+const rioTit=(rio,r)=>'Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':r.pr?': rojo según la altura de hoy y el pronóstico del INA':' en '+r.c);
+function pintarRioBanda(){
+  const bd=$('rioBanda');if(!bd)return;
+  const filas=[];
+  [['Paraná',riesgoRio(),'#t-rio'],['Paraguay',riesgoParaguay(),'#t-otros']].forEach(([rio,r,ver])=>{
+    if(!r||!RIO_NV[r.c])return;
+    let extra='';
+    if(rio==='Paraná'){const rr=resumenRio(),pn=resumenProno();
+      if(rr&&pn&&pn.fut&&!casoProno(pn,rr.atraso>=4?-Infinity:rr.h)&&pn.cen[2]>rr.h)extra=' El INA prevé '+nf(pn.cen[2],2)+' m para el '+fDia(pn.cen[0])+'.'}
+    filas.push({n:RIO_NV[r.c],html:'<div class="rbRio"><b><span aria-hidden="true">≈ </span>'+rioTit(rio,r)+'</b><span class="rbZona">'+RIO_ZONA[rio]+'</span>'
+      +'<span class="rbTxt">'+r.por+extra+'</span>'
+      +'<span class="rbTxt">'+(rio==='Paraná'?DEFENSAS_CORTA+' ':'')+'<button type="button" class="hLink" data-h="rio">Qué hacer</button> · <a href="'+ver+'">Ver el río</a></span></div>'});
+  });
+  if(!filas.length){bd.hidden=true;bd.innerHTML='';return}
+  filas.sort((x,y)=>y.n-x.n);
+  bd.className='n'+filas[0].n;bd.innerHTML=filas.map(f=>f.html).join('');bd.hidden=false;ordenBandas();
+}
+// Con las dos franjas a la vista (SMN y río), primero la más grave; si son iguales, la del SMN.
+function ordenBandas(){
+  const s=$('smnBanda'),r=$('rioBanda');
+  if(!s||!r||s.hidden||r.hidden||typeof s.before!=='function')return;
+  const n=e=>Number((/n(\d)/.exec(e.className||'')||[])[1]||0);
+  if(n(r)>n(s))s.before(r);else s.after(r);
 }
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 // Días de las alertas en palabras: "hoy", "mañana", "el miércoles 21/10", unidos con comas e "y".
@@ -1618,6 +1652,7 @@ function pintar(){
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
   seguro(pintarBanner);
+  seguro(pintarRioBanda,['rio','prono','paraguay']);
   seguro(pintarHacer);
 }
 
@@ -1644,11 +1679,10 @@ function hacerHoy(){
     });
   }
   // Ríos: el naranja del Paraná sale del pronóstico del INA y no es una alerta del SMN.
-  const NV={amarillo:3,naranja:4,rojo:5};
-  [['Paraná',riesgoRio(),'islas y costa fuera de las defensas'],['Paraguay',riesgoParaguay(),'costa e islas de Puerto Bermejo a Isla del Cerrito']].forEach(([rio,r,zona])=>{
-    if(!r||!NV[r.c])return;
-    filas.push({t:'rio',rio,niv:NV[r.c],txt:'<b>Río '+rio+(r.c==='naranja'?': naranja según el pronóstico del INA':r.pr?': rojo según la altura de hoy y el pronóstico del INA':' en '+r.c)+'</b> · '+zona});
-    marcar('rio',NV[r.c],'Río '+r.c);
+  [['Paraná',riesgoRio()],['Paraguay',riesgoParaguay()]].forEach(([rio,r])=>{
+    if(!r||!RIO_NV[r.c])return;
+    filas.push({t:'rio',rio,niv:RIO_NV[r.c],txt:'<b>'+rioTit(rio,r)+'</b> · '+RIO_ZONA[rio]});
+    marcar('rio',RIO_NV[r.c],'Río '+r.c);
   });
   filas.sort((x,y)=>y.niv-x.niv);
   return {filas,marcas,smn};
