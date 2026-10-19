@@ -346,6 +346,10 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
   assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
+  // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance, 911 y "↑ Arriba"
+  assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
+  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 9 && (lado.match(/class="ladoSub"/g) || []).length === 9, 'un ícono y un renglón por destino');
+  assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));
   assert.ok(html.includes('.emb .aIndice,.emb .indice{display:none}') && html.includes('@media print{.indice,.aIndice,.bAcc{display:none!important}}'));

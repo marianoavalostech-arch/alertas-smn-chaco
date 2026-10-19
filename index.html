@@ -194,16 +194,34 @@ footer{font-size:.85rem;color:var(--muted)}
   html:not(.emb) .wrap{max-width:1320px;display:grid;grid-template-columns:236px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:24px;row-gap:16px;align-items:start}
   html:not(.emb) .wrap>*{grid-column:2}
   html:not(.emb) .wrap>main{grid-row:1}
-  html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 14px 14px}
+  html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky;top:16px;height:calc(100vh - 32px);min-height:560px;max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 14px 14px;display:flex;flex-direction:column;scrollbar-width:thin}
   html:not(.emb) .cab h1{font-size:1.5rem;line-height:1.15}
   html:not(.emb) .cab>p{font-size:.92rem;margin-top:8px}
   html:not(.emb) .cab .instalar{margin-top:12px;gap:8px}
-  html:not(.emb) .lado{display:flex;flex-direction:column;gap:2px;margin:16px -4px 0;padding-top:12px;border-top:1px solid var(--line)}
-  .lado .ladoTit{font-weight:700;color:var(--muted);font-size:.85rem;padding:0 8px 6px}
-  .lado a{display:flex;align-items:center;gap:8px;padding:7px 8px;border-left:3px solid transparent;border-radius:6px;color:var(--ink);font-weight:600;font-size:.92rem;text-decoration:none;line-height:1.25}
+  html:not(.emb) .lado{display:flex;flex-direction:column;gap:3px;flex:1 0 auto;margin:16px -4px 0;padding-top:14px;border-top:1px solid var(--line)}
+  .lado .ladoTit{font-weight:800;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:0 10px 8px}
+  .lado .ladoProg{height:4px;border-radius:2px;background:var(--acento-soft);margin:0 10px 10px;overflow:hidden}
+  .lado .ladoProg i{display:block;height:100%;width:0;border-radius:2px;background:var(--degrade);transition:width .2s}
+  .lado a{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 7px;border-radius:14px;color:var(--ink);font-weight:700;font-size:.93rem;text-decoration:none;line-height:1.2;transition:background-color .15s,color .15s,transform .15s,box-shadow .15s}
+  .lado .ladoIco{flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--acento-soft);font-size:1rem;line-height:1;transition:background-color .15s,transform .15s}
+  .lado .ladoTx{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .lado .ladoSub{font-size:.74rem;font-weight:600;color:var(--muted)}
+  .lado .ladoSub:empty{display:none}
   .lado .ladoPt{flex:none;width:10px;height:10px;border-radius:50%;margin-left:auto;box-shadow:0 0 0 2px var(--card)}
-  .lado a:hover{background:var(--bg);color:var(--acento)}
-  .lado a[aria-current]{border-left-color:var(--acento);background:var(--bg);color:var(--acento);font-weight:800}
+  .lado a:hover{background:var(--acento-soft);color:var(--acento);transform:translateX(3px)}
+  .lado a:hover .ladoIco{background:var(--card);transform:scale(1.08)}
+  .lado a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+  .lado a[aria-current]{background:var(--degrade);color:#fff;box-shadow:0 6px 16px rgba(80,89,188,.32)}
+  .lado a[aria-current] .ladoIco{background:rgba(255,255,255,.28)}
+  .lado a[aria-current] .ladoSub{color:#fff}
+  html:not(.emb) .ladoPie{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .ladoPie .ladoTel{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:14px;background:var(--rojo-bg);border:1.5px solid var(--rojo);color:var(--ink);font-weight:700;text-decoration:none}
+  .ladoPie .ladoTel b{font-family:var(--font-tit);font-size:1.25rem;color:var(--rojo)}
+  .ladoPie .ladoTel:hover{background:var(--card)}
+  .ladoPie .ladoFila{display:flex;gap:6px}
+  .ladoPie .ladoFila>*{flex:1;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;min-height:38px;padding:6px 8px;text-decoration:none;white-space:nowrap}
+  @media (max-height:860px){html:not(.emb) .cab{padding-top:16px}html:not(.emb) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:not(.emb) .cab .instalar{margin-top:10px}html:not(.emb) .lado{margin-top:12px;padding-top:10px}html:not(.emb) .ladoPie{margin-top:10px;padding-top:10px}}
+  @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:3px}.lado .ladoSub{display:none}}
   html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
   html:not(.emb) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
   html:not(.emb) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
@@ -222,6 +240,7 @@ footer{font-size:.85rem;color:var(--muted)}
   html:not(.emb) .hSit details#h-mochila:not([open]){grid-column:span 2}
 }
 /* En el celular las cajas del gráfico del río no cambian nada: sus partes siguen una debajo de la otra. */
+.ladoPie{display:none}
 .rioCuerpo,.rioGraf,.rioLado{display:contents}
 .volver{flex:none;font-size:.88rem;padding:5px 12px;min-height:36px;white-space:nowrap}
 @media print{.volver{display:none}}
@@ -408,8 +427,21 @@ footer{font-size:.85rem;color:var(--muted)}
     <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
     <nav class="lado" id="lado" aria-label="Índice lateral">
       <span class="ladoTit">En esta página</span>
-      <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+      <span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>
+      <a href="#t-mapa"><span class="ladoIco" aria-hidden="true">🗺️</span><span class="ladoTx">Mapa<small class="ladoSub"></small></span></a>
+      <a href="#t-smn"><span class="ladoIco" aria-hidden="true">⚠️</span><span class="ladoTx">Alertas del SMN<small class="ladoSub"></small></span></a>
+      <a href="#t-hacer"><span class="ladoIco" aria-hidden="true">🧭</span><span class="ladoTx">Qué hacer<small class="ladoSub"></small></span></a>
+      <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Por localidad<small class="ladoSub"></small></span></a>
+      <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
+      <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
+      <a href="#t-lluvia"><span class="ladoIco" aria-hidden="true">🌧️</span><span class="ladoTx">Lluvias<small class="ladoSub"></small></span></a>
+      <a href="#t-nino"><span class="ladoIco" aria-hidden="true">🌡️</span><span class="ladoTx">El Niño<small class="ladoSub"></small></span></a>
+      <a href="#t-acerca"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Acerca<small class="ladoSub"></small></span></a>
     </nav>
+    <div class="ladoPie">
+      <a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a>
+      <div class="ladoFila"><a class="btn" href="#t-hacer">Teléfonos</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
+    </div>
   </header>
 
   <main>
@@ -2089,7 +2121,10 @@ function indiceLateral(){
   let pend=false,act=null;
   const ver=()=>{pend=false;if(getComputedStyle(nav).display==='none')return;
     let q=null;for(const [a,sec] of L)if(sec.getBoundingClientRect().top<=innerHeight*0.33)q=a;
-    if(q!==act){if(act)act.removeAttribute('aria-current');if(q)q.setAttribute('aria-current','location');act=q}};
+    if(q!==act){if(act)act.removeAttribute('aria-current');if(q)q.setAttribute('aria-current','location');act=q}
+    // barrita de avance: cuánto de la página ya se bajó
+    const pr=$('ladoProg'),tot=document.documentElement.scrollHeight-innerHeight;if(pr)pr.style.width=(tot>0?Math.min(100,Math.max(0,scrollY/tot*100)):0).toFixed(1)+'%'};
+  const arr=$('ladoArriba');if(arr)arr.addEventListener('click',()=>{marcarSalto();scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
   addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
@@ -2099,9 +2134,15 @@ const LADO_COL={3:'amarillo',4:'naranja',5:'rojo'};
 function marcasLado(){
   const nav=$('lado'),s=$('smnBanda'),r=$('rioBanda');if(!nav||!s||!r)return;
   const nS=s.hidden?0:Number((/n(\d)/.exec(s.className||'')||[])[1]||0),rios={};
-  if(!r.hidden)for(const b of r.querySelectorAll('.rbL1 b')){const m=/Río (Paraná|Paraguay) en (\w+)/.exec(b.textContent||'');if(m)rios[m[1]]=m[2]}
-  [['#t-smn',LADO_COL[nS],'Alertas del SMN: hay alerta '+(LADO_COL[nS]||'')],['#t-rio',rios['Paraná'],'Río Paraná en '+rios['Paraná']],['#t-otros',rios['Paraguay'],'Río Paraguay en '+rios['Paraguay']]].forEach(([h,c,t])=>{
+  const alt={};
+  if(!r.hidden)for(const b of r.querySelectorAll('.rbL1 b')){const m=/Río (Paraná|Paraguay) en (\w+)/.exec(b.textContent||'');if(m){rios[m[1]]=m[2];
+    const h=/· ([\d.,]+ m)/.exec((b.parentNode||{}).textContent||'');alt[m[1]]='En '+m[2]+(h?' · '+h[1]:'')}}
+  // Debajo del nombre, en corto: para qué día es la alerta del SMN y la altura de cada río (el río nunca dice "alerta").
+  const fem={3:'amarilla',4:'naranja',5:'roja'},dS=nS?((/para (?:el )?([^:]+):/.exec((s.querySelector('b')||{}).textContent||'')||[])[1]||''):'';
+  const sub={'#t-smn':nS?'Alerta '+fem[nS]+(dS?' · '+dS:''):'','#t-rio':alt['Paraná']||'','#t-otros':alt['Paraguay']||''};
+  [['#t-smn',LADO_COL[nS],'Alertas del SMN: hay alerta '+(fem[nS]||'')],['#t-rio',rios['Paraná'],'Río Paraná en '+rios['Paraná']],['#t-otros',rios['Paraguay'],'Río Paraguay en '+rios['Paraguay']]].forEach(([h,c,t])=>{
     const a=nav.querySelector('a[href="'+h+'"]');if(!a)return;
+    const sb=a.querySelector('.ladoSub');if(sb)sb.textContent=c?sub[h]:'';
     let i=a.querySelector('.ladoPt');
     if(!c){if(i)i.remove();a.removeAttribute('title');return}
     if(!i){i=document.createElement('i');i.className='ladoPt';i.setAttribute('aria-hidden','true');a.appendChild(i)}
