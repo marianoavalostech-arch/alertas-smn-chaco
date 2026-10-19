@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, mañana (número en el pico previsto del Paraná)
+
+- **Gráfico del Paraná:** el punto más alto del pronóstico del INA lleva su altura escrita (hoy, "7,23 m" para el 20/10), además del último (6,37 m). Solo si es más alto que la lectura de hoy y no es el último punto. Antes se veía solo tocando el gráfico. Huella nueva del código. 56 pruebas (la del río controla el número del pico).
+
 ## 19/10/2026, mañana ("¿Qué está pasando?" no se abre sola)
 
 - **Las tarjetas de "¿Qué está pasando?" ya no se despliegan solas** (pedido de Mariano). Antes, con algo fuera del verde (hoy, el Paraná en rojo), la tarjeta más grave se abría sola al cargar y ocupaba media pantalla. Ahora todas empiezan cerradas; las que rigen siguen marcadas con su color y su etiqueta ("Río rojo", "Alerta amarilla"), y se abren tocándolas o con el botón "Qué hacer" de "Ahora en el Chaco" y de las franjas. Huella nueva del código. 56 pruebas (la de "Qué hacer" controla que no se abran solas).

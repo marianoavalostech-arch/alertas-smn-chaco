@@ -1526,7 +1526,9 @@ function pintarRio(){
   const ref=(v,c)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="1.5" stroke-dasharray="5 4"/>';
   const prono=!pf.length?'':'<polyline points="'+[[o[n][0],o[n][1]]].concat(pf.map(q=>[q[0],q[2]])).map(q=>x(q[0]).toFixed(1)+','+y(q[1]).toFixed(1)).join(' ')+'" fill="none" stroke="var(--water)" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round"/>'
     +pf.map(q=>'<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(q[3])+'" y2="'+y(q[1])+'" stroke="var(--water)" stroke-width="5" stroke-linecap="round" opacity=".35"/><circle cx="'+x(q[0])+'" cy="'+y(q[2])+'" r="3.2" fill="var(--card)" stroke="var(--water)" stroke-width="2"/>').join('')
-    +(q=>'<text x="'+(x(q[0])+8)+'" y="'+(y(q[2])+4)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf[pf.length-1]);
+    +(q=>'<text x="'+(x(q[0])+8)+'" y="'+(y(q[2])+4)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf[pf.length-1])
+    // el pico previsto también lleva su número, arriba a la derecha de su punto, si no es el último y queda más alto que hoy
+    +(q=>q===pf[pf.length-1]||q[2]<=o[n][1]?'':'<text class="rioPico" x="'+(x(q[0])+5)+'" y="'+(y(q[2])-7)+'" style="fill:var(--water);font-size:11px">'+nf(q[2],2)+' m</text>')(pf.reduce((m,q)=>q[2]>m[2]?q:m,pf[0]));
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
   RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]]).concat(pf.map(q=>[x(q[0]),y(q[2]),q[0],q[2],q]))};
   const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.'+(pf.length?' Pronóstico del INA: '+pf.map(q=>nf(q[2],2)+' metros para el '+fDia(q[0])).join(', ')+'.':'')+'">'+g

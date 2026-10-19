@@ -157,6 +157,14 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(gr.includes('class="defMarca"') && gr.includes('Defensas de la ciudad: unos 9,50 m') && !gr.includes('var(--titulo)" stroke-width'), 'lejos: solo la marca');
   gr = graf([['2027-03-07', 7.9], ['2027-03-10', 8.1]]);
   assert.ok(!gr.includes('class="defMarca"') && gr.includes('stroke="var(--titulo)"') && gr.includes('no protegen las islas ni la costa de afuera'), 'cerca: línea y leyenda');
+  // El pico previsto lleva su número (como el 18/10/2026: 6,80 hoy, 7,23 m pasado mañana, 6,37 m a la semana); si el último es el más alto, no se repite
+  const pr = (f) => ({ emitido: '2027-03-08T03:00:00.000Z', p: f });
+  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-08', 6.5, 6.5, 6.5], ['2027-03-12', 7, 7.23, 7.8], ['2027-03-17', 5.8, 6.37, 6.6]]));
+  assert.ok(/class="rioPico"[^>]*>7,23 m</.test(gr) && gr.includes('>6,37 m<'), 'pico con número');
+  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 7, 7.1, 7.3], ['2027-03-17', 7.2, 7.4, 7.6]]));
+  assert.ok(!gr.includes('rioPico') && gr.includes('>7,40 m<'), 'el último es el pico: un solo número');
+  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 6.5, 6.6, 6.7], ['2027-03-17', 6, 6.2, 6.4]]));
+  assert.ok(!gr.includes('rioPico'), 'si el pronóstico baja, no se marca pico');
   // Sin pronóstico
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 4.0], ['2027-03-10', 4.0]]).c, 'verde');
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.5], ['2027-03-10', 5.7]]).c, 'amarillo');   // cerca y creciendo
