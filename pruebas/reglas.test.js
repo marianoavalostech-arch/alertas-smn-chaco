@@ -1115,6 +1115,7 @@ prueba('Yacyretá: una sola línea informativa debajo del gráfico del río', ()
     for (const m of html.matchAll(/data-h="(\w+)"/g)) assert.ok(tarj.includes(m[1]), m[1]);
     assert.strictEqual((html.match(/<input type="checkbox" value="\w+">/g) || []).length, 12, 'mochila con 12 cosas');
     for (const n of ['911', '100', '107', '+543624448000', '08007777589']) assert.ok(html.includes('href="tel:' + n + '"'), n);
+    assert.ok(html.includes('<a href="https://wa.me/5493644377044" target="_blank" rel="noopener" class="hDc hWa"><b>SECHEEP por WhatsApp</b>'), 'botón de WhatsApp de SECHEEP (canal oficial, secheep.gob.ar)');
     // escenario: alerta naranja por tormentas con granizo mañana en un municipio, calor amarillo hoy en toda la provincia, Paraná en naranja
     const hoy = S('hoy'), man = S('masDias(hoy,1)'), T = S('GEO.mun.length');
     const areas = Array.from({ length: T }, (_, i) => 'a' + i), alertas = {};

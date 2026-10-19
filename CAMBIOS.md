@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 19/10/2026, tarde (botón de WhatsApp de SECHEEP)
+
+Pedido de Mariano: en los teléfonos, un botón para escribirle a SECHEEP por WhatsApp.
+- **Botón nuevo "SECHEEP por WhatsApp"** (364-4377044), debajo del 0800: abre WhatsApp con ese número (`wa.me/5493644377044`). Es el WhatsApp oficial de SECHEEP (figura en secheep.gob.ar y en sus avisos contra estafas). Ícono de globito de mensaje en verde, para no confundirlo con los de llamar. El título dice "Tocá para llamar o escribir".
+- En la tarjeta "Viento fuerte y granizo", el aviso de cables caídos suma el WhatsApp.
+- Desde 600 px de ancho los teléfonos van en dos filas de tres (antes, una fila de cinco). En el celular, igual que antes, con el botón nuevo a lo ancho.
+- Huella nueva del código. 59 pruebas (la de "Qué hacer" controla el botón).
+
 ## 19/10/2026, tarde (imagen del Pacífico guardada en GitHub, renovada cada 7 días)
 
 Pedido de Mariano: guardar la imagen de la NASA y traerla cada tantos días, en vez de que cada visita se la pida a la NASA.
