@@ -2138,7 +2138,18 @@ function renovar(){
   cargarTodos();cargarGrilla();
 }
 setInterval(renovar,30*60e3);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-ULT>10*60e3)renovar()});
+// Al volver a la página o a la app instalada (20/10/2026): si estuvo guardada más de 6 horas o cambió el día, se vuelve a abrir entera,
+// así trae también la última versión del sitio (la app instalada puede quedar días abierta en segundo plano sin recargarse).
+// Si pasaron más de 10 minutos, solo se renuevan los datos. Dentro del portal, solo los datos.
+let OCULTA=0;const DIA_ABIERTA=diaAR(new Date());
+function alVolver(){
+  if(document.hidden){OCULTA=OCULTA||Date.now();return}
+  const t=OCULTA;OCULTA=0;
+  if(!EMB&&((t&&Date.now()-t>6*36e5)||diaAR(new Date())!==DIA_ABIERTA)){location.reload();return}
+  if(Date.now()-ULT>10*60e3)renovar();
+}
+document.addEventListener('visibilitychange',alVolver);
+addEventListener('pageshow',e=>{if(e.persisted){OCULTA=OCULTA||ULT;alVolver()}});
 
 // Correo de contacto: se arma al cargar para que los robots que buscan direcciones no lo lean del HTML.
 function armarCorreo(){

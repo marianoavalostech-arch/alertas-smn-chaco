@@ -1259,5 +1259,11 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(html.includes('.vermapa{grid-column:2;justify-self:start;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:40px;') && html.includes('border-radius:999px;border:1.5px solid currentColor;background:var(--card);color:var(--ink);text-decoration:none'), 'con borde, fondo y sin subrayado');
     assert.ok(html.includes('<span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>') && html.includes('href="#t-rio"><span class="vmIco" aria-hidden="true">🌊</span>Ver el río</a>') && html.includes('href="#t-otros"><span class="vmIco" aria-hidden="true">🏞️</span>Ver el río</a>'), 'con ícono, que el lector de pantalla no lee');
   });
+  prueba('al volver a la app o a la pestaña: más de 6 horas guardada o día nuevo, se abre entera; más de 10 minutos, renueva los datos', () => {
+    const c = html.slice(html.indexOf('function alVolver(){'), html.indexOf("addEventListener('pageshow'"));
+    assert.ok(c.includes('if(document.hidden){OCULTA=OCULTA||Date.now();return}') && c.includes('(t&&Date.now()-t>6*36e5)||diaAR(new Date())!==DIA_ABIERTA)){location.reload();return}'), 'recarga entera después de 6 horas o al cambiar el día');
+    assert.ok(c.includes('if(!EMB&&') && c.includes('if(Date.now()-ULT>10*60e3)renovar();'), 'en el portal no recarga; con más de 10 minutos renueva los datos');
+    assert.ok(html.includes("document.addEventListener('visibilitychange',alVolver);") && html.includes("addEventListener('pageshow',e=>{if(e.persisted){OCULTA=OCULTA||ULT;alVolver()}});"), 'también al volver con el botón Atrás');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

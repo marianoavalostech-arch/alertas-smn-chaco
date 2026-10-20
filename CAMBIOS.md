@@ -8,6 +8,7 @@ Pedidos de Mariano.
 - **"Instalar app" y "Compartir" solo en celulares y tablets**: en la computadora (con mouse) no se ven. Se decide por el tipo de pantalla (`@media (hover:hover) and (pointer:fine)`), no por el ancho: un celular acostado o una tablet los siguen mostrando. En el portal y al imprimir siguen sin verse.
 - **Gráfico de lluvia con fechas**: en Lluvias, debajo de la tabla, un gráfico grande de una localidad (botones para elegirla), con los milímetros de cada día y abajo el día y la fecha ("Hoy", "mié 21/10"…). Grises lo que llovió, azules lo que se espera. En la computadora, las barritas de la tabla ya no se estiran.
 - **Riesgo por localidad**: "Ver en el mapa" y "Ver el río" pasan de texto subrayado a botones redondeados como los nombres de "En verde", con ícono (📍, 🌊, 🏞️) y 40 px de alto para tocarlos fácil. Al pasar el mouse por el renglón, el botón se levanta un poco.
+- **La app instalada se pone al día sola**: al volver a la app (o a la pestaña) después de más de 6 horas, o si cambió el día, la página se vuelve a abrir entera y trae también la versión nueva del sitio. Con más de 10 minutos, como antes, renueva solo los datos. Dentro del portal no se recarga.
 - **Sin el botón "911 Emergencias"** en el pie del menú lateral de la computadora: queda solo "↑ Arriba". El 911 sigue en el cartel de arriba y en "Teléfonos". Más adelante se pueden agregar ahí enlaces a otros sitios o redes.
 
 ## 19/10/2026, tarde (Teléfonos en el índice; explicación del Paraná y de Yacyretá)
