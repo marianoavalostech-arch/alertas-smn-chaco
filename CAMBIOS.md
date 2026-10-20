@@ -9,6 +9,7 @@ Pedido de Mariano.
 - **"¿Cuándo llueve en…?"**: botones con las 6 localidades (también se tocan en el mapa). Una frase dice en qué horas se espera lluvia ahí de acá a mañana a la noche, lo más fuerte y si hay tormentas previstas en la zona; el mapa va a la hora más fuerte.
 - **Colores de la lluvia más separados** (y en la leyenda) y **nubosidad prevista en un gris tenue**, para que la lluvia se vea mejor. Las nubes del satélite no cambian.
 - El texto largo del final pasa a un desplegable **"¿Qué muestra este mapa?"**; a la vista queda una línea.
+- **Párrafos justificados** en todas las secciones, con cortes de palabra para que no queden huecos grandes en el celular (salvo las franjas de arriba, "Ahora en el Chaco" y el renglón del correo).
 - Huella nueva del código. 64 pruebas.
 
 ## 20/10/2026 ("Instalar app" dentro del portal)
