@@ -1255,5 +1255,9 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(g.includes('>Llovió</span>') && g.includes('style="grid-column:3/-1">Se espera</span>'), 'lo caído y lo que se espera, separados');
     assert.ok(g.includes('aria-label="Resistencia, lluvia día por día: 18/10 0,0 mm; 19/10 1,4 mm; 20/10 0,0 mm; 21/10 16,8 mm."'), 'el lector de pantalla lee todos los días');
   });
+  prueba('riesgo por localidad: "Ver en el mapa" y "Ver el río" son píldoras como los nombres de "En verde"', () => {
+    assert.ok(html.includes('.vermapa{grid-column:2;justify-self:start;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:40px;') && html.includes('border-radius:999px;border:1.5px solid currentColor;background:var(--card);color:var(--ink);text-decoration:none'), 'con borde, fondo y sin subrayado');
+    assert.ok(html.includes('<span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>') && html.includes('href="#t-rio"><span class="vmIco" aria-hidden="true">🌊</span>Ver el río</a>') && html.includes('href="#t-otros"><span class="vmIco" aria-hidden="true">🏞️</span>Ver el río</a>'), 'con ícono, que el lector de pantalla no lee');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

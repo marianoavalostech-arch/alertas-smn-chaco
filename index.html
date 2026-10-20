@@ -174,7 +174,11 @@ footer{font-size:.85rem;color:var(--muted)}
 /* mapa interactivo */
 .sem li{cursor:pointer}
 .sem .luz{grid-row:span 3}
-.vermapa{grid-column:2;justify-self:start;font:inherit;font-size:.85rem;font-weight:700;background:none;border:0;padding:2px 0;color:var(--acento);text-decoration:underline;cursor:pointer}
+/* "Ver en el mapa" y "Ver el río": píldoras como los nombres de "En verde" (20/10/2026) */
+.vermapa{grid-column:2;justify-self:start;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:40px;font:inherit;font-size:.9rem;font-weight:700;padding:5px 14px 5px 10px;border-radius:999px;border:1.5px solid currentColor;background:var(--card);color:var(--ink);text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer}
+.vermapa .vmIco{font-size:1rem;line-height:1}
+.vermapa:hover,.sem li:hover .vermapa{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.12)}
+.vermapa:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 .mapa-barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .mapa-barra input{flex:1 1 170px;min-width:0;min-height:40px;font:inherit;padding:6px 10px;border:1.5px solid var(--borde-boton);border-radius:8px;background:var(--card);color:var(--ink)}
 .btn{font:inherit;font-weight:700;min-width:40px;min-height:40px;padding:6px 12px;border:1.5px solid var(--borde-boton);border-radius:8px;background:var(--card);color:var(--acento);cursor:pointer}
@@ -355,7 +359,7 @@ footer{font-size:.85rem;color:var(--muted)}
   --sombra-boton:0 1px 2px rgba(68,70,184,.10),0 3px 8px rgba(68,70,184,.10);
   --sombra-boton-alta:0 2px 4px rgba(68,70,184,.14),0 10px 20px rgba(80,89,188,.18);
   --sombra-degrade:0 4px 12px rgba(141,88,232,.35),inset 0 1px 0 rgba(255,255,255,.35)}
-.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.mas,.pleg>.pv,.hIr{transition:transform .15s,box-shadow .15s,background-color .15s,border-color .15s}
+.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.vermapa,.mas,.pleg>.pv,.hIr{transition:transform .15s,box-shadow .15s,background-color .15s,border-color .15s}
 /* principales: degradado con brillo */
 .pleg>.pv,.hIr{box-shadow:var(--sombra-degrade)}
 .pleg:hover>.pv,.hIr:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(141,88,232,.45),inset 0 1px 0 rgba(255,255,255,.35)}
@@ -408,7 +412,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .hSit details[data-h="niebla"]{--ic1:#f1f0f5;--ic2:#dfdce9;--ic3:#bdb8cd}
 .hSit details[data-h="mochila"]{--ic1:#fdecf9;--ic2:#f9d3ef;--ic3:#eca2d9}
 .hSit details[open]{box-shadow:var(--sombra-boton-alta)}
-@media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}}
+@media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.vermapa,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}}
 @media print{.hTel a::before{display:none}.btn,.ley,.hTel a,.hSit details,.mas{box-shadow:none}}
 /* instalar app: botón (Android y computadora) o explicación (iPhone); compartir: botón en todos lados.
    La caja (#instalar) tiene los dos; nunca se ve dentro del portal ni al imprimir */
@@ -1163,9 +1167,9 @@ function pintarSemaforo(){
   // Los ríos fuera del verde llevan un ícono de agua (≈) en lugar de signos de exclamación; el Paraná suma la frase de las defensas.
   const fila=(q,tit,sub,ver,abre,rio)=>({c:q.c,n:tit,abre,html:'<li class="'+q.c+'"'+abre+'><span class="luz" aria-hidden="true">'+(rio&&q.c!=='verde'&&q.c!=='gris'?'≈':LUZ[q.c])+'</span>'
     +'<span><b>'+tit+'</b>'+(sub?' '+sub:'')+'<span class="nivel">'+q.et+'</span></span><span class="por">'+q.por+(rio==='parana'&&q.c!=='verde'&&q.c!=='gris'?' '+DEFENSAS:'')+'</span>'+ver+'</li>'});
-  const F=LOCS.map((l,i)=>fila(R[i],l.n,l.sub,'<button class="vermapa" type="button">Ver en el mapa</button>',' data-j="'+i+'"'))
-    .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio">Ver el río</a>',' data-a="#t-rio"','parana'),
-            fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros">Ver el río</a>',' data-a="#t-otros"','paraguay'));
+  const F=LOCS.map((l,i)=>fila(R[i],l.n,l.sub,'<button class="vermapa" type="button"><span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>',' data-j="'+i+'"'))
+    .concat(fila(riesgoRio(),'Zona ribereña del Paraná','islas y costa fuera de las defensas','<a class="vermapa" href="#t-rio"><span class="vmIco" aria-hidden="true">🌊</span>Ver el río</a>',' data-a="#t-rio"','parana'),
+            fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros"><span class="vmIco" aria-hidden="true">🏞️</span>Ver el río</a>',' data-a="#t-otros"','paraguay'));
   // Primero lo que no está en verde (rojo, naranja, amarillo, gris); las verdes, juntas en un solo renglón. El naranja solo lo usa el Paraná.
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
   $('sem').innerHTML=otras.map(f=>f.html).join('')
