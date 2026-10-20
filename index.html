@@ -216,12 +216,8 @@ footer{font-size:.85rem;color:var(--muted)}
   .lado a[aria-current] .ladoIco{background:rgba(255,255,255,.28)}
   .lado a[aria-current] .ladoSub{color:#fff}
   html:not(.emb) .ladoPie{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-  .ladoPie .ladoTel{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:14px;background:var(--rojo-bg);border:1.5px solid var(--rojo);color:var(--ink);font-weight:700;text-decoration:none}
-  .ladoPie .ladoTel b{font-family:var(--font-tit);font-size:1.25rem;color:var(--rojo)}
-  .ladoPie .ladoTel:hover{background:var(--card)}
   .ladoPie .ladoFila{display:flex;gap:6px}
   .ladoPie .ladoFila>*{flex:1;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;min-height:38px;padding:6px 8px;text-decoration:none;white-space:nowrap}
-  .ladoPie .ladoFila>.ladoTel{flex:1.4;gap:6px;min-height:44px}.ladoPie .ladoFila>.btn{flex:none}
   @media (max-height:860px){html:not(.emb) .cab{padding-top:16px}html:not(.emb) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:not(.emb) .cab .instalar{margin-top:10px}html:not(.emb) .lado{margin-top:12px;padding-top:10px}html:not(.emb) .ladoPie{margin-top:10px;padding-top:10px}}
   @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:3px}.lado .ladoSub{display:none}}
   html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
@@ -417,6 +413,8 @@ footer{font-size:.85rem;color:var(--muted)}
 .cab .instIos .instIosNota{font-size:.85rem}
 .emb .instalar{display:none!important}
 @media print{.instalar{display:none!important}}
+/* Instalar app y Compartir solo en celulares y tablets (pedido de Mariano, 20/10/2026): en la computadora (mouse) no se ven. */
+@media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}
 </style>
 </head><body>
 
@@ -459,7 +457,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <a href="#t-acerca"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Acerca<small class="ladoSub"></small></span></a>
     </nav>
     <div class="ladoPie">
-      <div class="ladoFila"><a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
+      <div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
     </div>
   </header>
 

@@ -42,6 +42,7 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   assert.ok(html.includes('<link rel="manifest" href="manifest.webmanifest">') && html.includes('<link rel="apple-touch-icon" href="iconos/icono-apple-180.png">'));
   const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
   assert.ok(toml.includes("manifest-src 'self'"), 'la regla del navegador tiene que dejar leer el archivo de instalación');
+  assert.ok(html.includes('@media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}'), 'Instalar app y Compartir no se ven en la computadora');
   assert.ok(/\.emb \.instalar\{display:none!important\}/.test(html) && /@media print\{\.instalar\{display:none!important\}\}/.test(html), 'nunca en el portal ni al imprimir');
   assert.ok(!/serviceWorker|caches\./.test(codigo), 'no guarda el sitio en el celular: abre siempre la página publicada');
   // armado: sin ofrecimiento del navegador no se ve nada; con el ofrecimiento aparece el botón y al tocarlo pide instalar
@@ -359,9 +360,9 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
   assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
-  // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance, 911 y "↑ Arriba"
+  // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance y "↑ Arriba" (el 911 se sacó del pie el 20/10)
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
-  assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><a class="ladoTel" href="tel:911"><b>911</b>Emergencias</a><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>'), 'Teléfonos lleva directo a los números');
+  assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>') && !html.includes('ladoTel'), 'Teléfonos lleva directo a los números');
   assert.ok(codigo.includes("x.tagName!=='H2'?x:"), 'en el índice lateral, Teléfonos se marca desde donde empiezan los números y no tapa a Qué hacer');
   assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 10 && (lado.match(/class="ladoSub"/g) || []).length === 10, 'un ícono y un renglón por destino');
   assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');

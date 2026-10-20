@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (Instalar app y Compartir solo en el celular; 911 fuera del menú lateral)
+
+Pedidos de Mariano.
+- **"Instalar app" y "Compartir" solo en celulares y tablets**: en la computadora (con mouse) no se ven. Se decide por el tipo de pantalla (`@media (hover:hover) and (pointer:fine)`), no por el ancho: un celular acostado o una tablet los siguen mostrando. En el portal y al imprimir siguen sin verse.
+- **Sin el botón "911 Emergencias"** en el pie del menú lateral de la computadora: queda solo "↑ Arriba". El 911 sigue en el cartel de arriba y en "Teléfonos". Más adelante se pueden agregar ahí enlaces a otros sitios o redes.
+
 ## 19/10/2026, tarde (Teléfonos en el índice; explicación del Paraná y de Yacyretá)
 
 Pedidos de Mariano.
