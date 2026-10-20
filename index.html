@@ -51,7 +51,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .cab p{color:var(--muted);margin-top:10px}
 .cab a{color:var(--acento);font-weight:600}
 .solo-emb{display:none}.emb .solo-emb{display:block}
-.emb body{background:transparent;background-image:none}
+.emb body{background-attachment:scroll}
 .emb .wrap{padding:2px 2px 8px}
 .cab .solo-emb{font-size:.9rem;margin-top:10px}
 @media print{body{background-image:none}.cab{background:none;color:inherit;box-shadow:none}.cab h1,.cab p{color:inherit}}
@@ -792,10 +792,10 @@ footer{font-size:.85rem;color:var(--muted)}
 </div>
 
 <script>
-// Dentro del portal de Gobierno Abierto (en un marco): fondo transparente, siempre claro, y le avisa al portal su alto
+// Dentro del portal de Gobierno Abierto (en un marco): siempre claro, con el fondo del sitio, y le avisa al portal su alto
 // para que el marco no tenga barra propia. Solo le habla al portal; en cualquier otro lugar el aviso no sale.
 const PORTAL='https://gobiernoabierto.chaco.gob.ar';
-// Canal del shortcode [panel_alertas_chaco] del portal (además de los avisos rios-y-clima:… del bloque del README).
+// Segundo canal de avisos con el portal (además de los rios-y-clima:…).
 const CANAL='ga-panel-alertas-chaco-v1';
 let VISTA=null;   // lo que avisa el portal de su pantalla (recibirVista); null fuera del portal o si el portal no lo manda
 const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();

@@ -87,49 +87,7 @@ Netlify publica la rama `main` tal cual está, después de correr las pruebas. C
 
 ## Dentro del portal de Gobierno Abierto
 
-El sitio se puede mostrar dentro de una página de https://gobiernoabierto.chaco.gob.ar (en un marco, `iframe`). La regla del navegador (`frame-ancestors` en `netlify.toml`) solo deja hacerlo al propio sitio y a ese portal; cualquier otra página que lo intente ve el marco vacío.
-
-Dentro del portal la página se da cuenta sola (o con `?embebido=1` en la dirección): fondo transparente, siempre en claro (el portal es blanco), sin márgenes propios y con un enlace "Abrir en una pestaña nueva". Le avisa al portal su alto cada vez que cambia (al llegar los datos o al abrir una sección) para que el marco no tenga barra propia, y le pide que baje cuando se toca un enlace interno ("Qué hacer ante una alerta", "Ver el río", los botones del semáforo). Esos avisos van solo al portal (`PORTAL` en `index.html`).
-
-**Antes, en el servidor del portal (una sola vez).** El portal tiene su propia regla de seguridad (cabecera `Content-Security-Policy` que manda nginx, no WordPress) y en `frame-src` solo deja mostrar marcos de Google, YouTube, Elementor, wordpress.org, headway-widget.net y `*.chaco.gob.ar`. Mientras no esté el sitio en esa lista, el navegador deja el marco en blanco (en la consola: "Framing … violates the following Content Security Policy directive: frame-src"). Quien administra el servidor agrega `https://panel-alertas-chaco.netlify.app` al final de `frame-src`:
-
-```
-frame-src blob: https://*.elementor.com https://*.google.com https://www.google.com https://headway-widget.net https://www.youtube.com https://wordpress.org https://*.chaco.gob.ar https://panel-alertas-chaco.netlify.app;
-```
-
-Nada más de esa regla hace falta cambiar: el código de abajo va dentro de la página del portal y su `script-src` ya permite código en la página (`'unsafe-inline'`). Si el sitio pasa a una dirección `algo.chaco.gob.ar`, ese paso no hace falta (ya está permitido), pero hay que cambiar `ORIGEN` abajo.
-
-**Después, en la página** (por ejemplo https://gobiernoabierto.chaco.gob.ar/rios-y-clima/): un administrador (WordPress le borra el código a otros usuarios) agrega un bloque HTML (en Elementor, el widget "HTML", dentro de un contenedor a todo el ancho y sin relleno a los costados) con esto:
-
-```html
-<iframe id="rios-y-clima" src="https://panel-alertas-chaco.netlify.app/?embebido=1"
-  title="Ríos y Clima del Chaco: alertas, lluvias y ríos" style="width:100%;border:0;height:1800px;display:block"></iframe>
-<script data-no-optimize="1" data-no-defer="1" data-cfasync="false">
-(function(){
-  var f=document.getElementById('rios-y-clima'), ORIGEN='https://panel-alertas-chaco.netlify.app';
-  function arriba(){var c=document.querySelector('.elementor-location-header');return (c?c.offsetHeight:70)+12}
-  window.addEventListener('message',function(e){
-    if(e.origin!==ORIGEN||e.source!==f.contentWindow)return;
-    var d=e.data||{};
-    if(d.tipo==='rios-y-clima:alto'&&d.alto>300)f.style.height=Math.ceil(d.alto)+'px';
-    if(d.tipo==='rios-y-clima:ir'&&typeof d.y==='number')
-      window.scrollTo({top:f.getBoundingClientRect().top+window.scrollY+d.y-arriba(),behavior:'smooth'});
-  });
-  function hola(){try{f.contentWindow.postMessage({tipo:'rios-y-clima:hola'},ORIGEN)}catch(e){}}
-  var pv=false;function vista(){if(pv)return;pv=true;requestAnimationFrame(function(){pv=false;
-    var c=document.querySelector('.elementor-location-header'),b=c?Math.max(0,c.getBoundingClientRect().bottom):0;
-    try{f.contentWindow.postMessage({tipo:'rios-y-clima:vista',top:f.getBoundingClientRect().top,height:window.innerHeight,header:b},ORIGEN)}catch(e){}})}
-  window.addEventListener('scroll',vista,{passive:true});window.addEventListener('resize',vista);
-  f.addEventListener('load',function(){hola();vista()});hola();vista();
-})();
-</script>
-```
-
-**En la computadora, como el sitio original** (desde el 20/10/2026): el código del portal también le avisa al sitio, cada vez que se baja o cambia el tamaño de la ventana, qué parte del marco se ve (dónde está el marco en la pantalla, el alto de la pantalla y hasta dónde tapa el encabezado fijo: `rios-y-clima:vista`, o `viewport` en el shortcode). Con ese aviso, en pantallas desde 1100 px el sitio se acomoda como el original (columnas, mapa al lado de su detalle) y el menú de la izquierda acompaña lo que se baja, debajo del encabezado del portal, sin pasarse del final del sitio (`recibirVista`, `moverLado`, clase `embPc`); el menú marca la sección que está a la vista y su barrita avanza (`vista()`). En el celular no cambia nada. Si el portal no manda ese aviso (código viejo), el sitio queda en una sola columna, como antes.
-
-**Otra forma: el shortcode del portal `[panel_alertas_chaco]`** (armado por el administrador del portal en Code Snippets, 20/10/2026). Su código usa otro canal de avisos (`channel: 'ga-panel-alertas-chaco-v1'`, con `type` `height`, `scroll-to` y `request-height`), y el sitio también lo habla (`CANAL` en `index.html`): le manda el alto, le pide que baje a una sección y contesta cuando el portal pregunta el alto. Los avisos van solo al portal, igual que los otros. No hace falta agregar un archivo aparte al sitio. Probado con su código tal cual (marco con `sandbox`, carga diferida y alto inicial `min(85vh,850px)`), en celular y computadora, con su código a tiempo y demorado: el marco toma el alto entero, sin barra propia. La versión 1.1 de ese fragmento está en `portal/shortcode-panel-alertas-chaco.php` (el código del administrador con dos agregados: el aviso `viewport` y, al bajar a una sección, lugar para el encabezado fijo del portal en vez de 16 px). Se pega en Code Snippets en lugar del anterior (sin `<?php`).
-
-Así el marco toma el alto entero del sitio y **no tiene barra propia: se baja y se sube con la página del portal**, como cualquier otro contenido. Cada vez que el sitio cambia de alto (al llegar los datos, al abrir o cerrar una sección) se lo avisa al portal. Si un complemento de WordPress demora el código de arriba, al arrancar le pregunta el alto al sitio (`rios-y-clima:hola`) y el sitio se lo vuelve a mandar (desde el 20/10/2026). Los enlaces internos ("Qué hacer ante una alerta", "Ver el río", los botones del semáforo) le piden al portal que baje hasta la sección, dejando lugar para el encabezado fijo del portal (`arriba()`: lo mide; si no lo encuentra, 70 px). Los atributos `data-no-optimize`, `data-no-defer` y `data-cfasync` le piden a los complementos de optimización que no lo demoren. Sin el `<script>` el sitio igual se ve, con un alto fijo de 1800 px y barra propia. Si el sitio se muda a un dominio del Gobierno, cambiar `ORIGEN` en ese bloque y, si cambia el portal, `PORTAL` en `index.html` y `frame-ancestors` en `netlify.toml` (hay una prueba que lo controla).
+El sitio se puede mostrar dentro de una página de https://gobiernoabierto.chaco.gob.ar, en un marco. Solo el propio sitio y ese portal pueden hacerlo (`frame-ancestors` en `netlify.toml`); cualquier otra página que lo intente ve el marco vacío. Dentro del portal la página se da cuenta sola: siempre en claro, con su fondo de siempre, sin "Instalar app" ni "Compartir" y con un enlace "Abrir en una pestaña nueva". Se comunica con el portal solo para que el marco tome el alto entero (sin barra propia), para bajar a una sección y, en la computadora, para acomodarse como el sitio original con el menú de la izquierda (`PORTAL`, `CANAL`, `avisarAlto`, `verSec`, `recibirVista`, `moverLado` en `index.html`). Esos avisos van y vienen solo con el portal. Los detalles de la instalación en el portal no se publican aquí: los tiene el responsable del sitio.
 
 ## Instalar el script de Google
 

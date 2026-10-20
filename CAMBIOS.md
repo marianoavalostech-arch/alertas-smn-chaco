@@ -2,30 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 20/10/2026 (dentro del portal, en la computadora: como el sitio original)
+## 20/10/2026 (dentro del portal de Gobierno Abierto)
 
-Pedido de Mariano: que en la computadora, dentro del portal, el sitio se vea acomodado como el original (con el menú de la izquierda) y en el celular como ahora.
-- **El portal le avisa al sitio qué parte se ve** (dónde está el marco en la pantalla, alto de la pantalla y su encabezado fijo), al bajar y al cambiar el tamaño. Con ese aviso, desde 1100 px el sitio usa el acomodo de computadora y el menú de la izquierda acompaña lo que se baja, debajo del encabezado del portal; marca la sección que está a la vista y la barrita avanza. "↑ Arriba" sube la página del portal hasta el sitio.
-- **Sin el aviso, igual que antes** (una columna). En el celular, sin cambios.
-- **Código del portal**: versión 1.1 del fragmento del administrador en `portal/shortcode-panel-alertas-chaco.php` (aviso `viewport` y lugar para el encabezado al bajar a una sección). El bloque del README también manda el aviso (`rios-y-clima:vista`).
-- Probado en una copia del portal (Playwright, datos reales): 1440 y 1280 px, menú siempre a 84 px del borde (debajo del encabezado de 68), se detiene al final del sitio, marca la sección; tocar "Río Paraná" deja el título a 80 px. Celular igual que antes (mismo alto con el código viejo y el nuevo). Con el código viejo, una columna como antes.
-- Huella nueva del código. 62 pruebas (la del índice lateral controla el acomodo dentro del portal).
-
-## 20/10/2026 (dentro del portal: también con el shortcode del administrador)
-
-Pedido de Mariano: el administrador del portal armó un shortcode (`[panel_alertas_chaco]`, en Code Snippets) con su propio canal de avisos.
-- **El sitio habla también ese canal** (`ga-panel-alertas-chaco-v1`): manda el alto (`height`), pide bajar a una sección (`scroll-to`) y contesta cuando el portal pregunta el alto (`request-height`). Siguen los avisos `rios-y-clima:…` del bloque del README. Todo solo al portal.
-- No se agrega el archivo `iframe-bridge.js` que propuso: la regla del navegador del sitio solo deja correr el código de la página, y su manejo de los enlaces `#` se habría cruzado con el de las secciones que se abren y cierran. Hace lo mismo desde el código que ya estaba.
-- Probado con su código tal cual: alto entero, sin barra, en celular y computadora, con su código a tiempo y demorado. Del lado del portal queda un ajuste: dejar lugar para su encabezado fijo (68 px) en vez de 16 px al bajar a una sección (README).
+Pedidos de Mariano.
+- **Sin barra propia**: dentro del portal, el marco toma el alto entero del sitio y se baja y se sube con la página del portal, también cuando el portal carga su parte tarde.
+- **En la computadora, como el sitio original**: con el aviso del portal de qué parte se ve, el sitio usa su acomodo de computadora y el menú de la izquierda acompaña lo que se baja, debajo del encabezado del portal; marca la sección a la vista. Sin ese aviso, una columna. En el celular, sin cambios.
+- **Fondo**: dentro del portal también lleva el degradado del sitio (antes, transparente).
+- **Los detalles de la instalación en el portal ya no están en el repositorio**: los tiene el responsable del sitio.
 - Huella nueva del código. 62 pruebas.
-
-## 20/10/2026 (dentro del portal: el marco toma el alto aunque el portal arranque tarde)
-
-Pedido de Mariano: ponerlo en https://gobiernoabierto.chaco.gob.ar/rios-y-clima/ sin barra propia, que se baje y se suba con la página del portal.
-- **El sitio contesta cuando el portal pregunta el alto** (`rios-y-clima:hola`, solo si viene del portal y de la página que lo contiene). Antes, si un complemento de WordPress demoraba el código del portal, se perdían los primeros avisos y el marco quedaba en 1800 px con barra propia (comprobado en una copia del portal). Ahora el código del portal pregunta al arrancar y el marco toma el alto entero.
-- **Bloque del README nuevo**: pregunta el alto al cargar, deja lugar para el encabezado fijo del portal midiéndolo (68 px hoy) en vez de un `-90` fijo, y le pide a los complementos de optimización que no lo demoren.
-- **Paso nuevo del lado del portal**: su servidor manda una regla de seguridad (`frame-src`) que solo deja mostrar marcos de Google, YouTube, Elementor y `*.chaco.gob.ar`; hay que agregar `https://panel-alertas-chaco.netlify.app` (README, "Dentro del portal de Gobierno Abierto"). Sin eso, el marco queda en blanco.
-- Huella nueva del código. 62 pruebas (la de la regla del navegador controla también la respuesta al portal).
 
 ## 20/10/2026 (Instalar app y Compartir solo en el celular; gráfico de lluvia con fechas; botones del riesgo por localidad; 911 fuera del menú lateral)
 
@@ -259,7 +243,7 @@ Revisión de navegabilidad del 19/10 (Chromium como celular, 390 × 844, datos r
 
 ## 15/10/2026 (`40552f6`: aspecto del portal)
 
-- **Se puede mostrar dentro del portal de Gobierno Abierto del Chaco**: antes el sitio no dejaba que ninguna página lo mostrara en un marco (`X-Frame-Options: DENY`, `frame-ancestors 'none'`). Ahora lo permite solo a gobiernoabierto.chaco.gob.ar (y a sí mismo). Dentro del portal se ve en claro, con fondo transparente y sin márgenes propios, le avisa al portal su alto para que no haya doble barra y los enlaces internos bajan la página del portal. Bloque para pegar en el portal: README, "Dentro del portal de Gobierno Abierto".
+- **Se puede mostrar dentro del portal de Gobierno Abierto del Chaco**: antes el sitio no dejaba que ninguna página lo mostrara en un marco (`X-Frame-Options: DENY`, `frame-ancestors 'none'`). Ahora lo permite solo a gobiernoabierto.chaco.gob.ar (y a sí mismo).
 - **Aspecto alineado con el portal**: encabezado azul marino con los triángulos celeste y violeta del logo de Gobierno Abierto; títulos en Montserrat (la letra del portal, guardada en el sitio: no se pide a Google); azul y grises del portal; secciones con una sombra suave. Los colores del semáforo y del mapa no cambian. El modo oscuro sigue fuera del portal, con los mismos tonos.
 - Regla del navegador: `font-src 'self'`. Prueba de la regla ampliada (sigue en 42).
 
