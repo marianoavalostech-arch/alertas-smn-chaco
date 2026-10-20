@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (dentro del portal: también con el shortcode del administrador)
+
+Pedido de Mariano: el administrador del portal armó un shortcode (`[panel_alertas_chaco]`, en Code Snippets) con su propio canal de avisos.
+- **El sitio habla también ese canal** (`ga-panel-alertas-chaco-v1`): manda el alto (`height`), pide bajar a una sección (`scroll-to`) y contesta cuando el portal pregunta el alto (`request-height`). Siguen los avisos `rios-y-clima:…` del bloque del README. Todo solo al portal.
+- No se agrega el archivo `iframe-bridge.js` que propuso: la regla del navegador del sitio solo deja correr el código de la página, y su manejo de los enlaces `#` se habría cruzado con el de las secciones que se abren y cierran. Hace lo mismo desde el código que ya estaba.
+- Probado con su código tal cual: alto entero, sin barra, en celular y computadora, con su código a tiempo y demorado. Del lado del portal queda un ajuste: dejar lugar para su encabezado fijo (68 px) en vez de 16 px al bajar a una sección (README).
+- Huella nueva del código. 62 pruebas.
+
 ## 20/10/2026 (dentro del portal: el marco toma el alto aunque el portal arranque tarde)
 
 Pedido de Mariano: ponerlo en https://gobiernoabierto.chaco.gob.ar/rios-y-clima/ sin barra propia, que se baje y se suba con la página del portal.

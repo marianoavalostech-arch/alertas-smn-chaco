@@ -794,6 +794,8 @@ footer{font-size:.85rem;color:var(--muted)}
 // Dentro del portal de Gobierno Abierto (en un marco): fondo transparente, siempre claro, y le avisa al portal su alto
 // para que el marco no tenga barra propia. Solo le habla al portal; en cualquier otro lugar el aviso no sale.
 const PORTAL='https://gobiernoabierto.chaco.gob.ar';
+// Canal del shortcode [panel_alertas_chaco] del portal (además de los avisos rios-y-clima:… del bloque del README).
+const CANAL='ga-panel-alertas-chaco-v1';
 const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();
 if(EMB&&document.documentElement)document.documentElement.classList.add('emb');
 const ONI_CARGA='2026-10-06';   // día en que se cargó a mano el ONI (independiente de la captura)
@@ -1158,7 +1160,8 @@ function irSec(id){abrirSec(id,true,false);marcarSalto();verSec($(id))}
 function verSec(el,seco){
   if(!el)return;
   if(EMB&&window.parent!==window&&document.documentElement.scrollHeight<=innerHeight+20){
-    try{window.parent.postMessage({tipo:'rios-y-clima:ir',y:Math.round(el.getBoundingClientRect().top+scrollY)},PORTAL)}catch(e){}return}
+    const y=Math.max(0,Math.round(el.getBoundingClientRect().top+scrollY));
+    try{window.parent.postMessage({tipo:'rios-y-clima:ir',y},PORTAL);window.parent.postMessage({channel:CANAL,type:'scroll-to',y},PORTAL)}catch(e){}return}
   el.scrollIntoView({behavior:seco||matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
 }
 function pintarSemaforo(){
@@ -2290,11 +2293,11 @@ seguro(iniciarMarcasLado);
 function avisarAlto(){
   if(!EMB||window.parent===window)return;
   const w=document.querySelector('.wrap');let ult=0;
-  const enviar=siempre=>{const a=Math.ceil(w.getBoundingClientRect().height);if(siempre===true||Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL)}catch(e){}}};
+  const enviar=siempre=>{const a=Math.ceil(w.getBoundingClientRect().height);if(siempre===true||Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL);window.parent.postMessage({channel:CANAL,type:'height',height:a},PORTAL)}catch(e){}}};
   if('ResizeObserver' in window)new ResizeObserver(enviar).observe(w);else setInterval(enviar,1000);
   enviar();addEventListener('load',enviar);
   // Si el código del portal arrancó tarde (WordPress puede demorarlo), pregunta el alto y se lo vuelve a mandar.
-  addEventListener('message',e=>{if(e.origin===PORTAL&&e.source===window.parent&&e.data&&e.data.tipo==='rios-y-clima:hola')enviar(true)});
+  addEventListener('message',e=>{const d=e.data;if(e.origin===PORTAL&&e.source===window.parent&&d&&(d.tipo==='rios-y-clima:hola'||d.channel===CANAL&&d.type==='request-height'))enviar(true)});
 }
 seguro(avisarAlto);
 </script>
