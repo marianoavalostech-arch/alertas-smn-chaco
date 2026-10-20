@@ -1982,8 +1982,10 @@ function hacerHoy(){
     GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{if(!HACER_EV[a.ev])return;let f=F.get(a.ev);if(!f)F.set(a.ev,f={ev:a.ev,niv:0,mun:new Set(),dias:new Set(),x:0});
       if(a.niv>f.niv)f.niv=a.niv;f.mun.add(i);f.dias.add(a.dia);f.x|=a.x}));
     F.forEach(f=>{const t=HACER_EV[f.ev],d=[...f.dias].sort(),n=f.mun.size,T=GEO.mun.length,nv=(SMN_NIV[f.niv]||['','nivel '+f.niv])[1];
-      filas.push({t,niv:f.niv,txt:'<b>'+smnTxt({niv:f.niv,ev:f.ev})+(f.x?', con posible '+SMN_X[f.x&3]:'')+'</b> · '
-        +(d.length>1?'de '+etqHoy(d[0])+' a '+etqHoy(d[d.length-1]):etqHoy(d[0]))+' · '+(n===T?'toda la provincia':n+' de '+T+' municipios')});
+      // corto, porque la sección del SMN, justo arriba, ya dice el color, el granizo y los municipios (Mariano, 20/10)
+      const ev=SMN_EV[f.ev]||'otro fenómeno';
+      filas.push({t,niv:f.niv,txt:'<b>'+ev.charAt(0).toUpperCase()+ev.slice(1)+'</b>, '
+        +(d.length>1?'de '+etqHoy(d[0])+' a '+etqHoy(d[d.length-1]):etqHoy(d[0]))});
       marcar(t,f.niv,'Alerta '+nv);
       if(f.ev===41&&f.x)marcar('viento',f.niv,'Con la tormenta');   // granizo o ráfagas: la tarjeta del viento también sirve
     });
@@ -2005,7 +2007,7 @@ function pintarHacer(){
   let h;
   if(H.filas.length){
     h='<p class="hEt">Ahora en el Chaco</p><ul>'+H.filas.map(f=>'<li><span>'+HACER_ICO[f.t]+' '+f.txt+'</span><button type="button" class="hIr" data-h="'+f.t+'">Qué hacer</button></li>').join('')+'</ul>'
-      +(H.filas.some(f=>f.rio==='Paraná')?'<p>'+DEFENSAS+'</p>':'')
+      // la frase de las defensas ya está en la franja del río y en la tarjeta "Crecida del río" (Mariano, 20/10)
       +(H.smn==='duda'?'<p class="meta">El informe del SMN está sin renovar: puede haber alertas nuevas. Confirmalas en el '+smnLink+'.</p>':'');
   }else if(H.smn==='ok'){
     h='<p><b>Hoy no hay alertas del SMN para el Chaco'+(riesgoRio().c==='verde'&&riesgoParaguay().c==='verde'?' y los ríos están en verde':'')+'.</b> '

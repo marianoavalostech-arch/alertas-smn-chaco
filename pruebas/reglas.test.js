@@ -1224,15 +1224,19 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     let H = S('hacerHoy()');
     assert.strictEqual(H.smn, 'ok');
     assert.strictEqual(JSON.stringify(H.filas.map(f => [f.t, f.niv])), '[["torm",4],["rio",4],["calor",3]]');
-    assert.ok(H.filas[0].txt.includes('Alerta naranja por tormentas, con posible granizo') && H.filas[0].txt.includes('mañana') && H.filas[0].txt.includes('1 de ' + T + ' municipios'));
+    // renglón corto (20/10): el fenómeno y el día; el color, el granizo y los municipios ya están en la sección del SMN
+    assert.strictEqual(H.filas[0].txt, '<b>Tormentas</b>, mañana');
+    assert.strictEqual(H.marcas.get('torm').et, 'Alerta naranja', 'la tarjeta sigue diciendo el color');
     assert.ok(H.filas[1].txt.includes('naranja según el pronóstico del INA') && !/alerta naranja/i.test(H.filas[1].txt), 'el río no es una alerta del SMN');
-    assert.ok(H.filas[2].txt.includes('Alerta amarilla por calor extremo') && H.filas[2].txt.includes('hoy') && H.filas[2].txt.includes('toda la provincia'));
+    assert.strictEqual(H.filas[2].txt, '<b>Calor extremo</b>, hoy');
     assert.ok(H.marcas.get('viento'), 'con granizo también se marca la tarjeta del viento');
-    // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas, en la franja y en su tarjeta
+    // el Paraná fuera del verde tranquiliza a quien vive dentro de las defensas en la franja del río, el semáforo y su tarjeta;
+    // desde el 20/10 no se repite en "Ahora en el Chaco" (Mariano)
     const hh = {}; elementos.hHoy = hh; S('pintarHacer()'); delete elementos.hHoy;
     // ninguna tarjeta de "¿Qué está pasando?" se abre sola (Mariano, 19/10): solo con el botón "Qué hacer" o tocándola
     assert.ok(!/\.open\s*=\s*true/.test(S('pintarHacer.toString()')), 'pintarHacer no abre tarjetas');
-    assert.ok(hh.innerHTML.includes(S('DEFENSAS')) && S('DEFENSAS').includes('avisos oficiales') && !S('DEFENSAS').includes('no hace falta'), 'la franja dice que el agua del río queda afuera de las defensas y que valen los avisos oficiales');
+    assert.ok(!hh.innerHTML.includes(S('DEFENSAS')) && hh.innerHTML.includes('Río Paraná'), '"Ahora en el Chaco" no repite la frase de las defensas');
+    assert.ok(S('DEFENSAS').includes('avisos oficiales') && !S('DEFENSAS').includes('no hace falta') && S('DEFENSAS_CORTA').includes('avisos oficiales'), 'la frase dice que el agua del río queda afuera de las defensas y que valen los avisos oficiales');
     assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, el agua del río queda afuera/.test(html) && !/no hace falta hacer nada/.test(html));
     assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');
     // sin alertas y con el informe al día: "no hay"; con el informe viejo o vacío del canal: no se puede confirmar
