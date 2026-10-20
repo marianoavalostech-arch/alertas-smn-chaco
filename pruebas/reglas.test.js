@@ -76,6 +76,37 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   } finally { sitio.addEventListener = antes; delete sitio.navigator; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos; delete elementos.instIosDonde; delete elementos.instIosAbrir; }
 });
 
+prueba('portal: "Instalar app" abre el sitio en una pestaña nueva listo para instalar; en la computadora no hay enlace', () => {
+  assert.ok(!html.includes('Abrir en una pestaña nueva'), 'el enlace viejo ya no está');
+  assert.ok(html.includes('<p class="solo-emb embInst"><a class="btn btnInst" id="aInstEmb" href="https://panel-alertas-chaco.netlify.app/?instalar=1" target="_blank" rel="noopener"><img src="icono.svg" alt="" width="28" height="28">Instalar app</a></p>'), 'enlace del portal');
+  assert.ok(html.includes('@media screen and (hover:hover) and (pointer:fine){.emb .embInst{display:none!important}}') && html.includes('@media print{.embInst{display:none!important}}'), 'en la computadora y al imprimir no se ve');
+  const ev = {}, evBtn = {}, tiempos = [], clases = [];
+  const caja = { hidden: true }, ios = { hidden: true }, aviso = { hidden: true };
+  const btn = { hidden: true, at: {}, classList: { add: c => clases.push(c) }, setAttribute(k, v) { this.at[k] = v }, addEventListener: (t, f) => { evBtn[t] = f } };
+  Object.assign(elementos, { instalar: caja, btnInstalar: btn, instIos: ios, instAviso: aviso, instIosDonde: { innerHTML: '' }, instIosAbrir: { hidden: true } });
+  const antes = { a: sitio.addEventListener, t: sitio.setTimeout, l: sitio.location };
+  sitio.addEventListener = (t, f) => { ev[t] = f }; sitio.setTimeout = (f, ms) => tiempos.push([f, ms]);
+  try {
+    // Android: llega con ?instalar=1 y el navegador ofrece instalar: botón resaltado, sin la línea de ayuda
+    sitio.location = { search: '?instalar=1', hash: '', pathname: '/' }; sitio.navigator = { userAgent: 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile' };
+    S('instalarApp()');
+    assert.strictEqual(tiempos.length, 1); assert.strictEqual(tiempos[0][1], 5000);
+    let pidio = false;
+    ev.beforeinstallprompt({ preventDefault() {}, prompt: () => { pidio = true }, userChoice: Promise.resolve({}) });
+    assert.ok(!btn.hidden && clases.includes('resalta'), 'botón resaltado'); tiempos[0][0](); assert.ok(aviso.hidden, 'con ofrecimiento no hace falta la ayuda');
+    evBtn.click(); assert.ok(pidio, 'un toque y pregunta el teléfono');
+    // Android sin ofrecimiento (ya instalada o navegador sin el aviso): a los 5 s, la línea con qué hacer
+    tiempos.length = 0; caja.hidden = btn.hidden = aviso.hidden = true; S('instalarApp()'); tiempos[0][0]();
+    assert.ok(!aviso.hidden && !caja.hidden, 'sin ofrecimiento, la ayuda');
+    // iPhone: los pasos ya abiertos
+    caja.hidden = btn.hidden = ios.hidden = true; sitio.navigator = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1' };
+    S('instalarApp()'); assert.ok(!ios.hidden && !caja.hidden && btn.at['aria-expanded'] === 'true', 'en iPhone, pasos abiertos');
+    // sin ?instalar=1, todo como siempre
+    caja.hidden = btn.hidden = ios.hidden = true; sitio.location = { search: '', hash: '', pathname: '/' };
+    S('instalarApp()'); assert.ok(ios.hidden && btn.at['aria-expanded'] === 'false', 'sin el pedido, pasos cerrados');
+  } finally { sitio.addEventListener = antes.a; sitio.setTimeout = antes.t; sitio.location = antes.l; delete sitio.navigator; for (const k of ['instalar', 'btnInstalar', 'instIos', 'instAviso', 'instIosDonde', 'instIosAbrir']) delete elementos[k]; }
+});
+
 prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, solo el conteo, sin cargar código de afuera', () => {
   const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
   const csp = /Content-Security-Policy = "([^"]+)"/.exec(toml)[1];

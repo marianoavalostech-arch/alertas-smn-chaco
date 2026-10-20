@@ -439,6 +439,14 @@ footer{font-size:.85rem;color:var(--muted)}
 @media print{.instalar{display:none!important}}
 /* Instalar app y Compartir solo en celulares y tablets (pedido de Mariano, 20/10/2026): en la computadora (mouse) no se ven. */
 @media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}
+/* Dentro del portal (20/10/2026): en celulares y tablets, "Instalar app" abre el sitio en una pestaña nueva, listo para instalar
+   (el teléfono no deja instalar desde un marco); en la computadora no hay enlace. */
+.cab .embInst a.btn{text-decoration:none;color:var(--acento)}
+@media screen and (hover:hover) and (pointer:fine){.emb .embInst{display:none!important}}
+@media print{.embInst{display:none!important}}
+.btnInst.resalta{outline:3px solid #f26df9;outline-offset:3px}
+.cab .instAviso{flex:1 1 100%;margin:0;font-size:.92rem;color:var(--ink);background:var(--acento-soft);border-radius:10px;padding:10px 14px}
+.cab .instAviso[hidden]{display:none}
 </style>
 </head><body>
 
@@ -464,8 +472,9 @@ footer{font-size:.85rem;color:var(--muted)}
         </ol>
         <p class="instIosNota">Es el botón Compartir del navegador, no el de este sitio.</p>
       </div>
+      <p class="instAviso" id="instAviso" role="status" hidden>Si no aparece el botón <strong>Instalar app</strong>, puede que ya la tengas: buscá el ícono <strong>Ríos y Clima</strong> en tu teléfono. Si no está, abrí el menú <strong>⋮</strong> del navegador y elegí <strong>Instalar app</strong> o <strong>Agregar a pantalla de inicio</strong>.</p>
     </div>
-    <p class="solo-emb"><a href="https://panel-alertas-chaco.netlify.app/" target="_blank" rel="noopener">Abrir en una pestaña nueva</a></p>
+    <p class="solo-emb embInst"><a class="btn btnInst" id="aInstEmb" href="https://panel-alertas-chaco.netlify.app/?instalar=1" target="_blank" rel="noopener"><img src="icono.svg" alt="" width="28" height="28">Instalar app</a></p>
     <nav class="lado" id="lado" aria-label="Índice lateral">
       <span class="ladoTit">En esta página</span>
       <span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>
@@ -2171,7 +2180,7 @@ armarCorreo();
 // Contador de visitas (GoatCounter). Solo cuenta: no se carga código de afuera ni se mandan datos de la persona.
 // La página pide una imagen de 1 píxel a la cuenta del sitio con lo único que hace falta para contar: qué se abrió.
 // Tres páginas en el tablero: "/" (navegador), "/desde-la-app" (abierto desde el ícono) y "/en-el-portal" (dentro de Gobierno Abierto);
-// y tres eventos: "instalar-app-boton", "app-instalada" y "compartir". Sin título, sin de dónde se llegó y sin tamaño de pantalla.
+// y cuatro eventos: "instalar-app-boton", "instalar-desde-portal", "app-instalada" y "compartir". Sin título, sin de dónde se llegó y sin tamaño de pantalla.
 const CONTADOR='https://riosyclimachaco.goatcounter.com/count';
 function contador(p,evento){
   if(location.protocol!=='https:')return;
@@ -2191,20 +2200,29 @@ seguro(contarVisita);
 // En iPhone y iPad Apple no deja que la página instale sola: el mismo botón abre (y cierra) los pasos Compartir → Agregar a inicio,
 // según el navegador (Safari, o Chrome y Edge desde iOS 16.4; antes, hay que abrirla en Safari). No se ve dentro del portal ni si ya se abrió como app.
 // No guarda el sitio en el celular: abre siempre la página publicada, con sus datos y sus avisos de siempre.
+// Con ?instalar=1 (el enlace "Instalar app" del portal): en iPhone los pasos ya abiertos; en Android el botón resaltado
+// (el navegador exige un toque en la misma página para preguntar) y, si en 5 s no lo ofrece, una línea con qué hacer.
 function instalarApp(){
   const caja=$('instalar'),btn=$('btnInstalar'),ios=$('instIos');if(!caja||!btn||!ios||EMB)return;
   const nav=typeof navigator!=='undefined'?navigator:{};
+  const pedir=/[?&]instalar=1(&|$)/.test(location.search||'');
+  if(pedir)try{const q=new URLSearchParams(location.search);q.delete('instalar');history.replaceState(history.state,'',location.pathname+(q.toString()?'?'+q:'')+location.hash)}catch(e){}
   if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true)return;
-  let pedido=null;
+  let pedido=null,ofrecido=false;const aviso=$('instAviso');
   const ua=nav.userAgent||'';
   const esIos=/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;btn.hidden=false;cajaCab()});
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();pedido=e;ofrecido=true;btn.hidden=false;if(pedir){btn.classList.add('resalta');if(aviso)aviso.hidden=true}cajaCab()});
   btn.addEventListener('click',async()=>{
     if(esIos){const ab=ios.hidden;ios.hidden=!ab;btn.setAttribute('aria-expanded',String(ab));if(ab)contador('instalar-app-boton',true);return}
     if(!pedido)return;contador('instalar-app-boton',true);const p=pedido;pedido=null;p.prompt();try{await p.userChoice}catch(e){}btn.hidden=true;cajaCab()});
   addEventListener('appinstalled',()=>{btn.hidden=ios.hidden=true;cajaCab();contador('app-instalada',true)});
-  if(esIos){pasosIos(ua);btn.setAttribute('aria-controls','instIos');btn.setAttribute('aria-expanded','false');btn.hidden=false;cajaCab()}
+  if(esIos){pasosIos(ua);btn.setAttribute('aria-controls','instIos');btn.setAttribute('aria-expanded','false');btn.hidden=false;
+    if(pedir){ios.hidden=false;btn.setAttribute('aria-expanded','true')}cajaCab()}
+  else if(pedir&&aviso)setTimeout(()=>{if(!ofrecido){aviso.hidden=false;cajaCab()}},5000);
 }
+// Dentro del portal: el enlace "Instalar app" cuenta como evento aparte (instalar-desde-portal). Solo el conteo.
+function instalarDesdePortal(){const a=$('aInstEmb');if(!a||!EMB)return;a.addEventListener('click',()=>contador('instalar-desde-portal',true))}
+seguro(instalarDesdePortal);
 // Pasos de iPhone según el navegador: en Safari, Compartir está en su barra (en iOS 26 puede estar dentro de ⋯);
 // Chrome, Edge y Firefox agregan a inicio desde iOS 16.4; con un iOS anterior, primero hay que abrir la página en Safari.
 function pasosIos(ua){
@@ -2214,7 +2232,7 @@ function pasosIos(ua){
   if(abrir)abrir.hidden=!(otro&&viejo);
 }
 // La caja del encabezado se ve solo si tiene algo a la vista: el botón de instalar (con los pasos de iPhone) o el de compartir.
-function cajaCab(){const c=$('instalar');if(c)c.hidden=['btnInstalar','instIos','btnCompartir'].every(id=>{const e=$(id);return !e||!!e.hidden})}
+function cajaCab(){const c=$('instalar');if(c)c.hidden=['btnInstalar','instIos','instAviso','btnCompartir'].every(id=>{const e=$(id);return !e||!!e.hidden})}
 seguro(instalarApp);
 
 // Compartir: un botón para pasar la dirección del sitio por WhatsApp, Facebook, mensajes, etc. No manda nada solo: elige la persona.

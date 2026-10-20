@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 ("Instalar app" dentro del portal)
+
+Pedido de Mariano.
+- **En el celular, dentro del portal**, el enlace "Abrir en una pestaña nueva" pasa a ser un botón **"Instalar app"** (con el ícono). El teléfono no deja instalar desde el marco del portal, así que abre el sitio en una pestaña nueva ya preparado: en iPhone con los pasos abiertos; en Android con el botón "Instalar app" resaltado (un toque y pregunta el teléfono) y, si el navegador no lo ofrece en 5 segundos, una línea con dónde buscar el ícono o cómo instalar desde el menú ⋮.
+- **En la computadora, dentro del portal**, ya no hay enlace.
+- Evento nuevo en el contador: `instalar-desde-portal`. Huella nueva del código. 63 pruebas.
+
 ## 20/10/2026 (dentro del portal de Gobierno Abierto)
 
 Pedidos de Mariano.
