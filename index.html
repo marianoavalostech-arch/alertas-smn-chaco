@@ -258,6 +258,8 @@ footer{font-size:.85rem;color:var(--muted)}
   html:is(:not(.emb),.embPc) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
   html:is(:not(.emb),.embPc) .hSit details#h-mochila:not([open]){grid-column:span 2}
   html.embPc{scrollbar-width:none}html.embPc::-webkit-scrollbar{display:none}
+  html.embPc .cab{min-height:0;scrollbar-width:none}html.embPc .cab::-webkit-scrollbar{display:none}
+  @media (max-height:620px){html:is(:not(.emb),.embPc) .cab{padding:12px 12px 10px}html:is(:not(.emb),.embPc) .cab h1{font-size:1.25rem}.lado .ladoTit{display:none}.lado .ladoProg{margin-bottom:6px}.lado a{padding-block:1px}.lado .ladoIco{width:22px;height:22px;font-size:.75rem}html:is(:not(.emb),.embPc) .lado{margin-top:8px;padding-top:8px}html:is(:not(.emb),.embPc) .ladoPie{margin-top:6px;padding-top:6px}.ladoPie .ladoFila>*{min-height:32px}}
 }
 /* En el celular las cajas del gráfico del río no cambian nada: sus partes siguen una debajo de la otra. */
 .ladoPie{display:none}
@@ -2300,13 +2302,22 @@ function altoFijo(){return Math.max(480,Math.round(VISTA.h-VISTA.cab))}
 function ponerFijo(){
   const f=!!(VISTA&&VISTA.fijo&&PC_EMB());
   if(f!==FIJO){FIJO=f;document.documentElement.classList.toggle('embPc',f);seguro(acomodarPlegables)}
-  if(AVISAR_ALTO)AVISAR_ALTO(true);
+  if(AVISAR_ALTO)AVISAR_ALTO();
 }
 // Le pide al portal que mueva su página dy píxeles.
 function pasarAlPortal(dy,suave){
   dy=Math.round(dy);if(!dy)return;
   try{window.parent.postMessage({tipo:'rios-y-clima:mover',dy,suave:!!suave},PORTAL);window.parent.postMessage({channel:CANAL,type:'scroll-by',dy,smooth:!!suave},PORTAL)}catch(e){}
   if(VISTA)VISTA.top-=dy;
+  // vuelve a mandar el alto: el portal contesta con dónde quedó el marco (si no se movió, corrige VISTA)
+  if(AVISAR_ALTO)AVISAR_ALTO(true);
+}
+// Al quedarse quieto: si el sitio está bajado (ni arriba de todo ni al final) y el marco quedó corrido, lo acomoda debajo del encabezado.
+let QUIETO=0;
+function revisarQuieto(){
+  clearTimeout(QUIETO);QUIETO=setTimeout(()=>{if(!FIJO||!VISTA)return;
+    const si=scrollY,mx=document.documentElement.scrollHeight-innerHeight,d=VISTA.top-VISTA.cab;
+    if(si>1&&si<mx-1&&Math.abs(d)>1)pasarAlPortal(d)},250);
 }
 // Lleva el marco justo debajo del encabezado del portal.
 function acoplar(suave){if(FIJO&&VISTA&&Math.abs(VISTA.top-VISTA.cab)>1)pasarAlPortal(VISTA.top-VISTA.cab,suave)}
@@ -2316,13 +2327,17 @@ function recibirVista(){
     if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;
     const n=x=>typeof x==='number'&&isFinite(x);if(!n(d.top)||!n(d.height)||d.height<200)return;
     VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0,fijo:d.fijo===true};
-    ponerFijo()});
+    ponerFijo();revisarQuieto()});
+  addEventListener('scroll',()=>{if(FIJO)revisarQuieto()},{passive:true});
   addEventListener('resize',()=>{if(VISTA)ponerFijo()});
   // Rueda del mouse: mientras el marco no llegó arriba (o ya se pasó), se mueve la página del portal; con el marco arriba, baja el sitio.
   addEventListener('wheel',e=>{if(!FIJO||!VISTA||e.ctrlKey||e.defaultPrevented)return;
-    const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1),d=VISTA.top-VISTA.cab;
+    const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1),d=VISTA.top-VISTA.cab,si=scrollY,mx=document.documentElement.scrollHeight-innerHeight;
+    revisarQuieto();
     if(dy>0&&d>1){e.preventDefault();pasarAlPortal(Math.min(dy,d))}
-    else if(dy<0&&d<-1){e.preventDefault();pasarAlPortal(Math.max(dy,d))}},{passive:false});
+    else if(dy<0&&d<-1){e.preventDefault();pasarAlPortal(Math.max(dy,d))}
+    // arriba de todo o al final del sitio: la rueda sigue en el portal (sin esperar a que el navegador la pase, que con giros rápidos no lo hace)
+    else if(dy<0&&si<=0||dy>0&&si>=mx-1){e.preventDefault();pasarAlPortal(dy)}},{passive:false});
 }
 seguro(recibirVista);
 
