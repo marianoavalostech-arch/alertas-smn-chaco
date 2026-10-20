@@ -1131,6 +1131,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(regla('font-src'), "'self'", 'la letra se sirve desde el propio sitio');
     for (const l of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(fs.existsSync(path.join(raiz, 'fuentes', l)) && html.includes('url(fuentes/' + l + ')'), 'falta la letra ' + l);
     assert.ok(codigo.includes("PORTAL='https://gobiernoabierto.chaco.gob.ar'") && !/postMessage\([^)]*'\*'/.test(codigo), 'los avisos al portal van solo al portal');
+    assert.ok(codigo.includes("e.origin===PORTAL&&e.source===window.parent&&e.data&&e.data.tipo==='rios-y-clima:hola')enviar(true)"), 'si el portal pregunta (su código arrancó tarde), le vuelve a mandar el alto; solo al portal');
     assert.ok(!/\son[a-z]+=["']/i.test(html) && !html.includes('javascript:'), 'sin código suelto en el HTML (la regla no lo dejaría correr)');
     const hosts = [...new Set([...codigo.matchAll(/'(https:\/\/[a-z0-9.-]+)\//g)].map(m => m[1]))].filter(u => !/smn\.gob\.ar|concejovilelas|goatcounter|wa\.me|panel-alertas-chaco/.test(u));   // smn, concejovilelas, wa.me y la dirección del sitio (para compartir) son enlaces; el contador va por img-src (su propia prueba)
     for (const u of hosts) assert.ok(regla('connect-src').split(' ').includes(u), u + ' falta en connect-src');

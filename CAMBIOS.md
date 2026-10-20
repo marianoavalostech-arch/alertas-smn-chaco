@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (dentro del portal: el marco toma el alto aunque el portal arranque tarde)
+
+Pedido de Mariano: ponerlo en https://gobiernoabierto.chaco.gob.ar/rios-y-clima/ sin barra propia, que se baje y se suba con la página del portal.
+- **El sitio contesta cuando el portal pregunta el alto** (`rios-y-clima:hola`, solo si viene del portal y de la página que lo contiene). Antes, si un complemento de WordPress demoraba el código del portal, se perdían los primeros avisos y el marco quedaba en 1800 px con barra propia (comprobado en una copia del portal). Ahora el código del portal pregunta al arrancar y el marco toma el alto entero.
+- **Bloque del README nuevo**: pregunta el alto al cargar, deja lugar para el encabezado fijo del portal midiéndolo (68 px hoy) en vez de un `-90` fijo, y le pide a los complementos de optimización que no lo demoren.
+- **Paso nuevo del lado del portal**: su servidor manda una regla de seguridad (`frame-src`) que solo deja mostrar marcos de Google, YouTube, Elementor y `*.chaco.gob.ar`; hay que agregar `https://panel-alertas-chaco.netlify.app` (README, "Dentro del portal de Gobierno Abierto"). Sin eso, el marco queda en blanco.
+- Huella nueva del código. 62 pruebas (la de la regla del navegador controla también la respuesta al portal).
+
 ## 20/10/2026 (Instalar app y Compartir solo en el celular; gráfico de lluvia con fechas; botones del riesgo por localidad; 911 fuera del menú lateral)
 
 Pedidos de Mariano.

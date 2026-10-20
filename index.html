@@ -2290,9 +2290,11 @@ seguro(iniciarMarcasLado);
 function avisarAlto(){
   if(!EMB||window.parent===window)return;
   const w=document.querySelector('.wrap');let ult=0;
-  const enviar=()=>{const a=Math.ceil(w.getBoundingClientRect().height);if(Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL)}catch(e){}}};
+  const enviar=siempre=>{const a=Math.ceil(w.getBoundingClientRect().height);if(siempre===true||Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL)}catch(e){}}};
   if('ResizeObserver' in window)new ResizeObserver(enviar).observe(w);else setInterval(enviar,1000);
   enviar();addEventListener('load',enviar);
+  // Si el código del portal arrancó tarde (WordPress puede demorarlo), pregunta el alto y se lo vuelve a mandar.
+  addEventListener('message',e=>{if(e.origin===PORTAL&&e.source===window.parent&&e.data&&e.data.tipo==='rios-y-clima:hola')enviar(true)});
 }
 seguro(avisarAlto);
 </script>
