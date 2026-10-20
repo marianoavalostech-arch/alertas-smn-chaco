@@ -213,14 +213,14 @@ footer{font-size:.85rem;color:var(--muted)}
    el mapa al lado de su detalle, el gráfico del río al lado de sus datos, las tarjetas de "¿Qué está pasando?" en dos filas y las secciones cerradas de a dos.
    En el celular, en el portal y al imprimir no cambia nada (pedidos de Mariano, 19/10/2026). */
 @media screen and (min-width:1100px){
-  html:not(.emb) .wrap{max-width:1320px;display:grid;grid-template-columns:236px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:24px;row-gap:16px;align-items:start}
-  html:not(.emb) .wrap>*{grid-column:2}
-  html:not(.emb) .wrap>main{grid-row:1}
-  html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky;top:16px;height:calc(100vh - 32px);min-height:560px;max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 14px 14px;display:flex;flex-direction:column;scrollbar-width:thin}
-  html:not(.emb) .cab h1{font-size:1.5rem;line-height:1.15}
-  html:not(.emb) .cab>p{font-size:.92rem;margin-top:8px}
-  html:not(.emb) .cab .instalar{margin-top:12px;gap:8px}
-  html:not(.emb) .lado{display:flex;flex-direction:column;gap:3px;flex:1 0 auto;margin:16px -4px 0;padding-top:14px;border-top:1px solid var(--line)}
+  html:is(:not(.emb),.embPc) .wrap{max-width:1320px;display:grid;grid-template-columns:236px minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:24px;row-gap:16px;align-items:start}
+  html:is(:not(.emb),.embPc) .wrap>*{grid-column:2}
+  html:is(:not(.emb),.embPc) .wrap>main{grid-row:1}
+  html:is(:not(.emb),.embPc) .cab{grid-column:1;grid-row:1/span 2;position:sticky;top:16px;height:calc(100vh - 32px);min-height:560px;max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 14px 14px;display:flex;flex-direction:column;scrollbar-width:thin}
+  html:is(:not(.emb),.embPc) .cab h1{font-size:1.5rem;line-height:1.15}
+  html:is(:not(.emb),.embPc) .cab>p{font-size:.92rem;margin-top:8px}
+  html:is(:not(.emb),.embPc) .cab .instalar{margin-top:12px;gap:8px}
+  html:is(:not(.emb),.embPc) .lado{display:flex;flex-direction:column;gap:3px;flex:1 0 auto;margin:16px -4px 0;padding-top:14px;border-top:1px solid var(--line)}
   .lado .ladoTit{font-weight:800;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:0 10px 8px}
   .lado .ladoProg{height:4px;border-radius:2px;background:var(--acento-soft);margin:0 10px 10px;overflow:hidden}
   .lado .ladoProg i{display:block;height:100%;width:0;border-radius:2px;background:var(--degrade);transition:width .2s}
@@ -236,27 +236,28 @@ footer{font-size:.85rem;color:var(--muted)}
   .lado a[aria-current]{background:var(--degrade);color:#fff;box-shadow:0 6px 16px rgba(80,89,188,.32)}
   .lado a[aria-current] .ladoIco{background:rgba(255,255,255,.28)}
   .lado a[aria-current] .ladoSub{color:#fff}
-  html:not(.emb) .ladoPie{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  html:is(:not(.emb),.embPc) .ladoPie{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .ladoPie .ladoFila{display:flex;gap:6px}
   .ladoPie .ladoFila>*{flex:1;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;min-height:38px;padding:6px 8px;text-decoration:none;white-space:nowrap}
-  @media (max-height:860px){html:not(.emb) .cab{padding-top:16px}html:not(.emb) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:not(.emb) .cab .instalar{margin-top:10px}html:not(.emb) .lado{margin-top:12px;padding-top:10px}html:not(.emb) .ladoPie{margin-top:10px;padding-top:10px}}
+  @media (max-height:860px){html:is(:not(.emb),.embPc) .cab{padding-top:16px}html:is(:not(.emb),.embPc) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:is(:not(.emb),.embPc) .cab .instalar{margin-top:10px}html:is(:not(.emb),.embPc) .lado{margin-top:12px;padding-top:10px}html:is(:not(.emb),.embPc) .ladoPie{margin-top:10px;padding-top:10px}}
   @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:3px}.lado .ladoSub{display:none}}
-  html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}
-  html:not(.emb) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
-  html:not(.emb) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
-  html:not(.emb) section[aria-labelledby="t-mapa"]>#mapa{grid-column:1;grid-row:3/-1}
-  html:not(.emb) section[aria-labelledby="t-mapa"]>:is(#mInfo,.leyenda,p.meta,#d-colores,.fila){grid-column:2}
-  html:not(.emb) #rio svg,html:not(.emb) #rio .leyRio,html:not(.emb) #rio .defMarca{max-width:640px}
-  html:not(.emb) #rio .rioCuerpo{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:12px 28px;align-items:start}
-  html:not(.emb) #rio :is(.rioGraf,.rioLado){display:flex;flex-direction:column;gap:12px;min-width:0}
-  html:not(.emb) #rio .rioLado{padding-left:20px;border-left:1px solid var(--line)}
-  html:not(.emb) main section :is(p,li):not(.sem>li){max-width:88ch}
-  html:not(.emb) main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-  html:not(.emb) main>*{grid-column:1/-1}
-  html:not(.emb) main:has(>#smnBanda:not([hidden])):has(>#rioBanda:not([hidden]))>:is(#smnBanda,#rioBanda){grid-column:auto;align-content:flex-start}
-  html:not(.emb) main>section.plegable.cerrada:not(.solo){grid-column:auto}
-  html:not(.emb) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
-  html:not(.emb) .hSit details#h-mochila:not([open]){grid-column:span 2}
+  html:is(:not(.emb),.embPc) .indice,html:is(:not(.emb),.embPc) .aIndice{display:none!important}
+  html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
+  html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
+  html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]>#mapa{grid-column:1;grid-row:3/-1}
+  html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]>:is(#mInfo,.leyenda,p.meta,#d-colores,.fila){grid-column:2}
+  html:is(:not(.emb),.embPc) #rio svg,html:is(:not(.emb),.embPc) #rio .leyRio,html:is(:not(.emb),.embPc) #rio .defMarca{max-width:640px}
+  html:is(:not(.emb),.embPc) #rio .rioCuerpo{display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:12px 28px;align-items:start}
+  html:is(:not(.emb),.embPc) #rio :is(.rioGraf,.rioLado){display:flex;flex-direction:column;gap:12px;min-width:0}
+  html:is(:not(.emb),.embPc) #rio .rioLado{padding-left:20px;border-left:1px solid var(--line)}
+  html:is(:not(.emb),.embPc) main section :is(p,li):not(.sem>li){max-width:88ch}
+  html:is(:not(.emb),.embPc) main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  html:is(:not(.emb),.embPc) main>*{grid-column:1/-1}
+  html:is(:not(.emb),.embPc) main:has(>#smnBanda:not([hidden])):has(>#rioBanda:not([hidden]))>:is(#smnBanda,#rioBanda){grid-column:auto;align-content:flex-start}
+  html:is(:not(.emb),.embPc) main>section.plegable.cerrada:not(.solo){grid-column:auto}
+  html:is(:not(.emb),.embPc) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
+  html:is(:not(.emb),.embPc) .hSit details#h-mochila:not([open]){grid-column:span 2}
+  html.embPc .cab{position:relative;top:0;height:var(--vistaAlto,560px);max-height:var(--vistaAlto,560px);transform:translateY(var(--vistaY,0px));will-change:transform}
 }
 /* En el celular las cajas del gráfico del río no cambian nada: sus partes siguen una debajo de la otra. */
 .ladoPie{display:none}
@@ -796,6 +797,7 @@ footer{font-size:.85rem;color:var(--muted)}
 const PORTAL='https://gobiernoabierto.chaco.gob.ar';
 // Canal del shortcode [panel_alertas_chaco] del portal (además de los avisos rios-y-clima:… del bloque del README).
 const CANAL='ga-panel-alertas-chaco-v1';
+let VISTA=null;   // lo que avisa el portal de su pantalla (recibirVista); null fuera del portal o si el portal no lo manda
 const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();
 if(EMB&&document.documentElement)document.documentElement.classList.add('emb');
 const ONI_CARGA='2026-10-06';   // día en que se cargó a mano el ONI (independiente de la captura)
@@ -2249,16 +2251,17 @@ seguro(botonIndice);
 // Índice lateral (solo se ve en computadora): marca la sección que está en la pantalla, la última cuyo comienzo ya pasó el primer tercio.
 // Los títulos (h2) marcan su sección entera; "Teléfonos" (t-tel) es un bloque dentro de "Qué hacer" y se marca desde donde empieza.
 function indiceLateral(){
-  const nav=$('lado');if(!nav||EMB||typeof innerHeight!=='number')return;
+  const nav=$('lado');if(!nav||typeof innerHeight!=='number')return;
   const L=[...nav.querySelectorAll('a[href^="#t-"]')].map(a=>[a,(x=>x&&x.tagName!=='H2'?x:(x||{}).closest?.('section'))($(a.getAttribute('href').slice(1)))]).filter(x=>x[1]);
   let pend=false,act=null;
   const ver=()=>{pend=false;if(getComputedStyle(nav).display==='none')return;
-    let q=null;for(const [a,sec] of L)if(sec.getBoundingClientRect().top<=innerHeight*0.33)q=a;
+    const v=vista();let q=null;for(const [a,sec] of L)if(v.y0+sec.getBoundingClientRect().top<=v.h*0.33)q=a;
     if(q!==act){if(act)act.removeAttribute('aria-current');if(q)q.setAttribute('aria-current','location');act=q}
     // barrita de avance: cuánto de la página ya se bajó
-    const pr=$('ladoProg'),tot=document.documentElement.scrollHeight-innerHeight;if(pr)pr.style.width=(tot>0?Math.min(100,Math.max(0,scrollY/tot*100)):0).toFixed(1)+'%'};
-  const arr=$('ladoArriba');if(arr)arr.addEventListener('click',()=>{marcarSalto();scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
+    const pr=$('ladoProg');if(pr)pr.style.width=(v.tot>0?Math.min(100,Math.max(0,v.baj/v.tot*100)):0).toFixed(1)+'%'};
+  const arr=$('ladoArriba');if(arr)arr.addEventListener('click',()=>{if(EMB){verSec(document.querySelector('.wrap'));return}marcarSalto();scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
   addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});
+  addEventListener('rios-y-clima:vista',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
 seguro(indiceLateral);
@@ -2282,12 +2285,37 @@ function marcasLado(){
     i.style.background='var(--'+c+')';a.title=t});
 }
 function iniciarMarcasLado(){
-  if(EMB||typeof MutationObserver!=='function')return;
+  if(typeof MutationObserver!=='function')return;
   const o=new MutationObserver(()=>seguro(marcasLado));
   ['smnBanda','rioBanda'].forEach(id=>{const e=$(id);if(e)o.observe(e,{attributes:true,childList:true,subtree:true,characterData:true})});
   marcasLado();
 }
 seguro(iniciarMarcasLado);
+
+// Qué parte del sitio está a la vista. Solo: la ventana del navegador. Dentro del portal, el marco mide lo mismo que todo el sitio,
+// así que el portal avisa dónde está el marco en su pantalla, el alto de la pantalla y hasta dónde llega su encabezado fijo (VISTA).
+function vista(){
+  if(!VISTA)return {y0:0,h:innerHeight,baj:scrollY,tot:document.documentElement.scrollHeight-innerHeight};
+  const w=document.querySelector('.wrap'),alto=w?w.getBoundingClientRect().height:0;
+  return {y0:VISTA.top,h:VISTA.h,baj:Math.max(0,VISTA.cab-VISTA.top),tot:alto-(VISTA.h-VISTA.cab)};
+}
+// En la computadora dentro del portal: el sitio se acomoda como el original y el menú de la izquierda acompaña lo que se baja.
+function moverLado(){
+  const c=document.querySelector('.cab'),w=document.querySelector('.wrap'),r=document.documentElement;if(!VISTA||!c||!w)return;
+  const alto=Math.max(560,Math.round(VISTA.h-VISTA.cab-32));r.style.setProperty('--vistaAlto',alto+'px');
+  const t0=parseFloat(r.style.getPropertyValue('--vistaY'))||0,nat=c.getBoundingClientRect().top-t0,lim=w.getBoundingClientRect().bottom-nat-c.offsetHeight;
+  const t=Math.round(Math.max(0,Math.min(lim,VISTA.cab+16-VISTA.top-nat)));r.style.setProperty('--vistaY',t+'px');
+}
+function recibirVista(){
+  if(!EMB||window.parent===window)return;let pend=false;
+  addEventListener('message',e=>{const d=e.data;if(e.origin!==PORTAL||e.source!==window.parent||!d)return;
+    if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;
+    const n=x=>typeof x==='number'&&isFinite(x);if(!n(d.top)||!n(d.height)||d.height<200)return;
+    VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0};
+    document.documentElement.classList.add('embPc');
+    if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;moverLado();dispatchEvent(new Event('rios-y-clima:vista'))})}});
+}
+seguro(recibirVista);
 
 // Alto de la página para el portal (cambia al abrir o cerrar secciones y cuando llegan los datos).
 function avisarAlto(){

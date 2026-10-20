@@ -350,16 +350,19 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.deepStrictEqual([...lado.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]), destinos, 'mismos destinos que el índice de arriba');
   assert.ok(/\.lado\{display:none\}/.test(html) && html.includes('@media screen and (min-width:1100px){'), 'solo en pantallas anchas y en pantalla (no al imprimir)');
   const ancho = html.slice(html.indexOf('@media screen and (min-width:1100px){'));
-  assert.ok(ancho.includes('html:not(.emb) .lado{display:flex') && ancho.includes('html:not(.emb) .indice,html:not(.emb) .aIndice{display:none!important}'), 'en el portal no; arriba se esconde el otro índice');
+  assert.ok(ancho.includes('html:is(:not(.emb),.embPc) .lado{display:flex') && ancho.includes('html:is(:not(.emb),.embPc) .indice,html:is(:not(.emb),.embPc) .aIndice{display:none!important}'), 'en el portal solo si el portal avisa su pantalla (embPc); arriba se esconde el otro índice');
   assert.ok(ancho.includes('section[aria-labelledby="t-mapa"]>#mapa{grid-column:1'), 'mapa al lado de su detalle');
-  assert.ok(/function indiceLateral\(\)\{\s*const nav=\$\('lado'\);if\(!nav\|\|EMB/.test(codigo) && codigo.includes("setAttribute('aria-current','location')"), 'marca la sección actual, no en el portal');
+  assert.ok(/function indiceLateral\(\)\{\s*const nav=\$\('lado'\);if\(!nav\|\|typeof innerHeight/.test(codigo) && codigo.includes("v.y0+sec.getBoundingClientRect().top<=v.h*0.33") && codigo.includes("setAttribute('aria-current','location')"), 'marca la sección actual (también en el portal, con lo que se ve de su pantalla)');
   assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces del índice abren la sección cerrada');
   // Computadora (19/10): columna fija con nombre, Compartir e índice; franjas de a dos; río al lado de sus datos; tarjetas en 2 filas; secciones cerradas de a dos
-  assert.ok(ancho.includes('html:not(.emb) .cab{grid-column:1;grid-row:1/span 2;position:sticky'), 'nombre del sitio e índice en la columna fija');
+  assert.ok(ancho.includes('html:is(:not(.emb),.embPc) .cab{grid-column:1;grid-row:1/span 2;position:sticky'), 'nombre del sitio e índice en la columna fija');
   assert.ok(ancho.includes('>:is(#smnBanda,#rioBanda){grid-column:auto') && ancho.includes('main>section.plegable.cerrada:not(.solo){grid-column:auto}'), 'franjas y secciones cerradas de a dos');
   assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
   assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
-  assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(EMB/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral, no en el portal');
+  assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(typeof MutationObserver/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral');
+  // Dentro del portal en la computadora (20/10): con el aviso del portal (viewport) el sitio se acomoda como el original y el menú acompaña lo que se baja; sin aviso, una columna como antes
+  assert.ok(codigo.includes("d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'") && codigo.includes("if(e.origin!==PORTAL||e.source!==window.parent||!d)return;") && codigo.includes("classList.add('embPc')"), 'solo hace caso al portal; recién con su aviso usa el acomodo de computadora');
+  assert.ok(ancho.includes('html.embPc .cab{position:relative;top:0;height:var(--vistaAlto,560px)') && ancho.includes('transform:translateY(var(--vistaY,0px))') && codigo.includes('VISTA.cab+16-VISTA.top-nat'), 'en el portal el menú se mueve con lo que se baja y no se pasa del final del sitio');
   // Menú lateral (19/10, mediodía): ocupa el alto de la pantalla, íconos, renglón con el estado (el río nunca dice "alerta"), barrita de avance y "↑ Arriba" (el 911 se sacó del pie el 20/10)
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
   assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>') && !html.includes('ladoTel'), 'Teléfonos lleva directo a los números');

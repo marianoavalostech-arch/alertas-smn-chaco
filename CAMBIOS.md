@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (dentro del portal, en la computadora: como el sitio original)
+
+Pedido de Mariano: que en la computadora, dentro del portal, el sitio se vea acomodado como el original (con el menú de la izquierda) y en el celular como ahora.
+- **El portal le avisa al sitio qué parte se ve** (dónde está el marco en la pantalla, alto de la pantalla y su encabezado fijo), al bajar y al cambiar el tamaño. Con ese aviso, desde 1100 px el sitio usa el acomodo de computadora y el menú de la izquierda acompaña lo que se baja, debajo del encabezado del portal; marca la sección que está a la vista y la barrita avanza. "↑ Arriba" sube la página del portal hasta el sitio.
+- **Sin el aviso, igual que antes** (una columna). En el celular, sin cambios.
+- **Código del portal**: versión 1.1 del fragmento del administrador en `portal/shortcode-panel-alertas-chaco.php` (aviso `viewport` y lugar para el encabezado al bajar a una sección). El bloque del README también manda el aviso (`rios-y-clima:vista`).
+- Probado en una copia del portal (Playwright, datos reales): 1440 y 1280 px, menú siempre a 84 px del borde (debajo del encabezado de 68), se detiene al final del sitio, marca la sección; tocar "Río Paraná" deja el título a 80 px. Celular igual que antes (mismo alto con el código viejo y el nuevo). Con el código viejo, una columna como antes.
+- Huella nueva del código. 62 pruebas (la del índice lateral controla el acomodo dentro del portal).
+
 ## 20/10/2026 (dentro del portal: también con el shortcode del administrador)
 
 Pedido de Mariano: el administrador del portal armó un shortcode (`[panel_alertas_chaco]`, en Code Snippets) con su propio canal de avisos.
