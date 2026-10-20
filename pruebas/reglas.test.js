@@ -1245,5 +1245,15 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
     assert.ok(yml.includes('node robot/pacifico.js pacifico-anterior salida') && yml.includes('git add pacifico.json pacifico.jpg'), 'el robot corre y guarda los dos archivos');
   });
+  prueba('lluvia: gráfico grande con la fecha y los milímetros de cada día, y botones para elegir la localidad', () => {
+    assert.ok(html.includes("+'<div class=\"llLocs\" id=\"llLocs\" role=\"group\"") && html.includes('<div id="llGrafCaja"></div>'), 'botones de localidad y lugar del gráfico');
+    assert.ok(html.includes('td.barras svg{display:block;width:102px;height:28px;margin-left:auto}'), 'las barritas de la tabla no se agrandan en la computadora');
+    const g = S(`(()=>{const a=D.lluvia,h=hoy;hoy='2026-10-20';D.lluvia={vivo:true,t:new Date(),datos:{dias:['2026-10-18','2026-10-19','2026-10-20','2026-10-21'],mm:LOCS.map((l,i)=>[0,1.4,0,i?3:16.8])}};
+      const r=grafLluvia(0);D.lluvia=a;hoy=h;return r})()`);
+    assert.ok(g.includes('<span class="llD">Hoy</span><span class="llN">20<span class="m">/10</span></span>'), 'hoy marcado con su fecha');
+    assert.ok(g.includes('<span class="llD">mié</span><span class="llN">21<span class="m">/10</span></span>') && g.includes('<span class="llV">17</span>'), 'cada día con su nombre, su fecha y los mm');
+    assert.ok(g.includes('>Llovió</span>') && g.includes('style="grid-column:3/-1">Se espera</span>'), 'lo caído y lo que se espera, separados');
+    assert.ok(g.includes('aria-label="Resistencia, lluvia día por día: 18/10 0,0 mm; 19/10 1,4 mm; 20/10 0,0 mm; 21/10 16,8 mm."'), 'el lector de pantalla lee todos los días');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();
