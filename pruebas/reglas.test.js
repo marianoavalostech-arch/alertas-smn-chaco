@@ -147,6 +147,35 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
   assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
 });
 
+prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y ¿Cuándo llueve en…?', () => {
+  // Colores de la escala, iguales en el mapa y en la leyenda
+  const esc = JSON.parse(S('JSON.stringify(ESCALA)'));
+  assert.deepStrictEqual(esc.map(e => e[1]), ['#bfe6ff', '#6cb8f0', '#2f7fe0', '#2b3fb0', '#9b1fa8']);
+  for (const [, c] of esc) assert.ok(html.includes('<i style="background:' + c + '"></i>'), 'la leyenda usa ' + c);
+  // Nubes previstas: más tenues y sin las muy finitas
+  S("A.tono=[86,105,111]");
+  assert.strictEqual(S('colorNube(2)'), null, 'nube muy finita: no se dibuja');
+  assert.strictEqual(S('colorNube(10)[3]'), 60, 'cielo cubierto: la mitad de fuerte que antes (140)');
+  // Grilla de prueba: lluvia solo cerca de Resistencia, mañana de 9 a 12 h (con 1 hora seca a las 11) y una tormenta a las 10
+  S(`hoy='2026-10-20';(()=>{const nlat=13,nlon=16,n=72,p=[],nube=[];for(let i=0;i<nlat*nlon;i++){p.push(new Array(n).fill(0));nube.push(new Array(n).fill(0))}
+    const g={lat0:-23,lon0:-64.7,paso:0.5,nlat,nlon,h0:'2026-10-19T00:00',n,p,nube,torm:[]};
+    const pt=vecinos(g,-27.45,-58.99);for(const q of pt){p[q][57]=40;p[q][58]=120;p[q][60]=30}g.torm.push([58,[...pt][0]]);A.g=g})()`);
+  const tira = JSON.parse(S('JSON.stringify(tiraValores(A.g))'));
+  assert.strictEqual(tira.length, 72);
+  assert.ok(tira[58] >= 100 && tira[0] === 0, 'la barrita de mañana 10 h es la más alta; ayer, sin lluvia');
+  const r = JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,38))'));
+  assert.strictEqual(r.txt, 'En Resistencia se espera lluvia mañana, a ratos entre las 9 h y las 13 h. Lo más fuerte: unos 12 mm en una hora, a las 10 h. Con tormentas previstas en la zona.');
+  assert.strictEqual(r.pico, 58, 'al elegir la localidad, el mapa va a la hora más fuerte');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,62))')).txt, 'En Resistencia no se espera lluvia de acá a mañana a la noche.');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,4,38))')).txt, 'En Charata no se espera lluvia de acá a mañana a la noche.', 'lejos de la lluvia');
+  S('A.g.p.forEach(x=>{x[57]=0;x[60]=0;x[58]=Math.min(x[58],6)})');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,38))')).txt, 'En Resistencia se espera lluvia débil mañana a las 10 h. Con tormentas previstas en la zona.');
+  S('A.g=null');
+  // El texto largo va en un desplegable; a la vista queda una línea
+  assert.ok(html.includes('<p class="meta">No es un radar: es lo que calcula el modelo de pronóstico.</p>') && html.includes('<details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>'));
+  assert.ok(html.includes('<div id="aTira"></div>') && html.includes('<div id="aLocs" role="group"'), 'tira y botones de localidad en la sección');
+});
+
 prueba('secciones contraíbles: las principales siempre abiertas, las contraíbles empiezan cerradas, nada se pide con la sección cerrada', () => {
   const sec = id => (new RegExp('<section aria-labelledby="' + id + '"([^>]*)>').exec(html) || [])[1];
   for (const id of ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio']) assert.ok(!/plegable/.test(sec(id)), id + ' no se puede cerrar');

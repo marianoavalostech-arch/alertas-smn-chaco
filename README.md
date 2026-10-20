@@ -163,6 +163,13 @@ Se calibraron con enero a marzo de 2026 (unos 2.200 días-estación): la regla d
 
 **Mapa animado:** las nubes de las horas pasadas son imágenes del satélite GOES-East (capa `GOES-East_ABI_GeoColor` del servicio GIBS de la NASA), pedidas por el navegador del visitante. La NASA tarda casi una hora en publicarlas; mientras tanto devuelve una imagen negra, que el sitio descarta (se usa la nubosidad prevista).
 
+Desde el 20/10/2026 (pedido de Mariano):
+- **Colores de la lluvia** (`ESCALA`, también en la leyenda): débil `#bfe6ff`, 1 a 3 mm `#6cb8f0`, 3 a 7 mm `#2f7fe0`, 7 a 15 mm `#2b3fb0`, 15 mm o más `#9b1fa8`, más separados entre sí que antes y un poco más firmes.
+- **Nubosidad prevista en gris tenue** (`colorNube`): el mismo gris, con la mitad de fuerza, y sin dibujar las nubes muy finitas (menos de 30 %). Las nubes del satélite de las horas pasadas no cambian.
+- **Tira de barritas** (`#aTira`, `tiraValores`, `pintarTira`, `marcarTira`) entre el deslizador y el mapa: una por hora, alta y del color de la escala según la lluvia más fuerte prevista en alguno de los 70 municipios (en su centro, `enLugar`); separa los días, marca "ahora" y la hora que muestra el mapa. Tocar una barrita lleva el mapa a esa hora. Cada barrita tiene su texto al pasar el mouse.
+- **¿Cuándo llueve en…?** (`#aLocs`, `#aLocTxt`, `elegirLoc`, `resumenLoc`): botones con las 6 localidades; también se pueden tocar en el mapa. Dice, de la hora actual hasta la última de la grilla, en qué horas se prevé lluvia ahí (desde 0,2 mm en la hora; "de 12 a 19 h" si es seguido, "a ratos entre las 5 h y las 19 h" si no), lo más fuerte (cuánto y a qué hora) y si hay tormentas previstas en los 4 puntos de la grilla de alrededor ("Con tormentas previstas en la zona"). El mapa salta a la hora más fuerte. Tocar de nuevo la misma localidad la deselecciona.
+- **Texto largo en un desplegable** "¿Qué muestra este mapa?" (`#d-anim`, recordado por navegador como los otros); a la vista queda "No es un radar: es lo que calcula el modelo de pronóstico."
+
 ## Reglas del color
 
 **Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes. **Desde el 17/10/2026, el rojo mira solo hoy y los 2 días siguientes** (`viene3` y `max3` de `sumarLluvia`; pedido de Mariano, porque un pronóstico a 4 o más días cambia mucho: el 17/10 La Leonesa salía en rojo por 115 mm previstos para el 23/10). El amarillo sigue mirando los 7 días. Si con los 7 días sería rojo pero lo fuerte llega en más de 3 días, el texto lo dice (`ROJO_LEJOS`): "por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque".

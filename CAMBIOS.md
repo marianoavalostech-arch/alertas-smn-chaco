@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (Lluvia hora por hora)
+
+Pedido de Mariano.
+- **Tira de barritas** debajo del deslizador: una por hora, más alta cuanto más fuerte la lluvia prevista en algún lugar del Chaco, con los días separados y la marca "ahora". Tocar una lleva el mapa a esa hora: se ve de un vistazo cuándo viene lo fuerte.
+- **"¿Cuándo llueve en…?"**: botones con las 6 localidades (también se tocan en el mapa). Una frase dice en qué horas se espera lluvia ahí de acá a mañana a la noche, lo más fuerte y si hay tormentas previstas en la zona; el mapa va a la hora más fuerte.
+- **Colores de la lluvia más separados** (y en la leyenda) y **nubosidad prevista en un gris tenue**, para que la lluvia se vea mejor. Las nubes del satélite no cambian.
+- El texto largo del final pasa a un desplegable **"¿Qué muestra este mapa?"**; a la vista queda una línea.
+- Huella nueva del código. 64 pruebas.
+
 ## 20/10/2026 ("Instalar app" dentro del portal)
 
 Pedido de Mariano.
