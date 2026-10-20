@@ -180,8 +180,8 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   const a0 = html.indexOf('<h2 id="t-anim">'), sec = html.slice(a0, html.indexOf('</section>', a0));
   assert.ok(!html.includes('aTiraTxt'), 'sin la aclaración de las barritas a la vista');
   assert.ok(sec.indexOf('id="aEtq"') < sec.indexOf('id="anim"') && sec.indexOf('id="anim"') < sec.indexOf('id="aPlay"'), 'la hora y el mapa primero; los controles debajo');
-  assert.ok(sec.includes('<div class="aBarra"><div id="aTira"></div><input type="range" id="aHora"'), 'el control de hora va encima de las barritas');
-  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:58px;margin:0;opacity:0;'), 'invisible, sobre la tira, y anda con las flechas');
+  assert.ok(sec.includes('<div class="aBarra"><div class="aReloj"') && sec.includes('</div><div id="aTira"></div><input type="range" id="aHora"'), 'el control de hora va encima de las barritas');
+  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:84px;margin:0;opacity:0;'), 'invisible, sobre la tira y el reloj, y anda con las flechas');
   assert.ok(sec.includes('Tocá o arrastrá sobre las barritas para ver esa hora en el mapa'), 'la explicación pasa al desplegable');
   assert.ok(html.includes('.animCuerpo{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr)'), 'en la computadora, el mapa al lado de los controles');
   assert.ok(html.includes('aria-label="Reproducir" title="Reproducir">▶</button>') && codigo.includes("$('aPlay').setAttribute('aria-label','Pausa')"), 'botón redondo que dice qué hace');
@@ -191,6 +191,21 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.ok(lado.includes('<a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<') && lado.includes('<a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<'), 'índice lateral');
   assert.ok(html.includes('<a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
   assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
+});
+
+prueba('lluvia hora por hora: relojito arriba de la barrita elegida, con la aguja y el número de la hora', () => {
+  assert.ok(html.includes('<div class="aBarra"><div class="aReloj" id="aReloj" aria-hidden="true"><span hidden>') && html.includes('<path class="rH" d="M8 8V4.9"'), 'reloj encima de la tira, oculto para el lector de pantalla');
+  assert.ok(html.includes('left:clamp(0px,calc(var(--x,0%) - 29px),calc(100% - 58px))') && html.includes('@media (prefers-reduced-motion:reduce){.aReloj span,.aReloj .punta{transition:none}}'), 'no se sale de los bordes; sin movimiento si la persona lo pidió');
+  const x = {}, hand = { setAttribute: (k, v) => { hand[k] = v; } }, num = {}, caja = { hidden: true }, punta = { hidden: true };
+  elementos.aReloj = { style: { setProperty: (k, v) => { x[k] = v; } }, querySelector: q => ({ span: caja, '.punta': punta, '.rH': hand, b: num })[q] };
+  S("A.g={n:72,h0:'2026-10-19T00'}");
+  S('marcarTira(38)');   // 20/10 a las 14 h
+  assert.strictEqual(num.textContent, '14 h');
+  assert.strictEqual(hand.transform, 'rotate(60 8 8)', 'aguja en las 2');
+  assert.strictEqual(x['--x'], '53.47%', 'en el medio de la barrita 38 de 72');
+  assert.ok(!caja.hidden && !punta.hidden);
+  S('marcarTira(24)'); assert.strictEqual(num.textContent, '0 h'); assert.strictEqual(hand.transform, 'rotate(0 8 8)');
+  S('A.g=null'); delete elementos.aReloj;
 });
 
 prueba('renglón del río en el semáforo: cuánto pasó el nivel, en centímetros, como la sección del río', () => {

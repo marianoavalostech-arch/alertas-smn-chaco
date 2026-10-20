@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (relojito en Lluvia hora por hora)
+
+Pedido de Mariano.
+- **Arriba de la barrita elegida, un relojito con la hora** ("10 h"), con una puntita sobre la barrita. Se va corriendo mientras se reproduce o se arrastra, y no se sale del gráfico en los bordes.
+- Comentario del código corregido: la lluvia que pide el script de Google llega algunas horas y queda de respaldo.
+- Huella nueva del código. 67 pruebas.
+
 ## 20/10/2026 (Lluvia hora por hora más compacta e índice completo)
 
 Pedido de Mariano.
