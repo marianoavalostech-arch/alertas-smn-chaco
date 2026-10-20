@@ -181,7 +181,7 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.ok(!html.includes('aTiraTxt'), 'sin la aclaración de las barritas a la vista');
   assert.ok(sec.indexOf('id="aEtq"') < sec.indexOf('id="anim"') && sec.indexOf('id="anim"') < sec.indexOf('id="aPlay"'), 'la hora y el mapa primero; los controles debajo');
   assert.ok(sec.includes('<div class="aBarra"><div class="aReloj"') && sec.includes('</div><div id="aTira"></div><input type="range" id="aHora"'), 'el control de hora va encima de las barritas');
-  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:84px;margin:0;opacity:0;'), 'invisible, sobre la tira y el reloj, y anda con las flechas');
+  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:96px;margin:0;opacity:0;'), 'invisible, sobre la tira y el reloj, y anda con las flechas');
   assert.ok(sec.includes('Tocá o arrastrá sobre las barritas para ver esa hora en el mapa'), 'la explicación pasa al desplegable');
   assert.ok(html.includes('.animCuerpo{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr)'), 'en la computadora, el mapa al lado de los controles');
   assert.ok(html.includes('aria-label="Reproducir" title="Reproducir">▶</button>') && codigo.includes("$('aPlay').setAttribute('aria-label','Pausa')"), 'botón redondo que dice qué hace');
@@ -191,6 +191,19 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.ok(lado.includes('<a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<') && lado.includes('<a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<'), 'índice lateral');
   assert.ok(html.includes('<a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
   assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
+});
+
+prueba('lluvia hora por hora: leyenda de colores con los cortes en mm y barritas más claras (20/10)', () => {
+  const l0 = html.indexOf('<div class="escLeg"'), ley = html.slice(l0, html.indexOf('</div>', l0));
+  assert.ok(l0 > 0 && ley.includes('<span class="escT">Lluvia en una hora</span><span class="escE">finita</span>') && ley.includes('<span class="escE">fuerte</span>'), 'título y las dos puntas en palabras');
+  assert.ok(ley.includes('<b style="left:20%">1</b><b style="left:40%">3</b><b style="left:60%">7</b><b style="left:80%">15 mm</b>'), 'números en los cortes');
+  const colores = [...ley.matchAll(/<i style="background:(#[0-9a-f]{6})"><\/i>/g)].map(m => m[1]);
+  assert.deepStrictEqual(colores, JSON.parse(S('JSON.stringify(ESCALA.map(e=>e[1]))')), 'los mismos colores que el mapa y las barritas');
+  assert.ok(ley.includes('<i class="torm"></i>tormenta prevista') && ley.includes('<i class="nube"></i>nubes') && /aria-label="Colores de la lluvia en una hora: [^"]+"/.test(ley), 'tormenta, nubes y la lectura para el lector de pantalla');
+  const c = html.slice(html.indexOf('function pintarTira(){'), html.indexOf('function marcarTira('));
+  assert.ok(c.includes('fill="var(--acento)" fill-opacity=".13"/>') && !c.includes('stroke="var(--acento)"') && !c.includes('stroke-dasharray'), 'hora elegida con una franja suave, sin borde; "ahora" con línea lisa');
+  assert.ok(c.includes("const h=alto(v);if(!h)return;") && c.includes('class="tMax"') && c.includes('vm>=10?'), 'sin lluvia no se dibuja; la más alta lleva sus mm desde 1 mm');
+  assert.ok(html.includes('seguro(ubicarAhora);'), '"ahora" busca lugar en el renglón de los días');
 });
 
 prueba('lluvia hora por hora: relojito arriba de la barrita elegida, con la aguja y el número de la hora', () => {

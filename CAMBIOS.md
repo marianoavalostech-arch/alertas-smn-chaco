@@ -2,12 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 20/10/2026 (relojito en Lluvia hora por hora)
+## 20/10/2026 (relojito, barritas y leyenda de colores en Lluvia hora por hora)
 
-Pedido de Mariano.
+Pedidos de Mariano.
 - **Arriba de la barrita elegida, un relojito con la hora** ("10 h"), con una puntita sobre la barrita. Se va corriendo mientras se reproduce o se arrastra, y no se sale del gráfico en los bordes.
+- **Barritas más claras**: las horas sin lluvia quedan vacías, la hora elegida lleva una franja violeta suave detrás, "ahora" es una línea fina y lisa (y su nombre sube al renglón de los días cuando entra), y arriba de la barrita más alta dice cuánto llueve ahí ("4 mm").
+- **Leyenda de colores nueva**: "Lluvia en una hora", la escala de colores de "finita" a "fuerte" con los milímetros en cada corte (1, 3, 7, 15 mm) y, debajo, "tormenta prevista" y "nubes".
 - Comentario del código corregido: la lluvia que pide el script de Google llega algunas horas y queda de respaldo.
-- Huella nueva del código. 67 pruebas.
+- Huella nueva del código. 68 pruebas.
 
 ## 20/10/2026 (Lluvia hora por hora más compacta e índice completo)
 
