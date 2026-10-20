@@ -1236,6 +1236,8 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     // ninguna tarjeta de "¿Qué está pasando?" se abre sola (Mariano, 19/10): solo con el botón "Qué hacer" o tocándola
     assert.ok(!/\.open\s*=\s*true/.test(S('pintarHacer.toString()')), 'pintarHacer no abre tarjetas');
     assert.ok(!hh.innerHTML.includes(S('DEFENSAS')) && hh.innerHTML.includes('Río Paraná'), '"Ahora en el Chaco" no repite la frase de las defensas');
+    // los renglones van uno al lado del otro si entran (computadora) y uno debajo del otro en el celular (20/10)
+    assert.ok(/\.hHoy ul\{[^}]*display:flex;flex-wrap:wrap/.test(html) && /\.hHoy li\{flex:1 1 340px/.test(html), 'renglones de "Ahora en el Chaco" en fila cuando hay lugar');
     assert.ok(S('DEFENSAS').includes('avisos oficiales') && !S('DEFENSAS').includes('no hace falta') && S('DEFENSAS_CORTA').includes('avisos oficiales'), 'la frase dice que el agua del río queda afuera de las defensas y que valen los avisos oficiales');
     assert.ok(/<details id="h-rio"[\s\S]*?dentro de las defensas, el agua del río queda afuera/.test(html) && !/no hace falta hacer nada/.test(html));
     assert.ok(!/se conecta a Google, GitHub, el INA, Open-Meteo/.test(html), 'privacidad al día');

@@ -328,8 +328,9 @@ footer{font-size:.85rem;color:var(--muted)}
 .hHoy.n5{border-left-color:var(--rojo);background:var(--rojo-bg)}
 .hHoy.gris{border-left-color:var(--gris);background:var(--bg)}
 .hHoy .hEt{margin:0}
-.hHoy ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.hHoy li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+/* uno al lado del otro si entran (cada uno pide unos 340 px); en el celular, uno debajo del otro (Mariano, 20/10) */
+.hHoy ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 28px}
+.hHoy li{flex:1 1 340px;min-width:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
 .hHoy li>span{flex:1 1 220px;min-width:0}
 .hIr{font:inherit;font-size:.92rem;font-weight:700;color:#fff;background:var(--degrade);border:0;border-radius:99px;padding:8px 16px;min-height:40px;cursor:pointer;white-space:nowrap}
 .hIr:hover{filter:brightness(1.1)}

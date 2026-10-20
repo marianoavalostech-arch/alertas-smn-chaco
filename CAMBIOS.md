@@ -6,6 +6,7 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 Pedido de Mariano.
 - **El renglón de cada alerta del SMN es corto**: solo el fenómeno y el día ("⛈️ Tormentas, mañana"), con su botón "Qué hacer". El color, el granizo o las ráfagas y los municipios ya están en la sección del SMN, justo arriba. El recuadro sigue con el color más alto y la tarjeta, con su etiqueta ("Alerta amarilla").
+- **En la computadora, los renglones van uno al lado del otro** (también dentro del portal); en el celular, uno debajo del otro, como antes.
 - **Sin la frase de las defensas debajo de los renglones**: ya está en la franja del río, en el renglón del semáforo y en la tarjeta "Crecida del río", que abre el botón "Qué hacer" del río.
 - Huella nueva del código. 64 pruebas.
 
