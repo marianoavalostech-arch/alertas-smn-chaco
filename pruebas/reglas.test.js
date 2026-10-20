@@ -176,6 +176,32 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   assert.ok(html.includes('<div id="aTira"></div>') && html.includes('<div id="aLocs" role="group"'), 'tira y botones de localidad en la sección');
 });
 
+prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son el deslizador, controles en un renglón; "Lluvia por hora" y "Datos y Acerca" en los índices', () => {
+  const a0 = html.indexOf('<h2 id="t-anim">'), sec = html.slice(a0, html.indexOf('</section>', a0));
+  assert.ok(!html.includes('aTiraTxt'), 'sin la aclaración de las barritas a la vista');
+  assert.ok(sec.indexOf('id="aEtq"') < sec.indexOf('id="anim"') && sec.indexOf('id="anim"') < sec.indexOf('id="aPlay"'), 'la hora y el mapa primero; los controles debajo');
+  assert.ok(sec.includes('<div class="aBarra"><div id="aTira"></div><input type="range" id="aHora"'), 'el control de hora va encima de las barritas');
+  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:58px;margin:0;opacity:0;'), 'invisible, sobre la tira, y anda con las flechas');
+  assert.ok(sec.includes('Tocá o arrastrá sobre las barritas para ver esa hora en el mapa'), 'la explicación pasa al desplegable');
+  assert.ok(html.includes('.animCuerpo{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr)'), 'en la computadora, el mapa al lado de los controles');
+  assert.ok(html.includes('aria-label="Reproducir" title="Reproducir">▶</button>') && codigo.includes("$('aPlay').setAttribute('aria-label','Pausa')"), 'botón redondo que dice qué hace');
+  assert.ok(codigo.includes('hh=hDe(t);') && !/[^.]F_HH\.format\(t\)\+' h/.test(codigo), 'la etiqueta del mapa y las barritas usan la hora sin cero');
+  assert.strictEqual(S("hDe(new Date('2026-10-21T08:00:00Z'))"), '5', 'la hora sin cero adelante, como en el resto del sitio');
+  const l0 = html.indexOf('id="lado"'), lado = html.slice(l0, html.indexOf('</nav>', l0));
+  assert.ok(lado.includes('<a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<') && lado.includes('<a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<'), 'índice lateral');
+  assert.ok(html.includes('<a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
+  assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
+});
+
+prueba('renglón del río en el semáforo: cuánto pasó el nivel, en centímetros, como la sección del río', () => {
+  assert.strictEqual(S('pasoNivel(7.13,NIVEL)'), '63 cm arriba del nivel de evacuación (6,50 m)');
+  assert.strictEqual(S('pasoNivel(6.5,NIVEL)'), 'llegó al nivel de evacuación (6,50 m)');
+  assert.strictEqual(S('pasoNivel(6.2,NIVEL)'), '20 cm arriba del nivel de alerta (6,00 m)');
+  assert.strictEqual(S('pasoNivel(7.6,NIVEL)'), '1,10 m arriba del nivel de evacuación (6,50 m)');
+  assert.ok(codigo.includes("' m en Barranqueras: '+pasoNivel(r.h,NIVEL)+'.'") && codigo.includes("' m en '+o.lugar+': '+pasoNivel(r.h,N)+'.'"), 'Paraná y Paraguay');
+  assert.ok(!codigo.includes('superó el nivel'), 'ya no dice "superó"');
+});
+
 prueba('secciones contraíbles: las principales siempre abiertas, las contraíbles empiezan cerradas, nada se pide con la sección cerrada', () => {
   const sec = id => (new RegExp('<section aria-labelledby="' + id + '"([^>]*)>').exec(html) || [])[1];
   for (const id of ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio']) assert.ok(!/plegable/.test(sec(id)), id + ' no se puede cerrar');
@@ -401,7 +427,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   const i0 = html.indexOf('id="indice"');
   assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 > html.indexOf('id="smnBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
   const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
-  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-nino', 't-acerca']);
+  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-anim', 't-nino', 't-fuentes']);
   for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
   // Índice lateral (computadora, desde 1100 px): mismos destinos que el de arriba, que en esa pantalla se esconde junto con "↑ Índice";
   // en el celular, en el portal y al imprimir no se ve; el mapa va al lado de su detalle
@@ -429,7 +455,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
   assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>') && !html.includes('ladoTel'), 'Teléfonos lleva directo a los números');
   assert.ok(codigo.includes("x.tagName!=='H2'?x:"), 'en el índice lateral, Teléfonos se marca desde donde empiezan los números y no tapa a Qué hacer');
-  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 10 && (lado.match(/class="ladoSub"/g) || []).length === 10, 'un ícono y un renglón por destino');
+  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 11 && (lado.match(/class="ladoSub"/g) || []).length === 11, 'un ícono y un renglón por destino');
   assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));

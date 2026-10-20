@@ -3,16 +3,32 @@
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
-.anim-ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-.anim-ctrl input[type=range]{flex:1 1 220px;min-width:0;accent-color:var(--acento);min-height:40px}
-#aEtq{font-size:.95rem;min-height:1.45em}
+.anim-ctrl{display:flex;gap:8px;align-items:center;margin:12px 0 6px}
+#aPlay{flex:none;width:44px;min-width:44px;height:40px;padding:0;font-size:1rem}
+#aEtq{font-size:.95rem;min-height:1.45em;margin:0 0 6px}
+/* la tira de barritas es también el deslizador: el control de hora queda encima, invisible, y se toca o arrastra sobre las barritas */
+.aBarra{position:relative}
+.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:58px;margin:0;opacity:0;cursor:pointer;touch-action:pan-y;-webkit-appearance:none;appearance:none;background:none}
+.aBarra input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1px;height:58px}
+.aBarra input[type=range]::-moz-range-thumb{width:1px;height:58px;border:0}
+.aBarra:has(input:focus-visible) #aTira svg{outline:2px solid var(--acento);outline-offset:2px;border-radius:4px}
+.escTira{display:inline-flex}.escTira i{margin:0!important;border-radius:0!important;width:12px!important}
+.escTira i:first-child{border-radius:2px 0 0 2px!important}.escTira i:last-child{border-radius:0 2px 2px 0!important}
+.animLado .escala{align-items:center;gap:4px 8px;margin:4px 0 2px;font-size:.78rem}
+#aDias .ley{padding:4px 10px;min-height:40px}
+#aLocs .ley{padding:3px 9px;min-height:36px;font-size:.92rem}
+#aLocs>span{flex:1 0 100%}
+.animLado>.meta{margin:6px 0}
+.animLado label.meta{display:block;margin:8px 0 4px}
+@media screen and (min-width:1100px){
+  .animCuerpo{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:0 24px;align-items:start}
+}
 /* tira de barritas: lluvia más fuerte en el Chaco hora por hora (20/10/2026) */
 #aTira{position:relative;margin:2px 0 4px}
 #aTira svg{display:block;width:100%;height:54px;cursor:pointer;touch-action:pan-y}
 #aTira .tDias{position:relative;height:1.3em;font-size:.78rem;color:var(--muted)}
 #aTira .tDias span{position:absolute;top:0;white-space:nowrap}
 #aTira .tDias .tAhora{color:var(--ink);font-weight:700;transform:translateX(-50%)}
-#aTiraTxt{margin:0 0 8px}
 /* ¿Cuándo llueve en…? (20/10/2026) */
 #aLocs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 4px}
 #aLocs>span{font-weight:700;margin-right:2px}
@@ -258,7 +274,7 @@ footer{font-size:.85rem;color:var(--muted)}
   .ladoPie .ladoFila{display:flex;gap:6px}
   .ladoPie .ladoFila>*{flex:1;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;min-height:38px;padding:6px 8px;text-decoration:none;white-space:nowrap}
   @media (max-height:860px){html:is(:not(.emb),.embPc) .cab{padding-top:16px}html:is(:not(.emb),.embPc) .cab>p:not(.solo-emb){display:none}.lado a{padding-block:4px}html:is(:not(.emb),.embPc) .cab .instalar{margin-top:10px}html:is(:not(.emb),.embPc) .lado{margin-top:12px;padding-top:10px}html:is(:not(.emb),.embPc) .ladoPie{margin-top:10px;padding-top:10px}}
-  @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:3px}.lado .ladoSub{display:none}}
+  @media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}.lado .ladoSub{display:none}}
   html:is(:not(.emb),.embPc) .indice,html:is(:not(.emb),.embPc) .aIndice{display:none!important}
   html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:repeat(7,auto) 1fr;column-gap:20px;align-items:start}
   html:is(:not(.emb),.embPc) section[aria-labelledby="t-mapa"]>*{grid-column:1/-1}
@@ -505,8 +521,9 @@ footer{font-size:.85rem;color:var(--muted)}
       <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
       <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
       <a href="#t-lluvia"><span class="ladoIco" aria-hidden="true">🌧️</span><span class="ladoTx">Lluvias<small class="ladoSub"></small></span></a>
+      <a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<small class="ladoSub"></small></span></a>
       <a href="#t-nino"><span class="ladoIco" aria-hidden="true">🌡️</span><span class="ladoTx">El Niño<small class="ladoSub"></small></span></a>
-      <a href="#t-acerca"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Acerca<small class="ladoSub"></small></span></a>
+      <a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<small class="ladoSub"></small></span></a>
     </nav>
     <div class="ladoPie">
       <div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>
@@ -525,7 +542,7 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-nino">El Niño</a><a href="#t-acerca">Acerca</a>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
   </nav>
 
   <section aria-labelledby="t-mapa">
@@ -756,33 +773,34 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <section aria-labelledby="t-anim" class="plegable" data-cerrada data-pista="Mapa animado de la lluvia, con satélite">
     <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
-    <div id="aDias" role="group" aria-label="Elegir el día"></div>
-    <div class="anim-ctrl">
-      <button class="btn" id="aPlay" type="button" aria-pressed="false">▶ Reproducir</button>
-      <input type="range" id="aHora" min="0" max="71" step="1" value="0" aria-label="Hora" aria-describedby="aEtq">
-    </div>
-    <div id="aTira"></div>
-    <p class="meta" id="aTiraTxt">Cada barrita es una hora: cuanto más alta, más fuerte la lluvia en algún lugar del Chaco. Tocá una para verla en el mapa.</p>
+    <div class="animCuerpo">
+    <div class="animMapa">
     <p id="aEtq" aria-live="polite"></p>
     <div id="anim"></div>
+    </div>
+    <div class="animLado">
+    <div class="anim-ctrl">
+      <button class="btn" id="aPlay" type="button" aria-pressed="false" aria-label="Reproducir" title="Reproducir">▶</button>
+      <div id="aDias" role="group" aria-label="Elegir el día"></div>
+    </div>
+    <div class="aBarra"><div id="aTira"></div><input type="range" id="aHora" min="0" max="71" step="1" value="0" aria-label="Hora (cada barrita es una hora)" aria-describedby="aEtq"></div>
     <div class="leyenda escala">
-      <span>Lluvia en la hora:</span>
-      <span><i style="background:#bfe6ff"></i>débil</span>
-      <span><i style="background:#6cb8f0"></i>1 a 3 mm</span>
-      <span><i style="background:#2f7fe0"></i>3 a 7 mm</span>
-      <span><i style="background:#2b3fb0"></i>7 a 15 mm</span>
-      <span><i style="background:#9b1fa8"></i>15 mm o más</span>
-      <span><i class="torm"></i>tormenta prevista</span>
+      <span class="escTira" aria-hidden="true"><i style="background:#bfe6ff"></i><i style="background:#6cb8f0"></i><i style="background:#2f7fe0"></i><i style="background:#2b3fb0"></i><i style="background:#9b1fa8"></i></span>
+      <span class="escNum">débil · 1 · 3 · 7 · 15 mm en la hora</span>
+      <span><i class="torm" style="margin-right:3px"></i>tormenta</span>
     </div>
     <div id="aLocs" role="group" aria-label="Elegir una localidad"></div>
     <p id="aLocTxt" aria-live="polite"></p>
-    <label class="meta"><input type="checkbox" id="aSat" checked> Mostrar las nubes del satélite en las horas que ya pasaron</label>
-    <p class="meta" id="animMeta">Consultando…</p>
+    <label class="meta"><input type="checkbox" id="aSat" checked> Nubes del satélite en las horas que ya pasaron</label>
     <p class="meta">No es un radar: es lo que calcula el modelo de pronóstico.</p>
+    <p class="meta" id="animMeta">Consultando…</p>
     <details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>
       <p class="meta">La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
       <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora).</p>
+      <p class="meta">Tocá o arrastrá sobre las barritas para ver esa hora en el mapa; también se pueden tocar las ciudades del mapa.</p>
     </details>
+    </div>
+    </div>
   </section>
 
   <section aria-labelledby="t-nino" class="plegable" data-cerrada data-pista="Índice ONI y mapa del mar del Pacífico">
@@ -857,6 +875,7 @@ const NF={},nf=(v,d=0)=>(NF[d]||(NF[d]=new Intl.NumberFormat('es-AR',{minimumFra
 const F_DIA=new Intl.DateTimeFormat('en-CA',{timeZone:TZ}),diaAR=d=>F_DIA.format(d);
 const F_FH=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}),fFechaHora=d=>F_FH.format(d)+' h';
 const F_HH=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'});
+const hDe=t=>String(Number(F_HH.format(t)));   // la hora sin cero adelante ("5 h"), como en el resto del sitio
 const fDia=s=>{const [y,m,d]=s.slice(0,10).split('-');return Number(d)+'/'+Number(m)};
 const masDias=(s,n)=>{const d=new Date(s+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
 
@@ -1094,8 +1113,7 @@ function riesgoRio(){
   if(viejo)por.push(viejoTxt());
   else if(r){
     if(r.h>=NIVEL.evac)n=3;else if(r.h>=NIVEL.alerta||(r.falta<=0.5&&r.d3>0.05))n=Math.max(n,1);
-    por.push(r.h>=NIVEL.evac?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de evacuación ('+nf(NIVEL.evac,2)+' m).'
-      :r.h>=NIVEL.alerta?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: superó el nivel de alerta ('+nf(NIVEL.alerta,2)+' m).'
+    por.push(r.h>=NIVEL.alerta?'El Paraná está en '+nf(r.h,2)+' m en Barranqueras: '+pasoNivel(r.h,NIVEL)+'.'
       :'El Paraná está en '+nf(r.h,2)+' m en Barranqueras, a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.');
     if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
   }else por.push('Falta la lectura de la altura del río.');
@@ -1106,14 +1124,19 @@ function riesgoRio(){
   return {c:['verde','amarillo','naranja','rojo'][n],et:['Verde','Amarillo','Naranja','Rojo'][n],por:por.join(' '),pr};
 }
 
+// Cuánto pasó el río el nivel de alerta o el de evacuación, en centímetros (en metros desde 1 m), con las mismas palabras que la
+// sección del río (rioSit): "63 cm arriba del nivel de evacuación (6,50 m)" o "llegó al nivel de alerta (6,00 m)". Solo con h ≥ alerta.
+function pasoNivel(h,N){
+  const ev=h>=N.evac,nv=ev?N.evac:N.alerta,x=Math.round((h-nv)*100),nom=(ev?'evacuación':'alerta')+' ('+nf(nv,2)+' m)';
+  return x?(x>=100?nf(x/100,2)+' m':x+' cm')+' arriba del nivel de '+nom:'llegó al nivel de '+nom;
+}
 // Renglón del río Paraguay: costa e islas del este, de Puerto Bermejo a Isla del Cerrito. Sin pronóstico (el INA no lo publica para esta estación).
 function riesgoParaguay(){
   const o=OTROS.paraguay,N=o.nivel,r=resumenRio('paraguay',N);
   if(!r||r.atraso>=4)return {c:'gris',et:'Sin datos',por:r?'La última lectura del Paraguay en '+o.lugar+' es del '+fDia(r.dia)+' ('+nf(r.h,2)+' m): es demasiado vieja para calcular el color.'
     :LISTO?'No hay lectura de la altura del río Paraguay.':'Consultando la altura del río Paraguay…'};
   const n=r.h>=N.evac?2:(r.h>=N.alerta||(r.falta<=0.5&&r.d3>0.05))?1:0;
-  const por=[r.h>=N.evac?'El Paraguay está en '+nf(r.h,2)+' m en '+o.lugar+': superó el nivel de evacuación ('+nf(N.evac,2)+' m).'
-    :r.h>=N.alerta?'El Paraguay está en '+nf(r.h,2)+' m en '+o.lugar+': superó el nivel de alerta ('+nf(N.alerta,2)+' m).'
+  const por=[r.h>=N.alerta?'El Paraguay está en '+nf(r.h,2)+' m en '+o.lugar+': '+pasoNivel(r.h,N)+'.'
     :'El Paraguay está en '+nf(r.h,2)+' m en '+o.lugar+', a '+nf(r.falta,2)+' m del nivel de alerta'+(r.d3>0.05?', y está creciendo':r.d3<-0.05?', y está bajando':'')+'.'];
   if(r.atraso>=3)por.push('Ojo: la última lectura es del '+fDia(r.dia)+'.');
   return {c:['verde','amarillo','rojo'][n],et:['Verde','Amarillo','Rojo'][n],por:por.join(' ')};
@@ -2117,7 +2140,7 @@ function armarAnim(){
 function etqDia(dia){const d=Math.round((new Date(dia+'T12:00:00Z')-new Date(hoy+'T12:00:00Z'))/864e5);return d===0?'Hoy':d===-1?'Ayer':d===1?'Mañana':fDia(dia)}
 function mostrar(k){
   const g=A.g;k=Math.max(0,Math.min(g.n-1,k));A.k=k;
-  const t=horaDe(k),dia=diaAR(t),hh=F_HH.format(t);
+  const t=horaDe(k),dia=diaAR(t),hh=hDe(t);
   const ya=t.getTime()+36e5<=Date.now(),ahora=!ya&&t.getTime()<=Date.now();
   $('aHora').value=k;
   $('aEtq').innerHTML='<b>'+etqDia(dia)+' '+fDia(dia)+', '+hh+' h</b> · '+(ya?'ya pasó: lluvia estimada por el modelo'+(conSat(k)?', nubes del satélite':''):ahora?'ahora: lluvia prevista':'pronóstico');
@@ -2159,7 +2182,7 @@ function pintarTira(){
     +'<rect id="aTiraSel" x="0" y="0" width="'+W+'" height="'+(H+4)+'" fill="var(--bg)" stroke="var(--acento)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
   vals.forEach((v,k)=>{const h=alto(v),t=horaDe(k),dia=diaAR(t);
     svg+='<rect x="'+(k*W+1.5)+'" y="'+(H-h)+'" width="'+(W-3)+'" height="'+h+'" fill="'+(colorDeMm(v)||'var(--line)')+'"><title>'
-      +esc(etqDia(dia)+' '+fDia(dia)+', '+F_HH.format(t)+' h: '+(v<2?'sin lluvia':mmHora(v)+' en la hora'))+'</title></rect>'});
+      +esc(etqDia(dia)+' '+fDia(dia)+', '+hDe(t)+' h: '+(v<2?'sin lluvia':mmHora(v)+' en la hora'))+'</title></rect>'});
   const dias=[];for(let k=0;k<n;k++){const d=diaAR(horaDe(k));if(!dias.length||dias[dias.length-1][0]!==d)dias.push([d,k])}
   dias.slice(1).forEach(([,k])=>{svg+='<line x1="'+(k*W)+'" x2="'+(k*W)+'" y1="0" y2="'+(H+4)+'" stroke="var(--line)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>'});
   const ka=kAhora(),hayAhora=Date.now()>=horaDe(0).getTime()&&Date.now()<horaDe(n-1).getTime()+36e5;
@@ -2213,11 +2236,11 @@ function elegirLoc(i,mover){
   const r=resumenLoc(g,A.loc,kAhora());$('aLocTxt').textContent=r.txt;
   if(mover&&r.pico>=0){parar();mostrar(r.pico)}
 }
-function parar(){if(A.play){clearInterval(A.play);A.play=0}$('aPlay').textContent='▶ Reproducir';$('aPlay').setAttribute('aria-pressed','false')}
+function parar(){if(A.play){clearInterval(A.play);A.play=0}$('aPlay').textContent='▶';$('aPlay').setAttribute('aria-pressed','false');$('aPlay').setAttribute('aria-label','Reproducir')}
 function reproducir(){
   if(A.play){parar();return}
   if(A.k>=A.g.n-1)mostrar(0);
-  $('aPlay').textContent='❚❚ Pausa';$('aPlay').setAttribute('aria-pressed','true');
+  $('aPlay').textContent='❚❚';$('aPlay').setAttribute('aria-pressed','true');$('aPlay').setAttribute('aria-label','Pausa');
   A.play=setInterval(()=>{if(document.hidden||A.k>=A.g.n-1){parar();return}mostrar(A.k+1)},650);
 }
 function pintarAnim(){
@@ -2226,7 +2249,7 @@ function pintarAnim(){
   A.tono=rgb((getComputedStyle($('anim')).getPropertyValue('--muted').trim()||'#56696f').slice(0,7));
   const g=A.g,dias=[...new Set(Array.from({length:g.n},(_,k)=>diaAR(horaDe(k))))];
   $('aHora').max=g.n-1;
-  $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false">'+etqDia(d)+' <span class="meta">'+fDia(d)+'</span></button>').join('');
+  $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false" aria-label="'+etqDia(d)+' '+fDia(d)+'">'+etqDia(d)+'</button>').join('');
   $('animMeta').textContent='Última actualización: '+fFechaHora(new Date(A.t))+'. Fuente: Open-Meteo (lluvia, nubosidad y tormentas previstas) y NASA, satélite GOES-East (nubes de las horas pasadas).';
   if(!$('aLocs').firstChild)$('aLocs').innerHTML='<span>¿Cuándo llueve en…?</span>'+LOCS.map((l,i)=>'<button class="ley" type="button" data-loc="'+i+'" aria-pressed="false">'+esc(l.n)+'</button>').join('');
   seguro(pintarTira);

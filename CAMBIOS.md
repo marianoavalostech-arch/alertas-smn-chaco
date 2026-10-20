@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 20/10/2026 (Lluvia hora por hora más compacta e índice completo)
+
+Pedido de Mariano.
+- **Lluvia hora por hora**: primero la hora y el mapa; debajo, en un renglón, ▶ y los días. **Las barritas sirven para elegir la hora** (se tocan o se arrastran; con el teclado, las flechas): ya no hay una barra aparte ni la aclaración de las barritas (pasa a "¿Qué muestra este mapa?"). Leyenda en un renglón, localidades más chicas y la hora sin cero adelante ("5 h"). En la computadora, el mapa a la izquierda y los controles a la derecha. La sección ocupa bastante menos.
+- **Índice**: se suman "Lluvia por hora" y "Datos y Acerca" (lleva a "De dónde salen los datos", justo antes de Acerca). Quedan 11 destinos. El menú de la izquierda se aprieta un poco en notebooks para que entre entero.
+- **Renglón del río en "Riesgo por localidad"**: dice cuánto pasó el nivel en centímetros, como la sección del río ("63 cm arriba del nivel de evacuación (6,50 m)"), en lugar de "superó el nivel de evacuación".
+- Huella nueva del código. 66 pruebas.
+
 ## 20/10/2026 (menos repeticiones en "Ahora en el Chaco")
 
 Pedido de Mariano.
