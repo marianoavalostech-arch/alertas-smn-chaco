@@ -6,7 +6,7 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 Pedidos de Mariano.
 - **Sin barra propia**: dentro del portal, el marco toma el alto entero del sitio y se baja y se sube con la página del portal, también cuando el portal carga su parte tarde.
-- **En la computadora, como el sitio original**: con el aviso del portal de qué parte se ve, el sitio usa su acomodo de computadora y el menú de la izquierda acompaña lo que se baja, debajo del encabezado del portal; marca la sección a la vista. Sin ese aviso, una columna. En el celular, sin cambios.
+- **En la computadora, como el sitio original**: el marco ocupa la pantalla debajo del encabezado del portal y el sitio se desplaza por dentro, con el menú de la izquierda fijo (la primera versión movía el menú con lo que se bajaba y saltaba); mientras el marco no llegó arriba, o ya se pasó, la rueda del mouse mueve la página del portal. Marca la sección a la vista. Sin el aviso del portal, una columna. En el celular, sin cambios.
 - **Fondo**: dentro del portal también lleva el degradado del sitio (antes, transparente).
 - **Los detalles de la instalación en el portal ya no están en el repositorio**: los tiene el responsable del sitio.
 - Huella nueva del código. 62 pruebas.

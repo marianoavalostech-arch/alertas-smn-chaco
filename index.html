@@ -257,7 +257,7 @@ footer{font-size:.85rem;color:var(--muted)}
   html:is(:not(.emb),.embPc) main>section.plegable.cerrada:not(.solo){grid-column:auto}
   html:is(:not(.emb),.embPc) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
   html:is(:not(.emb),.embPc) .hSit details#h-mochila:not([open]){grid-column:span 2}
-  html.embPc .cab{position:relative;top:0;height:var(--vistaAlto,560px);max-height:var(--vistaAlto,560px);transform:translateY(var(--vistaY,0px));will-change:transform}
+  html.embPc{scrollbar-width:none}html.embPc::-webkit-scrollbar{display:none}
 }
 /* En el celular las cajas del gráfico del río no cambian nada: sus partes siguen una debajo de la otra. */
 .ladoPie{display:none}
@@ -797,7 +797,7 @@ footer{font-size:.85rem;color:var(--muted)}
 const PORTAL='https://gobiernoabierto.chaco.gob.ar';
 // Segundo canal de avisos con el portal (además de los rios-y-clima:…).
 const CANAL='ga-panel-alertas-chaco-v1';
-let VISTA=null;   // lo que avisa el portal de su pantalla (recibirVista); null fuera del portal o si el portal no lo manda
+let VISTA=null,FIJO=false,AVISAR_ALTO=null;   // lo que avisa el portal de su pantalla (recibirVista); FIJO: marco del alto de la pantalla (computadora en el portal)
 const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();
 if(EMB&&document.documentElement)document.documentElement.classList.add('emb');
 const ONI_CARGA='2026-10-06';   // día en que se cargó a mano el ONI (independiente de la captura)
@@ -1161,6 +1161,7 @@ function irSec(id){abrirSec(id,true,false);marcarSalto();verSec($(id))}
 // Lleva la pantalla hasta un elemento. Dentro del portal, si el marco no tiene barra propia, le pide al portal que baje.
 function verSec(el,seco){
   if(!el)return;
+  if(EMB&&FIJO)acoplar(true);
   if(EMB&&window.parent!==window&&document.documentElement.scrollHeight<=innerHeight+20){
     const y=Math.max(0,Math.round(el.getBoundingClientRect().top+scrollY));
     try{window.parent.postMessage({tipo:'rios-y-clima:ir',y},PORTAL);window.parent.postMessage({channel:CANAL,type:'scroll-to',y},PORTAL)}catch(e){}return}
@@ -2255,13 +2256,12 @@ function indiceLateral(){
   const L=[...nav.querySelectorAll('a[href^="#t-"]')].map(a=>[a,(x=>x&&x.tagName!=='H2'?x:(x||{}).closest?.('section'))($(a.getAttribute('href').slice(1)))]).filter(x=>x[1]);
   let pend=false,act=null;
   const ver=()=>{pend=false;if(getComputedStyle(nav).display==='none')return;
-    const v=vista();let q=null;for(const [a,sec] of L)if(v.y0+sec.getBoundingClientRect().top<=v.h*0.33)q=a;
+    let q=null;for(const [a,sec] of L)if(sec.getBoundingClientRect().top<=innerHeight*0.33)q=a;
     if(q!==act){if(act)act.removeAttribute('aria-current');if(q)q.setAttribute('aria-current','location');act=q}
     // barrita de avance: cuánto de la página ya se bajó
-    const pr=$('ladoProg');if(pr)pr.style.width=(v.tot>0?Math.min(100,Math.max(0,v.baj/v.tot*100)):0).toFixed(1)+'%'};
+    const pr=$('ladoProg'),tot=document.documentElement.scrollHeight-innerHeight;if(pr)pr.style.width=(tot>0?Math.min(100,Math.max(0,scrollY/tot*100)):0).toFixed(1)+'%'};
   const arr=$('ladoArriba');if(arr)arr.addEventListener('click',()=>{if(EMB){verSec(document.querySelector('.wrap'));return}marcarSalto();scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})});
   addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}},{passive:true});
-  addEventListener('rios-y-clima:vista',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
 seguro(indiceLateral);
@@ -2292,28 +2292,37 @@ function iniciarMarcasLado(){
 }
 seguro(iniciarMarcasLado);
 
-// Qué parte del sitio está a la vista. Solo: la ventana del navegador. Dentro del portal, el marco mide lo mismo que todo el sitio,
-// así que el portal avisa dónde está el marco en su pantalla, el alto de la pantalla y hasta dónde llega su encabezado fijo (VISTA).
-function vista(){
-  if(!VISTA)return {y0:0,h:innerHeight,baj:scrollY,tot:document.documentElement.scrollHeight-innerHeight};
-  const w=document.querySelector('.wrap'),alto=w?w.getBoundingClientRect().height:0;
-  return {y0:VISTA.top,h:VISTA.h,baj:Math.max(0,VISTA.cab-VISTA.top),tot:alto-(VISTA.h-VISTA.cab)};
+// En la computadora dentro del portal: el marco ocupa la pantalla debajo del encabezado del portal y el sitio se desplaza por dentro,
+// como abierto solo (el menú de la izquierda queda fijo sin saltos). El portal avisa dónde está el marco, el alto de su pantalla y su
+// encabezado fijo (VISTA), y si sabe mover su página cuando el sitio se lo pide (fijo). Sin ese aviso: una columna, alto entero.
+const PC_EMB=()=>matchMedia('screen and (min-width:1100px)').matches;
+function altoFijo(){return Math.max(480,Math.round(VISTA.h-VISTA.cab))}
+function ponerFijo(){
+  const f=!!(VISTA&&VISTA.fijo&&PC_EMB());
+  if(f!==FIJO){FIJO=f;document.documentElement.classList.toggle('embPc',f);seguro(acomodarPlegables)}
+  if(AVISAR_ALTO)AVISAR_ALTO(true);
 }
-// En la computadora dentro del portal: el sitio se acomoda como el original y el menú de la izquierda acompaña lo que se baja.
-function moverLado(){
-  const c=document.querySelector('.cab'),w=document.querySelector('.wrap'),r=document.documentElement;if(!VISTA||!c||!w)return;
-  const alto=Math.max(560,Math.round(VISTA.h-VISTA.cab-32));r.style.setProperty('--vistaAlto',alto+'px');
-  const t0=parseFloat(r.style.getPropertyValue('--vistaY'))||0,nat=c.getBoundingClientRect().top-t0,lim=w.getBoundingClientRect().bottom-nat-c.offsetHeight;
-  const t=Math.round(Math.max(0,Math.min(lim,VISTA.cab+16-VISTA.top-nat)));r.style.setProperty('--vistaY',t+'px');
+// Le pide al portal que mueva su página dy píxeles.
+function pasarAlPortal(dy,suave){
+  dy=Math.round(dy);if(!dy)return;
+  try{window.parent.postMessage({tipo:'rios-y-clima:mover',dy,suave:!!suave},PORTAL);window.parent.postMessage({channel:CANAL,type:'scroll-by',dy,smooth:!!suave},PORTAL)}catch(e){}
+  if(VISTA)VISTA.top-=dy;
 }
+// Lleva el marco justo debajo del encabezado del portal.
+function acoplar(suave){if(FIJO&&VISTA&&Math.abs(VISTA.top-VISTA.cab)>1)pasarAlPortal(VISTA.top-VISTA.cab,suave)}
 function recibirVista(){
-  if(!EMB||window.parent===window)return;let pend=false;
+  if(!EMB||window.parent===window)return;
   addEventListener('message',e=>{const d=e.data;if(e.origin!==PORTAL||e.source!==window.parent||!d)return;
     if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;
     const n=x=>typeof x==='number'&&isFinite(x);if(!n(d.top)||!n(d.height)||d.height<200)return;
-    VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0};
-    document.documentElement.classList.add('embPc');
-    if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;moverLado();dispatchEvent(new Event('rios-y-clima:vista'))})}});
+    VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0,fijo:d.fijo===true};
+    ponerFijo()});
+  addEventListener('resize',()=>{if(VISTA)ponerFijo()});
+  // Rueda del mouse: mientras el marco no llegó arriba (o ya se pasó), se mueve la página del portal; con el marco arriba, baja el sitio.
+  addEventListener('wheel',e=>{if(!FIJO||!VISTA||e.ctrlKey||e.defaultPrevented)return;
+    const dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1),d=VISTA.top-VISTA.cab;
+    if(dy>0&&d>1){e.preventDefault();pasarAlPortal(Math.min(dy,d))}
+    else if(dy<0&&d<-1){e.preventDefault();pasarAlPortal(Math.max(dy,d))}},{passive:false});
 }
 seguro(recibirVista);
 
@@ -2321,7 +2330,8 @@ seguro(recibirVista);
 function avisarAlto(){
   if(!EMB||window.parent===window)return;
   const w=document.querySelector('.wrap');let ult=0;
-  const enviar=siempre=>{const a=Math.ceil(w.getBoundingClientRect().height);if(siempre===true||Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL);window.parent.postMessage({channel:CANAL,type:'height',height:a},PORTAL)}catch(e){}}};
+  const enviar=siempre=>{const a=FIJO&&VISTA?altoFijo():Math.ceil(w.getBoundingClientRect().height);if(siempre===true||Math.abs(a-ult)>2){ult=a;try{window.parent.postMessage({tipo:'rios-y-clima:alto',alto:a},PORTAL);window.parent.postMessage({channel:CANAL,type:'height',height:a},PORTAL)}catch(e){}}};
+  AVISAR_ALTO=enviar;
   if('ResizeObserver' in window)new ResizeObserver(enviar).observe(w);else setInterval(enviar,1000);
   enviar();addEventListener('load',enviar);
   // Si el código del portal arrancó tarde (WordPress puede demorarlo), pregunta el alto y se lo vuelve a mandar.
