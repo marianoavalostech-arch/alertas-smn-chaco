@@ -171,7 +171,12 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   // Barritas de la localidad elegida (21/10): Resistencia, con su lluvia; Charata, sin lluvia; "Todo el Chaco" (-1), lo más fuerte de la provincia
   const tR = JSON.parse(S('JSON.stringify(tiraValores(A.g,0))')), tC = JSON.parse(S('JSON.stringify(tiraValores(A.g,4))')), tT = JSON.parse(S('JSON.stringify(tiraValores(A.g,-1))'));
   assert.ok(tR[58] >= 100 && tR[0] === 0 && tC.every(v => v === 0) && tT[58] === tira[58], 'las barritas siguen a la localidad elegida');
-  assert.ok(html.includes('<span>¿Cuándo llueve en…?</span><button class="ley" type="button" data-loc="-1" aria-pressed="true">Todo el Chaco</button>'), 'botón "Todo el Chaco" primero, elegido al empezar');
+  assert.ok(html.includes('<div id="aLocs"><label for="aLoc">Lluvia en</label><select id="aLoc"></select></div>') && html.includes(`'<option value="-1">Todo el Chaco</option>'+LOCS.map(`), 'lista desplegable "Lluvia en", con "Todo el Chaco" primero (21/10)');
+  const pa = html.indexOf('<div class="aPanel">'), lo = html.indexOf('<div id="aLocs">'), ba = html.indexOf('<div class="aBarra">');
+  assert.ok(pa > 0 && pa < lo && lo < ba, 'la lista va adentro del reproductor, justo arriba de las barritas');
+  // Las barritas muestran un solo día (21/10): 24 horas, el día de la hora elegida; el control de la hora va de la primera a la última hora de ese día
+  assert.deepStrictEqual(JSON.parse(S("JSON.stringify(ventanaDia(A.g,'2026-10-21'))")), [48, 71], 'mañana: de la hora 48 a la 71');
+  assert.deepStrictEqual(JSON.parse(S("JSON.stringify(ventanaDia(A.g,'2026-10-20'))")), [24, 47], 'hoy: de la 24 a la 47');
   const eL = html.slice(html.indexOf('function elegirLoc('), html.indexOf('function parar('));
   assert.ok(eL.indexOf('seguro(pintarTira)') > 0 && eL.indexOf('seguro(pintarTira)') < eL.indexOf("if(A.loc<0)"), 'al cambiar de localidad (también a "Todo el Chaco") se redibujan las barritas');
   S('A.g.p.forEach(x=>{x[57]=0;x[60]=0;x[58]=Math.min(x[58],6)})');
@@ -179,7 +184,7 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   S('A.g=null');
   // El texto largo va en un desplegable; a la vista queda una línea
   assert.ok(html.includes('<details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>\n      <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico,'));
-  assert.ok(html.includes('<div id="aTira"></div>') && html.includes('<div id="aLocs" role="group"'), 'tira y botones de localidad en la sección');
+  assert.ok(html.includes('<div id="aTira"></div>') && html.includes('<select id="aLoc">'), 'tira y lista de localidades en la sección');
 });
 
 prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son el deslizador, controles en un renglón; "Lluvia por hora" y "Datos y Acerca" en los índices', () => {
@@ -202,7 +207,9 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
 prueba('mapa y lluvia hora por hora más fáciles de usar (21/10): botones de colores pegados al mapa, barritas más altas, "No es un radar" en el desplegable', () => {
   const m = html.indexOf('<div id="mapa"></div>'), l = html.indexOf('<div class="leyenda">'), i = html.indexOf('<div id="mInfo"');
   assert.ok(m > 0 && m < l && l < i, 'los botones de colores van entre el mapa y la lista de municipios, así una lista larga no los empuja');
-  assert.ok(html.includes('#aTira svg{display:block;width:100%;height:100px;') && html.includes('W=10,H=96,n=g.n;'), 'barritas de 100 px, con la cuenta en el mismo alto');
+  assert.ok(html.includes('#aTira svg{display:block;width:100%;height:100px;') && html.includes('vals=todas.slice(k0,k1+1),W=10,H=96;'), 'barritas de 100 px, con la cuenta en el mismo alto, de un solo día');
+  const mo = html.slice(html.indexOf('function mostrar(k){'), html.indexOf('function mostrar(k){') + 600);
+  assert.ok(mo.includes('if(A.ver!==dia){A.ver=dia;seguro(pintarTira)}'), 'al pasar a otro día (botones o reproducir) se dibujan las barritas de ese día');
   const e = html.indexOf('<div class="escLeg"'), d = html.indexOf('<details class="det" id="d-anim">');
   assert.ok(e > 0 && d > e && !html.includes('d-anim-col') && !html.includes('\n    <p class="meta">No es un radar'), 'la barra de colores a la vista; "No es un radar" ya no va suelto');
 });

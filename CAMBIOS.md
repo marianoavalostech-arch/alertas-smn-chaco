@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (diseño nuevo de Lluvia hora por hora)
+
+Pedido de Mariano: más prolijo, barritas más anchas para tocar y las localidades más a mano.
+- **Reproductor agrupado** en un recuadro de fondo suave: ▶, los días, la lista de localidades, las barritas y la barra de colores van juntos.
+- **Días como selector unido** (Ayer · Hoy · Mañana); el elegido, con el degradado del sitio.
+- **Las barritas muestran un solo día** (24 horas): son casi 3 veces más anchas y fáciles de tocar. Debajo, 0 h · 6 h · 12 h · 18 h. Al reproducir, a la medianoche pasan solas al día siguiente.
+- **"Lluvia en: [Todo el Chaco ▾]"**: una lista desplegable adentro del reproductor, arriba de las barritas, en lugar de los 7 botones de abajo. Al elegir una localidad, el mapa y las barritas van a su hora más fuerte.
+- **La frase de la localidad, destacada** con borde de color; la casilla del satélite y la fuente, en letra chica al pie.
+- Huella nueva del código. 69 pruebas.
+
 ## 21/10/2026 (botones de colores del mapa y barritas más grandes)
 
 Pedidos de Mariano.

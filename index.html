@@ -32,8 +32,6 @@
 .escLeg .torm{width:11px;height:11px;border-radius:50%;background:var(--amarillo);border:1.5px solid var(--ink);box-sizing:border-box}
 .escLeg .nube{width:18px;height:11px;border-radius:3px;background:linear-gradient(rgba(69,76,92,.42),rgba(69,76,92,.42)),var(--land)}
 #aDias .ley{padding:4px 10px;min-height:40px}
-#aLocs .ley{padding:3px 9px;min-height:36px;font-size:.92rem}
-#aLocs>span{flex:1 0 100%}
 .animLado>.meta{margin:6px 0}
 .animLado label.meta{display:block;margin:8px 0 4px}
 @media screen and (min-width:1100px){
@@ -48,8 +46,6 @@
 #aTira .tDias.abajo{margin-bottom:1.2em}#aTira .tDias.abajo .tAhora{top:auto;bottom:-1.25em}
 #aTira .tMax{position:absolute;transform:translate(-50%,-100%);font-size:.74rem;font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none}
 /* ¿Cuándo llueve en…? (20/10/2026) */
-#aLocs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 4px}
-#aLocs>span{font-weight:700;margin-right:2px}
 #aLocTxt{margin:4px 0 8px;font-size:.95rem;min-height:1.45em}
 #aLocTxt:empty{margin:0;min-height:0}
 #anim [data-loc]{cursor:pointer}
@@ -57,6 +53,25 @@
 #aDias{display:flex;flex-wrap:wrap;gap:6px}
 .escala i{display:inline-block;width:22px;height:12px;margin-right:4px;vertical-align:-1px;border-radius:2px}
 .escala .torm{width:12px;border-radius:50%;background:var(--amarillo);border:1.5px solid var(--ink)}
+/* diseño de "Lluvia hora por hora" (21/10/2026, pedido de Mariano): reproductor agrupado, días como selector unido,
+   localidades como etiquetas livianas, la respuesta destacada y el pie discreto */
+.aPanel{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 12px 8px;margin:12px 0 4px}
+.aPanel .anim-ctrl{margin:0 0 4px}
+#aDias{display:inline-flex;flex-wrap:nowrap;gap:0;background:var(--card);border:1.5px solid var(--borde-boton);border-radius:999px;padding:3px}
+#aDias .ley{border:0;box-shadow:none;background:none;border-radius:999px;min-height:34px;padding:4px 14px;font-weight:600;color:var(--muted)}
+#aDias .ley:hover{transform:none;box-shadow:none;color:var(--ink)}
+#aDias .ley[aria-pressed="true"]{background:var(--degrade);color:#fff;box-shadow:none}
+.aPanel #aPlay{border-radius:50%;width:42px;min-width:42px;height:42px}
+.aPanel .escLeg{margin:6px 0 2px;padding-top:8px;border-top:1px solid var(--line);max-width:none}
+#aLocTxt:not(:empty){border-left:4px solid var(--acento);background:var(--bg);border-radius:4px;padding:8px 12px;margin:8px 0 6px;text-align:left;hyphens:manual}
+.aPanel #aLocs{display:flex;align-items:center;gap:8px;margin:10px 0 2px}
+#aLocs label{font-weight:700;font-size:.92rem;color:var(--ink)}
+#aLoc{font:inherit;font-size:.95rem;font-weight:600;color:var(--acento);min-height:40px;padding:6px 36px 6px 14px;border:1.5px solid var(--borde-boton);border-radius:999px;cursor:pointer;-webkit-appearance:none;appearance:none;
+  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234446b8' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;box-shadow:var(--sombra-boton)}
+#aLoc:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+.aPie{margin-top:12px;padding-top:8px;border-top:1px solid var(--line)}
+.aPie .meta,.aPie label.meta{font-size:.8rem;text-align:left;hyphens:manual;margin:4px 0}
+#aEtq{font-size:1rem}
 </style>
 <style>
 /* Layout: una sola columna para celular; primero el semáforo, después el detalle de cada dato. Sin fuentes externas para que cargue rápido. */
@@ -797,10 +812,12 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="anim"></div>
     </div>
     <div class="animLado">
+    <div class="aPanel">
     <div class="anim-ctrl">
       <button class="btn" id="aPlay" type="button" aria-pressed="false" aria-label="Reproducir" title="Reproducir">▶</button>
       <div id="aDias" role="group" aria-label="Elegir el día"></div>
     </div>
+    <div id="aLocs"><label for="aLoc">Lluvia en</label><select id="aLoc"></select></div>
     <div class="aBarra"><div class="aReloj" id="aReloj" aria-hidden="true"><span hidden><svg viewBox="0 0 16 16" width="15" height="15"><circle cx="8" cy="8" r="6.6" fill="var(--card)" stroke="currentColor" stroke-width="1.6"/><path d="M8 8V3.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path class="rH" d="M8 8V4.9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="8" r="1" fill="currentColor"/></svg><b></b></span><i class="punta" hidden></i></div><div id="aTira"></div><input type="range" id="aHora" min="0" max="71" step="1" value="0" aria-label="Hora (cada barrita es una hora)" aria-describedby="aEtq"></div>
     <div class="escLeg" role="img" aria-label="Colores de la lluvia en una hora: celeste clarito, menos de 1 milímetro (lluvia finita); celeste, de 1 a 3; azul, de 3 a 7; azul oscuro, de 7 a 15; violeta, 15 milímetros o más (lluvia fuerte). Punto amarillo: tormenta prevista. Gris: nubes.">
       <span class="escT">Lluvia en una hora</span><span class="escE">finita</span>
@@ -809,10 +826,12 @@ footer{font-size:.85rem;color:var(--muted)}
       <span class="escN"><b style="left:20%">1</b><b style="left:40%">3</b><b style="left:60%">7</b><b style="left:80%">15 mm</b></span>
       <span class="escO"><span><i class="torm"></i>tormenta prevista</span><span><i class="nube"></i>nubes</span></span>
     </div>
-    <div id="aLocs" role="group" aria-label="Elegir una localidad"></div>
+    </div>
     <p id="aLocTxt" aria-live="polite"></p>
+    <div class="aPie">
     <label class="meta"><input type="checkbox" id="aSat" checked> Nubes del satélite en las horas que ya pasaron</label>
     <p class="meta" id="animMeta">Consultando…</p>
+    </div>
     <details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>
       <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
       <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios; al elegir una localidad, la lluvia prevista en esa localidad. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora).</p>
@@ -2161,6 +2180,7 @@ function mostrar(k){
   const g=A.g;k=Math.max(0,Math.min(g.n-1,k));A.k=k;
   const t=horaDe(k),dia=diaAR(t),hh=hDe(t);
   const ya=t.getTime()+36e5<=Date.now(),ahora=!ya&&t.getTime()<=Date.now();
+  if(A.ver!==dia){A.ver=dia;seguro(pintarTira)}
   $('aHora').value=k;
   $('aEtq').innerHTML='<b>'+etqDia(dia)+' '+fDia(dia)+', '+hh+' h</b> · '+(ya?'ya pasó: lluvia estimada por el modelo'+(conSat(k)?', nubes del satélite':''):ahora?'ahora: lluvia prevista':'pronóstico');
   document.querySelectorAll('#aDias .ley').forEach(b=>b.setAttribute('aria-pressed',b.dataset.d===dia?'true':'false'));
@@ -2196,25 +2216,33 @@ function tiraValores(g,loc=A.loc){
 }
 const mmHora=v=>v<10?'menos de 1 mm':v<15?'cerca de 1 mm':'unos '+Math.round(v/10)+' mm';
 function colorDeMm(v){let c=null;for(const e of ESCALA)if(v>=e[0]*10)c=e[1];return c}
+// Día que muestran las barritas (21/10/2026, pedido de Mariano: barritas más anchas para tocar): de la primera a la última hora de ese día.
+function ventanaDia(g,d){let a=-1,b=-1;for(let k=0;k<g.n;k++)if(diaAR(horaDe(k))===d){if(a<0)a=k;b=k}return [a,b]}
 function pintarTira(){
   const g=A.g,cont=$('aTira');if(!g||!cont)return;
   // Barritas (mejoradas el 20/10/2026): sin lluvia no se dibuja nada (queda la línea de abajo); la hora elegida, con una franja violeta
   // suave detrás (sin borde); "ahora", línea fina y lisa; arriba de la barrita más alta, cuánto llueve ahí (desde 1 mm).
-  const vals=A.tira=tiraValores(g),W=10,H=96,n=g.n;
+  // Desde el 21/10/2026 muestran un solo día (el de la hora elegida), así cada barrita es casi 3 veces más ancha;
+  // al cambiar de día (botones o al reproducir) se vuelven a dibujar. Debajo, las horas 0, 6, 12 y 18.
+  const todas=A.tira=tiraValores(g);
+  if(!A.ver||ventanaDia(g,A.ver)[0]<0)A.ver=diaAR(horaDe(A.k>=0?A.k:kAhora()));
+  const [k0,k1]=ventanaDia(g,A.ver),n=k1-k0+1,vals=todas.slice(k0,k1+1),W=10,H=96;A.k0=k0;A.nv=n;
+  const hr=$('aHora');hr.min=k0;hr.max=k1;
   const alto=v=>v<2?0:3+Math.min(1,Math.sqrt(v/130))*(H-17);
   let svg='<svg viewBox="0 0 '+(n*W)+' '+(H+4)+'" preserveAspectRatio="none" aria-hidden="true">'
     +'<rect id="aTiraSel" x="0" y="0" width="'+W+'" height="'+(H+4)+'" fill="var(--acento)" fill-opacity=".13"/>';
-  vals.forEach((v,k)=>{const h=alto(v);if(!h)return;const t=horaDe(k),dia=diaAR(t);
-    svg+='<rect x="'+(k*W+1.5)+'" y="'+(H-h)+'" width="'+(W-3)+'" height="'+h+'" fill="'+colorDeMm(v)+'"><title>'
-      +esc(etqDia(dia)+' '+fDia(dia)+', '+hDe(t)+' h: '+mmHora(v)+' en la hora')+'</title></rect>'});
-  const dias=[];for(let k=0;k<n;k++){const d=diaAR(horaDe(k));if(!dias.length||dias[dias.length-1][0]!==d)dias.push([d,k])}
-  dias.slice(1).forEach(([,k])=>{svg+='<line x1="'+(k*W)+'" x2="'+(k*W)+'" y1="0" y2="'+(H+4)+'" stroke="var(--line)" stroke-width="1.5" vector-effect="non-scaling-stroke"/>'});
-  const ka=kAhora(),hayAhora=Date.now()>=horaDe(0).getTime()&&Date.now()<horaDe(n-1).getTime()+36e5;
+  const marcas=[];
+  vals.forEach((v,j)=>{const t=horaDe(k0+j),hh=Number(hDe(t));if(hh%6===0)marcas.push([j,hh]);
+    const h=alto(v);if(!h)return;
+    svg+='<rect x="'+(j*W+1)+'" y="'+(H-h)+'" width="'+(W-2)+'" height="'+h+'" rx="1.5" fill="'+colorDeMm(v)+'"><title>'
+      +esc(etqDia(A.ver)+' '+fDia(A.ver)+', '+hh+' h: '+mmHora(v)+' en la hora')+'</title></rect>'});
+  marcas.forEach(([j])=>{if(j>0)svg+='<line x1="'+(j*W)+'" x2="'+(j*W)+'" y1="0" y2="'+(H+4)+'" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>'});
+  const ka=kAhora()-k0,hayAhora=ka>=0&&ka<n&&Date.now()>=horaDe(0).getTime()&&Date.now()<horaDe(g.n-1).getTime()+36e5;
   if(hayAhora)svg+='<line x1="'+(ka*W+W/2)+'" x2="'+(ka*W+W/2)+'" y1="0" y2="'+(H+4)+'" stroke="var(--ink)" stroke-opacity=".8" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
   svg+='<line x1="0" x2="'+(n*W)+'" y1="'+H+'" y2="'+H+'" stroke="var(--muted)" stroke-opacity=".45" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>';
-  const pc=k=>(k/n*100).toFixed(2)+'%',km=vals.reduce((m,v,k)=>v>vals[m]?k:m,0),vm=vals[km];
+  const pc=j=>(j/n*100).toFixed(2)+'%',km=vals.reduce((m,v,j)=>v>vals[m]?j:m,0),vm=vals[km];
   cont.innerHTML=svg+(vm>=10?'<span class="tMax" style="left:clamp(16px,'+pc(km+0.5)+',calc(100% - 16px));top:'+Math.round(H-alto(vm)-2)+'px">'+(vm<15?1:Math.round(vm/10))+' mm</span>':'')
-    +'<div class="tDias abajo" aria-hidden="true">'+dias.map(([d,k])=>'<span style="left:calc('+pc(k)+' + 3px)">'+esc(etqDia(d))+'</span>').join('')
+    +'<div class="tDias abajo" aria-hidden="true">'+marcas.map(([j,hh])=>'<span style="left:calc('+pc(j)+' + 3px)">'+hh+' h</span>').join('')
     +(hayAhora?'<span class="tAhora" style="left:'+pc(ka+0.5)+'">ahora</span>':'')+'</div>';
   marcarTira(A.k);
 }
@@ -2227,12 +2255,12 @@ function ubicarAhora(){
   d.classList.toggle('abajo',choca);
 }
 function marcarTira(k){
-  const r=$('aTiraSel');if(r&&k>=0&&r.setAttribute)r.setAttribute('x',k*10);
+  const r=$('aTiraSel'),k0=A.k0||0,nv=A.nv||(A.g?A.g.n:1);if(r&&k>=0&&r.setAttribute)r.setAttribute('x',(k-k0)*10);
   seguro(ubicarAhora);
   // Relojito (pedido de Mariano, 20/10/2026): sigue a la barrita elegida mientras se reproduce o se arrastra; aguja de la hora y el número.
   const c=$('aReloj');if(!c||!A.g||k<0||k>=A.g.n)return;
   const h=Number(hDe(horaDe(k))),cj=c.querySelector('span'),pt=c.querySelector('.punta');
-  c.style.setProperty('--x',((k+0.5)/A.g.n*100).toFixed(2)+'%');
+  c.style.setProperty('--x',((k-k0+0.5)/nv*100).toFixed(2)+'%');
   c.querySelector('.rH').setAttribute('transform','rotate('+(h%12)*30+' 8 8)');
   c.querySelector('b').textContent=h+' h';cj.hidden=false;pt.hidden=false;
 }
@@ -2271,7 +2299,7 @@ function horaTxt(k,dia0){
 function elegirLoc(i,mover){
   const g=A.g;if(!g)return;
   A.loc=A.loc===i&&mover?-1:i;
-  document.querySelectorAll('#aLocs [data-loc]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.loc)===A.loc)));
+  $('aLoc').value=String(A.loc);
   document.querySelectorAll('#anim .aSel').forEach(c=>{c.toggleAttribute('hidden',Number(c.parentNode.dataset.loc)!==A.loc)});
   seguro(pintarTira);
   if(A.loc<0){$('aLocTxt').textContent='';return}
@@ -2293,7 +2321,7 @@ function pintarAnim(){
   $('aHora').max=g.n-1;
   $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false" aria-label="'+etqDia(d)+' '+fDia(d)+'">'+etqDia(d)+'</button>').join('');
   $('animMeta').textContent='Última actualización: '+fFechaHora(new Date(A.t))+'. Fuente: Open-Meteo (lluvia, nubosidad y tormentas previstas) y NASA, satélite GOES-East (nubes de las horas pasadas).';
-  if(!$('aLocs').firstChild)$('aLocs').innerHTML='<span>¿Cuándo llueve en…?</span><button class="ley" type="button" data-loc="-1" aria-pressed="true">Todo el Chaco</button>'+LOCS.map((l,i)=>'<button class="ley" type="button" data-loc="'+i+'" aria-pressed="false">'+esc(l.n)+'</button>').join('');
+  if(!$('aLoc').firstChild)$('aLoc').innerHTML='<option value="-1">Todo el Chaco</option>'+LOCS.map((l,i)=>'<option value="'+i+'">'+esc(l.n)+'</option>').join('');
   seguro(pintarTira);
   mostrar(nuevo||A.k<0?kAhora():A.k);
   if(A.loc>=0)elegirLoc(A.loc,false);
@@ -2312,8 +2340,8 @@ function iniciarAnim(){
   $('aPlay').addEventListener('click',()=>{if(A.g)reproducir()});
   $('aSat').addEventListener('change',()=>{if(A.g)mostrar(A.k)});
   $('aTira').addEventListener('click',e=>{const sv=e.target.closest('svg');if(!sv||!A.g)return;const r=sv.getBoundingClientRect();
-    if(!r.width)return;parar();mostrar(Math.floor((e.clientX-r.left)/r.width*A.g.n))});
-  $('aLocs').addEventListener('click',e=>{const b=e.target.closest('[data-loc]');if(b)elegirLoc(Number(b.dataset.loc),true)});
+    if(!r.width)return;parar();mostrar((A.k0||0)+Math.floor((e.clientX-r.left)/r.width*(A.nv||A.g.n)))});
+  $('aLoc').addEventListener('change',e=>elegirLoc(Number(e.target.value),true));
   $('anim').addEventListener('click',e=>{const q=e.target.closest('[data-loc]');if(q)elegirLoc(Number(q.dataset.loc),true)});
   $('aDias').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b||!A.g)return;parar();
     const d=b.dataset.d;mostrar(d===diaAR(new Date())?kAhora():Array.from({length:A.g.n},(_,k)=>k).find(k=>diaAR(horaDe(k))===d))});
