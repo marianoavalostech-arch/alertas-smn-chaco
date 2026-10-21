@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (tu localidad)
+
+Pedido de Mariano: que el sitio, y sobre todo la app instalada, recuerde tu municipio.
+- **"📍 Tu localidad"**: la última localidad que elegís en el mapa (tocándola, con el buscador o con "Ver en el mapa") queda guardada **solo en ese navegador o en la app instalada** (`anc-mi-localidad`); no se manda a ningún lado ni usa el GPS.
+- Al volver a abrir el sitio aparece un renglón arriba del índice (debajo de las franjas) con el nombre, su color de hoy, **"Ver en el mapa"** (abre su detalle) y **✕** para olvidarla. Si al abrir no había ninguna guardada, el renglón no aparece en esa visita, para que la página no salte mientras se mira el mapa.
+- También dentro del portal. Nunca al imprimir. La frase de Privacidad lo cuenta.
+- Huella nueva del código. 70 pruebas.
+
 ## 21/10/2026 (diseño nuevo de Lluvia hora por hora)
 
 Pedido de Mariano: más prolijo, barritas más anchas para tocar y las localidades más a mano.

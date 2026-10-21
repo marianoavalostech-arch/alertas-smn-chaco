@@ -1412,5 +1412,17 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(c.includes('if(!EMB&&') && c.includes('if(Date.now()-ULT>10*60e3)renovar();'), 'en el portal no recarga; con más de 10 minutos renueva los datos');
     assert.ok(html.includes("document.addEventListener('visibilitychange',alVolver);") && html.includes("addEventListener('pageshow',e=>{if(e.persisted){OCULTA=OCULTA||ULT;alVolver()}});"), 'también al volver con el botón Atrás');
   });
+  prueba('tu localidad: la última elegida en el mapa queda solo en el navegador y aparece arriba al volver', () => {
+    assert.ok(html.includes('<div class="miLoc" id="miLoc" role="region" aria-label="Tu localidad" hidden></div>\n\n  <nav class="indice" id="indice"'), 'el renglón va arriba del índice y empieza oculto');
+    assert.ok(html.includes('.miLoc[hidden]{display:none}') && html.includes('@media print{.miLoc{display:none!important}}'), 'oculto de verdad y nunca al imprimir');
+    const g = S(`(()=>{const a=localStorage.getItem,b=localStorage.setItem;let v=null;localStorage.setItem=(k,x)=>{if(k==='anc-mi-localidad')v=x};localStorage.getItem=k=>k==='anc-mi-localidad'?v:null;
+      const r=[miLocGuardada()];guardarMiLoc(GEO.mun.findIndex(m=>m[0]==='Barranqueras'));r.push(v,GEO.mun[miLocGuardada()][0]);v='Un pueblo que no existe';r.push(miLocGuardada());
+      localStorage.getItem=()=>{throw new Error('bloqueado')};r.push(miLocGuardada());localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
+    assert.strictEqual(g, '[-1,"Barranqueras","Barranqueras",-1,-1]', 'guarda el nombre; un nombre raro o el navegador bloqueado no rompen nada');
+    assert.ok(codigo.includes("if(i>=0){guardarMiLoc(i);if(MILOC)pintarMiLoc()}"), 'elegir un municipio lo guarda; el renglón solo se actualiza si ya estaba a la vista');
+    assert.ok(codigo.includes('if(MILOC===null)MILOC=i>=0;'), 'si al abrir no había localidad guardada, el renglón no aparece en esa visita');
+    assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
+    assert.ok(html.includes('si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez'), 'la privacidad lo cuenta');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

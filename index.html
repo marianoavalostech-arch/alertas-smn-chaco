@@ -266,6 +266,12 @@ footer{font-size:.85rem;color:var(--muted)}
 /* Botón "Volver al mapa" arriba a la derecha de las secciones de los ríos */
 .filaRio{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.filaRio>h2{flex:1;min-width:0}.filaRio.abajo{justify-content:flex-end;margin-top:-4px}
 .indice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.miLoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 6px 6px 12px;border:1.5px solid var(--borde-boton);border-radius:14px;background:var(--card)}
+.miLoc[hidden]{display:none}
+.miLoc .miC{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.9rem}
+.miLoc .miC i{width:12px;height:12px;border-radius:50%}
+.miLoc .miX{margin-left:auto;font:inherit;font-size:1rem;background:none;border:0;color:var(--muted);min-width:44px;min-height:44px;cursor:pointer}
+@media print{.miLoc{display:none!important}}
 .indice .indTit{font-weight:700;color:var(--muted);margin-right:2px}
 .indice a{display:inline-flex;align-items:center;min-height:40px;padding:2px 11px;border:1.5px solid var(--borde-boton);border-radius:99px;background:var(--fondo-boton,var(--card));box-shadow:var(--sombra-boton,none);color:var(--acento);font-weight:700;font-size:.88rem;text-decoration:none}
 .indice a:hover{border-color:var(--acento)}
@@ -573,6 +579,8 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <div class="captura" id="bannerCaptura" hidden></div>
 
+  <div class="miLoc" id="miLoc" role="region" aria-label="Tu localidad" hidden></div>
+
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
     <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
@@ -876,7 +884,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, y qué secciones cerraste. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
   </section>
 
   </main>
@@ -1485,6 +1493,7 @@ function elegir(i,enf){
   const habia=M.sel>=0;
   if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
+  if(i>=0){guardarMiLoc(i);if(MILOC)pintarMiLoc()}
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
   resaltar();pintarInfo();
   if(enf&&i>=0)enfocar(i);else if(i<0&&habia&&M.antes){ponerVista(M.antes,true);M.antes=null}
@@ -1686,6 +1695,25 @@ function cargarSMN(){
     SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarHacer);seguro(pintarNino);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
   });
 }
+// Tu localidad: la última que se eligió en el mapa (o en el buscador) queda guardada solo en este navegador o en la app instalada.
+// Al volver a abrir el sitio aparece arriba, con su color y un botón para verla. Si al abrir no había ninguna guardada,
+// el renglón no aparece en esa visita (para que la página no salte mientras se mira el mapa).
+const MILOC_K='anc-mi-localidad';let MILOC=null;
+function miLocGuardada(){try{const n=localStorage.getItem(MILOC_K);return n?GEO.mun.findIndex(m=>m[0]===n):-1}catch(e){return -1}}
+function guardarMiLoc(i){try{localStorage.setItem(MILOC_K,GEO.mun[i][0])}catch(e){}}
+function pintarMiLoc(){
+  const el=$('miLoc'),i=miLocGuardada();if(!el)return;
+  if(MILOC===null)MILOC=i>=0;
+  if(!MILOC||i<0){el.hidden=true;return}
+  let c='';try{c=colorDe(i).c||''}catch(e){}if(c==='gris')c='';
+  el.innerHTML='<span>📍 Tu localidad: <b>'+esc(GEO.mun[i][0])+'</b></span>'
+    +(c?'<span class="miC"><i style="background:var(--'+(c==='amarillo'?'amarillo-mapa':c)+')"></i>'+ETQ[c]+'</span>':'')
+    +'<button class="btn" type="button" data-miver>Ver en el mapa</button>'
+    +'<button class="miX" type="button" data-miolv aria-label="Olvidar mi localidad" title="Olvidar mi localidad">✕</button>';
+  el.onclick=e=>{
+    if(e.target.closest('[data-miver]')){elegir(i,true);marcarSalto();verSec($('t-mapa'))}
+    else if(e.target.closest('[data-miolv]')){try{localStorage.removeItem(MILOC_K)}catch(x){}MILOC=false;el.hidden=true}};
+  el.hidden=false}
 function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
   // Mismo tono para todos los municipios (lluvia y SMN; en la costa del Paraná, también el río); gris = sin datos.
@@ -1693,7 +1721,7 @@ function colorearMapa(R){
     p.setAttribute('fill','var(--'+(k.c==='amarillo'?'amarillo-mapa':k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
     if(smnVigente()&&smnDe(i).length)p.setAttribute('data-smn','1');else p.removeAttribute('data-smn');});
   M.puntos.forEach((p,j)=>{const c=M.R[j]?M.R[j].c:'gris';p.setAttribute('fill','var(--'+(c==='amarillo'?'amarillo-mapa':c)+')')});
-  resaltar();pintarInfo();
+  resaltar();pintarInfo();seguro(pintarMiLoc);
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
