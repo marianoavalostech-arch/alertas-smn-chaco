@@ -2471,6 +2471,11 @@ function instalarApp(){
 // Dentro del portal: el enlace "Instalar app" cuenta como evento aparte (instalar-desde-portal). Solo el conteo.
 function instalarDesdePortal(){const a=$('aInstEmb');if(!a||!EMB)return;a.addEventListener('click',()=>contador('instalar-desde-portal',true))}
 seguro(instalarDesdePortal);
+// Teléfonos dentro del portal: el marco del portal no deja abrir la llamada desde adentro en todos los celulares.
+// Se abre como ventana nueva (el marco sí lo permite: allow-popups-to-escape-sandbox), que pasa la llamada al teléfono.
+function telDesdePortal(){if(!EMB)return;
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="tel:"]');if(a){a.target='_blank';a.rel='noopener'}},true)}
+seguro(telDesdePortal);
 // Pasos de iPhone según el navegador: en Safari, Compartir está en su barra (en iOS 26 puede estar dentro de ⋯);
 // Chrome, Edge y Firefox agregan a inicio desde iOS 16.4; con un iOS anterior, primero hay que abrir la página en Safari.
 function pasosIos(ua){

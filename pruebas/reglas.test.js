@@ -1432,5 +1432,9 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(S(`telMun('Fontana')`), '', 'sin número confirmado, nada');
     assert.ok(codigo.includes("+telMun(m[0])+medidaInfo(i)+smnInfo(i);"), 'va en el detalle del municipio');
   });
+  prueba('teléfonos dentro del portal: los enlaces tel: se abren como ventana nueva', () => {
+    const f = html.slice(html.indexOf('function telDesdePortal(){'), html.indexOf('seguro(telDesdePortal);'));
+    assert.ok(f.includes('if(!EMB)return;') && f.includes(`closest('a[href^="tel:"]')`) && f.includes("a.target='_blank';a.rel='noopener'") && f.includes('},true)'), 'solo en el portal, antes del clic');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

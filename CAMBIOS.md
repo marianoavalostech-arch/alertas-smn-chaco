@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (teléfonos dentro del portal)
+
+Mariano: dentro del portal de Gobierno Abierto, tocar un número sigue sin abrir la llamada, aunque el marco ya tiene `allow-top-navigation-to-custom-protocols` (fragmento 1.4, comprobado el 21/10 a las 12:05).
+- **Dentro del portal, los enlaces `tel:` se abren como ventana nueva** (`telDesdePortal`: al tocar, el enlace pasa a `target="_blank"`). El marco sí deja abrir ventanas que salen de sus límites (`allow-popups-to-escape-sandbox`), y desde ahí el teléfono pasa la llamada. Fuera del portal no cambia nada. Los WhatsApp ya se abrían así.
+- Huella nueva del código. 72 pruebas.
+
 ## 21/10/2026 (Isla del Cerrito hasta rojo y teléfonos municipales)
 
 Pedidos de Mariano.
