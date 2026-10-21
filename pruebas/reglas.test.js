@@ -384,11 +384,11 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Río en verde: no cambia nada
   assert.deepStrictEqual(col('amarillo', [['2026-10-13', 4.0]]).slice(0, 3).map(x => x[0] + x[2]), ['amarillofalse', 'amarillofalse', 'amarillofalse']);
   // Río sobre la evacuación: rojo aunque la lluvia esté en amarillo
-  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).map(x => x[0]), ['rojo', 'rojo', 'naranja', 'amarillo', 'naranja']);   // Isla del Cerrito y Resistencia, con techo
+  assert.deepStrictEqual(col('amarillo', [['2026-10-13', 6.6]]).map(x => x[0]), ['rojo', 'rojo', 'rojo', 'amarillo', 'naranja']);   // Isla del Cerrito hasta rojo (18/10); Resistencia, hasta naranja
   // Caso real del 17/10: río sobre la alerta (6,08 m) y el INA prevé pasar la evacuación (7,23 m): renglón en rojo, como el comunicado oficial
   const obs17 = [['2026-10-11', 5.01], ['2026-10-14', 5.4], ['2026-10-16', 6.08]];
   const pr17 = { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-16', 6.08, 6.08, 6.08], ['2026-10-20', 7, 7.23, 7.8]] };
-  assert.deepStrictEqual(col('verde', obs17, pr17, '2026-10-17').map(x => x[0]), ['rojo', 'rojo', 'naranja', 'verde', 'naranja']);   // Isla del Cerrito y Resistencia con su techo
+  assert.deepStrictEqual(col('verde', obs17, pr17, '2026-10-17').map(x => x[0]), ['rojo', 'rojo', 'rojo', 'verde', 'naranja']);   // Isla del Cerrito hasta rojo; Resistencia con su techo
   const rr = JSON.parse(S(`JSON.stringify(riesgoRio())`));
   assert.ok(rr.pr && rr.por.includes('queda en rojo'), rr.por);
   assert.ok(JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${B})))`)).includes('El rojo sale de la altura de hoy y de lo que prevé el INA'));
@@ -412,7 +412,7 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Colonia Benítez: con el Paraná fuera del verde sigue al río, también en rojo (San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa)
   const CB = idx('Colonia Benítez'); assert.ok(CB >= 0);
   const RP = JSON.parse(JSON.stringify(S('RIBERA_PISO')));
-  assert.deepStrictEqual(Object.keys(RP).map(n => n + ':' + RP[n].t), ['Resistencia:naranja', 'Margarita Belén:naranja', 'Colonia Benítez:rojo', 'Isla del Cerrito:naranja', 'La Leonesa:amarillo', 'Las Palmas:amarillo', 'Puerto Bermejo:amarillo', 'General Vedia:amarillo', 'Basail:amarillo']);
+  assert.deepStrictEqual(Object.keys(RP).map(n => n + ':' + RP[n].t), ['Resistencia:naranja', 'Margarita Belén:naranja', 'Colonia Benítez:rojo', 'Isla del Cerrito:rojo', 'La Leonesa:amarillo', 'Las Palmas:amarillo', 'Puerto Bermejo:amarillo', 'General Vedia:amarillo', 'Basail:amarillo']);
   assert.ok(Object.keys(S('RIBERA_PISO')).every(n => idx(n) >= 0), 'todos están en el mapa');
   const cb = (lluvia, obs, prono) => { col(lluvia, obs, prono); return JSON.parse(S(`(k=>JSON.stringify([k.c,!!k.rio,!!k.piso,rioInfo(k)]))(colorDe(${CB}))`)); };
   let r = cb('verde', obs13, pr13);   // río en naranja (caso real del 13/10): Colonia Benítez llega a naranja
@@ -432,8 +432,8 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.deepStrictEqual(cb('amarillo', obs13, pr13).slice(0, 2), ['naranja', true]);          // amarillo por lluvia: el río la sube a naranja
   assert.deepStrictEqual(cb('verde', [['2026-10-13', 4.0]]).slice(0, 2), ['verde', false]);     // río en verde: nada
   assert.deepStrictEqual(cb(null, obs13, pr13).slice(0, 2), ['naranja', true]);                // sin lluvia todavía
-  // Fontana no sigue al río; Resistencia, Margarita Belén e Isla del Cerrito, hasta naranja (también con el río en rojo); Resistencia dice lo de las defensas
-  assert.deepStrictEqual(col('verde', [['2026-10-13', 6.6]]).slice(2).map(x => x[0]), ['naranja', 'verde', 'naranja']);
+  // Fontana no sigue al río; Isla del Cerrito llega a rojo; Resistencia y Margarita Belén, hasta naranja (también con el río en rojo); Resistencia dice lo de las defensas
+  assert.deepStrictEqual(col('verde', [['2026-10-13', 6.6]]).slice(2).map(x => x[0]), ['rojo', 'verde', 'naranja']);
   assert.deepStrictEqual(col('verde', obs13, pr13).slice(3).map(x => x[0]), ['verde', 'naranja']);
   assert.strictEqual(JSON.parse(S(`JSON.stringify(colorDe(GEO.mun.findIndex(m=>m[0]==='Margarita Belén')).c)`)), 'naranja');
   const rs = JSON.parse(S(`JSON.stringify(rioInfo(colorDe(${R})))`));
@@ -530,7 +530,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
-  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Colonia Benítez lo sigue hasta rojo'));
+  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Colonia Benítez e Isla del Cerrito lo siguen hasta rojo'));
   assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
   // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
   const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
@@ -1423,6 +1423,14 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes('if(MILOC===null)MILOC=i>=0;'), 'si al abrir no había localidad guardada, el renglón no aparece en esa visita');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez'), 'la privacidad lo cuenta');
+  });
+  prueba('teléfonos de la municipalidad en el detalle: solo Resistencia y Barranqueras, sin horario', () => {
+    assert.deepStrictEqual(JSON.parse(S(`JSON.stringify(Object.keys(TEL_MUN))`)), ['Resistencia', 'Barranqueras']);
+    const r = S(`telMun('Resistencia')`), b = S(`telMun('Barranqueras')`);
+    assert.ok(r.includes('href="tel:+543625162913"') && r.includes('href="tel:+543625299957"') && r.includes('https://wa.me/5493625162913') && !r.includes('Atienden'), r);
+    assert.ok(b.includes('href="tel:+543625730601"') && b.includes('href="tel:+543625730602"') && b.includes('href="tel:911"'), b);
+    assert.strictEqual(S(`telMun('Fontana')`), '', 'sin número confirmado, nada');
+    assert.ok(codigo.includes("+telMun(m[0])+medidaInfo(i)+smnInfo(i);"), 'va en el detalle del municipio');
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

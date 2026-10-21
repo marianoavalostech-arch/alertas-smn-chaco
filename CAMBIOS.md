@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (Isla del Cerrito hasta rojo y teléfonos municipales)
+
+Pedidos de Mariano.
+- **Isla del Cerrito sigue al Paraná hasta rojo** (antes, hasta naranja): el comunicado del Comité Provincial de Emergencia del 18/10 la pone en alerta roja, fuera del cordón de defensa, junto con Barranqueras, Puerto Vilelas, Puerto Antequeras y San Pedro Pescador. El sitio mostraba menos que lo oficial. Textos de "¿Qué significa cada color?" y "¿Cómo se decide el color?" al día.
+- **Teléfonos de la municipalidad en el detalle del municipio** (`TEL_MUN`, `telMun`), solo donde el municipio los publicó: **Resistencia**, Defensa Civil municipal 362 516-2913 y 362 529-9957 (también WhatsApp; resistencia.gob.ar, 27/01/2025; sin el horario, que puede haber cambiado), y **Barranqueras**, 362 573-0601 y 362 573-0602 (nota de la Municipalidad del 20/10/2026). Siempre con el 911. Los demás municipios no publican un teléfono confiable en la web: no se inventa ninguno.
+- Huella nueva del código. 71 pruebas.
+
 ## 21/10/2026 (tu localidad)
 
 Pedido de Mariano: que el sitio, y sobre todo la app instalada, recuerde tu municipio.

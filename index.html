@@ -268,6 +268,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .indice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .miLoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 6px 6px 12px;border:1.5px solid var(--borde-boton);border-radius:14px;background:var(--card)}
 .miLoc[hidden]{display:none}
+#mInfo .telMun{text-align:left;hyphens:manual}
 .miLoc .miC{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.9rem}
 .miLoc .miC i{width:12px;height:12px;border-radius:50%}
 .miLoc .miX{margin-left:auto;font:inherit;font-size:1rem;background:none;border:0;color:var(--muted);min-width:44px;min-height:44px;cursor:pointer}
@@ -618,7 +619,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li data-c="gris"><b>Gris:</b> sin datos.</li>
         <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
       </ul>
-      <p class="meta">El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez lo sigue hasta rojo, Resistencia, Margarita Belén e Isla del Cerrito hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+      <p class="meta">El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez e Isla del Cerrito lo siguen hasta rojo, Resistencia y Margarita Belén hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
     </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
   </section>
@@ -789,7 +790,7 @@ footer{font-size:.85rem;color:var(--muted)}
         <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
         <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
         <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná: por el río pueden llegar a rojo.</li>
-        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Colonia Benítez hasta rojo (por San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa); Resistencia, Margarita Belén e Isla del Cerrito hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
+        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Colonia Benítez hasta rojo (por San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa) e Isla del Cerrito también hasta rojo (por su costa); Resistencia y Margarita Belén hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
         <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
         <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
       </ul>
@@ -1304,13 +1305,14 @@ const RIOS=(()=>{const n=GEO.prov.match(/-?\d+/g).map(Number),P=[];let x=0,y=0;
 const GRAN=['Barranqueras','Fontana','Puerto Vilelas'];
 // Costa del Paraná: en el mapa toman el color más alto entre su lluvia (con el piso del SMN) y el renglón del Paraná.
 const RIBERA=['Barranqueras','Puerto Vilelas'];
-// Municipios con zonas que las alertas oficiales por la crecida del Paraná incluyen (comunicado del Gobierno del Chaco del 17/10/2026).
+// Municipios con zonas que las alertas oficiales por la crecida del Paraná incluyen (comunicado del Gobierno del Chaco del 17/10/2026;
+// Isla del Cerrito, hasta rojo desde el comunicado del Comité Provincial de Emergencia del 18/10/2026).
 // Con el renglón del Paraná fuera del verde siguen al río, pero por el río no pasan de su techo (t), como en el comunicado. Cada uno con su aclaración (x).
 const RIBERA_PISO={
   'Resistencia':{t:'naranja',x:'Es por las zonas de la costa fuera de las defensas.'},
   'Margarita Belén':{t:'naranja',x:'Es por las zonas bajas cerca del Paraná y los riachos, lejos del pueblo.'},
   'Colonia Benítez':{t:'rojo',x:'Es por la costa del municipio: San Pedro Pescador y Puerto Antequeras, que están fuera del cordón de defensa, y la ruta provincial 63. El pueblo está en zona más alta.'},
-  'Isla del Cerrito':{t:'naranja',x:'Es por las zonas bajas de la costa del municipio.'},
+  'Isla del Cerrito':{t:'rojo',x:'Es por las zonas bajas de la costa del municipio, fuera del cordón de defensa.'},
   'La Leonesa':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
   'Las Palmas':{t:'amarillo',x:'Es por la costa y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
   'Puerto Bermejo':{t:'amarillo',x:'Es por la costa, Puerto Bermejo Viejo y los bajos cerca del río Paraguay: con el Paraná alto, el agua del Paraguay baja más lento y sube cerca de la desembocadura.'},
@@ -1318,6 +1320,12 @@ const RIBERA_PISO={
   'Basail':{t:'amarillo',x:'Es por la zona rural baja del municipio, no por el pueblo.'}};
 // Sala de Situación de la Municipalidad de Puerto Vilelas: solo enlace (sus datos no son públicos para otros sitios).
 const VILELAS='<a href="https://hidrometro.concejovilelas.com/#publica" target="_blank" rel="noopener">Hidroalerta Vilelas</a>';
+// Teléfonos de la municipalidad en el detalle del municipio: solo los publicados por el municipio (sin horario: puede cambiar).
+// Resistencia: resistencia.gob.ar (27/01/2025). Barranqueras: nota de la Municipalidad del 20/10/2026. Revisar si el municipio avisa cambios.
+const TEL_MUN={
+  'Resistencia':'<b>Defensa Civil de la Municipalidad:</b> <a href="tel:+543625162913">362 516-2913</a> · <a href="tel:+543625299957">362 529-9957</a>, también por <a href="https://wa.me/5493625162913" target="_blank" rel="noopener">WhatsApp</a>.',
+  'Barranqueras':'<b>Municipalidad de Barranqueras:</b> <a href="tel:+543625730601">362 573-0601</a> · <a href="tel:+543625730602">362 573-0602</a>.'};
+const telMun=n=>TEL_MUN[n]?'<p class="telMun">📞 '+TEL_MUN[n]+' En una emergencia, <a href="tel:911">911</a>.</p>':'';
 // Frase cuando el Paraná sale del verde: el agua del río queda afuera de las defensas, pero valen los avisos oficiales.
 // Lugar de las etiquetas de los ríos (x, y del mapa, y hacia dónde crece el texto).
 const RCHIP={parana:[538,478,'end'],paraguay:[538,174,'end'],bermejo:[322,100,'start']};
@@ -1535,7 +1543,7 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+smnInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+telMun(m[0])+medidaInfo(i)+smnInfo(i);
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
 // con una lectura de las últimas MEDIDA_H horas.
