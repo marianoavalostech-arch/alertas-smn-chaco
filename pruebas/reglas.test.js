@@ -1424,14 +1424,6 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez'), 'la privacidad lo cuenta');
   });
-  prueba('teléfonos de la municipalidad en el detalle: solo Resistencia y Barranqueras, sin horario', () => {
-    assert.deepStrictEqual(JSON.parse(S(`JSON.stringify(Object.keys(TEL_MUN))`)), ['Resistencia', 'Barranqueras']);
-    const r = S(`telMun('Resistencia')`), b = S(`telMun('Barranqueras')`);
-    assert.ok(r.includes('href="tel:+543625162913"') && r.includes('href="tel:+543625299957"') && r.includes('https://wa.me/5493625162913') && !r.includes('Atienden'), r);
-    assert.ok(b.includes('href="tel:+543625730601"') && b.includes('href="tel:+543625730602"') && b.includes('href="tel:911"'), b);
-    assert.strictEqual(S(`telMun('Fontana')`), '', 'sin número confirmado, nada');
-    assert.ok(codigo.includes("+telMun(m[0])+medidaInfo(i)+smnInfo(i);"), 'va en el detalle del municipio');
-  });
   prueba('teléfonos dentro del portal: los enlaces tel: se abren como ventana nueva', () => {
     const f = html.slice(html.indexOf('function telDesdePortal(){'), html.indexOf('seguro(telDesdePortal);'));
     assert.ok(f.includes('if(!EMB)return;') && f.includes(`closest('a[href^="tel:"]')`) && f.includes("a.target='_blank';a.rel='noopener'") && f.includes('},true)'), 'solo en el portal, antes del clic');

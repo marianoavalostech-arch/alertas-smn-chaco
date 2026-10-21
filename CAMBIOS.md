@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (sin teléfonos por municipio)
+
+Pedido de Mariano: se sacan los teléfonos de la municipalidad del detalle de Resistencia y Barranqueras (`TEL_MUN`, `telMun`); queda como antes, con los teléfonos de toda la provincia en "Teléfonos". Isla del Cerrito hasta rojo sigue.
+- 71 pruebas.
+
 ## 21/10/2026 (teléfonos dentro del portal)
 
 Mariano: dentro del portal de Gobierno Abierto, tocar un número sigue sin abrir la llamada, aunque el marco ya tiene `allow-top-navigation-to-custom-protocols` (fragmento 1.4, comprobado el 21/10 a las 12:05).

@@ -195,7 +195,7 @@ Desde el 20/10/2026 (pedido de Mariano):
 
 **Teléfonos dentro del portal** (desde el 21/10/2026): con el marco del portal, abrir `tel:` desde adentro no anda en todos los celulares, aun con `allow-top-navigation-to-custom-protocols`. `telDesdePortal` (solo con `EMB`) pone `target="_blank"` en el enlace `tel:` tocado, para que se abra como ventana nueva (`allow-popups-to-escape-sandbox`).
 
-**Teléfonos de la municipalidad** (desde el 21/10/2026, pedido de Mariano): `TEL_MUN` (nombre → texto con enlaces `tel:` y WhatsApp) y `telMun`, en el detalle del municipio (`pintarInfo`). Solo números publicados por el propio municipio, sin horario (puede cambiar; pedido de Mariano): Resistencia (Defensa Civil municipal, resistencia.gob.ar, 27/01/2025) y Barranqueras (nota municipal del 20/10/2026). El resto no publica un teléfono confiable en la web (revisado el 21/10): no se agrega ninguno sin fuente. Revisar si un municipio avisa cambios. Dentro del portal, `tel:` necesita el fragmento 1.4 del marco.
+**Teléfonos por municipio**: se probaron el 21/10/2026 (Resistencia y Barranqueras en el detalle del municipio) y se sacaron el mismo día a pedido de Mariano. Solo quedan los teléfonos de toda la provincia en "Teléfonos".
 
 **Tu localidad** (desde el 21/10/2026, pedido de Mariano): `elegir` guarda el nombre del último municipio elegido en `localStorage` (`anc-mi-localidad`, `guardarMiLoc`). Al abrir, `pintarMiLoc` (desde `colorearMapa`) muestra `#miLoc` arriba del índice: "📍 Tu localidad: X", su color (`colorDe`), "Ver en el mapa" y ✕ (olvidar). Si al abrir no había ninguna guardada (`MILOC=false`), no aparece en esa visita. Se ve también en el portal; no al imprimir. No usa el GPS ni manda nada.
 
