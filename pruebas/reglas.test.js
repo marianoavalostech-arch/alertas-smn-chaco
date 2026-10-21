@@ -168,11 +168,17 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   assert.strictEqual(r.pico, 58, 'al elegir la localidad, el mapa va a la hora más fuerte');
   assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,62))')).txt, 'En Resistencia no se espera lluvia de acá a mañana a la noche.');
   assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,4,38))')).txt, 'En Charata no se espera lluvia de acá a mañana a la noche.', 'lejos de la lluvia');
+  // Barritas de la localidad elegida (21/10): Resistencia, con su lluvia; Charata, sin lluvia; "Todo el Chaco" (-1), lo más fuerte de la provincia
+  const tR = JSON.parse(S('JSON.stringify(tiraValores(A.g,0))')), tC = JSON.parse(S('JSON.stringify(tiraValores(A.g,4))')), tT = JSON.parse(S('JSON.stringify(tiraValores(A.g,-1))'));
+  assert.ok(tR[58] >= 100 && tR[0] === 0 && tC.every(v => v === 0) && tT[58] === tira[58], 'las barritas siguen a la localidad elegida');
+  assert.ok(html.includes('<span>¿Cuándo llueve en…?</span><button class="ley" type="button" data-loc="-1" aria-pressed="true">Todo el Chaco</button>'), 'botón "Todo el Chaco" primero, elegido al empezar');
+  const eL = html.slice(html.indexOf('function elegirLoc('), html.indexOf('function parar('));
+  assert.ok(eL.indexOf('seguro(pintarTira)') > 0 && eL.indexOf('seguro(pintarTira)') < eL.indexOf("if(A.loc<0)"), 'al cambiar de localidad (también a "Todo el Chaco") se redibujan las barritas');
   S('A.g.p.forEach(x=>{x[57]=0;x[60]=0;x[58]=Math.min(x[58],6)})');
   assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,38))')).txt, 'En Resistencia se espera lluvia débil mañana a las 10 h. Con tormentas previstas en la zona.');
   S('A.g=null');
   // El texto largo va en un desplegable; a la vista queda una línea
-  assert.ok(html.includes('<p class="meta">No es un radar: es lo que calcula el modelo de pronóstico.</p>') && html.includes('<details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>'));
+  assert.ok(html.includes('<details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>\n      <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico,'));
   assert.ok(html.includes('<div id="aTira"></div>') && html.includes('<div id="aLocs" role="group"'), 'tira y botones de localidad en la sección');
 });
 
@@ -181,7 +187,7 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.ok(!html.includes('aTiraTxt'), 'sin la aclaración de las barritas a la vista');
   assert.ok(sec.indexOf('id="aEtq"') < sec.indexOf('id="anim"') && sec.indexOf('id="anim"') < sec.indexOf('id="aPlay"'), 'la hora y el mapa primero; los controles debajo');
   assert.ok(sec.includes('<div class="aBarra"><div class="aReloj"') && sec.includes('</div><div id="aTira"></div><input type="range" id="aHora"'), 'el control de hora va encima de las barritas');
-  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:96px;margin:0;opacity:0;'), 'invisible, sobre la tira y el reloj, y anda con las flechas');
+  assert.ok(html.includes('.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:130px;margin:0;opacity:0;'), 'invisible, sobre la tira y el reloj, y anda con las flechas');
   assert.ok(sec.includes('Tocá o arrastrá sobre las barritas para ver esa hora en el mapa'), 'la explicación pasa al desplegable');
   assert.ok(html.includes('.animCuerpo{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr)'), 'en la computadora, el mapa al lado de los controles');
   assert.ok(html.includes('aria-label="Reproducir" title="Reproducir">▶</button>') && codigo.includes("$('aPlay').setAttribute('aria-label','Pausa')"), 'botón redondo que dice qué hace');
@@ -193,6 +199,13 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
 });
 
+prueba('mapa y lluvia hora por hora más fáciles de usar (21/10): botones de colores pegados al mapa, barritas más altas, "No es un radar" en el desplegable', () => {
+  const m = html.indexOf('<div id="mapa"></div>'), l = html.indexOf('<div class="leyenda">'), i = html.indexOf('<div id="mInfo"');
+  assert.ok(m > 0 && m < l && l < i, 'los botones de colores van entre el mapa y la lista de municipios, así una lista larga no los empuja');
+  assert.ok(html.includes('#aTira svg{display:block;width:100%;height:100px;') && html.includes('W=10,H=96,n=g.n;'), 'barritas de 100 px, con la cuenta en el mismo alto');
+  const e = html.indexOf('<div class="escLeg"'), d = html.indexOf('<details class="det" id="d-anim">');
+  assert.ok(e > 0 && d > e && !html.includes('d-anim-col') && !html.includes('\n    <p class="meta">No es un radar'), 'la barra de colores a la vista; "No es un radar" ya no va suelto');
+});
 prueba('lluvia hora por hora: leyenda de colores con los cortes en mm y barritas más claras (20/10)', () => {
   const l0 = html.indexOf('<div class="escLeg"'), ley = html.slice(l0, html.indexOf('</div>', l0));
   assert.ok(l0 > 0 && ley.includes('<span class="escT">Lluvia en una hora</span><span class="escE">finita</span>') && ley.includes('<span class="escE">fuerte</span>'), 'título y las dos puntas en palabras');

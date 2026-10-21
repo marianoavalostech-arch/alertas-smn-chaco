@@ -8,9 +8,9 @@
 #aEtq{font-size:.95rem;min-height:1.45em;margin:0 0 6px}
 /* la tira de barritas es también el deslizador: el control de hora queda encima, invisible, y se toca o arrastra sobre las barritas */
 .aBarra{position:relative}
-.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:96px;margin:0;opacity:0;cursor:pointer;touch-action:pan-y;-webkit-appearance:none;appearance:none;background:none}
-.aBarra input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1px;height:96px}
-.aBarra input[type=range]::-moz-range-thumb{width:1px;height:96px;border:0}
+.aBarra input[type=range]{position:absolute;left:0;top:0;width:100%;height:130px;margin:0;opacity:0;cursor:pointer;touch-action:pan-y;-webkit-appearance:none;appearance:none;background:none}
+.aBarra input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1px;height:130px}
+.aBarra input[type=range]::-moz-range-thumb{width:1px;height:130px;border:0}
 .aBarra:has(input:focus-visible) #aTira svg{outline:2px solid var(--acento);outline-offset:2px;border-radius:4px}
 /* relojito arriba de la barrita elegida: la cajita no se sale de los bordes y la punta queda justo sobre la barrita (--x, marcarTira) */
 .aReloj{position:relative;height:30px}
@@ -41,7 +41,7 @@
 }
 /* tira de barritas: lluvia más fuerte en el Chaco hora por hora (20/10/2026) */
 #aTira{position:relative;margin:2px 0 4px}
-#aTira svg{display:block;width:100%;height:66px;cursor:pointer;touch-action:pan-y}
+#aTira svg{display:block;width:100%;height:100px;cursor:pointer;touch-action:pan-y}
 #aTira .tDias{position:relative;height:1.3em;font-size:.78rem;color:var(--muted)}
 #aTira .tDias span{position:absolute;top:0;white-space:nowrap}
 #aTira .tDias .tAhora{color:var(--ink);font-weight:700;transform:translateX(-50%)}
@@ -575,7 +575,6 @@ footer{font-size:.85rem;color:var(--muted)}
       </div>
     </div>
     <div id="mapa"></div>
-    <div id="mInfo" aria-live="polite"></div>
     <div class="leyenda">
       <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde</button>
       <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo</button>
@@ -584,6 +583,7 @@ footer{font-size:.85rem;color:var(--muted)}
       <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Sin datos</button>
       <span><i class="punteado"></i>Borde punteado: alerta del SMN</span>
     </div>
+    <div id="mInfo" aria-live="polite"></div>
     <p class="meta">Tocá un municipio para ver su detalle, o un color para resaltar los municipios de ese color.</p>
     <details class="det" id="d-colores">
       <summary>¿Qué significa cada color?</summary>
@@ -812,11 +812,10 @@ footer{font-size:.85rem;color:var(--muted)}
     <div id="aLocs" role="group" aria-label="Elegir una localidad"></div>
     <p id="aLocTxt" aria-live="polite"></p>
     <label class="meta"><input type="checkbox" id="aSat" checked> Nubes del satélite en las horas que ya pasaron</label>
-    <p class="meta">No es un radar: es lo que calcula el modelo de pronóstico.</p>
     <p class="meta" id="animMeta">Consultando…</p>
     <details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>
-      <p class="meta">La lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
-      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora).</p>
+      <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
+      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios; al elegir una localidad, la lluvia prevista en esa localidad. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora).</p>
       <p class="meta">Tocá o arrastrá sobre las barritas para ver esa hora en el mapa; también se pueden tocar las ciudades del mapa.</p>
     </details>
     </div>
@@ -2189,8 +2188,11 @@ function vecinos(g,lat,lon){
 }
 // Tira de barritas (pedido de Mariano, 20/10/2026): para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios
 // (en el centro de cada uno), en décimas de mm. Así se ve de un vistazo cuándo viene lo fuerte, sin mover la barra a ciegas.
-function tiraValores(g){
-  return Array.from({length:g.n},(_,k)=>Math.max(0,...GEO.mun.map(m=>enLugar(g,'p',m[2],m[3],k))));
+// Barritas: sin localidad elegida ("Todo el Chaco"), la lluvia más fuerte de cada hora en alguno de los 70 municipios;
+// con una localidad elegida (pedido de Mariano, 21/10/2026), la lluvia de esa localidad, la misma de su frase.
+function tiraValores(g,loc=A.loc){
+  const l=loc>=0&&LOCS[loc];
+  return Array.from({length:g.n},(_,k)=>l?Math.max(0,enLugar(g,'p',l.lat,l.lon,k)):Math.max(0,...GEO.mun.map(m=>enLugar(g,'p',m[2],m[3],k))));
 }
 const mmHora=v=>v<10?'menos de 1 mm':v<15?'cerca de 1 mm':'unos '+Math.round(v/10)+' mm';
 function colorDeMm(v){let c=null;for(const e of ESCALA)if(v>=e[0]*10)c=e[1];return c}
@@ -2198,7 +2200,7 @@ function pintarTira(){
   const g=A.g,cont=$('aTira');if(!g||!cont)return;
   // Barritas (mejoradas el 20/10/2026): sin lluvia no se dibuja nada (queda la línea de abajo); la hora elegida, con una franja violeta
   // suave detrás (sin borde); "ahora", línea fina y lisa; arriba de la barrita más alta, cuánto llueve ahí (desde 1 mm).
-  const vals=A.tira=tiraValores(g),W=10,H=62,n=g.n;
+  const vals=A.tira=tiraValores(g),W=10,H=96,n=g.n;
   const alto=v=>v<2?0:3+Math.min(1,Math.sqrt(v/130))*(H-17);
   let svg='<svg viewBox="0 0 '+(n*W)+' '+(H+4)+'" preserveAspectRatio="none" aria-hidden="true">'
     +'<rect id="aTiraSel" x="0" y="0" width="'+W+'" height="'+(H+4)+'" fill="var(--acento)" fill-opacity=".13"/>';
@@ -2271,6 +2273,7 @@ function elegirLoc(i,mover){
   A.loc=A.loc===i&&mover?-1:i;
   document.querySelectorAll('#aLocs [data-loc]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.loc)===A.loc)));
   document.querySelectorAll('#anim .aSel').forEach(c=>{c.toggleAttribute('hidden',Number(c.parentNode.dataset.loc)!==A.loc)});
+  seguro(pintarTira);
   if(A.loc<0){$('aLocTxt').textContent='';return}
   const r=resumenLoc(g,A.loc,kAhora());$('aLocTxt').textContent=r.txt;
   if(mover&&r.pico>=0){parar();mostrar(r.pico)}
@@ -2290,7 +2293,7 @@ function pintarAnim(){
   $('aHora').max=g.n-1;
   $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false" aria-label="'+etqDia(d)+' '+fDia(d)+'">'+etqDia(d)+'</button>').join('');
   $('animMeta').textContent='Última actualización: '+fFechaHora(new Date(A.t))+'. Fuente: Open-Meteo (lluvia, nubosidad y tormentas previstas) y NASA, satélite GOES-East (nubes de las horas pasadas).';
-  if(!$('aLocs').firstChild)$('aLocs').innerHTML='<span>¿Cuándo llueve en…?</span>'+LOCS.map((l,i)=>'<button class="ley" type="button" data-loc="'+i+'" aria-pressed="false">'+esc(l.n)+'</button>').join('');
+  if(!$('aLocs').firstChild)$('aLocs').innerHTML='<span>¿Cuándo llueve en…?</span><button class="ley" type="button" data-loc="-1" aria-pressed="true">Todo el Chaco</button>'+LOCS.map((l,i)=>'<button class="ley" type="button" data-loc="'+i+'" aria-pressed="false">'+esc(l.n)+'</button>').join('');
   seguro(pintarTira);
   mostrar(nuevo||A.k<0?kAhora():A.k);
   if(A.loc>=0)elegirLoc(A.loc,false);

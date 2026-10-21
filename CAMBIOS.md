@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 21/10/2026 (botones de colores del mapa y barritas más grandes)
+
+Pedidos de Mariano.
+- **Mapa: los botones de colores van pegados debajo del mapa**, antes de la lista de municipios. Antes, con muchos municipios de un color (52 en amarillo el 21/10), la lista empujaba los botones más de una pantalla hacia abajo y no se podía cambiar de color sin bajar. En la computadora quedan arriba de la columna de la derecha.
+- **Lluvia hora por hora: barritas más altas** (de 66 a 100 px), más fáciles de leer y de tocar. La barra de colores sigue a la vista.
+- **"¿Cuándo llueve en…?": las barritas siguen a la localidad elegida.** Con Resistencia elegida, muestran la lluvia de Resistencia (la misma de la frase); antes mostraban siempre lo más fuerte de la provincia, y la barrita más alta podía decir "12 mm" mientras la frase decía "2 mm". Botón nuevo **"Todo el Chaco"** (primero, elegido al abrir) para volver a la provincia; tocar de nuevo la localidad elegida también vuelve.
+- **"No es un radar…" pasa adentro de "¿Qué muestra este mapa?"**, al principio, en una sola frase con la explicación del modelo. Queda a la vista la última actualización con su fuente.
+- Huella nueva del código (`sha256-NISWh5oK…`). 69 pruebas.
+
 ## 20/10/2026 (relojito, barritas y leyenda de colores en Lluvia hora por hora)
 
 Pedidos de Mariano.
