@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 ("Todo el Chaco" al ir a "Lluvia hora por hora" desde un municipio que no está en la lista)
+
+Pedido de Mariano: si el municipio elegido no está en "Lluvia en", que quede "Todo el Chaco".
+- El enlace "Ver a qué hora llueve hoy y mañana ↓" del detalle del mapa elige "Todo el Chaco" (`elegirLoc(-1)`) cuando el municipio no es una de las 6 localidades ni del Gran Resistencia. Antes quedaba elegida la última localidad que se había mirado.
+- Huella nueva del código. 73 pruebas.
+
 ## 23/10/2026 (enlaces a "Lluvia hora por hora" y "Tormentas" sin cortar)
 
 Pedido de Mariano: arreglar "Tor-mentas" cortado y sumar un enlace a "Lluvia hora por hora" donde sirva, sin que moleste ni se repita.
