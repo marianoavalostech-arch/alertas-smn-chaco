@@ -613,12 +613,12 @@ footer{font-size:.85rem;color:var(--muted)}
       <ul class="leyLista">
         <li data-c="verde"><b>Verde:</b> sin lluvia fuerte ni alerta del SMN.</li>
         <li data-c="amarillo"><b>Amarillo:</b> lluvia importante, alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas.</li>
-        <li data-c="naranja"><b>Naranja:</b> solo en la costa del Paraná, por la altura del río y el pronóstico del INA. No es una alerta del SMN.</li>
+        <li data-c="naranja"><b>Naranja:</b> solo en la costa del Paraná y zonas bajas, por la altura del río y el pronóstico del INA. No es una alerta del SMN.</li>
         <li data-c="rojo"><b>Rojo:</b> lluvia muy fuerte, alerta roja del SMN, o el Paraná muy alto en la costa.</li>
         <li data-c="gris"><b>Gris:</b> sin datos.</li>
         <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
       </ul>
-      <p class="meta">El color del mapa sale de la lluvia y de las alertas del SMN. En Barranqueras y Puerto Vilelas también mira el Paraná: queda el color más alto entre la lluvia y el río. Cuando el Paraná sale del verde, Colonia Benítez e Isla del Cerrito lo siguen hasta rojo, Resistencia y Margarita Belén hasta naranja, y La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo, como en las alertas oficiales por la crecida. Los ríos tienen además su propio renglón en "Riesgo por localidad". Tocá un río para ver su altura.</p>
+      <p class="meta">Queda el color más alto entre la lluvia, la alerta del SMN y, en la costa, el Paraná. Cuando el Paraná sale del verde, Barranqueras, Puerto Vilelas, Colonia Benítez e Isla del Cerrito lo siguen hasta rojo; Resistencia y Margarita Belén, hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail, hasta amarillo, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
     </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
   </section>
@@ -779,19 +779,17 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo ya caído</th></tr></thead><tbody>
+      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
         <tr><td><b>Rojo</b></td><td>120 mm o más</td><td>80 mm o más</td><td>cayeron 100 mm y vienen 70</td></tr>
         <tr><td><b>Amarillo</b></td><td>70 mm o más</td><td>45 mm o más</td><td>lo caído y lo que viene suman 120 mm</td></tr>
       </tbody></table></div>
       <ul>
-        <li>Para el rojo cuenta solo la lluvia prevista para hoy y los 2 días siguientes; para el amarillo, la de hoy y los 6 días siguientes. Un pronóstico para dentro de 4 días o más todavía puede cambiar mucho.</li>
-        <li>La alerta del SMN fija un mínimo: amarilla o naranja, al menos amarillo; roja, rojo.</li>
-        <li>Las zonas ribereñas solo miran el río: el Paraná, amarillo desde 6,00 m y rojo desde 6,50 m en Barranqueras; el Paraguay, amarillo desde 6,50 m y rojo desde 7,00 m en Puerto Bermejo. También pasan a amarillo si el río está a menos de 50 cm de la alerta y creciendo.</li>
-        <li>El pronóstico del INA para Barranqueras también cuenta: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m (el nivel de evacuación) y el río todavía no llegó a la alerta; rojo si el río ya pasó la alerta (6,00 m) y el valor más probable llega a 6,50 m. El naranja y ese rojo no son alertas del SMN: salen de la altura de hoy y de lo que prevé el INA.</li>
-        <li>En el mapa, Barranqueras y Puerto Vilelas, sobre la costa del Paraná, toman el color más alto entre su lluvia y el renglón del Paraná: por el río pueden llegar a rojo.</li>
-        <li>Cuando el renglón del Paraná no está en verde, otros municipios lo siguen hasta un techo, como en las alertas oficiales por la crecida: Colonia Benítez hasta rojo (por San Pedro Pescador y Puerto Antequeras, fuera del cordón de defensa) e Isla del Cerrito también hasta rojo (por su costa); Resistencia y Margarita Belén hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail hasta amarillo. Es por sus zonas bajas (costa fuera de las defensas, bajos cerca del Paraguay o zona rural); el detalle de cada uno dice qué zona es.</li>
-        <li>La lluvia medida en estaciones (en el detalle de cada municipio) y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no cambian ningún color.</li>
-        <li>Los umbrales de lluvia son orientativos, no están validados por ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo aparezca pocas veces por año y marque las lluvias que en el pasado sí fueron grandes.</li>
+        <li>Alcanza con una de las tres columnas. Para el amarillo, la lluvia prevista para hoy y los 6 días siguientes; para el rojo cuenta solo la lluvia prevista para hoy y los 2 días siguientes, porque un pronóstico más lejano cambia mucho.</li>
+        <li>Alerta del SMN para hoy o los 2 días siguientes: amarilla o naranja, el municipio queda por lo menos en amarillo; roja, en rojo.</li>
+        <li>Río Paraná en Barranqueras: amarillo desde 6,00 m o si le faltan menos de 50 cm y sigue creciendo; rojo desde 6,50 m. El pronóstico del INA adelanta el color: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m, y rojo si además el río ya pasó 6,00 m. Vale solo para los municipios de la costa y zonas bajas nombrados en «¿Qué significa cada color?». No es una alerta del SMN.</li>
+        <li>Siempre queda el color más alto entre la lluvia, la alerta del SMN y el río.</li>
+        <li>Los ríos Paraguay y Bermejo, la lluvia medida en estaciones y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no pintan el mapa.</li>
+        <li>Los números de lluvia son orientativos: no los validó ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo salga pocas veces por año.</li>
       </ul>
     </details>
   </section>

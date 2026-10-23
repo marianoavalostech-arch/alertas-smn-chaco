@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (explicación de los colores más clara y corta)
+
+Pedido de Mariano: que "¿Qué significa cada color?" y "¿Cómo se decide el color?" se entiendan mejor y sean más cortos. **Solo textos: ningún cálculo cambia.**
+- Se saca la frase "las zonas ribereñas solo miran el río", que contradecía al resto (la costa toma el color más alto entre lluvia y río).
+- La tabla aclara que alcanza con una de las tres columnas y que lo caído son los últimos 7 días.
+- La alerta del SMN cuenta para hoy y los 2 días siguientes; siempre queda el color más alto entre lluvia, SMN y río (antes solo se decía para la costa).
+- El Paraguay y el Bermejo pasan a la lista de lo que no pinta el mapa (sus números quedan en su sección).
+- Los municipios que siguen al Paraná se nombran una sola vez, en "¿Qué significa cada color?"; Barranqueras y Puerto Vilelas, junto con los demás que llegan a rojo.
+- 71 pruebas.
+
 ## 21/10/2026 (sin teléfonos por municipio)
 
 Pedido de Mariano: se sacan los teléfonos de la municipalidad del detalle de Resistencia y Barranqueras (`TEL_MUN`, `telMun`); queda como antes, con los teléfonos de toda la provincia en "Teléfonos". Isla del Cerrito hasta rojo sigue.
