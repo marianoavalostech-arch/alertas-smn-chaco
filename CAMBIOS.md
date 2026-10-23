@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (alerta del SMN arriba en el detalle del mapa)
+
+Pedido de Mariano: al tocar un municipio en el mapa (por ejemplo Resistencia), el aviso del SMN quedaba al final, después del río y de la lluvia medida.
+- El renglón "SMN" (⛈️ Tormentas, alerta amarilla, día y franjas, o "Sin alertas oficiales…") va ahora arriba, debajo del nombre y la superficie (`pintarInfo`, `smnInfo`). El resto del detalle no cambia.
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (Yacyretá en tono neutro)
 
 Mariano: que no sea alarmista; título "Yacyretá" a secas y lo medido y lo estimado en lenguaje neutro.

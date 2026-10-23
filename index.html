@@ -1547,7 +1547,7 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+smnInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+smnInfo(i)+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i);
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
 // con una lectura de las últimas MEDIDA_H horas.
@@ -1698,8 +1698,8 @@ function pintarSMN(){
 function smnInfo(i){
   if(!smnVigente())return '';
   const a=smnDe(i);
-  if(!a.length&&SMN.leidas===0)return '<p style="margin-top:8px"><span class="estado">SMN</span>No se pudo confirmar si hay alertas oficiales: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">consultá el SMN</a>.</p>';
-  return '<p style="margin-top:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnChip(x)+'el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
+  if(!a.length&&SMN.leidas===0)return '<p style="margin-bottom:8px"><span class="estado">SMN</span>No se pudo confirmar si hay alertas oficiales: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">consultá el SMN</a>.</p>';
+  return '<p style="margin-bottom:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnChip(x)+'el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
 }
 function cargarSMN(){
   SRV_P.then(j=>{
