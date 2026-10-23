@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (3 tarjetas grandes en vez de 7 recuadros)
+
+Pedido de Mariano: acotar a 3 días y acomodar el diseño para que se vean bien la temperatura y la lluvia.
+- **Hoy y los 2 días siguientes** (`DIAS_TARJ = 3`, los mismos que cubren las alertas del SMN). El texto desplegable sigue hablando de los 7 días de lluvia, que son los que usa el color.
+- **Tarjeta más grande**: día en palabras ("Hoy", "Sábado") y fecha, ícono grande y la palabra del tiempo ("Poca lluvia", "Nublado", "Despejado"…), **máxima y mínima** grandes con sus rótulos "Máx" y "Mín", y debajo de una línea punteada la **lluvia** en mm, en azul. Con alerta del SMN: el ícono y el fenómeno del SMN ("Tormentas"), un cartelito "Alerta amarilla" (o naranja, o roja) y el borde de arriba de su color. Sin temperaturas en la copia: igual, sin la fila de máxima y mínima.
+- Letra chica: "Pronóstico de Open-Meteo. Las alertas son del SMN."
+- Huella nueva del código. 73 pruebas.
+
 ## 23/10/2026 (temperatura y tipo de tiempo en los recuadros de los días)
 
 Pedido de Mariano: agregar los grados a los recuadros de los días.

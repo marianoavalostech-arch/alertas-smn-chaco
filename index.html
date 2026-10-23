@@ -376,15 +376,23 @@ footer{font-size:.85rem;color:var(--muted)}
 .ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
 .irmun{font:inherit;font-weight:700;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
-/* recuadros de los próximos días en el detalle del mapa (23/10/2026) */
-.dias{display:grid;gap:4px;margin:2px 0 0}
-.dia{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:5px 2px 4px;border-radius:6px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);text-align:center;line-height:1.15}
-.dia small{font-size:.7rem;color:var(--muted);white-space:nowrap}
-.dia .ico{font-size:1.25rem;line-height:1.25}
-.dia b{font-size:.9rem}
-.dia .tmin{font-size:.72rem}
-.dia .mm{font-size:.7rem;font-weight:600;color:var(--water);white-space:nowrap;margin-top:1px}
+/* tarjetas de hoy y los 2 días siguientes en el detalle del mapa (23/10/2026) */
+.dias{display:grid;gap:6px;margin:4px 0 0}
+.dia{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:8px 4px;border-radius:10px;background:var(--card);border:1px solid var(--line);border-top:4px solid var(--line);text-align:center;line-height:1.15}
+.dia .dD{font-weight:700;font-size:.9rem}
+.dia .dF{font-size:.72rem;color:var(--muted)}
+.dia .ico{font-size:2rem;line-height:1.15;margin-top:2px}
+.dia .dC{font-size:.78rem;font-weight:600}
+.dia .dT{display:flex;justify-content:center;gap:12px;margin-top:4px}
+.dia .dT span,.dia .dL{display:flex;flex-direction:column;align-items:center;gap:1px}
+.dia .dT small,.dia .dL small{font-size:.64rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.dia .dT b{font-size:1.2rem}
+.dia .dT .mn{font-weight:500}
+.dia .dL{align-self:stretch;margin-top:5px;padding-top:5px;border-top:1px dashed var(--line)}
+.dia .dL b{font-size:1rem;color:var(--water)}
+.dia .dA{margin-top:5px;padding:2px 7px;border-radius:99px;border:1.5px solid currentColor;font-size:.7rem;font-weight:700}
 .dia.n3{border-top-color:var(--amarillo-mapa)}.dia.n4{border-top-color:var(--naranja)}.dia.n5{border-top-color:var(--rojo)}
+.dia.n3 .dA{color:var(--amarillo)}.dia.n4 .dA{color:var(--naranja)}.dia.n5 .dA{color:var(--rojo)}
 /* texto del detalle: cerrado, se ve el comienzo y se desvanece; "Seguir leyendo" lo abre */
 .mDet{display:flex;flex-direction:column;gap:6px;min-width:0}
 .mDet.vista{max-height:7rem;overflow:hidden;cursor:pointer;-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
@@ -1570,20 +1578,22 @@ function pintarInfo(){
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
 }
-// Recuadros de hoy y los 6 días siguientes: lluvia prevista (la misma que usa el color: la de la localidad del semáforo o la del municipio),
-// temperatura máxima y mínima y tipo de tiempo de Open-Meteo (desde el 23/10/2026, los guarda el robot en lluvia.json: tmax, tmin, cod)
-// y, si el SMN tiene alerta ese día para el municipio, su ícono y el color del nivel en el borde.
-// Si la copia no trae temperaturas (la del script de Google, o una vieja), se muestran solo la lluvia y su ícono.
-const F_SEM3=new Intl.DateTimeFormat('es-AR',{weekday:'short',timeZone:'UTC'}),sem3=s=>{const w=F_SEM3.format(new Date(s+'T12:00:00Z')).replace('.','');return w.charAt(0).toUpperCase()+w.slice(1)+' '+Number(s.slice(8))};
-// Ícono del día. Con 1 mm o más manda la lluvia (tormenta si Open-Meteo la prevé); con menos, el cielo del código de la OMM
-// (una llovizna de décimas de mm se muestra como nublado, para que el ícono no diga "lluvia" con 0 mm).
-const CIELO={0:['☀️','despejado'],1:['🌤️','mayormente despejado'],2:['⛅','parcialmente nublado'],3:['☁️','nublado'],45:['🌫️','niebla'],48:['🌫️','niebla']};
+// Tarjetas de hoy y los 2 días siguientes (los mismos que cubren las alertas del SMN): tipo de tiempo, temperatura máxima y mínima
+// y lluvia prevista de Open-Meteo (la misma lluvia que usa el color: la de la localidad del semáforo o la del municipio).
+// Las temperaturas y el tipo de tiempo los guarda el robot en lluvia.json desde el 23/10/2026 (tmax, tmin, cod).
+// Si el SMN tiene alerta ese día para el municipio, van su ícono, su fenómeno y el nivel, con el color en el borde.
+// Si la copia no trae temperaturas (la del script de Google, o una vieja), se muestran el ícono de la lluvia y los mm.
+const DIAS_TARJ=3;
+// Ícono y palabra del día. Con 1 mm o más manda la lluvia (tormenta si Open-Meteo la prevé); con menos, el cielo del código de la OMM
+// (una llovizna de décimas de mm se muestra como nublado, para que no diga "lluvia" con 0 mm).
+const CIELO={0:['☀️','Despejado'],1:['🌤️','Casi despejado'],2:['⛅','Algo nublado'],3:['☁️','Nublado'],45:['🌫️','Niebla'],48:['🌫️','Niebla']};
 function icoDia(v,c){
-  if(v==null)return ['·','sin dato'];
-  if(v>=1)return c>=95&&c<=99?['⛈️','tormenta']:v<10?['🌦️','poca lluvia']:['🌧️','lluvia'];
-  if(c==null)return ['🌤️','sin lluvia'];
-  return CIELO[c]||['☁️','nublado'];
+  if(v==null)return ['·','Sin dato'];
+  if(v>=1)return c>=95&&c<=99?['⛈️','Tormenta']:v<10?['🌦️','Poca lluvia']:['🌧️','Lluvia'];
+  if(c==null)return ['🌤️','Sin lluvia'];
+  return CIELO[c]||['☁️','Nublado'];
 }
+const mayus=t=>t.charAt(0).toUpperCase()+t.slice(1);
 function diasInfo(i,k){
   try{
     let src,r;
@@ -1594,18 +1604,23 @@ function diasInfo(i,k){
     const a=dias.indexOf(hoy);if(a<0)return '';
     const fila=x=>Array.isArray(x)&&Array.isArray(x[r])&&x[r].length===dias.length?x[r]:null;
     const tx=fila(src.tmax),tn=fila(src.tmin),cd=fila(src.cod),conT=!!(tx&&tn);
-    const al=smnDe(i),cel=[],fin=Math.min(dias.length,a+7);let hayAl=false;
+    const al=smnDe(i),cel=[],fin=Math.min(dias.length,a+DIAS_TARJ);let hayAl=false;
     for(let d=a;d<fin;d++){
       const s=dias[d],v=mm[d]==null?null:Math.round(Number(mm[d])),c=cd&&cd[d]!=null?Number(cd[d]):null;
       const ad=al.filter(x=>x.dia===s).sort((x,y)=>y.niv-x.niv)[0];if(ad)hayAl=true;
-      const [ic,tx_]=icoDia(v,c),hT=conT&&tx[d]!=null&&tn[d]!=null;
-      const lab=fDiaLargo(s)+': '+tx_+(hT?', máxima '+tx[d]+'°, mínima '+tn[d]+'°':'')+', '+(v==null?'sin dato de lluvia':v+' mm de lluvia')+(ad?'. '+smnTxt(ad)+' del SMN':'');
-      cel.push('<div class="dia'+(ad?' n'+ad.niv:'')+'" role="listitem" aria-label="'+esc(lab)+'" title="'+esc(lab)+'"><small>'+(s===hoy?'Hoy':sem3(s))+'</small><span class="ico" aria-hidden="true">'+(ad?(SMN_ICO[ad.ev]||'⚠️'):ic)+'</span>'
-        +(hT?'<b>'+tx[d]+'°</b><small class="tmin">'+tn[d]+'°</small><span class="mm">'+(v==null?'–':nf(v))+' mm</span>'
-            :'<b>'+(v==null?'–':nf(v))+'</b><small>mm</small>')+'</div>');
+      let [ic,pal]=icoDia(v,c);
+      if(ad){ic=SMN_ICO[ad.ev]||'⚠️';pal=mayus(SMN_EV[ad.ev]||'otro fenómeno')}
+      const hT=conT&&tx[d]!=null&&tn[d]!=null,nv=ad&&SMN_NIV[ad.niv]?'Alerta '+SMN_NIV[ad.niv][1]:ad?'Alerta':'';
+      const lab=(s===hoy?'Hoy, ':'')+fDiaLargo(s)+': '+pal.toLowerCase()+(hT?', máxima '+tx[d]+'°, mínima '+tn[d]+'°':'')+', '+(v==null?'sin dato de lluvia':v+' mm de lluvia')+(ad?'. '+smnTxt(ad)+' del SMN':'');
+      cel.push('<div class="dia'+(ad?' n'+ad.niv:'')+'" role="listitem" aria-label="'+esc(lab)+'">'
+        +'<span class="dD" aria-hidden="true">'+(s===hoy?'Hoy':mayus(F_SEM.format(new Date(s+'T12:00:00Z'))))+'</span><span class="dF" aria-hidden="true">'+fDia(s)+'</span>'
+        +'<span class="ico" aria-hidden="true">'+ic+'</span><span class="dC" aria-hidden="true">'+esc(pal)+'</span>'
+        +(hT?'<span class="dT" aria-hidden="true"><span><small>Máx</small><b>'+tx[d]+'°</b></span><span><small>Mín</small><b class="mn">'+tn[d]+'°</b></span></span>':'')
+        +'<span class="dL" aria-hidden="true"><small>Lluvia</small><b>'+(v==null?'–':nf(v))+' mm</b></span>'
+        +(ad?'<span class="dA" aria-hidden="true">'+nv+'</span>':'')+'</div>');
     }
-    return '<div class="dias" role="list" aria-label="Pronóstico por día" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
-      +'<p class="meta">'+(conT?'Pronóstico de Open-Meteo: máxima, mínima y lluvia de cada día':'Lluvia prevista por día (Open-Meteo)')+(hayAl?'; los días con alerta del SMN llevan su ícono y su color':'')+(conT?'.':'. El ícono muestra la lluvia, no si habrá sol.')+'</p>';
+    return '<div class="dias" role="list" aria-label="Pronóstico de hoy y los próximos días" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
+      +'<p class="meta">'+(conT?'Pronóstico de Open-Meteo':'Lluvia prevista por Open-Meteo; el ícono muestra la lluvia, no si habrá sol')+(hayAl?'. Las alertas son del SMN':'')+'.</p>';
   }catch(e){console.error(e);return ''}
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
