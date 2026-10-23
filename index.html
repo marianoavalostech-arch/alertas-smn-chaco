@@ -183,6 +183,7 @@ section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-s
 .grande{font-size:2.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .grande small{font-size:1rem;font-weight:600;color:var(--muted)}
 .fila{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline}
+.lectura{margin:6px 0 0;color:var(--muted);font-size:.92rem}
 .datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:0}
 .datos div{background:var(--bg);border-radius:10px;padding:8px 10px}
 .datos dt{font-size:.8rem;color:var(--muted)}
@@ -1064,6 +1065,10 @@ function lecturaTxt(dt,r){
   const t=dt.hora?new Date(dt.hora):null,real=t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t));
   if(real)return 'Última lectura: '+fFechaHora(t)+'.';
   return 'Última lectura: la del '+fDia(r.dia)+(dt.act?' (el INA la cargó el '+fFechaHora(new Date(dt.act))+')':'')+'.'}
+// La misma fecha, corta, debajo del número grande: "Lectura del jueves 22/10" o, con hora real, "… a las 5 h".
+function lecturaCorta(dt,r){
+  const t=dt.hora?new Date(dt.hora):null,real=t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t));
+  return '<p class="lectura">Lectura del '+fDiaLargo(r.dia)+(real?' a las '+hDe(t)+' h':'')+'.</p>'}
 function meta(k,fuente,extra){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
@@ -1813,7 +1818,7 @@ function pintarRio(){
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
    +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
-  $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
+  $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'+lecturaCorta(D.rio.datos,r)
    +(!pn||!pn.fut?'':(c=>c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>'+pronoTxt(pn)+' El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.'+pronoAtraso(pn)+'</div>'
      :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.'+pronoAtraso(pn)+'</div>'
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
@@ -1898,7 +1903,7 @@ function bloqueOtro(k){
    +'<circle cx="'+x(ob[n][0])+'" cy="'+y(ob[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
    +'<text x="'+(x(ob[n][0])+8)+'" y="'+(y(ob[n][1])+4)+'" style="fill:var(--water);font-weight:800;font-size:11px">'+nf(ob[n][1],2)+' m</text>'
    +'<text x="'+L+'" y="'+(H-4)+'">'+fDia(d0)+'</text><text x="'+(W-Rt)+'" y="'+(H-4)+'" text-anchor="end">'+fDia(ob[n][0])+'</text></svg>';
-  return '<div class="otroRio">'+t+'<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
+  return '<div class="otroRio">'+t+'<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'+lecturaCorta(D[k].datos,r)
    +viejo+'<p>'+sit+'</p>'+nota+stats+svg
    +(N?'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(N.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(N.alerta,2)+' m</span></div>':'')
    +meta(k,o.fuente,lecturaTxt(D[k].datos,r))

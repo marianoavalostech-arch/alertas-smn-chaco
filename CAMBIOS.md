@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (fecha de la lectura debajo del número de cada río)
+
+Mariano: después de publicar `f10485c` seguía sin ver la fecha, porque quedaba en la letra chica del final de cada sección, debajo del gráfico.
+- **Debajo del número grande de cada río, la fecha de la lectura** (`lecturaCorta`, clase `.lectura`): "Lectura del jueves 22/10." en el Paraná y el Paraguay; "Lectura del viernes 23/10 a las 5 h." en el Bermejo, que trae la hora real. La letra chica del final queda igual.
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (fecha de la última lectura de los ríos)
 
 Pregunta de Mariano: si cada lectura del río se informa con su fecha y hora. El Paraná y el Paraguay decían "Última lectura: 22/10, 00:00 h": el INA guarda esas series como un dato por día y les pone la medianoche como hora, que no es la de la medición (Prefectura mide a la mañana).

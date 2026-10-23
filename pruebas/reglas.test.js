@@ -611,6 +611,10 @@ prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () 
   // El Bermejo es una estación automática: la hora es real y se muestra
   assert.strictEqual(S(`lecturaTxt({hora:'2026-10-23T08:00:00.000Z',act:'2026-10-23T10:01:07.762Z'},{dia:'2026-10-23'})`), 'Última lectura: 23/10, 05:00 h.');
   assert.ok(!html.includes("'Última lectura: '+(D.rio.datos.hora?"), 'ya no se arma la hora de medianoche a mano');
+  // Debajo del número grande, la fecha corta de la lectura
+  assert.strictEqual(S(`lecturaCorta({hora:'2026-10-22T03:00:00.000Z'},{dia:'2026-10-22'})`), '<p class="lectura">Lectura del jueves 22/10.</p>');
+  assert.strictEqual(S(`lecturaCorta({hora:'2026-10-23T08:00:00.000Z'},{dia:'2026-10-23'})`), '<p class="lectura">Lectura del viernes 23/10 a las 5 h.</p>');
+  assert.ok(b.includes('<p class="lectura">Lectura del miércoles 10/3 a las 9 h.</p>'), 'el Bermejo la muestra debajo del número, con su hora');
 });
 
 prueba('SMN: piso del color y franjas que ya pasaron', () => {
