@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (recuadros de los próximos días y texto desplegable en el detalle del mapa)
+
+Pedido de Mariano: en el detalle de un municipio, recuadros de los días siguientes con íconos según el pronóstico, además de la alerta, y el texto de abajo desplegable de forma que se note que sigue.
+- **Recuadros de hoy y los 6 días siguientes** (`diasInfo`), debajo del renglón del SMN: día ("Hoy", "Sáb 24"…), ícono y mm de lluvia prevista. Íconos solo por la lluvia (no hay datos de sol, nubes ni temperatura): 🌤️ sin lluvia (menos de 1 mm), 🌦️ poca (1 a 9), 🌧️ lluvia (10 o más). Si el SMN tiene alerta ese día para el municipio, va su ícono (⛈️ tormentas, etc.) y el borde de arriba con el color del nivel. Cada recuadro dice todo en palabras para lectores de pantalla.
+- **Misma lluvia que usa el color**: en las localidades del semáforo y el Gran Resistencia, la de `lluvia.json`; en el resto, la de cada municipio (`M.mmMun`, guardada en `estimar`). Sin recuadros si el dato es viejo o falta.
+- **Texto desplegable** (`.mDet`): el color y su explicación, el río y la lluvia medida empiezan cortados con el mismo desvanecido de las secciones plegables y el botón "Seguir leyendo" / "Leer menos"; tocar el texto desvanecido también lo abre. Si el texto entra entero, no se corta. Al elegir otro municipio vuelve a cerrarse. Al imprimir sale entero.
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (alerta del SMN arriba en el detalle del mapa)
 
 Pedido de Mariano: al tocar un municipio en el mapa (por ejemplo Resistencia), el aviso del SMN quedaba al final, después del río y de la lluvia medida.

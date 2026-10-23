@@ -376,6 +376,19 @@ footer{font-size:.85rem;color:var(--muted)}
 .ley[aria-pressed="true"]{border-color:var(--ink);background:var(--bg);color:var(--ink);font-weight:700}
 .cerrar{min-width:36px;min-height:36px;padding:0 8px;flex:none}
 .irmun{font:inherit;font-weight:700;background:none;border:0;padding:4px 0;margin-right:12px;color:var(--acento);text-decoration:underline;cursor:pointer}
+/* recuadros de los próximos días en el detalle del mapa (23/10/2026) */
+.dias{display:grid;gap:4px;margin:2px 0 0}
+.dia{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:5px 2px 4px;border-radius:6px;background:var(--card);border:1px solid var(--line);border-top:3px solid var(--line);text-align:center;line-height:1.15}
+.dia small{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.dia .ico{font-size:1.25rem;line-height:1.25}
+.dia b{font-size:.9rem}
+.dia.n3{border-top-color:var(--amarillo-mapa)}.dia.n4{border-top-color:var(--naranja)}.dia.n5{border-top-color:var(--rojo)}
+/* texto del detalle: cerrado, se ve el comienzo y se desvanece; "Seguir leyendo" lo abre */
+.mDet{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mDet.vista{max-height:7rem;overflow:hidden;cursor:pointer;-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
+#mInfo .mas[aria-expanded="true"]{margin-top:2px}
+#mInfo .mas[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+@media print{.mDet.vista{max-height:none;-webkit-mask-image:none;mask-image:none}#mInfo .mas{display:none!important}}
 #mInfo.rio{border-color:var(--water)}#mInfo.verde{border-color:var(--verde)}#mInfo.amarillo{border-color:var(--amarillo)}#mInfo.naranja{border-color:var(--naranja)}#mInfo.rojo{border-color:var(--rojo)}
 /* qué hacer ante una alerta: franja "Ahora en el Chaco", teléfonos para tocar, tarjetas por situación, mochila para tildar */
 .hEt{font-weight:700;margin-bottom:8px}
@@ -1421,6 +1434,7 @@ function armarMapa(){
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
   const soltarFoco=()=>{if(M.rio)verRio(null);else if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
+    if(e.target.closest('[data-mas]')||e.target.closest('.mDet.vista')){e.preventDefault();M.detAb=!M.detAb;pintarInfo();return}
     if(rv)irSec(rv.dataset.irrio);else if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
   addEventListener('resize',()=>aplicar(M.vb));
@@ -1504,6 +1518,7 @@ function elegir(i,enf){
   if(M.rio){M.rio=null;M.svg.querySelectorAll('.rioT.sel').forEach(p=>p.classList.remove('sel'))}
   const habia=M.sel>=0;
   if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
+  if(i!==M.sel)M.detAb=false;
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
   if(i>=0){guardarMiLoc(i);if(MILOC)pintarMiLoc()}
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
@@ -1547,7 +1562,34 @@ function pintarInfo(){
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+smnInfo(i)+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i);
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+smnInfo(i)+diasInfo(i,k)
+   +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'</div>'
+   +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>';
+  // Si el texto entra entero, no se corta ni lleva botón.
+  try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
+}
+// Recuadros de hoy y los 6 días siguientes: lluvia prevista (la misma que usa el color: la de la localidad del semáforo o la del municipio)
+// y, si el SMN tiene alerta ese día para el municipio, su ícono y el color del nivel en el borde. Sin datos de sol, nubes ni temperatura.
+const F_SEM3=new Intl.DateTimeFormat('es-AR',{weekday:'short',timeZone:'UTC'}),sem3=s=>{const w=F_SEM3.format(new Date(s+'T12:00:00Z')).replace('.','');return w.charAt(0).toUpperCase()+w.slice(1)+' '+Number(s.slice(8))};
+const LL_ICO=r=>r<1?['🌤️','sin lluvia']:r<10?['🌦️','poca lluvia']:r<45?['🌧️','lluvia']:['🌧️','mucha lluvia'];
+function diasInfo(i,k){
+  try{
+    let dias,mm;
+    if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){dias=D.lluvia.datos.dias;mm=D.lluvia.datos.mm[k.j]}
+    else if(k.tipo==='est'&&M.mmMun){dias=M.diasMun;mm=M.mmMun[i]}
+    if(!dias||!mm)return '';
+    const a=dias.indexOf(hoy);if(a<0)return '';
+    const al=smnDe(i),cel=[],fin=Math.min(dias.length,a+7);let hayAl=false;
+    for(let d=a;d<fin;d++){
+      const s=dias[d],v=mm[d]==null?null:Math.round(Number(mm[d]));
+      const ad=al.filter(x=>x.dia===s).sort((x,y)=>y.niv-x.niv)[0];if(ad)hayAl=true;
+      const [ic,tx]=v==null?['·','sin dato']:LL_ICO(v);
+      const lab=fDiaLargo(s)+': '+(v==null?'sin dato':tx+', '+v+' mm')+(ad?'. '+smnTxt(ad)+' del SMN':'');
+      cel.push('<div class="dia'+(ad?' n'+ad.niv:'')+'" role="listitem" aria-label="'+esc(lab)+'" title="'+esc(lab)+'"><small>'+(s===hoy?'Hoy':sem3(s))+'</small><span class="ico" aria-hidden="true">'+(ad?(SMN_ICO[ad.ev]||'⚠️'):ic)+'</span><b>'+(v==null?'–':nf(v))+'</b><small>mm</small></div>');
+    }
+    return '<div class="dias" role="list" aria-label="Lluvia prevista por día" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
+      +'<p class="meta">Lluvia prevista por día (Open-Meteo)'+(hayAl?'; los días con alerta del SMN llevan su ícono y su color':'')+'. El ícono muestra la lluvia, no si habrá sol.</p>';
+  }catch(e){console.error(e);return ''}
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
 // con una lectura de las últimas MEDIDA_H horas.
@@ -1737,7 +1779,7 @@ function colorearMapa(R){
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
-const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),ref);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
+const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];M.diasMun=d.dias;M.mmMun=d.mm;d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),ref);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
 async function cargarTodos(){
   if(M.todos==='cargando')return;
   const b=$('mTodos'),e=$('mEstado');
@@ -2054,7 +2096,7 @@ function pintarBanner(){
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
   (ks||[]).forEach(k=>{MEM.borrar(k);if(D[k])D[k]={datos:null,error:true};
-    if(k==='municipios'){M.est={};M.tEst=0}
+    if(k==='municipios'){M.est={};M.tEst=0;M.mmMun=null}
     if(k==='smn'){SMN=SMN_VACIO;SMN_VIVO=false}
     if(k==='grilla'){A.g=null;A.t=null;A.armado=false;$('anim').innerHTML=''}});
   try{f()}catch(e){console.error(e)}
