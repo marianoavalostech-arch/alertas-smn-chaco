@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (enlaces a "Lluvia hora por hora" y "Tormentas" sin cortar)
+
+Pedido de Mariano: arreglar "Tor-mentas" cortado y sumar un enlace a "Lluvia hora por hora" donde sirva, sin que moleste ni se repita.
+- **Etiqueta de la alerta** (`.smnChip`): sin guiones ni justificado (`hyphens:none`, `text-align:left`), aunque el párrafo de alrededor sí lo esté. Arregla "Tor-mentas" en el detalle del mapa y en cualquier otro lugar donde aparezca.
+- **Detalle del mapa**: al final de la letra chica de las tarjetas, "Ver a qué hora llueve hoy y mañana ↓" (`a.aHora`, `#t-anim`). Abre la sección si está cerrada y baja hasta ella (también en el portal, con el mismo mecanismo de "Ver el río"). En las 6 localidades del semáforo y el Gran Resistencia, además deja elegida esa localidad en "Lluvia en" (`data-hora`, `elegirLoc`), con su resumen ("En Resistencia se espera lluvia mañana, a ratos entre…").
+- **Alertas oficiales del SMN**: "Ver a qué hora llega la lluvia, hora por hora ↓", solo cuando hay alerta por tormentas o lluvias.
+- No se agregan en "Lluvias: últimos 7 días…" (está justo arriba de "Lluvia hora por hora") ni en "Riesgo por localidad" (repetiría el del mapa).
+- Huella nueva del código. 73 pruebas.
+
 ## 23/10/2026 (3 tarjetas grandes en vez de 7 recuadros)
 
 Pedido de Mariano: acotar a 3 días y acomodar el diseño para que se vean bien la temperatura y la lluvia.
