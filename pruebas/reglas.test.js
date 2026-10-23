@@ -974,6 +974,31 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
     assert.ok(S(`hoy='2026-10-08';var real=Date.now;Date.now=()=>new Date('2026-10-08T12:30:00Z').getTime();var x=delServidor('lluvia',${JSON.stringify(r.salida)});Date.now=real;x`));
   });
 
+  // Robot de la lluvia con temperaturas y tipo de tiempo (23/10/2026): misma consulta, se guardan alineados con los días
+  const rl = require('../robot/lluvia.js'), real2 = global.fetch;
+  let urls = [];
+  global.fetch = async url => { urls.push(url); const n = url.split('latitude=')[1].split('&')[0].split(',').length;
+    return { ok: true, json: async () => Array.from({ length: n }, (_, k) => ({ daily: { time: dia, precipitation_sum: dia.map(() => 2),
+      temperature_2m_max: dia.map(() => 32.6), temperature_2m_min: dia.map(() => k === 0 ? null : 19.4), weather_code: dia.map(() => 95) } })) }; };
+  const rt = await rl.armar(null, new Date('2026-10-08T12:00:00Z'), 1);
+  global.fetch = async url => { const n = url.split('latitude=')[1].split('&')[0].split(',').length;
+    return { ok: true, json: async () => Array.from({ length: n }, () => ({ daily: { time: dia, precipitation_sum: dia.map(() => 2), temperature_2m_max: [30] } })) }; };
+  const rm = await rl.armar(null, new Date('2026-10-08T12:00:00Z'), 1);
+  global.fetch = real2;
+  prueba('robot de la lluvia: pide máxima, mínima y tipo de tiempo en la misma consulta y los guarda redondeados', () => {
+    assert.strictEqual(urls.length, 2);
+    urls.forEach(u => assert.ok(u.includes('daily=precipitation_sum,temperature_2m_max,temperature_2m_min,weather_code&past_days=7')));
+    const d = rt.salida.datos.lluvia;
+    assert.strictEqual(rt.bien, 2); assert.strictEqual(d.tmax.length, 6); assert.strictEqual(d.tmax[0].length, 14);
+    assert.strictEqual(d.tmax[0][7], 33); assert.strictEqual(d.tmin[1][7], 19); assert.strictEqual(d.tmin[0][7], null); assert.strictEqual(d.cod[0][7], 95);
+    assert.strictEqual(rt.salida.datos.municipios.tmax.length, 70);
+    assert.ok(S(`hoy='2026-10-08';var real=Date.now;Date.now=()=>new Date('2026-10-08T12:30:00Z').getTime();var x=delServidor('lluvia',${JSON.stringify(rt.salida)});Date.now=real;x`));
+  });
+  prueba('robot de la lluvia: si las temperaturas llegan mal, la lluvia se guarda igual, sin ellas', () => {
+    assert.strictEqual(rm.bien, 2); assert.strictEqual(rm.salida.datos.lluvia.mm[0][0], 2);
+    assert.strictEqual(rm.salida.datos.lluvia.tmax, undefined); assert.strictEqual(rm.salida.datos.municipios.cod, undefined);
+  });
+
   // Robot de la grilla (mapa animado), con Open-Meteo simulado
   const gr = require('../robot/grilla.js'), np = gr.G.nlat * gr.G.nlon;
   const horas = Array.from({ length: 72 }, (_, k) => '2026-10-' + String(11 + Math.floor(k / 24)) + 'T' + String(k % 24).padStart(2, '0') + ':00');

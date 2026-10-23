@@ -382,6 +382,8 @@ footer{font-size:.85rem;color:var(--muted)}
 .dia small{font-size:.7rem;color:var(--muted);white-space:nowrap}
 .dia .ico{font-size:1.25rem;line-height:1.25}
 .dia b{font-size:.9rem}
+.dia .tmin{font-size:.72rem}
+.dia .mm{font-size:.7rem;font-weight:600;color:var(--water);white-space:nowrap;margin-top:1px}
 .dia.n3{border-top-color:var(--amarillo-mapa)}.dia.n4{border-top-color:var(--naranja)}.dia.n5{border-top-color:var(--rojo)}
 /* texto del detalle: cerrado, se ve el comienzo y se desvanece; "Seguir leyendo" lo abre */
 .mDet{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -1568,27 +1570,42 @@ function pintarInfo(){
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
 }
-// Recuadros de hoy y los 6 días siguientes: lluvia prevista (la misma que usa el color: la de la localidad del semáforo o la del municipio)
-// y, si el SMN tiene alerta ese día para el municipio, su ícono y el color del nivel en el borde. Sin datos de sol, nubes ni temperatura.
+// Recuadros de hoy y los 6 días siguientes: lluvia prevista (la misma que usa el color: la de la localidad del semáforo o la del municipio),
+// temperatura máxima y mínima y tipo de tiempo de Open-Meteo (desde el 23/10/2026, los guarda el robot en lluvia.json: tmax, tmin, cod)
+// y, si el SMN tiene alerta ese día para el municipio, su ícono y el color del nivel en el borde.
+// Si la copia no trae temperaturas (la del script de Google, o una vieja), se muestran solo la lluvia y su ícono.
 const F_SEM3=new Intl.DateTimeFormat('es-AR',{weekday:'short',timeZone:'UTC'}),sem3=s=>{const w=F_SEM3.format(new Date(s+'T12:00:00Z')).replace('.','');return w.charAt(0).toUpperCase()+w.slice(1)+' '+Number(s.slice(8))};
-const LL_ICO=r=>r<1?['🌤️','sin lluvia']:r<10?['🌦️','poca lluvia']:r<45?['🌧️','lluvia']:['🌧️','mucha lluvia'];
+// Ícono del día. Con 1 mm o más manda la lluvia (tormenta si Open-Meteo la prevé); con menos, el cielo del código de la OMM
+// (una llovizna de décimas de mm se muestra como nublado, para que el ícono no diga "lluvia" con 0 mm).
+const CIELO={0:['☀️','despejado'],1:['🌤️','mayormente despejado'],2:['⛅','parcialmente nublado'],3:['☁️','nublado'],45:['🌫️','niebla'],48:['🌫️','niebla']};
+function icoDia(v,c){
+  if(v==null)return ['·','sin dato'];
+  if(v>=1)return c>=95&&c<=99?['⛈️','tormenta']:v<10?['🌦️','poca lluvia']:['🌧️','lluvia'];
+  if(c==null)return ['🌤️','sin lluvia'];
+  return CIELO[c]||['☁️','nublado'];
+}
 function diasInfo(i,k){
   try{
-    let dias,mm;
-    if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){dias=D.lluvia.datos.dias;mm=D.lluvia.datos.mm[k.j]}
-    else if(k.tipo==='est'&&M.mmMun){dias=M.diasMun;mm=M.mmMun[i]}
+    let src,r;
+    if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){src=D.lluvia.datos;r=k.j}
+    else if(k.tipo==='est'&&M.dMun){src=M.dMun;r=i}
+    const dias=src&&src.dias,mm=src&&src.mm&&src.mm[r];
     if(!dias||!mm)return '';
     const a=dias.indexOf(hoy);if(a<0)return '';
+    const fila=x=>Array.isArray(x)&&Array.isArray(x[r])&&x[r].length===dias.length?x[r]:null;
+    const tx=fila(src.tmax),tn=fila(src.tmin),cd=fila(src.cod),conT=!!(tx&&tn);
     const al=smnDe(i),cel=[],fin=Math.min(dias.length,a+7);let hayAl=false;
     for(let d=a;d<fin;d++){
-      const s=dias[d],v=mm[d]==null?null:Math.round(Number(mm[d]));
+      const s=dias[d],v=mm[d]==null?null:Math.round(Number(mm[d])),c=cd&&cd[d]!=null?Number(cd[d]):null;
       const ad=al.filter(x=>x.dia===s).sort((x,y)=>y.niv-x.niv)[0];if(ad)hayAl=true;
-      const [ic,tx]=v==null?['·','sin dato']:LL_ICO(v);
-      const lab=fDiaLargo(s)+': '+(v==null?'sin dato':tx+', '+v+' mm')+(ad?'. '+smnTxt(ad)+' del SMN':'');
-      cel.push('<div class="dia'+(ad?' n'+ad.niv:'')+'" role="listitem" aria-label="'+esc(lab)+'" title="'+esc(lab)+'"><small>'+(s===hoy?'Hoy':sem3(s))+'</small><span class="ico" aria-hidden="true">'+(ad?(SMN_ICO[ad.ev]||'⚠️'):ic)+'</span><b>'+(v==null?'–':nf(v))+'</b><small>mm</small></div>');
+      const [ic,tx_]=icoDia(v,c),hT=conT&&tx[d]!=null&&tn[d]!=null;
+      const lab=fDiaLargo(s)+': '+tx_+(hT?', máxima '+tx[d]+'°, mínima '+tn[d]+'°':'')+', '+(v==null?'sin dato de lluvia':v+' mm de lluvia')+(ad?'. '+smnTxt(ad)+' del SMN':'');
+      cel.push('<div class="dia'+(ad?' n'+ad.niv:'')+'" role="listitem" aria-label="'+esc(lab)+'" title="'+esc(lab)+'"><small>'+(s===hoy?'Hoy':sem3(s))+'</small><span class="ico" aria-hidden="true">'+(ad?(SMN_ICO[ad.ev]||'⚠️'):ic)+'</span>'
+        +(hT?'<b>'+tx[d]+'°</b><small class="tmin">'+tn[d]+'°</small><span class="mm">'+(v==null?'–':nf(v))+' mm</span>'
+            :'<b>'+(v==null?'–':nf(v))+'</b><small>mm</small>')+'</div>');
     }
-    return '<div class="dias" role="list" aria-label="Lluvia prevista por día" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
-      +'<p class="meta">Lluvia prevista por día (Open-Meteo)'+(hayAl?'; los días con alerta del SMN llevan su ícono y su color':'')+'. El ícono muestra la lluvia, no si habrá sol.</p>';
+    return '<div class="dias" role="list" aria-label="Pronóstico por día" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
+      +'<p class="meta">'+(conT?'Pronóstico de Open-Meteo: máxima, mínima y lluvia de cada día':'Lluvia prevista por día (Open-Meteo)')+(hayAl?'; los días con alerta del SMN llevan su ícono y su color':'')+(conT?'.':'. El ícono muestra la lluvia, no si habrá sol.')+'</p>';
   }catch(e){console.error(e);return ''}
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
@@ -1779,7 +1796,7 @@ function colorearMapa(R){
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
-const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];M.diasMun=d.dias;M.mmMun=d.mm;d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),ref);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
+const estimar=(d,ref=hoy)=>{M.estFin=d.dias[d.dias.length-1];M.dMun=d;d.mm.forEach((mm,i)=>{const ll=sumarLluvia(d.dias,mm.map(v=>v==null?0:Number(v)),ref);M.est[i]={ll,c:['verde','amarillo','rojo'][nivelLluvia(ll)]}})};
 async function cargarTodos(){
   if(M.todos==='cargando')return;
   const b=$('mTodos'),e=$('mEstado');
@@ -1788,7 +1805,7 @@ async function cargarTodos(){
     let d=await copia('municipios'),t=d?new Date(d.t):new Date();
     if(!d){const g=reciente('municipios');if(g){d=g.datos;t=new Date(g.t)}}
     if(!d){d=await copiaVieja('municipios');if(!d)throw new Error('sin copia');t=new Date(d.t)}   // nunca se consulta Open-Meteo desde acá
-    estimar(d,diaAR(t));MEM.guardar('municipios',{dias:d.dias,mm:d.mm},t);
+    estimar(d,diaAR(t));MEM.guardar('municipios',{dias:d.dias,mm:d.mm,tmax:d.tmax,tmin:d.tmin,cod:d.cod},t);
     M.todos='ok';M.tEst=t;
     e.innerHTML='Última actualización: '+fFechaHora(t)+'. Fuente: Open-Meteo.';
   }catch(err){
@@ -2096,7 +2113,7 @@ function pintarBanner(){
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
   (ks||[]).forEach(k=>{MEM.borrar(k);if(D[k])D[k]={datos:null,error:true};
-    if(k==='municipios'){M.est={};M.tEst=0;M.mmMun=null}
+    if(k==='municipios'){M.est={};M.tEst=0;M.dMun=null}
     if(k==='smn'){SMN=SMN_VACIO;SMN_VIVO=false}
     if(k==='grilla'){A.g=null;A.t=null;A.armado=false;$('anim').innerHTML=''}});
   try{f()}catch(e){console.error(e)}

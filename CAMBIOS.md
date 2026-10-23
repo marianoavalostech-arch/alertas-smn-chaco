@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (temperatura y tipo de tiempo en los recuadros de los días)
+
+Pedido de Mariano: agregar los grados a los recuadros de los días.
+- **Robot de la lluvia** (`robot/lluvia.js`): la misma consulta a Open-Meteo pide además `temperature_2m_max`, `temperature_2m_min` y `weather_code` (`urlTiempo`: le suma las variables a la dirección del script de Google, que no se cambia; si esa dirección cambiara de forma, pide solo la lluvia como antes). Se guardan en `lluvia.json` como `tmax`, `tmin` (grados enteros) y `cod` (código del tiempo de la OMM), alineados con `dias`, para las 6 localidades y los 70 municipios (`tiempo`). Mismos 2 pedidos por hora que antes. Si llegan mal, la lluvia se guarda igual, sin ellos. La copia del script de Google (`servidor.json`) no los trae.
+- **Recuadros** (`diasInfo`): ícono del tiempo, máxima (negrita), mínima y mm de lluvia. Ícono (`icoDia`): con 1 mm o más manda la lluvia (⛈️ si Open-Meteo prevé tormenta, 🌦️ de 1 a 9 mm, 🌧️ desde 10); con menos, el cielo (☀️ despejado, 🌤️ mayormente despejado, ⛅ parcialmente nublado, ☁️ nublado o llovizna de décimas, 🌫️ niebla). Con alerta del SMN ese día, su ícono y su color, como antes. Sin temperaturas en la copia, se muestra como antes (solo lluvia).
+- La copia de los municipios guardada en el navegador incluye las temperaturas (`MEM`, `M.dMun`).
+- Pruebas nuevas del robot (pide las variables en la misma consulta, redondea, y si llegan mal guarda la lluvia igual). Huella nueva del código. 73 pruebas.
+
 ## 23/10/2026 (recuadros de los próximos días y texto desplegable en el detalle del mapa)
 
 Pedido de Mariano: en el detalle de un municipio, recuadros de los días siguientes con íconos según el pronóstico, además de la alerta, y el texto de abajo desplegable de forma que se note que sigue.
