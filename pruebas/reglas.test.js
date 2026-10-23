@@ -603,18 +603,23 @@ prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () 
   // El Bermejo no tiene niveles oficiales: se pinta sin la cuenta de "le faltan"
   const b = S(`hoy='2027-03-10';LISTO=true;D.bermejo={datos:{obs:[['2027-03-07',2.2],['2027-03-10',2.5]],hora:'2027-03-10T12:00:00Z'},vivo:true,t:new Date()};bloqueOtro('bermejo')`);
   assert.ok(b.includes('no publica niveles de alerta')); assert.ok(b.includes('creciendo')); assert.ok(!b.includes('NaN'));
-  // Fecha de la lectura: el Paraná y el Paraguay traen la medianoche como hora (no es la de la medición): va solo el día
-  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z',act:'2026-10-22T13:31:03.644Z'},{dia:'2026-10-22'})`),
-    'Última lectura: la del 22/10 (el INA la cargó el 22/10, 10:31 h).');
-  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z'},{dia:'2026-10-22'})`), 'Última lectura: la del 22/10.');
-  assert.strictEqual(S(`lecturaTxt({},{dia:'2026-10-22'})`), 'Última lectura: la del 22/10.');
-  // El Bermejo es una estación automática: la hora es real y se muestra
-  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-23T08:00:00.000Z',act:'2026-10-23T10:01:07.762Z'},{dia:'2026-10-23'})`), 'Última lectura: 23/10, 05:00 h.');
-  assert.ok(!html.includes("'Última lectura: '+(D.rio.datos.hora?"), 'ya no se arma la hora de medianoche a mano');
-  // Debajo del número grande, la fecha corta de la lectura
-  assert.strictEqual(S(`lecturaCorta({hora:'2026-10-22T03:00:00.000Z'},{dia:'2026-10-22'})`), '<p class="lectura">Lectura del jueves 22/10.</p>');
-  assert.strictEqual(S(`lecturaCorta({hora:'2026-10-23T08:00:00.000Z'},{dia:'2026-10-23'})`), '<p class="lectura">Lectura del viernes 23/10 a las 5 h.</p>');
-  assert.ok(b.includes('<p class="lectura">Lectura del miércoles 10/3 a las 9 h.</p>'), 'el Bermejo la muestra debajo del número, con su hora');
+  // Fecha de la lectura, debajo del número grande. El Paraná y el Paraguay traen la medianoche como hora (no es la de
+  // la medición): va solo el día. El Bermejo es una estación automática: la hora es real y se muestra.
+  const lc = (h, dt, dia) => S(`hoy='${h}';lecturaCorta(${JSON.stringify(dt)},{dia:'${dia}'})`);
+  assert.strictEqual(lc('2026-10-23', { hora: '2026-10-22T03:00:00.000Z' }, '2026-10-22'), '<p class="lectura">Medido ayer, jueves 22/10.</p>');
+  assert.strictEqual(lc('2026-10-22', { hora: '2026-10-22T03:00:00.000Z' }, '2026-10-22'), '<p class="lectura">Medido hoy.</p>');
+  assert.strictEqual(lc('2026-10-23', {}, '2026-10-20'), '<p class="lectura">Medido el martes 20/10.</p>');
+  assert.strictEqual(lc('2026-10-23', { hora: '2026-10-23T08:00:00.000Z' }, '2026-10-23'), '<p class="lectura">Medido hoy a las 5 h.</p>');
+  assert.ok(b.includes('<p class="lectura">Medido hoy a las 9 h.</p>'), 'el Bermejo la muestra debajo del número, con su hora');
+  // En la letra chica, solo cuándo la cargó el INA (sin repetir la fecha)
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z',act:'2026-10-22T13:31:03.644Z'})`), 'El INA la cargó el 22/10, 10:31 h.');
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z'})`), '');
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-23T08:00:00.000Z',act:'2026-10-23T10:01:07.762Z'})`), '');
+  assert.ok(!html.includes('Última lectura: la del') && !html.includes("'Última lectura: '+(D.rio.datos.hora?"), 'la fecha no se repite abajo');
+  // Cuadritos: sin "En 3 días" (lo dice la frase de arriba); el máximo, solo si no es la lectura de hoy
+  assert.ok(!b.includes('En 3 días') && !b.includes('Máximo del período'), 'Bermejo: el máximo es la lectura de hoy');
+  const b2 = S(`hoy='2027-03-10';LISTO=true;D.bermejo={datos:{obs:[['2027-03-07',2.8],['2027-03-10',2.5]]},vivo:true,t:new Date()};bloqueOtro('bermejo')`);
+  assert.ok(b2.includes('Máximo del período') && b2.includes('2,80 m (7/3)'), 'si ya bajó del pico, el máximo sí aparece');
 });
 
 prueba('SMN: piso del color y franjas que ya pasaron', () => {
@@ -1125,16 +1130,20 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en el pronóstico; explicaciones del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    assert.strictEqual(l('2026-10-13', o), '<p><b>Río arriba, Yacyretá</b> suelta unos 32.800 m³ de agua por segundo: cerca del triple de lo normal para octubre. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p>'
-      + '<p>El INA marca para lo que suelta Yacyretá alerta desde 25.000 y evacuación desde 30.000: hoy está por encima de la evacuación. Esos niveles son para el río junto a la represa; para la costa del Chaco valen los de Barranqueras.</p>'
-      + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del 13/10.</p>');
+    // 23/10: cajita con el sentido primero ("Suelta cerca del triple de lo normal"), después el número y lo normal
+    assert.strictEqual(l('2026-10-13', o), '<div class="yacy"><p class="yacyTit">Río arriba: represa de Yacyretá</p>'
+      + '<p class="yacyVs">Suelta cerca del triple de lo normal para octubre</p>'
+      + '<p>32.800 m³ de agua por segundo (lo normal: unos 13.100). Medido hoy.</p>'
+      + '<p>Esa agua tarda unos 3 días en llegar a Barranqueras. El INA ya la cuenta en su pronóstico.</p>'
+      + '<p>Está arriba del nivel de evacuación que el INA marca junto a la represa (30.000). Para la costa del Chaco valen los niveles de Barranqueras.</p>'
+      + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>');
     // niveles del INA para Yacyretá: solo se nombran desde la alerta, y nunca cambian colores
     assert.deepStrictEqual(JSON.parse(S('JSON.stringify(YACY_NIVEL)')), { alerta: 25000, evac: 30000 });
-    assert.strictEqual(S(`yacyNivel(24900,'hoy')`), '');
-    assert.ok(S(`yacyNivel(27000,'el 12/10')`).includes('el 12/10 está por encima de la alerta.'));
-    assert.ok(S(`yacyNivel(30000,'hoy')`).includes('hoy está por encima de la evacuación.'));
+    assert.strictEqual(S(`yacyNivel(24900)`), '');
+    assert.ok(S(`yacyNivel(27000)`).includes('arriba del nivel de alerta que el INA marca junto a la represa (25.000)'));
+    assert.ok(S(`yacyNivel(30000)`).includes('arriba del nivel de evacuación que el INA marca junto a la represa (30.000)'));
     assert.ok(!/YACY_NIVEL/.test(codigo.slice(codigo.indexOf('function riesgoRio'), codigo.indexOf('function riesgoRio') + 3000)), 'no entra en el color del río');
-    assert.ok(l('2026-10-14', o).includes('soltaba el 13/10 unos 32.800'));      // el dato de hoy todavía no está
+    assert.ok(l('2026-10-14', o).includes('Medido ayer, martes 13/10.'));       // el dato de hoy todavía no está
     assert.strictEqual(S('YACY_NORMAL.length'), 12);
     assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
     assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');

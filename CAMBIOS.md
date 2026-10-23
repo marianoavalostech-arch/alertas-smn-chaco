@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (secciones de los ríos más livianas y Yacyretá más clara)
+
+Pedido de Mariano: revisar que se entienda y que no haya demasiado texto; mejorar la comprensión y el diseño de Yacyretá.
+- **Fecha debajo del número, en palabras de todos los días** (`medidoTxt`): "Medido ayer, jueves 22/10.", "Medido hoy a las 5 h." (Bermejo) o "Medido el martes 20/10." si es más vieja.
+- **La fecha no se repite en la letra chica**: abajo queda solo "El INA la cargó el 22/10, 10:31 h." (`lecturaTxt`).
+- **Cuadritos sin "En 3 días"** (ya lo dice "Está creciendo: subió… en 3 días") y **"Máximo del período" solo si no es la lectura de hoy** (cuando el río ya bajó del pico). En los tres ríos.
+- **Yacyretá en una cajita** (`.yacy`): primero lo que significa ("Suelta cerca del triple de lo normal para octubre"), después el número con lo normal del mes ("33.800 m³ de agua por segundo (lo normal: unos 13.100)") y la fecha; "Esa agua tarda unos 3 días en llegar a Barranqueras. El INA ya la cuenta en su pronóstico."; los niveles del INA junto a la represa en una sola frase (`yacyNivel`). Sin gráfico, sin cambiar colores. Texto alineado a la izquierda (justificado dejaba huecos).
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (fecha de la lectura debajo del número de cada río)
 
 Mariano: después de publicar `f10485c` seguía sin ver la fecha, porque quedaba en la letra chica del final de cada sección, debajo del gráfico.

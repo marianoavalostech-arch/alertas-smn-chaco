@@ -183,7 +183,9 @@ section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-s
 .grande{font-size:2.6rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .grande small{font-size:1rem;font-weight:600;color:var(--muted)}
 .fila{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline}
-.lectura{margin:6px 0 0;color:var(--muted);font-size:.92rem}
+.lectura{margin:-6px 0 0;color:var(--muted);font-size:.92rem}
+.yacy{background:var(--bg);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}.yacy p{margin:0;text-align:left;hyphens:manual}
+.yacyTit{font-size:.85rem;font-weight:700;color:var(--muted)}.yacyVs{font-size:1.08rem;font-weight:800;color:var(--titulo)}
 .datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin:0}
 .datos div{background:var(--bg);border-radius:10px;padding:8px 10px}
 .datos dt{font-size:.8rem;color:var(--muted)}
@@ -1058,17 +1060,16 @@ async function cargar(k){
     D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t),error:true}:{datos:null,error:true};
   }
 }
-// Fecha de la última lectura de un río. El INA guarda el Paraná y el Paraguay como un dato por día y les pone
-// la medianoche como hora: esa hora no es la de la medición (Prefectura mide a la mañana), así que va solo el día
-// y cuándo lo cargó el INA. Si la hora es real (el Bermejo, estación automática), va con la hora.
-function lecturaTxt(dt,r){
-  const t=dt.hora?new Date(dt.hora):null,real=t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t));
-  if(real)return 'Última lectura: '+fFechaHora(t)+'.';
-  return 'Última lectura: la del '+fDia(r.dia)+(dt.act?' (el INA la cargó el '+fFechaHora(new Date(dt.act))+')':'')+'.'}
-// La misma fecha, corta, debajo del número grande: "Lectura del jueves 22/10" o, con hora real, "… a las 5 h".
-function lecturaCorta(dt,r){
-  const t=dt.hora?new Date(dt.hora):null,real=t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t));
-  return '<p class="lectura">Lectura del '+fDiaLargo(r.dia)+(real?' a las '+hDe(t)+' h':'')+'.</p>'}
+// Fecha de la lectura de un río, debajo del número grande. El INA guarda el Paraná y el Paraguay como un dato por día
+// y les pone la medianoche como hora: esa hora no es la de la medición (Prefectura mide a la mañana), así que va solo
+// el día. Si la hora es real (el Bermejo, estación automática), va con la hora.
+const horaReal=dt=>{const t=dt&&dt.hora?new Date(dt.hora):null;return t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t))?t:null};
+function medidoTxt(dia,t){
+  const d=diasEntre(dia,hoy),h=t?' a las '+hDe(t)+' h':'';
+  return 'Medido '+(d===0?'hoy'+h:d===1?'ayer, '+fDiaLargo(dia)+h:'el '+fDiaLargo(dia)+h)+'.'}
+const lecturaCorta=(dt,r)=>'<p class="lectura">'+medidoTxt(r.dia,horaReal(dt))+'</p>';
+// En la letra chica del final, solo cuándo cargó el INA la lectura diaria (la fecha ya está arriba).
+const lecturaTxt=dt=>!horaReal(dt)&&dt.act?'El INA la cargó el '+fFechaHora(new Date(dt.act))+'.':'';
 function meta(k,fuente,extra){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
@@ -1783,7 +1784,8 @@ function pintarRio(){
   const sit=rioSit(r.h,NIVEL);
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+'). El río puede haber cambiado desde entonces.</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
-  const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
+  // sin "En 3 días" (ya lo dice la frase de arriba) y el máximo solo si no es la lectura de hoy
+  const stats='<dl class="datos">'+[['Cambio en 1 día',cm(r.d1)],['En 7 días',cm(r.d7)]].concat(pk[0]!==r.dia?[['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]:[])
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
   const W=340,H=170,L=30,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
@@ -1831,7 +1833,7 @@ function pintarRio(){
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
    +lineaYacy()+RIO_LEER()+(pf.length?RIO_PRONO():'')
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
-   +meta('rio','Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos,r))
+   +meta('rio','Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
@@ -1850,20 +1852,23 @@ function lineaYacy(){
   const o=D.yacy&&D.yacy.datos&&D.yacy.datos.obs;if(!o||!o.length)return '';
   const [dia,v]=o[o.length-1];if(diasEntre(dia,hoy)>4)return '';
   const mes=Number(dia.slice(5,7))-1;
-  return '<p><b>Río arriba, Yacyretá</b> '+(dia===hoy?'suelta':'soltaba el '+fDia(dia))+' unos '+nf(Math.round(v/100)*100)+' m³ de agua por segundo: '
-    +yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+'. Esa agua llega a Barranqueras en unos 3 días, y el INA la tiene en cuenta en su pronóstico.</p>'
-    +yacyNivel(v,dia===hoy?'hoy':'el '+fDia(dia))
-    +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA. Lectura del '+fDia(dia)+'.</p>';
+  // 23/10 (Mariano: más fácil de entender): primero qué significa, en palabras; después el número y lo normal.
+  return '<div class="yacy"><p class="yacyTit">Río arriba: represa de Yacyretá</p>'
+    +'<p class="yacyVs">Suelta '+yacyVsNormal(v,YACY_NORMAL[mes])+' para '+MESES[mes]+'</p>'
+    +'<p>'+nf(Math.round(v/100)*100)+' m³ de agua por segundo (lo normal: unos '+nf(YACY_NORMAL[mes])+'). '+medidoTxt(dia)+'</p>'
+    +'<p>Esa agua tarda unos 3 días en llegar a Barranqueras. El INA ya la cuenta en su pronóstico.</p>'
+    +yacyNivel(v)
+    +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>';
 }
 // Niveles del INA para lo que sale de Yacyretá ("Yacyretá efluente", m³/s), tomados de su informe diario (confirmado el 16/10/2026).
 // La serie 937 no los trae (nivel_alerta y nivel_evacuacion vacíos): si el INA los cambia, hay que cambiarlos acá.
 // Solo se nombran cuando se pasa el de alerta. Son para el río junto a la represa: no cambian ningún color del Chaco.
 const YACY_NIVEL={alerta:25000,evac:30000};
-function yacyNivel(v,cuando){
+function yacyNivel(v){
   if(v<YACY_NIVEL.alerta)return '';
   const ev=v>=YACY_NIVEL.evac;
-  return '<p>El INA marca para lo que suelta Yacyretá alerta desde '+nf(YACY_NIVEL.alerta)+' y evacuación desde '+nf(YACY_NIVEL.evac)+': '+cuando+' está por encima de '+(ev?'la evacuación':'la alerta')+'. '
-    +'Esos niveles son para el río junto a la represa; para la costa del Chaco valen los de Barranqueras.</p>';
+  return '<p>Está arriba del nivel de '+(ev?'evacuación':'alerta')+' que el INA marca junto a la represa ('+nf(ev?YACY_NIVEL.evac:YACY_NIVEL.alerta)+'). '
+    +'Para la costa del Chaco valen los niveles de Barranqueras.</p>';
 }
 // Explicaciones del río (19/10, pedido de Mariano): desplegables cerrados; cada navegador recuerda si los abrió, aunque la sección se vuelva a pintar.
 const detAbierto=id=>{try{return !!(JSON.parse(localStorage.getItem(DET_K))||{})[id]}catch(e){return false}};
@@ -1888,7 +1893,7 @@ function bloqueOtro(k){
     :rioSit(r.h,N);
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+').</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
-  const stats='<dl class="datos">'+[['En 1 día',cm(r.d1)],['En 3 días',cm(r.d3)],['En 7 días',cm(r.d7)],['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]
+  const stats='<dl class="datos">'+[['En 1 día',cm(r.d1)],['En 7 días',cm(r.d7)]].concat(pk[0]!==r.dia?[['Máximo del período',nf(pk[1],2)+' m ('+fDia(pk[0])+')']]:[])
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   const W=340,H=110,L=30,Rt=46,T=8,B=20,n=ob.length-1,d0=ob[0][0],span=Math.max(1,diasEntre(d0,ob[n][0])),vals=ob.map(p=>p[1]);
   const lo=Math.floor(Math.min(...vals)-0.3),hi=Math.ceil(Math.max(...vals,N?N.evac:-99)+0.3);
@@ -1906,7 +1911,7 @@ function bloqueOtro(k){
   return '<div class="otroRio">'+t+'<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'+lecturaCorta(D[k].datos,r)
    +viejo+'<p>'+sit+'</p>'+nota+stats+svg
    +(N?'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(N.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(N.alerta,2)+' m</span></div>':'')
-   +meta(k,o.fuente,lecturaTxt(D[k].datos,r))
+   +meta(k,o.fuente,lecturaTxt(D[k].datos))
    +(k==='paraguay'?pronoPyInfo():'')+'</div>';
 }
 // Pronóstico del INA para Formosa y Puerto Pilcomayo (río arriba de Puerto Bermejo). Solo informativo: no cambia ningún color.
