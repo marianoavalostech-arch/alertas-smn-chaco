@@ -1057,6 +1057,13 @@ async function cargar(k){
     D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t),error:true}:{datos:null,error:true};
   }
 }
+// Fecha de la última lectura de un río. El INA guarda el Paraná y el Paraguay como un dato por día y les pone
+// la medianoche como hora: esa hora no es la de la medición (Prefectura mide a la mañana), así que va solo el día
+// y cuándo lo cargó el INA. Si la hora es real (el Bermejo, estación automática), va con la hora.
+function lecturaTxt(dt,r){
+  const t=dt.hora?new Date(dt.hora):null,real=t&&/, (?!00:00)\d\d:\d\d h$/.test(fFechaHora(t));
+  if(real)return 'Última lectura: '+fFechaHora(t)+'.';
+  return 'Última lectura: la del '+fDia(r.dia)+(dt.act?' (el INA la cargó el '+fFechaHora(new Date(dt.act))+')':'')+'.'}
 function meta(k,fuente,extra){
   const d=D[k];
   if(!d.datos)return !LISTO?'<p class="nodisp">Consultando…</p>':'<p class="meta"><span class="estado falla">No disponible</span>No se pudo consultar '+fuente+'. El resto del sitio sigue funcionando.</p>';
@@ -1819,7 +1826,7 @@ function pintarRio(){
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
    +lineaYacy()+RIO_LEER()+(pf.length?RIO_PRONO():'')
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
-   +meta('rio','Prefectura Naval Argentina, vía INA','Última lectura: '+(D.rio.datos.hora?fFechaHora(new Date(D.rio.datos.hora)):fDia(r.dia))+(D.rio.datos.act?', cargada el '+fFechaHora(new Date(D.rio.datos.act)):'')+'.')
+   +meta('rio','Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos,r))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
@@ -1894,7 +1901,7 @@ function bloqueOtro(k){
   return '<div class="otroRio">'+t+'<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'
    +viejo+'<p>'+sit+'</p>'+nota+stats+svg
    +(N?'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(N.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(N.alerta,2)+' m</span></div>':'')
-   +meta(k,o.fuente,'Última lectura: '+(D[k].datos.hora?fFechaHora(new Date(D[k].datos.hora)):fDia(r.dia))+'.')
+   +meta(k,o.fuente,lecturaTxt(D[k].datos,r))
    +(k==='paraguay'?pronoPyInfo():'')+'</div>';
 }
 // Pronóstico del INA para Formosa y Puerto Pilcomayo (río arriba de Puerto Bermejo). Solo informativo: no cambia ningún color.

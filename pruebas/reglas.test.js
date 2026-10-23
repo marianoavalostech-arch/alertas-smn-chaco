@@ -603,6 +603,14 @@ prueba('río Paraguay en Puerto Bermejo: colores según altura y tendencia', () 
   // El Bermejo no tiene niveles oficiales: se pinta sin la cuenta de "le faltan"
   const b = S(`hoy='2027-03-10';LISTO=true;D.bermejo={datos:{obs:[['2027-03-07',2.2],['2027-03-10',2.5]],hora:'2027-03-10T12:00:00Z'},vivo:true,t:new Date()};bloqueOtro('bermejo')`);
   assert.ok(b.includes('no publica niveles de alerta')); assert.ok(b.includes('creciendo')); assert.ok(!b.includes('NaN'));
+  // Fecha de la lectura: el Paraná y el Paraguay traen la medianoche como hora (no es la de la medición): va solo el día
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z',act:'2026-10-22T13:31:03.644Z'},{dia:'2026-10-22'})`),
+    'Última lectura: la del 22/10 (el INA la cargó el 22/10, 10:31 h).');
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-22T03:00:00.000Z'},{dia:'2026-10-22'})`), 'Última lectura: la del 22/10.');
+  assert.strictEqual(S(`lecturaTxt({},{dia:'2026-10-22'})`), 'Última lectura: la del 22/10.');
+  // El Bermejo es una estación automática: la hora es real y se muestra
+  assert.strictEqual(S(`lecturaTxt({hora:'2026-10-23T08:00:00.000Z',act:'2026-10-23T10:01:07.762Z'},{dia:'2026-10-23'})`), 'Última lectura: 23/10, 05:00 h.');
+  assert.ok(!html.includes("'Última lectura: '+(D.rio.datos.hora?"), 'ya no se arma la hora de medianoche a mano');
 });
 
 prueba('SMN: piso del color y franjas que ya pasaron', () => {

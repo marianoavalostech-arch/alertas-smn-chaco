@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (fecha de la última lectura de los ríos)
+
+Pregunta de Mariano: si cada lectura del río se informa con su fecha y hora. El Paraná y el Paraguay decían "Última lectura: 22/10, 00:00 h": el INA guarda esas series como un dato por día y les pone la medianoche como hora, que no es la de la medición (Prefectura mide a la mañana).
+- **Paraná y Paraguay: solo el día y cuándo lo cargó el INA** (`lecturaTxt`): "Última lectura: la del 22/10 (el INA la cargó el 22/10, 10:31 h)." El Paraguay suma el "cargó el", que antes no se mostraba.
+- **Bermejo, con su hora**: es una estación automática y la hora es real ("Última lectura: 23/10, 05:00 h.").
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (explicación de los colores más clara y corta)
 
 Pedido de Mariano: que "¿Qué significa cada color?" y "¿Cómo se decide el color?" se entiendan mejor y sean más cortos. **Solo textos: ningún cálculo cambia.**
