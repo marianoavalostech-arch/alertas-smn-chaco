@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 23/10/2026 (Yacyretá en tono neutro)
+
+Mariano: que no sea alarmista; título "Yacyretá" a secas y lo medido y lo estimado en lenguaje neutro.
+- Título "Yacyretá (m³ de agua por segundo)"; dos cuadritos: "Sale de la represa" y "Normal para <mes>". Se saca la comparación en palabras ("cerca del triple…", `yacyVsNormal`).
+- "Medido ayer, jueves 22/10. Esa agua tarda unos 3 días en llegar a Barranqueras; el INA la incluye en su pronóstico."
+- Desde 25.000 m³/s, sin la palabra "evacuación": "Para el río junto a la represa, el INA considera alto un caudal desde 25.000 m³ por segundo. Para la costa del Chaco valen los niveles de Barranqueras." (`yacyNivel`).
+- Huella nueva del código. 71 pruebas.
+
 ## 23/10/2026 (secciones de los ríos más livianas y Yacyretá más clara)
 
 Pedido de Mariano: revisar que se entienda y que no haya demasiado texto; mejorar la comprensión y el diseño de Yacyretá.

@@ -1130,27 +1130,24 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en el pronóstico; explicaciones del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    // 23/10: cajita con el sentido primero ("Suelta cerca del triple de lo normal"), después el número y lo normal
-    assert.strictEqual(l('2026-10-13', o), '<div class="yacy"><p class="yacyTit">Río arriba: represa de Yacyretá</p>'
-      + '<p class="yacyVs">Suelta cerca del triple de lo normal para octubre</p>'
-      + '<p>32.800 m³ de agua por segundo (lo normal: unos 13.100). Medido hoy.</p>'
-      + '<p>Esa agua tarda unos 3 días en llegar a Barranqueras. El INA ya la cuenta en su pronóstico.</p>'
-      + '<p>Está arriba del nivel de evacuación que el INA marca junto a la represa (30.000). Para la costa del Chaco valen los niveles de Barranqueras.</p>'
+    // 23/10 (Mariano): título "Yacyretá" a secas; lo medido y lo estimado en tono neutro
+    assert.strictEqual(l('2026-10-13', o), '<div class="yacy"><p class="yacyTit">Yacyretá <small>(m³ de agua por segundo)</small></p>'
+      + '<dl class="datos"><div><dt>Sale de la represa</dt><dd>32.800</dd></div><div><dt>Normal para octubre</dt><dd>unos 13.100</dd></div></dl>'
+      + '<p>Medido hoy. Esa agua tarda unos 3 días en llegar a Barranqueras; el INA la incluye en su pronóstico.</p>'
+      + '<p>Para el río junto a la represa, el INA considera alto un caudal desde 25.000 m³ por segundo. Para la costa del Chaco valen los niveles de Barranqueras.</p>'
       + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>');
+    assert.ok(!/triple|doble|evacuación|alarma|peligro/.test(l('2026-10-13', o)), 'tono neutro: sin palabras que alarmen');
     // niveles del INA para Yacyretá: solo se nombran desde la alerta, y nunca cambian colores
     assert.deepStrictEqual(JSON.parse(S('JSON.stringify(YACY_NIVEL)')), { alerta: 25000, evac: 30000 });
     assert.strictEqual(S(`yacyNivel(24900)`), '');
-    assert.ok(S(`yacyNivel(27000)`).includes('arriba del nivel de alerta que el INA marca junto a la represa (25.000)'));
-    assert.ok(S(`yacyNivel(30000)`).includes('arriba del nivel de evacuación que el INA marca junto a la represa (30.000)'));
+    assert.ok(S(`yacyNivel(27000)`).includes('el INA considera alto un caudal desde 25.000'));
+    assert.strictEqual(S(`yacyNivel(30000)`), S(`yacyNivel(27000)`));
     assert.ok(!/YACY_NIVEL/.test(codigo.slice(codigo.indexOf('function riesgoRio'), codigo.indexOf('function riesgoRio') + 3000)), 'no entra en el color del río');
     assert.ok(l('2026-10-14', o).includes('Medido ayer, martes 13/10.'));       // el dato de hoy todavía no está
     assert.strictEqual(S('YACY_NORMAL.length'), 12);
     assert.strictEqual(l('2026-10-18', o), '');                                    // más de 4 días: no se muestra
     assert.strictEqual(S(`D.yacy={datos:null};lineaYacy()`), '');
     assert.ok(!/graficoYacy|yacySvg/.test(codigo), 'sin gráfico de Yacyretá');
-    const vn = (v, n) => S(`yacyVsNormal(${v},${n})`);
-    assert.deepStrictEqual([vn(9000, 13100), vn(13000, 13100), vn(18000, 13100), vn(26000, 13100), vn(36200, 13100), vn(50000, 13100)],
-      ['menos de lo normal', 'parecido a lo normal', 'bastante más de lo normal', 'cerca del doble de lo normal', 'cerca del triple de lo normal', 'más del triple de lo normal']);
     // dónde está el río respecto de sus niveles, en centímetros
     const sit = h => S(`rioSit(${h},NIVEL)`);
     assert.strictEqual(sit(6.98), 'Está 48 cm arriba del nivel de evacuación (6,50 m).');
