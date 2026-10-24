@@ -563,7 +563,7 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
   const pr16 = { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-16', 6.08, 6.08, 6.08], ['2026-10-20', 7, 7.23, 7.8], ['2026-10-27', 5.8, 6.37, 6.6]] };
   poner('2026-10-18', [['2026-10-15', 5.61], ['2026-10-16', 6.08], ['2026-10-17', 6.5], ['2026-10-18', 6.8]], pr16);
   assert.strictEqual(fr.hidden, false); assert.strictEqual(fr.className, 'n5', 'rojo, como el renglón');
-  for (const t of ['Río Paraná en rojo</b> · 6,80 m en Barranqueras (evacuación: 6,50 m)</p>', 'Islas y costa fuera de las defensas. ' + S('DEFENSAS_CORTA'), 'data-h="rio"', 'href="#t-rio"'])
+  for (const t of ['Río Paraná en rojo</b> · <span class="rbAlt">6,80 m</span> en Barranqueras (evacuación: 6,50 m)</p>', 'Islas y costa fuera de las defensas. ' + S('DEFENSAS_CORTA'), 'data-h="rio"', 'href="#t-rio"'])
     assert.ok(fr.innerHTML.includes(t), 'falta: ' + t + '\n' + fr.innerHTML);
   // Corta (19/10): sin el texto largo del renglón ni el pronóstico cuando el color no sale de él
   assert.ok(!fr.innerHTML.includes('superó el nivel') && !fr.innerHTML.includes('INA'), 'franja corta: ' + fr.innerHTML);
@@ -571,7 +571,9 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
   // Naranja por el pronóstico (caso del 13/10): lo dice así y el pronóstico no se repite
   poner('2026-10-13', [['2026-10-06', 4.27], ['2026-10-10', 4.88], ['2026-10-13', 5.27]], { emitido: '2026-10-13T03:00:00.000Z', p: [['2026-10-13', 5.2, 5.3, 5.4], ['2026-10-20', 6.75, 7.3, 7.55]] });
   assert.strictEqual(fr.className, 'n4');
-  assert.ok(fr.innerHTML.includes('Río Paraná en naranja</b> · 5,27 m en Barranqueras (alerta: 6,00 m), creciendo · el INA prevé 7,30 m para el 20/10</p>') && (fr.innerHTML.match(/7,30 m/g) || []).length === 1, fr.innerHTML);
+  assert.ok(fr.innerHTML.includes('Río Paraná en naranja</b> · <span class="rbAlt">5,27 m</span> en Barranqueras (alerta: 6,00 m), creciendo · el INA prevé 7,30 m para el 20/10</p>') && (fr.innerHTML.match(/7,30 m/g) || []).length === 1, fr.innerHTML);
+  // Solo la altura de hoy va destacada (24/10/2026), no la del pronóstico
+  assert.strictEqual((fr.innerHTML.match(/class="rbAlt"/g) || []).length, 1, 'una sola altura destacada');
   // Ríos en verde: no hay franja
   poner('2026-10-18', [['2026-10-18', 4.0]], null);
   assert.strictEqual(fr.hidden, true);
@@ -579,6 +581,7 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
   poner('2026-10-18', [['2026-10-18', 4.0]], null, [['2026-10-15', 5.7], ['2026-10-18', 6.1]]);
   assert.ok(!fr.hidden && fr.className === 'n3' && fr.innerHTML.includes('Río Paraguay en amarillo') && fr.innerHTML.includes('Puerto Bermejo a Isla del Cerrito')
     && fr.innerHTML.includes('href="#t-otros"') && !fr.innerHTML.includes(S('DEFENSAS_CORTA')), fr.innerHTML);
+  assert.ok(fr.innerHTML.includes('Río Paraguay en amarillo</b> · <span class="rbAlt">6,10 m</span> en Puerto Bermejo'), 'el Paraguay también lleva su altura destacada: ' + fr.innerHTML);
   assert.ok(!S('DEFENSAS_CORTA').includes('no hace falta') && S('DEFENSAS_CORTA').includes('seguí los avisos oficiales'), 'la frase corta no dice menos que lo oficial');
   // Con la franja del SMN también a la vista: primero la más grave (si son iguales, la del SMN)
   sb.hidden = false; sb.className = 'n5'; S('ordenBandas()'); assert.strictEqual(orden, 'SMN primero');
@@ -1564,6 +1567,58 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(html.includes('.sem li>span:not(.por){text-align:left;'), 'el título de cada renglón del semáforo no se justifica (el texto sí)');
     assert.ok(html.includes('padding:5px 12px;min-height:40px;display:inline-flex;align-items:center}'), 'los nombres de "En verde", del alto de los demás botones');
     assert.ok(html.includes('@media (max-width:599px){.smnChip{flex-wrap:wrap;'), 'en el celular, la etiqueta del SMN baja "con posible granizo" y el nivel de renglón en vez de apretarlos');
+  });
+  prueba('celular (24/10): encabezado, índice y tarjetas más compactos, "↑ Índice" que no tapa al bajar y, al tocar un municipio, las tarjetas del clima a la vista', () => {
+    // Estilos solo hasta 599 px: en la computadora no cambia nada
+    const i0 = html.indexOf('@media screen and (max-width:599px){\n  .cab{'), cel = html.slice(i0, html.indexOf('</style>', i0));
+    assert.ok(i0 > 0 && cel.length < 2000, 'bloque del celular');
+    for (const t of ['.cab h1{font-size:1.38rem}', '.indice a{min-height:36px;', '.hSit details:not([open])>summary{display:grid;', '.hSit details:not([open]) .ico{grid-row:1/3;width:40px;height:40px;', '.cuerpo.vista{max-height:5rem}'])
+      assert.ok(cel.includes(t), 'falta en el celular: ' + t);
+    assert.ok(!cel.includes('details[open]'), 'las tarjetas abiertas quedan como antes');
+    assert.ok(cel.indexOf('@media screen and (min-width:360px) and (max-width:599px){\n  .hSit details:not([open])>summary{display:grid;') > 0, 'las tarjetas en renglones desde 360 px (en menos no entran)');
+    assert.ok(html.includes('.cuerpo.vista{max-height:7.5rem;'), 'fuera del celular, la vista previa de siempre');
+    // La altura del río en la franja: más grande y en negrita, sin color de alarma
+    assert.ok(/#rioBanda \.rbAlt\{font-size:1\.3em;font-weight:800;[^}]*\}/.test(html) && !/#rioBanda \.rbAlt\{[^}]*color/.test(html));
+    // "↑ Índice": se esconde mientras se baja, vuelve al subir un poco, después de un salto y al final de la página
+    const ev = {}, b = { hidden: true }, ind = { getBoundingClientRect: () => ({ bottom: 900 - sitio.scrollY }) };
+    const antes = { ae: sitio.addEventListener, raf: sitio.requestAnimationFrame, de: sitio.document.documentElement, dae: sitio.document.addEventListener, qs: sitio.document.querySelector };
+    Object.assign(elementos, { aIndice: b, indice: ind });
+    sitio.addEventListener = (t, f) => { ev[t] = f }; sitio.document.addEventListener = (t, f) => { ev['doc' + t] = f };
+    sitio.requestAnimationFrame = f => f(); sitio.innerHeight = 740; sitio.scrollY = 0; sitio.document.documentElement = { scrollHeight: 9000 };
+    try {
+      S('SALTO=0;botonIndice()');
+      const ir = y => { sitio.scrollY = y; ev.scroll(); return b.hidden; };
+      assert.ok(b.hidden, 'con el índice a la vista no está');
+      for (let y = 100; y <= 2000; y += 100) assert.ok(ir(y), 'bajando, escondido (' + y + ')');
+      assert.ok(ir(1990) && !ir(1970), 'al subir un poco aparece');
+      assert.ok(!ir(1980) && ir(2000), 'al volver a bajar se esconde');
+      assert.ok(!ir(5000), 'después de un salto (enlace, Atrás) aparece');
+      assert.ok(ir(5100), 'y se esconde al seguir leyendo');
+      ev.docclick({ target: { closest: s => s === 'a[href^="#"]' ? {} : null } });
+      assert.ok(!ir(5400), 'un salto corto con un enlace también');
+      ev.touchstart(); assert.ok(ir(5500), 'al tocar la pantalla para seguir leyendo, el salto terminó: se esconde');
+      S('verSec({scrollIntoView(){}})'); assert.ok(!ir(5800), 'los botones que llevan a una sección cuentan como salto');
+      ev.wheel(); for (let y = 5900; y <= 8100; y += 100) assert.ok(ir(y), 'bajando (' + y + ')');
+      assert.ok(!ir(8210), 'al final de la página aparece aunque se esté bajando');
+      assert.ok(ir(300), 'arriba, con el índice a la vista, nunca');
+      // Al tocar un municipio: baja lo justo para ver las tarjetas enteras, sin tapar más de un tercio del mapa
+      let mov = null, fondo = 1100;
+      const mapa = { getBoundingClientRect: () => ({ top: 150, height: 420 }) }, dias = { getBoundingClientRect: () => ({ bottom: fondo }) };
+      elementos.mapa = mapa; sitio.document.querySelector = s => s === '#mInfo .dias' ? dias : null; sitio.scrollBy = o => { mov = o };
+      S('asomarTarjetas()'); assert.strictEqual(mov && mov.top, 276, 'tarjetas muy abajo: baja hasta dejar dos tercios del mapa a la vista (' + JSON.stringify(mov) + ')');
+      mov = null; fondo = 800; S('asomarTarjetas()'); assert.strictEqual(mov && mov.top, 72, 'tarjetas un poco tapadas: baja lo justo');
+      assert.strictEqual(mov.behavior, 'smooth');
+      mov = null; fondo = 730; S('asomarTarjetas()'); assert.strictEqual(mov, null, 'ya se ven: no se mueve');
+      sitio.document.querySelector = () => null; S('asomarTarjetas()'); assert.strictEqual(mov, null, 'sin tarjetas (faltan datos): no se mueve');
+      assert.ok(codigo.includes("elegir(i===M.sel?-1:i,i!==M.sel);if(M.sel>=0&&M.tipo!=='mouse')asomarTarjetas()})") && codigo.includes('if(j>=0){elegir(j===M.sel?-1:j,j!==M.sel);if(M.sel>=0)asomarTarjetas();return}'), 'solo al tocar con el dedo (no con el mouse) y al elegir, no al quitar');
+      assert.ok(codigo.includes('if(portal)pasarAlPortal(dy,suave);') && codigo.includes('||FIJO)return;') && codigo.includes('const portal=EMB&&window.parent!==window;if(portal&&!VISTA)return;'), 'en el portal se lo pide al portal con lo que el portal avisa; en la computadora dentro del portal, nada');
+    } finally {
+      Object.assign(sitio.document, { documentElement: antes.de, addEventListener: antes.dae, querySelector: antes.qs });
+      sitio.addEventListener = antes.ae; sitio.requestAnimationFrame = antes.raf;
+      for (const k of ['innerHeight', 'scrollY', 'scrollBy']) delete sitio[k];
+      for (const k of ['aIndice', 'indice', 'mapa']) delete elementos[k];
+      S('SALTO=0');
+    }
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();

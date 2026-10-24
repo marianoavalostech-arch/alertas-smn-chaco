@@ -2,6 +2,19 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 24/10/2026 (en el celular: todo más compacto, "↑ Índice" que no tapa, las tarjetas del clima a la vista al tocar un municipio y la altura del río destacada)
+
+Pedido de Mariano: aplicar los cambios propuestos para el celular y destacar un poco la altura del río en la franja de arriba.
+- **Altura del río destacada en la franja de arriba** (`.rbAlt`, en `rioDato`): "7,23 m" va más grande (1,3 veces) y en negrita, sin color de alarma; también en la del Paraguay. Solo la altura de hoy, no la del pronóstico. El texto no cambia: el menú de la computadora la sigue mostrando ("En rojo · 7,23 m").
+- **Al tocar un municipio en el mapa** (`asomarTarjetas`): si las tarjetas del clima quedaron debajo de la pantalla, la página baja lo justo para verlas enteras, sin tapar más de un tercio del mapa. Solo con el dedo y al elegir (no al quitar). Dentro del portal se lo pide al portal, con lo que el portal avisa de su pantalla; en la computadora no se mueve. En un teléfono de 360 px con el mapa arriba: baja unos 100 px y se ven el mapa entero y las tres tarjetas.
+- **"↑ Índice" que no tapa** (`botonIndice`): se esconde mientras se baja leyendo y vuelve al subir un poco, después de un salto (índice, "Ver el río", botones, Atrás; `SALTO`) y al final de la página. Antes quedaba siempre en la esquina y tapaba texto o el botón "Mostrar todo".
+- **Encabezado más bajo**: el nombre en un renglón (205 → 142 px).
+- **Índice más apretado**: botones de 36 px (224 → 159 px).
+- **Tarjetas de "¿Qué está pasando?" en renglones**: el dibujo a la izquierda y el nombre al lado, de a dos (659 → 406 px). Desde 360 px de ancho; en pantallas más angostas no entran y quedan como antes. Abiertas, igual que antes.
+- **Vista previa de las secciones cerradas más corta**: 5 rem en vez de 7,5 (1.670 → 1.430 px); se sigue viendo que hay contenido.
+- Medido en un teléfono de 360 px con los datos del 24/10: la página pasó de 8.202 a 7.581 px. De 600 px para arriba (tablet y computadora) no cambia nada (mismo alto a 600, 768 y 1280 px). Revisado en un navegador real con la regla del navegador: sin desbordes de 320 a 1280 px, sin errores, axe sin errores; en la copia del portal (shortcode 1.3), el toque en el mapa hace bajar al portal y las tarjetas quedan enteras debajo de su encabezado.
+- Huella nueva del código. 79 pruebas.
+
 ## 24/10/2026 (revisión general: más liviano, listo para Google Play y mejor para leer en el celular)
 
 Pedido de Mariano: revisar todo el proyecto para optimizarlo sin cambiar el funcionamiento, dejarlo listo para publicar en Google Play y que ande bien en el portal de Gobierno Abierto, en la computadora y en el celular, con buena navegación y liviano.
