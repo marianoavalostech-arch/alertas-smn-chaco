@@ -2,11 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## 24/10/2026 (etiqueta del SMN más chica en el detalle del mapa, en el celular)
+## 24/10/2026 (en el celular, botones de colores y etiqueta del SMN más chicos en el mapa)
 
-Pedido de Mariano: en el celular, al tocar una localidad del mapa, la etiqueta de colores de la alerta quedaba muy grande y tapaba las tarjetas del clima.
-- En pantallas de menos de 600 px, la etiqueta del SMN dentro del detalle del mapa (`#mInfo .smnChip`) va con letra más chica, borde más fino y en uno o dos renglones: "Tormentas con posible granizo" arriba y "ALERTA AMARILLA" abajo (antes ocupaba tres renglones y empujaba las tarjetas fuera de la pantalla). Ocupa cerca de un tercio menos de alto.
-- Solo cambia el estilo (CSS): la huella del código queda igual. En la computadora y en la franja de alertas no cambia nada. 73 pruebas.
+Pedido de Mariano: en el celular, al tocar una localidad del mapa, los botones de colores ("qué significa cada color") quedaban muy grandes y tapaban las tarjetas del clima.
+- **Botones de colores** (`.leyenda`, menos de 600 px): más chicos y en un solo renglón (Verde, Amarillo, Naranja, Rojo), con "Borde punteado: alerta del SMN" debajo. **"Sin datos" se esconde en el celular cuando ningún municipio está en gris** (`.leyenda.sinGris`, en `colorearMapa`); aparece solo si hay alguno, o si ese filtro está elegido. El significado del gris sigue en "¿Qué significa cada color?". La leyenda pasó de unos 115 a 50 px de alto.
+- **Etiqueta del SMN en el detalle del mapa** (`#mInfo .smnChip`, menos de 600 px): letra más chica y uno o dos renglones ("Tormentas con posible granizo" y debajo "ALERTA AMARILLA"); antes eran tres.
+- Entre las dos cosas, las tarjetas del clima suben unos 120 px. En la computadora y en la tablet no cambia nada.
+- Huella nueva del código. 73 pruebas.
 
 ## 23/10/2026 ("Todo el Chaco" al ir a "Lluvia hora por hora" desde un municipio que no está en la lista)
 
