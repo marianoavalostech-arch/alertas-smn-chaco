@@ -1,5 +1,5 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y riesgo por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=7"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#f7f5fa">
-<meta name="color-scheme" content="only light"><link rel="icon" href="icono.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="iconos/icono-apple-180.png"><meta name="apple-mobile-web-app-title" content="Ríos y Clima"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin><meta name="color-scheme" content="only light"><link rel="icon" href="icono.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="iconos/icono-apple-180.png"><meta name="apple-mobile-web-app-title" content="Ríos y Clima"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
@@ -92,19 +92,21 @@
   --verde:#2c8a57; --amarillo:#d99a00; --amarillo-mapa:#f0c419; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
   --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
+  /* texto de las etiquetas "alerta amarilla / naranja / roja": el mismo color, más oscuro, para que se lea al sol (contraste 5:1 o más sobre blanco) */
+  --amarillo-txt:#8a5d00; --naranja-txt:#a14c06; --rojo-txt:#ad3229;
   --sombra:0 1px 2px rgba(80,89,188,.06),0 8px 24px rgba(80,89,188,.08);
   --font:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --font-tit:"Kanit",var(--font);
 }
 :root{color-scheme:only light}
 *{box-sizing:border-box}
-body{background:var(--bg);background-image:var(--fondo);background-attachment:fixed;color:var(--ink);font-family:var(--font);font-size:16px;font-weight:500;line-height:1.45;margin:0}
+body{background:var(--bg);background-image:var(--fondo);color:var(--ink);font-family:var(--font);font-size:16px;font-weight:500;line-height:1.45;margin:0}
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:16px 40px;display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--font-tit);font-weight:700;font-size:1.75rem;line-height:1.1;margin:0;letter-spacing:0}
 h2{font-family:var(--font-tit);font-weight:700;font-size:1.2rem;line-height:1.2;color:var(--titulo);margin:0;text-wrap:balance}
 p{margin:0}
 a{color:var(--acento);font-weight:700}
-a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+a:focus-visible,summary:focus-visible,button:focus-visible,.tabla:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 /* encabezado: azul marino que pasa a violeta, con la barrita violeta-rosa del portal de Gobierno Abierto debajo del título */
 .cab{position:relative;overflow:hidden;background:var(--card);color:var(--ink);border-radius:20px;padding:22px 20px 20px;box-shadow:var(--sombra)}
 .cab::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:var(--degrade)}
@@ -114,7 +116,6 @@ a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var
 .cab p{color:var(--muted);margin-top:10px}
 .cab a{color:var(--acento);font-weight:600}
 .solo-emb{display:none}.emb .solo-emb{display:block}
-.emb body{background-attachment:scroll}
 .emb .wrap{padding:2px 2px 8px}
 .cab .solo-emb{font-size:.9rem;margin-top:10px}
 @media print{body{background-image:none}.cab{background:none;color:inherit;box-shadow:none}.cab h1,.cab p{color:inherit}}
@@ -176,6 +177,7 @@ section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-s
 .sem b{font-size:1.02rem}
 .sem .nivel{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-left:6px}
 .sem .por{font-size:.92rem;min-width:0}
+.sem li>span:not(.por){text-align:left;-webkit-hyphens:manual;hyphens:manual}
 .sem li.verdes{cursor:default}
 .sem .nombres{grid-column:2;display:flex;flex-wrap:wrap;gap:6px}
 .sem .nombres button,.sem .nombres a{font:inherit;font-size:.9rem;padding:4px 10px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;text-decoration:none;cursor:pointer}
@@ -357,9 +359,12 @@ footer{font-size:.85rem;color:var(--muted)}
 .smnChip .ico{font-size:1.15em}
 .smnChip{white-space:normal;text-align:left;-webkit-hyphens:none;hyphens:none}.smnChip .con{font-weight:500;font-size:.9em}
 .smnChip small{font-weight:600;font-size:.78em;text-transform:uppercase;letter-spacing:.04em;padding-left:7px;border-left:2px solid currentColor;margin-left:1px}
-.smnChip.n3{border-color:var(--amarillo)}.smnChip.n3 small{color:var(--amarillo)}
-.smnChip.n4{border-color:var(--naranja)}.smnChip.n4 small{color:var(--naranja)}
-.smnChip.n5{border-color:var(--rojo);background:var(--rojo-bg)}.smnChip.n5 small{color:var(--rojo)}
+.smnChip.n3{border-color:var(--amarillo)}.smnChip.n3 small{color:var(--amarillo-txt)}
+.smnChip.n4{border-color:var(--naranja)}.smnChip.n4 small{color:var(--naranja-txt)}
+.smnChip.n5{border-color:var(--rojo);background:var(--rojo-bg)}.smnChip.n5 small{color:var(--rojo-txt)}
+/* En el celular, las etiquetas del SMN de la franja de arriba y de "Alertas oficiales del SMN" pasan "con posible granizo" y el nivel al renglón de abajo
+   en vez de apretarlos en una columna angosta (24/10/2026); mismo tamaño de letra */
+@media (max-width:599px){.smnChip{flex-wrap:wrap;column-gap:6px;row-gap:1px;border-radius:14px}.smnChip .con,.smnChip small{white-space:nowrap}.smnChip small{padding-left:0;border-left:0;margin-left:0}}
 /* En el celular, la etiqueta del SMN en el detalle del mapa va chica, en uno o dos renglones, para que las tarjetas del clima se vean enseguida (24/10/2026) */
 @media (max-width:599px){#mInfo .smnChip{flex-wrap:wrap;gap:1px 5px;font-size:.84rem;padding:3px 10px 3px 7px;border-width:1.5px;border-radius:14px;margin:4px 6px 2px 0}#mInfo .smnChip .ico{font-size:1.05em}#mInfo .smnChip .con{white-space:nowrap;font-size:.92em}#mInfo .smnChip small{white-space:nowrap;font-size:.8em;padding-left:0;border-left:0;margin-left:0}}
 #smnBanda,#rioBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
@@ -394,7 +399,7 @@ footer{font-size:.85rem;color:var(--muted)}
 .dia .dL b{font-size:1rem;color:var(--water)}
 .dia .dA{margin-top:5px;padding:2px 7px;border-radius:99px;border:1.5px solid currentColor;font-size:.7rem;font-weight:700}
 .dia.n3{border-top-color:var(--amarillo-mapa)}.dia.n4{border-top-color:var(--naranja)}.dia.n5{border-top-color:var(--rojo)}
-.dia.n3 .dA{color:var(--amarillo)}.dia.n4 .dA{color:var(--naranja)}.dia.n5 .dA{color:var(--rojo)}
+.dia.n3 .dA{color:var(--amarillo-txt)}.dia.n4 .dA{color:var(--naranja-txt)}.dia.n5 .dA{color:var(--rojo-txt)}
 /* texto del detalle: cerrado, se ve el comienzo y se desvanece; "Seguir leyendo" lo abre */
 .mDet{display:flex;flex-direction:column;gap:6px;min-width:0}
 .mDet.vista{max-height:7rem;overflow:hidden;cursor:pointer;-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
@@ -485,7 +490,7 @@ footer{font-size:.85rem;color:var(--muted)}
 /* En el celular, los botones de colores van chicos y en un solo renglón, para que al tocar un municipio se vean las tarjetas del clima (24/10/2026) */
 @media (max-width:599px){.leyenda{gap:5px;font-size:.78rem}.leyenda .ley{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:2px 6px;border-radius:9px;white-space:nowrap}.leyenda i{width:10px;height:10px;margin-right:4px}.leyenda>span{flex-basis:100%;font-size:.95em}.leyenda.sinGris [data-c="gris"]{display:none}}
 /* nombres en verde del semáforo: píldoras */
-.sem .nombres button,.sem .nombres a{border-width:1.5px;background:var(--card);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:5px 12px}
+.sem .nombres button,.sem .nombres a{border-width:1.5px;background:var(--card);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.06);padding:5px 12px;min-height:40px;display:inline-flex;align-items:center}
 .sem .nombres button:hover,.sem .nombres a:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.12)}
 /* "Mostrar todo" */
 .mas{background:var(--fondo-boton);box-shadow:var(--sombra-boton);padding:7px 16px}
@@ -809,7 +814,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <div class="tabla"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
+      <div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
         <tr><td><b>Rojo</b></td><td>120 mm o más</td><td>80 mm o más</td><td>cayeron 100 mm y vienen 70</td></tr>
         <tr><td><b>Amarillo</b></td><td>70 mm o más</td><td>45 mm o más</td><td>lo caído y lo que viene suman 120 mm</td></tr>
       </tbody></table></div>
@@ -912,7 +917,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
   </section>
 
   </main>
@@ -1450,7 +1455,8 @@ function armarMapa(){
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
     if(e.target.closest('[data-mas]')||e.target.closest('.mDet.vista')){e.preventDefault();M.detAb=!M.detAb;pintarInfo();return}
     // Municipio que no está en "Lluvia en": queda "Todo el Chaco" (pedido de Mariano, 23/10/2026).
-    const hh=e.target.closest('[data-hora]');if(hh){if(A.g)try{elegirLoc(hh.dataset.hora!==''?+hh.dataset.hora:-1,false)}catch(x){}return}
+    // Si el pronóstico por hora todavía no llegó (se pide al abrir la sección), la localidad queda elegida para cuando llegue.
+    const hh=e.target.closest('[data-hora]');if(hh){const l=hh.dataset.hora!==''?+hh.dataset.hora:-1;if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}
     if(rv)irSec(rv.dataset.irrio);else if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
   addEventListener('resize',()=>aplicar(M.vb));
@@ -2055,7 +2061,7 @@ function pintarLluvia(){
   const filas=LOCS.map((l,i)=>{const s=resumenLluvia(i);
     const b=d.dias.map((dia,j)=>{const h=Math.max(1,26*d.mm[i][j]/tope);return '<rect x="'+(j*7+(dia>=ref?4:0))+'" y="'+(28-h)+'" width="5" height="'+h+'" fill="var(--'+(dia>=ref?'water':'gris')+')"><title>'+fDia(dia)+': '+nf(d.mm[i][j],1)+' mm</title></rect>'}).join('');
     return '<tr><td>'+l.n+'</td><td>'+nf(s.cayo)+' mm</td><td><b>'+nf(s.viene)+' mm</b></td><td class="barras"><svg viewBox="0 0 102 28" aria-hidden="true">'+b+'</svg></td></tr>'}).join('');
-  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
    +'<div class="llLocs" id="llLocs" role="group" aria-label="Elegir la localidad del gráfico">'+LOCS.map((l,i)=>'<button class="ley" type="button" data-ll="'+i+'" aria-pressed="false">'+l.n+'</button>').join('')+'</div><div id="llGrafCaja"></div>'
    +'<p class="meta" style="margin-top:10px">Barras grises: del '+fDia(d.dias[0])+' al '+fDia(masDias(ref,-1))+'. Barras azules: pronóstico del '+fDia(ref)+' al '+fDia(d.dias[d.dias.length-1])+'.</p>'
    +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro. Lo que se espera incluye el día de hoy completo.');
@@ -2242,7 +2248,7 @@ FORMA.grilla=d=>!!d&&Number.isInteger(d.nlat)&&Number.isInteger(d.nlon)&&d.nlat>
   &&Array.isArray(d.nube)&&d.nube.length===d.p.length&&d.nube.every(x=>enteros(x,d.n,10))
   &&Array.isArray(d.torm)&&d.torm.every(x=>Array.isArray(x)&&x.length===2&&Number.isInteger(x[0])&&x[0]>=0&&x[0]<d.n&&Number.isInteger(x[1])&&x[1]>=0&&x[1]<d.p.length);
 const AVB={x:-60,y:-70,w:680,h:600};   // vista del mapa animado, en las mismas unidades que el mapa de municipios
-const A={g:null,t:null,k:-1,play:0,loc:-1,tira:null,lluvia:new Map(),nube:new Map(),sat:new Map(),satMal:new Set(),armado:false};
+const A={g:null,t:null,k:-1,play:0,loc:-1,tira:null,lluvia:new Map(),nube:new Map(),sat:new Map(),satMal:new Set(),armado:false,pedida:false};
 // Escala de lluvia por hora (mm): desde, color
 const ESCALA=[[0.2,'#bfe6ff'],[1,'#6cb8f0'],[3,'#2f7fe0'],[7,'#2b3fb0'],[15,'#9b1fa8']];   // más separados entre sí (20/10/2026)
 const OTRAS=[{n:'Formosa',lat:-26.18,lon:-58.17,dx:-8,a:'end'},{n:'Asunción',lat:-25.28,lon:-57.63,dx:-8,a:'end'}];
@@ -2452,6 +2458,31 @@ function pintarAnim(){
   mostrar(nuevo||A.k<0?kAhora():A.k);
   if(A.loc>=0)elegirLoc(A.loc,false);
 }
+// Con la sección cerrada, el mapa animado se dibuja cuando el teléfono queda libre (24/10/2026): pintar la lluvia y las nubes
+// lleva un rato en los celulares lentos y trababa la página justo cuando llegaban los demás datos. Abierta, se dibuja enseguida;
+// al abrirla (con el botón o con un enlace) también. Se ve igual que antes.
+let ANIM_ESPERA=null;
+function pintarAnimPronto(){
+  if(abierta('t-anim')){pintarAnimYa();return}
+  if(ANIM_ESPERA)return;
+  const f=()=>{ANIM_ESPERA=null;seguro(pintarAnim,['grilla'])};
+  ANIM_ESPERA=typeof requestIdleCallback==='function'?{id:requestIdleCallback(f,{timeout:4000}),ric:true}:{id:setTimeout(f,1500)};
+}
+function pintarAnimYa(){
+  if(ANIM_ESPERA){try{(ANIM_ESPERA.ric?cancelIdleCallback:clearTimeout)(ANIM_ESPERA.id)}catch(e){}ANIM_ESPERA=null}
+  seguro(pintarAnim,['grilla']);
+}
+// El pronóstico por hora (grilla.json, unos 11 KB) se pide recién cuando la sección está por verse (a unos 2500 px, igual que el mapa
+// del Pacífico), cuando se abre o cuando un enlace lleva a ella (24/10/2026). Quien mira solo lo de arriba no lo baja ni lo dibuja.
+function iniciarGrilla(){
+  const pedir=()=>{if(!A.pedida){A.pedida=true;cargarGrilla()}};
+  alAbrir('t-anim',ab=>{if(ab)pedir()});
+  const h=$('t-anim');
+  if(typeof IntersectionObserver==='undefined'||!h){pedir();return}
+  // Dentro del portal el marco no sabe qué parte de él se ve (la pantalla es la del portal): se usa lo que avisa el portal (VISTA).
+  A.cercaPortal=()=>{if(!A.pedida&&VISTA&&h.getBoundingClientRect){const y=VISTA.top+h.getBoundingClientRect().top;if(y<VISTA.h+2500)pedir()}};
+  const o=new IntersectionObserver(e=>{if(e.some(x=>x.isIntersecting)){o.disconnect();pedir()}},{rootMargin:'2500px 0px'});o.observe(h);
+}
 async function cargarGrilla(){
   try{
     const j=await getJSON(GRILLA_URL+'?'+Math.floor(Date.now()/3e5)),d=j&&j.datos;
@@ -2459,7 +2490,7 @@ async function cargarGrilla(){
     if(!A.g||d.t!==A.t){A.g=d;A.t=d.t;A.lluvia.clear();A.nube.clear();A.satMal.clear();MEM.guardar('grilla',d,d.t)}
   }catch(e){if(!A.g){const g=MEM.leer('grilla');if(g){A.g=g.datos;A.t=g.t}}}
   A.satMal.clear();   // en cada renovación se vuelve a probar el satélite de las horas que todavía no estaban
-  seguro(pintarAnim,['grilla']);
+  pintarAnimPronto();
 }
 function iniciarAnim(){
   $('aHora').addEventListener('input',e=>{parar();mostrar(Number(e.target.value))});
@@ -2472,17 +2503,17 @@ function iniciarAnim(){
   $('aDias').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b||!A.g)return;parar();
     const d=b.dataset.d;mostrar(d===diaAR(new Date())?kAhora():Array.from({length:A.g.n},(_,k)=>k).find(k=>diaAR(horaDe(k))===d))});
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(A.g){A.nube.clear();pintarAnim()}});
-  alAbrir('t-anim',ab=>{if(!ab)parar();else if(A.g&&A.k>=0)mostrar(A.k)});
+  alAbrir('t-anim',ab=>{if(!ab)parar();else if(ANIM_ESPERA)pintarAnimYa();else if(A.g&&A.k>=0)mostrar(A.k)});
 }
 
 seguro(iniciarPlegables);seguro(iniciarDesplegables);
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);seguro(iniciarHacer);seguro(pintarHacer);cargarSMN();
-seguro(iniciarAnim);cargarGrilla();seguro(iniciarPacifico);
+seguro(iniciarAnim);seguro(iniciarGrilla);seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
 ['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g)seguro(pintarAnim,['grilla'])});
+Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g&&A.pedida)seguro(pintarAnim,['grilla'])});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
@@ -2490,7 +2521,7 @@ function renovar(){
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
   Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(cargar)).then(pintar);
-  cargarTodos();cargarGrilla();
+  cargarTodos();if(A.pedida)cargarGrilla();
 }
 setInterval(renovar,30*60e3);
 // Al volver a la página o a la app instalada (20/10/2026): si estuvo guardada más de 6 horas o cambió el día, se vuelve a abrir entera,
@@ -2517,7 +2548,7 @@ armarCorreo();
 
 // Contador de visitas (GoatCounter). Solo cuenta: no se carga código de afuera ni se mandan datos de la persona.
 // La página pide una imagen de 1 píxel a la cuenta del sitio con lo único que hace falta para contar: qué se abrió.
-// Tres páginas en el tablero: "/" (navegador), "/desde-la-app" (abierto desde el ícono) y "/en-el-portal" (dentro de Gobierno Abierto);
+// Cuatro páginas en el tablero: "/" (navegador), "/desde-la-app" (abierto desde el ícono), "/desde-play" (la app de Google Play) y "/en-el-portal" (dentro de Gobierno Abierto);
 // y cuatro eventos: "instalar-app-boton", "instalar-desde-portal", "app-instalada" y "compartir". Sin título, sin de dónde se llegó y sin tamaño de pantalla.
 const CONTADOR='https://riosyclimachaco.goatcounter.com/count';
 function contador(p,evento){
@@ -2528,11 +2559,15 @@ function contador(p,evento){
   if(nav.webdriver)q.set('b','153');
   new Image().src=CONTADOR+'?'+q;
 }
+// Abierta desde la app de Google Play (aplicación web de confianza, TWA): Chrome la abre con el nombre de la app como origen (android-app://…).
+const desdePlay=()=>{try{return /^android-app:\/\//.test(document.referrer||'')}catch(e){return false}};
 function contarVisita(){
   const app=matchMedia('(display-mode: standalone)').matches||(typeof navigator!=='undefined'&&navigator.standalone===true);
-  contador(EMB?'/en-el-portal':app?'/desde-la-app':'/');
+  contador(EMB?'/en-el-portal':desdePlay()?'/desde-play':app?'/desde-la-app':'/');
 }
-seguro(contarVisita);
+// La visita se cuenta cuando terminó de cargar la página (24/10/2026): la imagen del contador demoraba el fin de la carga
+// y el navegador seguía mostrando que la página cargaba hasta que respondía GoatCounter.
+if(document.readyState==='complete')seguro(contarVisita);else addEventListener('load',()=>seguro(contarVisita),{once:true});
 
 // Instalar app: el botón aparece solo cuando el navegador ofrece instalar (Android y computadora, con Chrome o Edge).
 // En iPhone y iPad Apple no deja que la página instale sola: el mismo botón abre (y cierra) los pasos Compartir → Agregar a inicio,
@@ -2545,7 +2580,7 @@ function instalarApp(){
   const nav=typeof navigator!=='undefined'?navigator:{};
   const pedir=/[?&]instalar=1(&|$)/.test(location.search||'');
   if(pedir)try{const q=new URLSearchParams(location.search);q.delete('instalar');history.replaceState(history.state,'',location.pathname+(q.toString()?'?'+q:'')+location.hash)}catch(e){}
-  if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true)return;
+  if(matchMedia('(display-mode: standalone)').matches||nav.standalone===true||desdePlay())return;
   let pedido=null,ofrecido=false;const aviso=$('instAviso');
   const ua=nav.userAgent||'';
   const esIos=/iPhone|iPad|iPod/.test(ua)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
@@ -2688,7 +2723,7 @@ function recibirVista(){
     if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;
     const n=x=>typeof x==='number'&&isFinite(x);if(!n(d.top)||!n(d.height)||d.height<200)return;
     VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0,fijo:d.fijo===true};
-    ponerFijo();revisarQuieto()});
+    ponerFijo();revisarQuieto();if(A.cercaPortal)seguro(A.cercaPortal)});
   addEventListener('scroll',()=>{if(FIJO)revisarQuieto()},{passive:true});
   addEventListener('resize',()=>{if(VISTA)ponerFijo()});
   // Rueda del mouse: mientras el marco no llegó arriba (o ya se pasó), se mueve la página del portal; con el marco arriba, baja el sitio.

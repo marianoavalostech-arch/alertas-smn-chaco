@@ -1471,5 +1471,99 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const f = html.slice(html.indexOf('function telDesdePortal(){'), html.indexOf('seguro(telDesdePortal);'));
     assert.ok(f.includes('if(!EMB)return;') && f.includes(`closest('a[href^="tel:"]')`) && f.includes("a.target='_blank';a.rel='noopener'") && f.includes('},true)'), 'solo en el portal, antes del clic');
   });
+  prueba('Google Play: política de privacidad propia, sin código, enlazada desde "Acerca de este sitio"', () => {
+    const pv = fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8');
+    assert.ok(pv.includes('<title>Política de privacidad · Ríos y Clima del Chaco</title>') && pv.includes('<h1>Política de privacidad</h1>'), 'se llama "Política de privacidad" (lo pide Google Play)');
+    assert.ok(!/<script/i.test(pv) && !/\son[a-z]+=["']/i.test(pv) && !pv.includes('javascript:'), 'sin código: no hace falta y la regla del navegador (CSP) no lo dejaría correr');
+    assert.ok(!pv.includes('marianoavalos.tech@') && pv.includes('marianoavalos&#46;tech&#64;gmail&#46;com'), 'el correo no está escrito tal cual (para los robots que buscan direcciones)');
+    for (const t of ['No es un servicio oficial', 'no representa al Gobierno del Chaco', 'La app no pide permisos', 'No usa cookies', 'GoatCounter', 'Borrar datos', 'menores de 13 años', 'HTTPS', 'Última actualización'])
+      assert.ok(pv.includes(t), 'falta en la política: ' + t);
+    for (const f of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(pv.includes('url(fuentes/' + f + ')'), 'la misma letra que el sitio');
+    assert.ok(html.includes('<a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>') && html.indexOf('href="privacidad.html"') > html.indexOf('id="t-acerca"'), 'se abre desde "Acerca de este sitio": Play pide que esté también dentro de la app');
+  });
+  prueba('Google Play: la app se reconoce, no ofrece instalar y cuenta aparte ("/desde-play"); la visita se cuenta al terminar de cargar', () => {
+    const pedidos = [], antes = sitio.location, antesAdd = sitio.addEventListener, ev = {};
+    Object.assign(sitio, { location: { protocol: 'https:', hash: '' }, URLSearchParams, URL, Image: class { set src(u) { pedidos.push(new URL(u)) } } });
+    const caja = { hidden: true }, btn = { hidden: true, setAttribute() {}, addEventListener() {} }, ios = { hidden: true };
+    Object.assign(elementos, { instalar: caja, btnInstalar: btn, instIos: ios });
+    sitio.addEventListener = (t, f) => { ev[t] = f };
+    try {
+      sitio.document.referrer = 'android-app://io.github.ejemplo.app/';
+      assert.strictEqual(S('desdePlay()'), true);
+      S('contarVisita()'); assert.strictEqual(pedidos[0].searchParams.get('p'), '/desde-play');
+      S('instalarApp()'); assert.ok(!ev.beforeinstallprompt && caja.hidden && btn.hidden, 'en la app de Play no se ofrece instalar');
+      sitio.document.referrer = 'https://www.google.com/';
+      assert.strictEqual(S('desdePlay()'), false);
+      S('contarVisita()'); assert.strictEqual(pedidos[1].searchParams.get('p'), '/');
+    } finally {
+      sitio.addEventListener = antesAdd; sitio.location = antes; for (const k of ['URLSearchParams', 'URL', 'Image']) delete sitio[k];
+      delete sitio.document.referrer; delete elementos.instalar; delete elementos.btnInstalar; delete elementos.instIos;
+    }
+    assert.ok(html.includes("if(document.readyState==='complete')seguro(contarVisita);else addEventListener('load',()=>seguro(contarVisita),{once:true});"), 'la imagen del contador ya no demora el fin de la carga');
+  });
+  prueba('Google Play: archivo assetlinks (cuando exista la app) con la forma que pide Android', () => {
+    const al = require('../herramientas/assetlinks.js'), h = 'ab'.repeat(32);   // huella de ejemplo, en minúsculas y sin ":"
+    const j = al.armar('io.github.ejemplo.app', [h, h]);
+    assert.deepStrictEqual(j[0].target.sha256_cert_fingerprints, ['AB:'.repeat(31) + 'AB'], 'mayúsculas, con ":" y sin repetir');
+    assert.deepStrictEqual(j[0].relation, ['delegate_permission/common.handle_all_urls']);
+    assert.strictEqual(al.revisar(j), '');
+    assert.throws(() => al.armar('sinpuntos', [h]), /paquete/);
+    assert.throws(() => al.armar('io.github.ejemplo.app', ['12:34']), /huella/);
+    const f = path.join(raiz, '.well-known', 'assetlinks.json');
+    if (fs.existsSync(f)) assert.strictEqual(al.revisar(JSON.parse(fs.readFileSync(f, 'utf8'))), '', '.well-known/assetlinks.json tiene que tener la forma correcta');
+  });
+  prueba('carga más liviana (24/10): conexión anticipada con GitHub, fondo sin repintar y pronóstico por hora solo cuando hace falta', () => {
+    assert.ok(html.includes('<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>') && html.indexOf('rel="preconnect"') < html.indexOf('<style>'), 'la conexión con GitHub (donde están los datos) se abre mientras baja la página');
+    assert.ok(!html.includes('background-attachment:fixed'), 'el fondo es un degradado de costado: sin "fixed" se ve igual y el celular no lo repinta al bajar');
+    const ric = [], canc = [];
+    sitio.requestIdleCallback = (f, o) => { ric.push([f, o]); return 7; }; sitio.cancelIdleCallback = id => { canc.push(id); };
+    S("var __paOrig=pintarAnim,__pa=0;pintarAnim=function(){__pa++};PLEG['t-anim']={abierta:false};ANIM_ESPERA=null");
+    try {
+      S('pintarAnimPronto()'); assert.strictEqual(S('__pa'), 0, 'con la sección cerrada no se dibuja enseguida');
+      assert.strictEqual(ric.length, 1); assert.strictEqual(ric[0][1].timeout, 4000, 'a más tardar en 4 segundos');
+      S('pintarAnimPronto()'); assert.strictEqual(ric.length, 1, 'no se pide dos veces');
+      ric[0][0](); assert.strictEqual(S('__pa'), 1, 'cuando el teléfono queda libre, se dibuja'); assert.strictEqual(S('ANIM_ESPERA'), null);
+      S('pintarAnimPronto()'); S('pintarAnimYa()'); assert.strictEqual(S('__pa'), 2); assert.deepStrictEqual(canc, [7], 'si se abre antes, se dibuja enseguida y una sola vez');
+      S("PLEG['t-anim'].abierta=true"); S('pintarAnimPronto()'); assert.strictEqual(S('__pa'), 3, 'con la sección abierta, enseguida'); assert.strictEqual(ric.length, 2);
+    } finally { S("pintarAnim=__paOrig;delete PLEG['t-anim'];ANIM_ESPERA=null"); delete sitio.requestIdleCallback; delete sitio.cancelIdleCallback; }
+    assert.ok(codigo.includes("alAbrir('t-anim',ab=>{if(!ab)parar();else if(ANIM_ESPERA)pintarAnimYa();") && codigo.includes('  pintarAnimPronto();\n}'), 'abrir la sección (con el botón o con un enlace) lo dibuja enseguida');
+    // El pronóstico por hora se pide recién cuando la sección está por verse (a 2500 px), cuando se abre o cuando un enlace lleva a ella
+    const io = [];
+    sitio.IntersectionObserver = class { constructor(cb, op) { this.r = { cb, op, obs: [], off: false }; io.push(this.r); } observe(el) { this.r.obs.push(el); } disconnect() { this.r.off = true; } };
+    elementos['t-anim'] = { id: 't-anim' };
+    S("var __cgOrig=cargarGrilla,__cg=0;cargarGrilla=function(){__cg++};A.pedida=false;var __abOrig=AL_ABRIR['t-anim'];AL_ABRIR['t-anim']=[]");
+    try {
+      S('iniciarGrilla()');
+      assert.strictEqual(S('__cg'), 0, 'al cargar la página no se pide');
+      assert.strictEqual(io.length, 1); assert.strictEqual(io[0].op.rootMargin, '2500px 0px'); assert.strictEqual(io[0].obs[0].id, 't-anim');
+      io[0].cb([{ isIntersecting: false }]); assert.strictEqual(S('__cg'), 0, 'lejos todavía: no');
+      io[0].cb([{ isIntersecting: true }]); assert.strictEqual(S('__cg'), 1, 'cerca de la sección: se pide'); assert.ok(io[0].off, 'y se deja de mirar');
+      S("AL_ABRIR['t-anim'].forEach(f=>f(true))"); assert.strictEqual(S('__cg'), 1, 'una sola vez');
+      S("A.pedida=false;AL_ABRIR['t-anim'].forEach(f=>f(true))"); assert.strictEqual(S('__cg'), 2, 'abrir la sección también lo pide');
+      // dentro del portal: con lo que avisa el portal de su pantalla (el marco no lo sabe)
+      elementos['t-anim'].getBoundingClientRect = () => ({ top: 6000 });
+      S("A.pedida=false;VISTA={top:-200,h:800,cab:68,fijo:false};A.cercaPortal()"); assert.strictEqual(S('__cg'), 2, 'portal: la sección todavía lejos (a 5000 px de la pantalla)');
+      S("VISTA.top=-3000;A.cercaPortal()"); assert.strictEqual(S('__cg'), 3, 'portal: a menos de 2500 px de la pantalla, se pide');
+    } finally { S("cargarGrilla=__cgOrig;A.pedida=false;AL_ABRIR['t-anim']=__abOrig;VISTA=null;delete A.cercaPortal"); delete sitio.IntersectionObserver; delete elementos['t-anim']; }
+    assert.ok(codigo.includes('ponerFijo();revisarQuieto();if(A.cercaPortal)seguro(A.cercaPortal)});'), 'cada aviso del portal revisa si la sección está cerca');
+    assert.ok(codigo.includes('cargarTodos();if(A.pedida)cargarGrilla();') && codigo.includes("if(!A.g&&A.pedida)seguro(pintarAnim,['grilla'])"), 'la renovación y el cartel de "no disponible" solo si ya se pidió');
+    assert.ok(codigo.includes("if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}"), 'el enlace "Ver a qué hora llueve" deja la localidad elegida aunque el pronóstico por hora todavía no haya llegado');
+    const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
+    assert.ok(/for = "\/iconos\/\*"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml) && /for = "\/icono\.svg"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml), 'los íconos se guardan una semana en el navegador');
+  });
+  prueba('accesibilidad (24/10): tablas que se recorren con el teclado, etiquetas de alerta que se leen al sol y títulos del semáforo sin huecos', () => {
+    assert.ok(html.includes('<div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color">') && codigo.includes('<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad">') && html.includes('button:focus-visible,.tabla:focus-visible{outline'), 'las tablas anchas se pueden mover con el teclado y se ve el foco');
+    const lum = h => { const v = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    const contraste = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+    for (const n of ['amarillo', 'naranja', 'rojo']) {
+      const c = (new RegExp('--' + n + '-txt:(#[0-9a-f]{6})').exec(html) || [])[1];
+      assert.ok(c && contraste(c, '#ffffff') >= 4.5 && contraste(c, '#f8dedb') >= 4.5, n + ': el texto de la etiqueta se lee bien (contraste 4,5 o más)');
+      assert.ok(html.includes(n === 'amarillo' ? '.smnChip.n3 small{color:var(--amarillo-txt)}' : n === 'naranja' ? '.smnChip.n4 small{color:var(--naranja-txt)}' : '.smnChip.n5 small{color:var(--rojo-txt)}'), n + ' en la etiqueta del SMN');
+    }
+    assert.ok(html.includes('.dia.n3 .dA{color:var(--amarillo-txt)}.dia.n4 .dA{color:var(--naranja-txt)}.dia.n5 .dA{color:var(--rojo-txt)}'), 'y en las tarjetas de los días');
+    assert.ok(html.includes('.sem li>span:not(.por){text-align:left;'), 'el título de cada renglón del semáforo no se justifica (el texto sí)');
+    assert.ok(html.includes('padding:5px 12px;min-height:40px;display:inline-flex;align-items:center}'), 'los nombres de "En verde", del alto de los demás botones');
+    assert.ok(html.includes('@media (max-width:599px){.smnChip{flex-wrap:wrap;'), 'en el celular, la etiqueta del SMN baja "con posible granizo" y el nivel de renglón en vez de apretarlos');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();

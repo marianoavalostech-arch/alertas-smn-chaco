@@ -2,6 +2,21 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 24/10/2026 (revisión general: más liviano, listo para Google Play y mejor para leer en el celular)
+
+Pedido de Mariano: revisar todo el proyecto para optimizarlo sin cambiar el funcionamiento, dejarlo listo para publicar en Google Play y que ande bien en el portal de Gobierno Abierto, en la computadora y en el celular, con buena navegación y liviano.
+- **Pronóstico por hora a pedido** (`iniciarGrilla`): `grilla.json` (unos 11 KB) se pide recién cuando "Lluvia hora por hora" está a unos 2500 px de la pantalla, cuando se abre o cuando un enlace lleva a ella; dentro del portal, con lo que el portal avisa de su pantalla (`A.cercaPortal`). Con la sección cerrada, su vista previa se dibuja cuando el teléfono queda libre (`pintarAnimPronto`), no junto con los demás datos. El enlace "Ver a qué hora llueve hoy y mañana" deja elegida la localidad aunque el pronóstico todavía no haya llegado. La renovación de cada 30 minutos lo pide solo si ya se pidió. Al abrir la página: 11 KB menos, un tercio menos de memoria y unos 80 ms menos de trabajo en un celular lento (medido con la CPU 4 veces más lenta). Se ve igual que antes.
+- **Contador de visitas al terminar de cargar**: la imagen de GoatCounter demoraba el fin de la carga (con un GoatCounter lento, la página "terminaba" de cargar 1,5 s después; ahora a los 0,15 s en la misma prueba). También empieza antes la imagen del Pacífico, que espera ese momento.
+- **Conexión anticipada con GitHub** (`<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>`): mientras baja la página ya se abre la conexión con el lugar de las copias de los datos; en una red de celular, los datos llegan unos cientos de milisegundos antes.
+- **Fondo sin `background-attachment: fixed`**: el degradado es de costado y se ve igual; en Android, Chrome ya no tiene que repintar el fondo en cada movimiento al bajar la página.
+- **Íconos guardados una semana** en el navegador (`/iconos/*` y `/icono.svg` en `netlify.toml`): no se vuelven a pedir en cada visita.
+- **Google Play**: política de privacidad propia (`privacidad.html`, sin código, con la letra y los colores del sitio), enlazada desde "Acerca de este sitio"; la app de Play se reconoce (`desdePlay`: Chrome la abre con origen `android-app://…`): no ofrece "Instalar app" y el contador la anota como `/desde-play`; `herramientas/assetlinks.js` arma `.well-known/assetlinks.json` cuando estén el nombre del paquete y las huellas de la firma (una prueba controla su forma); categoría `weather` en `manifest.webmanifest`. Sección "App en Google Play" en el README.
+- **Para leer mejor en el celular**: las etiquetas "alerta amarilla / naranja / roja" con el texto en un tono más oscuro del mismo color (`--amarillo-txt`, `--naranja-txt`, `--rojo-txt`; el amarillo sobre blanco tenía contraste 2,4 y ahora 5,8; el borde no cambia); en la franja y en "Alertas oficiales del SMN", "con posible granizo" y el nivel pasan al renglón de abajo en vez de apretarse en una columna; el título de cada renglón de "Riesgo por localidad" sin justificar (quedaban huecos grandes); los nombres de "En verde" del alto de los demás botones (40 px).
+- **Accesibilidad**: las dos tablas que se desplazan de costado se pueden recorrer con el teclado (`tabindex="0"`, con nombre). La revisión automática (axe) queda sin errores.
+- Revisado en un navegador real con la regla del navegador y los datos del 24/10: sin desbordes de costado de 320 a 1440 px, sin errores en la consola, y en una copia del portal con el código del shortcode 1.3 (marco del alto entero en el celular, acomodo de computadora, "Ver el río" deja el título a 80 px, la política de privacidad abre en una pestaña nueva).
+- README: corregido lo que pasa sin señal (el teléfono muestra que no hay conexión; lo guardado se usa cuando una fuente no responde).
+- Huella nueva del código. 78 pruebas.
+
 ## 24/10/2026 (en el celular, botones de colores y etiqueta del SMN más chicos en el mapa)
 
 Pedido de Mariano: en el celular, al tocar una localidad del mapa, los botones de colores ("qué significa cada color") quedaban muy grandes y tapaban las tarjetas del clima.
