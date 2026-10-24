@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 24/10/2026 (etiqueta del SMN más chica en el detalle del mapa, en el celular)
+
+Pedido de Mariano: en el celular, al tocar una localidad del mapa, la etiqueta de colores de la alerta quedaba muy grande y tapaba las tarjetas del clima.
+- En pantallas de menos de 600 px, la etiqueta del SMN dentro del detalle del mapa (`#mInfo .smnChip`) va con letra más chica, borde más fino y en uno o dos renglones: "Tormentas con posible granizo" arriba y "ALERTA AMARILLA" abajo (antes ocupaba tres renglones y empujaba las tarjetas fuera de la pantalla). Ocupa cerca de un tercio menos de alto.
+- Solo cambia el estilo (CSS): la huella del código queda igual. En la computadora y en la franja de alertas no cambia nada. 73 pruebas.
+
 ## 23/10/2026 ("Todo el Chaco" al ir a "Lluvia hora por hora" desde un municipio que no está en la lista)
 
 Pedido de Mariano: si el municipio elegido no está en "Lluvia en", que quede "Todo el Chaco".
