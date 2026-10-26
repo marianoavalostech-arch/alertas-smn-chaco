@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.marianoavalos.riosyclimachaco",
+      "sha256_cert_fingerprints": [
+        "6A:35:51:80:92:17:CD:2B:4A:B9:D5:6B:2F:EE:12:89:19:97:75:23:B6:B5:64:3A:66:96:42:45:51:51:87:18",
+        "B1:64:10:95:4D:09:36:90:53:E1:5E:CD:41:80:1A:31:49:89:0D:C1:04:9B:6B:1E:6A:EC:75:71:9F:A0:57:88"
+      ]
+    }
+  }
+]

@@ -1513,7 +1513,12 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.throws(() => al.armar('sinpuntos', [h]), /paquete/);
     assert.throws(() => al.armar('io.github.ejemplo.app', ['12:34']), /huella/);
     const f = path.join(raiz, '.well-known', 'assetlinks.json');
-    if (fs.existsSync(f)) assert.strictEqual(al.revisar(JSON.parse(fs.readFileSync(f, 'utf8'))), '', '.well-known/assetlinks.json tiene que tener la forma correcta');
+    if (fs.existsSync(f)) {
+      const real = JSON.parse(fs.readFileSync(f, 'utf8'));
+      assert.strictEqual(al.revisar(real), '', '.well-known/assetlinks.json tiene que tener la forma correcta');
+      assert.strictEqual(real[0].target.package_name, 'com.marianoavalos.riosyclimachaco', 'el paquete de la app en Play (no se puede cambiar)');
+      assert.strictEqual(real[0].target.sha256_cert_fingerprints.length, 2, 'las dos huellas: la clave de firma de Google y la clave de carga');
+    }
   });
   prueba('carga más liviana (24/10): conexión anticipada con GitHub, fondo sin repintar y pronóstico por hora solo cuando hace falta', () => {
     assert.ok(html.includes('<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>') && html.indexOf('rel="preconnect"') < html.indexOf('<style>'), 'la conexión con GitHub (donde están los datos) se abre mientras baja la página');

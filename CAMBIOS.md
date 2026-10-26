@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 26/10/2026 (la app de Google Play reconoce al sitio)
+
+- **`.well-known/assetlinks.json`**: une la app de Google Play (`com.marianoavalos.riosyclimachaco`) con el sitio, para que abra a pantalla completa, sin la barra de dirección de Chrome. Lleva las dos huellas SHA-256 de Play Console: la clave de firma de apps de Google (`6A:35:…:87:18`) y la clave de carga de PWABuilder (`B1:64:…:57:88`). Armado con `herramientas/assetlinks.js`. No cambia nada de lo que se ve en el sitio.
+- **Pruebas**: si el archivo está, tiene que ser del paquete de la app y tener las dos huellas.
+- README: sección "App en Google Play" al día.
+
 ## 24/10/2026 (en el celular: todo más compacto, "↑ Índice" que no tapa, las tarjetas del clima a la vista al tocar un municipio y la altura del río destacada)
 
 Pedido de Mariano: aplicar los cambios propuestos para el celular y destacar un poco la altura del río en la franja de arriba.
