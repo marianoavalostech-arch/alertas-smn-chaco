@@ -17,7 +17,7 @@ module.exports = { huella };
 if (require.main === module) {
   const h = huella(fs.readFileSync(path.join(raiz, 'index.html'), 'utf8'));
   const f = path.join(raiz, 'netlify.toml'), toml = fs.readFileSync(f, 'utf8');
-  const nuevo = toml.replace(/script-src '[^']+'/, 'script-src ' + h);
+  const nuevo = toml.replace(/(script-src (?:'self' )?)'sha256-[^']+'/, '$1' + h);   // 'self': la biblioteca de Firebase (avisos)
   if (nuevo === toml && !toml.includes('script-src ' + h)) throw new Error('no se encontró script-src en netlify.toml');
   fs.writeFileSync(f, nuevo);
   console.log('Huella del código de la página: ' + h + (nuevo === toml ? ' (ya estaba al día).' : ' (netlify.toml actualizado).'));

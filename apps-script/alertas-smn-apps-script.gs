@@ -18,6 +18,10 @@
  * Si la lluvia lleva más de 24 horas sin renovarse, el script manda un correo a la cuenta dueña del script, una sola vez por caída.
  * Para dar el permiso de enviar correo y probarlo: ejecutar probarCorreo().
  *
+ * Avisos al celular (desde el 5/11/2026): cuando aparece una alerta del SMN nueva para un municipio, o sube de nivel, el script
+ * le pide a Firebase Cloud Messaging que avise a los celulares anotados en esa localidad (avisarAlertas). La página anota cada
+ * celular con un pedido a esta misma dirección (doPost). Ver "avisos al celular" más abajo. Para probarlo: ejecutar probarAviso().
+ *
  * Control de las horas: el canal del SMN rotula las horas de vigencia como hora argentina, pero vienen en UTC, y por eso se corrigen 3 horas.
  * En cada lectura el script revisa si eso sigue siendo así (controlAjuste). Si el SMN arregla su canal, deja de corregir solo,
  * sin tocar nada. Lo que decidió queda publicado en "ajuste" (horas: 3 o 0).
@@ -427,6 +431,146 @@ function decidirAviso(t, ahora, avisado) {
   return viejo && !avisado ? 'avisar' : !viejo && avisado ? 'limpiar' : '';
 }
 
+/* ---------- avisos al celular: funciones puras ---------- */
+// Avisos por alertas del SMN (decididos por Mariano el 5/11/2026). Los manda Firebase Cloud Messaging (FCM) con temas:
+// cada celular está anotado en un solo tema de su localidad: m<n> (naranja y roja) o m<n>a (también amarillas).
+// n = número del municipio (0 a 69). Firebase guarda quién está en cada tema: este script no guarda celulares,
+// solo qué alerta ya avisó (propiedades "av"). De noche (22 a 7 h) salen en el momento solo las alertas que rigen hoy
+// o empiezan a la mañana siguiente antes del mediodía (franjas de 0 a 6 y de 6 a 12 h); las demás salen a las 7.
+// Es igual para todos (sin casilla "de noche", decisión del 5/11). Las alertas salen del mismo resultado que el mapa.
+var FCM_PROYECTO = 'rios-y-clima-chaco';
+var SITIO = 'https://panel-alertas-chaco.netlify.app/';
+var TOPE_PEDIDOS = 3000;   // pedidos por día a la dirección para anotarse (doPost): cuida la cuota diaria del script
+var MUNICIPIOS = ["Avia Terai","Barranqueras","Basail","Campo Largo","Capitán Solari","Charadai","Charata","Chorotis","Ciervo Petiso","Colonia Aborigen","Colonia Benítez","Colonia Elisa","Colonia Popular","Colonias Unidas","Concepción del Bermejo","Coronel Du Graty","Corzuela","Cote Lai","El Sauzalito","Enrique Urién","Fontana","Fuerte Esperanza","Gancedo","General Capdevila","General Pinedo","General San Martín","General Vedia","Hermoso Campo","Isla del Cerrito","Juan José Castelli","La Clotilde","La Eduvigis","La Escondida","La Leonesa","La Tigra","La Verde","Laguna Blanca","Laguna Limpia","Lapachito","Las Breñas","Las Garcitas","Las Palmas","Los Frentones","Machagai","Makallé","Margarita Belén","Miraflores","Misión Nueva Pompeya","Napenay","Pampa Almirón","Pampa del Indio","Pampa del Infierno","Presidencia de la Plaza","Presidencia Roca","Presidencia Roque Sáenz Peña","Puerto Bermejo","Puerto Eva Perón","Puerto Tirol","Puerto Vilelas","Quitilipi","Resistencia","Samuhú","San Bernardo","Santa Sylvina","Taco Pozo","Tres Isletas","Villa Ángela","Villa Berthet","Villa Río Bermejito","El Espinillo"];
+// Nombre de cada fenómeno: los mismos que SMN_EV en el sitio.
+var EV_NOMBRE = { 41: 'tormentas', 37: 'lluvias', 42: 'nevadas', 39: 'viento', 47: 'viento zonda', 101: 'calor extremo', 102: 'frío extremo', 103: 'niebla', 104: 'humo', 105: 'polvo' };
+var COLOR_AVISO = { 3: 'amarilla', 4: 'naranja', 5: 'roja' };
+var SUFIJOS = ['', 'a'];
+
+function temaAviso(m, amarilla) { return 'm' + m + (amarilla ? 'a' : ''); }
+function temaValido(t) { return typeof t === 'string' && /^m([0-9]|[1-6][0-9])a?$/.test(t); }
+function esNoche(hora) { return hora >= 22 || hora < 7; }
+
+// Alertas del resultado del mapa que se pueden avisar: amarilla o más, de hoy y los 2 días siguientes (como el sitio).
+// Clave: municipio|día|fenómeno. urgente = rige hoy o empieza mañana antes del mediodía: sale aunque sea de noche.
+function alertasParaAvisar(alertas, hoy) {
+  var dias = [hoy, sumarDias(hoy, 1), sumarDias(hoy, 2)], out = {};
+  Object.keys(alertas || {}).forEach(function (m) {
+    if (!(+m >= 0 && +m < MUNICIPIOS.length)) return;
+    (alertas[m] || []).forEach(function (a) {
+      var i = dias.indexOf(a[0]); if (i < 0) return;
+      var niv = Math.max(a[2] || 0, a[3] || 0, a[4] || 0, a[5] || 0); if (niv < 3) return;
+      out[m + '|' + a[0] + '|' + a[1]] = { m: +m, dia: a[0], ev: a[1], nivel: niv, extra: a[6] || 0, franjas: [a[2] || 0, a[3] || 0, a[4] || 0, a[5] || 0], urgente: i === 0 || (i === 1 && (a[2] >= 3 || a[3] >= 3)) };
+    });
+  });
+  return out;
+}
+
+// Decide qué avisar. estado = lo ya avisado {clave: nivel} o null (primera vez).
+// Avisa cuando una alerta es nueva o sube de nivel; de noche, solo las urgentes (las demás quedan para las 7).
+// La primera vez solo marca lo que ya estaba, sin mandar nada.
+// Devuelve { mensajes: [{ m, temas, items, marcas }], estado } (estado sin lo de los mensajes: se marca con aplicarMarcas si salieron bien).
+function decidirAvisos(alertas, hoy, hora, estado) {
+  var act = alertasParaAvisar(alertas, hoy), noche = esNoche(hora), primera = !estado, base = {}, porMun = {}, k;
+  estado = estado || {};
+  for (k in estado) if (k.split('|')[1] >= hoy && typeof estado[k] === 'number') base[k] = estado[k];   // los días que ya pasaron se olvidan
+  Object.keys(act).sort().forEach(function (k) {
+    var a = act[k];
+    if (primera) { base[k] = a.nivel; return; }
+    if (a.nivel <= (base[k] || 0) || (noche && !a.urgente)) return;
+    SUFIJOS.forEach(function (s) {
+      if (a.nivel < 4 && s !== 'a') return;   // amarilla: solo a quienes la pidieron
+      ((porMun[a.m] = porMun[a.m] || {})[s] = porMun[a.m][s] || []).push(k);
+    });
+  });
+  var mensajes = [];
+  Object.keys(porMun).forEach(function (m) {
+    var grupos = {};   // temas que reciben exactamente lo mismo van en un solo mensaje
+    SUFIJOS.forEach(function (s) { var l = porMun[m][s]; if (!l) return; var g = l.join(','); (grupos[g] = grupos[g] || []).push(s); });
+    Object.keys(grupos).forEach(function (g) {
+      var claves = g.split(',');
+      mensajes.push({ m: +m, temas: grupos[g].map(function (s) { return 'm' + m + s; }), items: claves.map(function (c) { return act[c]; }),
+        marcas: claves.map(function (c) { return [c, act[c].nivel]; }) });
+    });
+  });
+  return { mensajes: mensajes, estado: base };
+}
+
+// Marca lo avisado por los mensajes que salieron bien. Si una alerta iba en un mensaje que falló, no se marca: se reintenta en la hora siguiente.
+function aplicarMarcas(estado, mensajes, ok) {
+  var fallo = {};
+  mensajes.forEach(function (x, i) { if (!ok[i]) x.marcas.forEach(function (q) { fallo[q[0]] = 1; }); });
+  mensajes.forEach(function (x, i) {
+    if (!ok[i]) return;
+    x.marcas.forEach(function (q) { if (!fallo[q[0]]) estado[q[0]] = Math.max(estado[q[0]] || 0, q[1]); });
+  });
+  return estado;
+}
+
+var FRANJA_TXT = ['de madrugada', 'a la mañana', 'a la tarde', 'a la noche'];
+var DIA_SEM = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+function lista(p) { return p.length < 2 ? p.join('') : p.slice(0, -1).join(', ') + ' y ' + p[p.length - 1]; }
+// "hoy a la tarde y a la noche", "mañana todo el día", "el sábado 7/11 de madrugada"
+function cuandoAviso(a, hoy) {
+  var d = a.dia === hoy ? 'hoy' : a.dia === sumarDias(hoy, 1) ? 'mañana' : 'el ' + DIA_SEM[new Date(a.dia + 'T12:00:00Z').getUTCDay()] + ' ' + (+a.dia.slice(8)) + '/' + (+a.dia.slice(5, 7));
+  var f = []; a.franjas.forEach(function (n, i) { if (n >= 3) f.push(FRANJA_TXT[i]); });
+  return d + (f.length === 4 ? ' todo el día' : f.length ? ' ' + lista(f) : '');
+}
+function fenomeno(a) {
+  var x = [], f = EV_NOMBRE[a.ev];
+  if (a.extra & 1) x.push('posible granizo'); if (a.extra & 2) x.push('ráfagas');
+  return (f ? ' por ' + f : '') + (x.length ? ' con ' + lista(x) : '');
+}
+// Texto del aviso: título corto y una línea por alerta, de la más grave a la más leve.
+function textoAviso(m, items, hoy) {
+  var l = items.slice().sort(function (a, b) { return b.nivel - a.nivel || (a.dia < b.dia ? -1 : a.dia > b.dia ? 1 : 0); }), mun = MUNICIPIOS[m];
+  var titulo = l.length === 1 ? 'Alerta ' + COLOR_AVISO[l[0].nivel] + fenomeno(l[0]).replace(/ con .*/, '') + ' en ' + mun : 'Alertas del SMN en ' + mun;
+  var cuerpo = l.map(function (a) { var c = COLOR_AVISO[a.nivel]; return c.charAt(0).toUpperCase() + c.slice(1) + fenomeno(a) + ': ' + cuandoAviso(a, hoy) + '.'; }).join('\n');
+  return { titulo: titulo, cuerpo: cuerpo + '\nTocá para ver qué hacer.' };
+}
+// Mensaje para la API de FCM (v1). Varios temas van con una condición: Firebase no repite el aviso a quien está en más de uno.
+// Al tocarlo se abre el sitio (o la app) en esa localidad: ?loc=<n>.
+function mensajeFcm(x, hoy) {
+  var t = textoAviso(x.m, x.items, hoy), msg = {
+    notification: { title: t.titulo, body: t.cuerpo },
+    data: { loc: String(x.m) },
+    webpush: {
+      headers: { Urgency: 'high', TTL: '43200' },
+      notification: { icon: SITIO + 'iconos/icono-192.png', tag: 'smn-' + x.m, renotify: true, lang: 'es' },
+      fcm_options: { link: SITIO + '?loc=' + x.m }
+    }
+  };
+  if (x.temas.length === 1) msg.topic = x.temas[0];
+  else msg.condition = x.temas.map(function (t) { return "'" + t + "' in topics"; }).join(' || ');
+  return { message: msg };
+}
+
+// Revisa un pedido de la página para anotarse o borrarse. Devuelve { error } o el pedido limpio.
+// q = { accion: 'alta' | 'baja', id: identificador que entrega Firebase, tema: 'm<n>' o 'm<n>a', antes: tema anterior (opcional) }
+function revisarPedido(q) {
+  if (!q || typeof q !== 'object') return { error: 'formato' };
+  if (q.accion !== 'alta' && q.accion !== 'baja') return { error: 'accion' };
+  if (typeof q.id !== 'string' || !/^[A-Za-z0-9_:-]{20,400}$/.test(q.id)) return { error: 'id' };
+  if (!temaValido(q.tema)) return { error: 'tema' };
+  if (q.antes != null && q.antes !== '' && !temaValido(q.antes)) return { error: 'antes' };
+  return { accion: q.accion, id: q.id, tema: q.tema, antes: q.antes && q.antes !== q.tema ? q.antes : '' };
+}
+// Pedidos a Firebase para cumplir el pedido: anotar en el tema nuevo y borrar del anterior (o borrar, en la baja).
+function pedidosTemas(v) {
+  var base = 'https://fcm.googleapis.com/v1/projects/' + FCM_PROYECTO + '/registrations/' + encodeURIComponent(v.id) + '/topicSubscriptions';
+  var l = [];
+  if (v.accion === 'alta') l.push({ url: base + '?topicName=' + v.tema, method: 'post' });
+  var borrar = v.accion === 'alta' ? v.antes : v.tema;
+  if (borrar) l.push({ url: base + '/' + borrar + '?allowMissing=true', method: 'delete' });
+  return l;
+}
+// Cuenta un pedido del día. cuenta = 'AAAA-MM-DD|n' guardado. Devuelve { cuenta, paso } (paso = false si ya se llegó al tope).
+function contarPedido(cuenta, hoy) {
+  var p = String(cuenta || '').split('|'), n = p[0] === hoy ? +p[1] || 0 : 0;
+  if (n >= TOPE_PEDIDOS) return { cuenta: hoy + '|' + n, paso: false };
+  return { cuenta: hoy + '|' + (n + 1), paso: true };
+}
+
 /* ---------- parte que usa los servicios de Google ---------- */
 
 function pedirUrl(url) {
@@ -483,6 +627,8 @@ function actualizar() {
   try { robot = lanzarRobot(); } catch (e) { robot = 'error al lanzar'; console.warn('Robot: ' + (e.message || e)); }   // nunca frena la renovación
   if (robot !== antes) { r.datos.robot.estado = robot; guardar(JSON.stringify(r.datos)); }
   try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
+  // Avisos al celular por alertas del SMN: solo con el canal recién leído (si falló, no se avisa con datos viejos).
+  if (!r.falla) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e) { console.warn('Avisos al celular: ' + (e.message || e)); } }   // nunca frena la renovación
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
   return r.datos;
 }
@@ -535,6 +681,103 @@ function avisarLluvia(ahora, robot) {
     p.setProperty('avisoLluvia', '1');
   }
   return que;
+}
+
+/* ---------- avisos al celular: parte que usa los servicios de Google ---------- */
+// El script está vinculado al proyecto de Firebase (Configuración del proyecto > Proyecto de Google Cloud: 755067985516),
+// así que habla con Firebase con su propio permiso (ScriptApp.getOAuthToken, permiso firebase.messaging de appsscript.json):
+// no hay ninguna clave secreta guardada. Para apagar los avisos sin tocar el código: propiedad del script AVISOS = no.
+
+// Guarda un texto largo en partes (<nombre>0, <nombre>1, ... y <nombre>n con la cantidad): cada propiedad admite hasta 9 KB.
+function guardarPartes(nombre, texto) {
+  var p = PropertiesService.getScriptProperties(), n = Math.ceil(texto.length / 8000) || 1, todo = {};
+  var antes = Number(p.getProperty(nombre + 'n') || 0);
+  todo[nombre + 'n'] = String(n);
+  for (var i = 0; i < n; i++) todo[nombre + i] = texto.substr(i * 8000, 8000);
+  p.setProperties(todo, false);
+  for (i = n; i < antes; i++) p.deleteProperty(nombre + i);
+}
+function leerPartes(nombre) {
+  var p = PropertiesService.getScriptProperties().getProperties(), n = Number(p[nombre + 'n'] || 0), s = '';
+  for (var i = 0; i < n; i++) s += p[nombre + i] || '';
+  return s;
+}
+
+// Manda los mensajes a Firebase en tandas. Devuelve el código de respuesta de cada uno (200 = salió).
+function mandarAvisos(mensajes, hoy) {
+  var url = 'https://fcm.googleapis.com/v1/projects/' + FCM_PROYECTO + '/messages:send', clave = ScriptApp.getOAuthToken(), cods = [];
+  for (var i = 0; i < mensajes.length; i += 40) {
+    UrlFetchApp.fetchAll(mensajes.slice(i, i + 40).map(function (x) {
+      return { url: url, method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+        headers: { Authorization: 'Bearer ' + clave }, payload: JSON.stringify(mensajeFcm(x, hoy)) };
+    })).forEach(function (r) {
+      var c = r.getResponseCode(); cods.push(c);
+      if (c !== 200) console.warn('Firebase respondió ' + c + ': ' + r.getContentText().slice(0, 300));
+    });
+  }
+  return cods;
+}
+
+// Se llama en cada renovación, solo si el canal del SMN se leyó bien. Compara con lo ya avisado y manda lo nuevo.
+// Si Firebase falla, manda un correo (uno solo por caída) y reintenta en la hora siguiente.
+function avisarAlertas(datos, ahora) {
+  var p = PropertiesService.getScriptProperties();
+  if (p.getProperty('AVISOS') === 'no') return 'apagados';
+  var hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd'), hora = Number(Utilities.formatDate(ahora, TZ, 'H'));
+  var txt = leerPartes('av'), estado = null;
+  if (txt) try { estado = JSON.parse(txt); } catch (e) { estado = null; }
+  var d = decidirAvisos(datos.alertas, hoy, hora, estado);
+  var cods = d.mensajes.length ? mandarAvisos(d.mensajes, hoy) : [];
+  var ok = cods.map(function (c) { return c === 200; }), fallas = ok.filter(function (x) { return !x; }).length;
+  guardarPartes('av', JSON.stringify(aplicarMarcas(d.estado, d.mensajes, ok)));
+  if (fallas && p.getProperty('avisoFcm') !== '1') {
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Ríos y Clima del Chaco: no salen los avisos al celular',
+      'Firebase rechazó ' + fallas + ' de ' + cods.length + ' avisos (códigos: ' + cods.join(', ') + ').\n\n' +
+      'El script vuelve a intentar en cada renovación. El detalle queda en el registro de ejecuciones (Ejecuciones, en el editor del script).\n' +
+      'Qué mirar: que el script siga vinculado al proyecto de Firebase 755067985516 y que tenga el permiso de Firebase (ejecutar probarAviso()).\n\n' +
+      'Este correo se manda una sola vez por caída.');
+    p.setProperty('avisoFcm', '1');
+  } else if (!fallas && cods.length) p.deleteProperty('avisoFcm');
+  return (estado ? '' : 'primera vez: ') + d.mensajes.length + ' avisos, ' + fallas + ' con falla';
+}
+
+// Dirección para anotarse (la usa el botón "Avisarme" de la página). Recibe un JSON (ver revisarPedido) y responde { ok } o { ok: false, error }.
+// Tope diario de pedidos (TOPE_PEDIDOS): si alguien llena la dirección de pedidos, no se gasta la cuota del script y el sitio se sigue renovando.
+function doPost(e) {
+  var r;
+  try { r = anotar(JSON.parse(e.postData.contents)); } catch (x) { r = { ok: false, error: 'formato' }; }
+  return ContentService.createTextOutput(JSON.stringify(r)).setMimeType(ContentService.MimeType.JSON);
+}
+function anotar(q) {
+  var v = revisarPedido(q);
+  if (v.error) return { ok: false, error: v.error };
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return { ok: false, error: 'ocupado' };
+  try {
+    var p = PropertiesService.getScriptProperties(), c = contarPedido(p.getProperty('pedidos'), Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'));
+    if (!c.paso) return { ok: false, error: 'tope' };
+    p.setProperty('pedidos', c.cuenta);
+  } finally { lock.releaseLock(); }
+  var clave = ScriptApp.getOAuthToken();
+  var rs = UrlFetchApp.fetchAll(pedidosTemas(v).map(function (x) {
+    return { url: x.url, method: x.method, muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + clave } };
+  }));
+  var c0 = rs[0].getResponseCode();   // alta: 200 = anotado, 409 = ya estaba; baja: 200 = borrado
+  if (c0 === 200 || (v.accion === 'alta' && c0 === 409)) return { ok: true };
+  console.warn('Firebase respondió ' + c0 + ' al pedido de ' + v.accion + ': ' + rs[0].getContentText().slice(0, 300));
+  return { ok: false, error: c0 === 400 || c0 === 404 ? 'id' : 'firebase' };
+}
+
+// Prueba: manda un aviso que dice "prueba" a quienes estén anotados en un municipio (por defecto, Resistencia),
+// con cualquiera de las dos opciones. Sirve también para dar el permiso de Firebase la primera vez.
+function probarAviso(m) {
+  m = m == null ? MUNICIPIOS.indexOf('Resistencia') : m;
+  var x = { m: m, temas: SUFIJOS.map(function (s) { return 'm' + m + s; }), items: [] }, j = mensajeFcm(x, '');
+  j.message.notification = { title: 'Aviso de prueba de Ríos y Clima del Chaco', body: 'Si te llegó, los avisos funcionan. No es una alerta: no hay nada nuevo del SMN.' };
+  var r = UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/' + FCM_PROYECTO + '/messages:send', {
+    method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, payload: JSON.stringify(j) });
+  Logger.log('Aviso de prueba a ' + MUNICIPIOS[m] + ': Firebase respondió ' + r.getResponseCode() + ' ' + r.getContentText().slice(0, 300));
 }
 
 // Da el permiso de enviar correo (Google lo pide la primera vez) y manda uno de prueba a la cuenta dueña del script.

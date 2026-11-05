@@ -44,7 +44,11 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   assert.ok(toml.includes("manifest-src 'self'"), 'la regla del navegador tiene que dejar leer el archivo de instalación');
   assert.ok(html.includes('@media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}'), 'Instalar app y Compartir no se ven en la computadora');
   assert.ok(/\.emb \.instalar\{display:none!important\}/.test(html) && /@media print\{\.instalar\{display:none!important\}\}/.test(html), 'nunca en el portal ni al imprimir');
-  assert.ok(!/serviceWorker|caches\./.test(codigo), 'no guarda el sitio en el celular: abre siempre la página publicada');
+  // no guarda el sitio en el celular: abre siempre la página publicada. El único service worker es el de los avisos (5/11/2026),
+  // con alcance propio que no cubre ninguna página, sin "fetch" y sin guardar nada.
+  assert.ok(!/caches\./.test(codigo) && (codigo.match(/serviceWorker\.register\(/g) || []).length === 1 && codigo.includes("navigator.serviceWorker.register('/avisos-sw.js',{scope:'/avisos-sw/'})"), 'no guarda el sitio en el celular: abre siempre la página publicada');
+  const sw = fs.readFileSync(path.join(raiz, 'avisos-sw.js'), 'utf8');
+  assert.ok(!/addEventListener\(\s*'fetch'|onfetch|caches\.|importScripts|fetch\(/.test(sw), 'el service worker de avisos no intercepta pedidos, no guarda nada ni carga código de afuera');
   // armado: sin ofrecimiento del navegador no se ve nada; con el ofrecimiento aparece el botón y al tocarlo pide instalar
   const ev = {}, evBtn = {}, caja = { hidden: true }, btn = { hidden: true, at: {}, setAttribute(k, v) { this.at[k] = v }, addEventListener: (t, f) => { evBtn[t] = f } }, ios = { hidden: true };
   const donde = { innerHTML: 'en la barra de Safari' }, abrir = { hidden: true };
@@ -114,7 +118,7 @@ prueba('contador de visitas: GoatCounter con una imagen de 1 píxel, solo el con
   assert.ok(regla('img-src').includes('https://riosyclimachaco.goatcounter.com'), 'la imagen del contador tiene que estar permitida');
   assert.ok(!regla('script-src').includes('goatcounter') && !regla('connect-src').includes('goatcounter'), 'no se carga su código ni se conecta de otra forma');
   assert.ok(!/<script[^>]+src=/.test(html), 'ningún script de afuera');
-  assert.ok(/Privacidad:<\/b>[^]*?GoatCounter<\/a>, sin cookies ni datos de quien visita\./.test(html) && /y a GoatCounter, solo para sumar la visita\./.test(html), 'Privacidad lo cuenta');
+  assert.ok(/Privacidad:<\/b>[^]*?GoatCounter<\/a>, sin cookies ni datos de quien visita\./.test(html) && /a GoatCounter, solo para sumar la visita[.;]/.test(html), 'Privacidad lo cuenta');
   const pedidos = [];
   const antes = { location: sitio.location };
   Object.assign(sitio, {
@@ -963,6 +967,98 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
   assert.strictEqual(gs.decidirAviso('basura', ahora, false), '');
 });
 
+prueba('avisos al celular (5/11): nombres de municipios y fenómenos iguales a los del sitio; temas por localidad', () => {
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(vm.runInContext('MUNICIPIOS', gs))), JSON.parse(JSON.stringify(S('GEO.mun.map(m=>m[0])'))));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(vm.runInContext('EV_NOMBRE', gs))), JSON.parse(JSON.stringify(S('SMN_EV'))));
+  assert.strictEqual(gs.temaAviso(5, false), 'm5'); assert.strictEqual(gs.temaAviso(69, true), 'm69a');
+  for (const t of ['m0', 'm9a', 'm10', 'm69a']) assert.ok(gs.temaValido(t), t);
+  for (const t of ['m70', 'm-1', 'm05', 'mx', 'm1n', 'm1an', 'm1 ', 'm1a; x', '', null]) assert.ok(!gs.temaValido(t), String(t));
+});
+
+prueba('avisos al celular: qué se avisa, a quién y cuándo (nueva, sube de nivel, amarilla, noche igual para todos, primera vez)', () => {
+  const hoy = '2026-11-05', man = '2026-11-06', pas = '2026-11-07';
+  const temas = d => d.mensajes.map(x => x.m + ':' + x.temas.join('+')).sort().join(' ');
+  const avisar = (al, hora, est) => { const d = gs.decidirAvisos(al, hoy, hora, est); const e = gs.aplicarMarcas(d.estado, d.mensajes, d.mensajes.map(() => true)); return { d, e: JSON.parse(JSON.stringify(e)) }; };
+  // primera vez: marca lo que ya estaba y no manda nada
+  let r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]] }, 10, null);
+  assert.strictEqual(r.d.mensajes.length, 0, 'la primera vez no avisa'); assert.deepStrictEqual(r.e, { '3|2026-11-05|41': 4 });
+  // la misma alerta en la hora siguiente: nada
+  r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]] }, 11, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'no repite');
+  // naranja nueva de día: a los dos temas en un solo mensaje
+  r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]], 7: [[pas, 37, 0, 4, 0, 0, 0]] }, 11, r.e);
+  assert.strictEqual(temas(r.d), '7:m7+m7a');
+  // amarilla nueva: solo a quienes pidieron amarillas
+  r = avisar({ 7: [[pas, 37, 0, 4, 0, 0, 0]], 9: [[hoy, 39, 3, 0, 0, 0, 0]] }, 12, r.e);
+  assert.strictEqual(temas(r.d), '9:m9a');
+  // la amarilla sube a naranja: a todos
+  r = avisar({ 9: [[hoy, 39, 3, 4, 0, 0, 0]] }, 13, r.e); assert.strictEqual(temas(r.d), '9:m9+m9a');
+  // baja de nivel o se va: nada
+  r = avisar({ 9: [[hoy, 39, 3, 0, 0, 0, 0]] }, 14, r.e); assert.strictEqual(r.d.mensajes.length, 0);
+  // el cuarto día no se avisa (como el sitio)
+  r = avisar({ 9: [['2026-11-08', 41, 4, 0, 0, 0, 0]] }, 15, r.e); assert.strictEqual(r.d.mensajes.length, 0);
+  // de noche: lo de pasado mañana espera hasta las 7
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 23, {}); assert.strictEqual(r.d.mensajes.length, 0, 'de noche, lo de pasado mañana espera');
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 3, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'sigue esperando');
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 7, r.e); assert.strictEqual(temas(r.d), '20:m20+m20a', 'a las 7 sale');
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 8, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'y no se repite');
+  // de noche sale en el momento: lo de hoy, lo de mañana de madrugada y lo de mañana de 6 a 12; lo de mañana a la tarde espera
+  r = avisar({ 21: [[hoy, 41, 0, 0, 0, 4, 0]], 22: [[man, 41, 4, 0, 0, 0, 0]], 23: [[man, 41, 0, 4, 0, 0, 0]], 24: [[man, 41, 0, 0, 4, 0, 0]] }, 22, {});
+  assert.strictEqual(temas(r.d), '21:m21+m21a 22:m22+m22a 23:m23+m23a');
+  // pasada la medianoche, "hoy" es el día nuevo: lo de la mañana ya cuenta como de hoy
+  r = avisar({ 25: [[hoy, 37, 0, 3, 0, 0, 0]] }, 2, {}); assert.strictEqual(temas(r.d), '25:m25a');
+  // naranja y amarilla juntas en el mismo municipio: quien pidió amarillas recibe las dos, el resto solo la naranja
+  r = avisar({ 30: [[hoy, 41, 0, 4, 0, 0, 1], [hoy, 37, 0, 3, 0, 0, 0]] }, 10, {});
+  assert.strictEqual(temas(r.d), '30:m30 30:m30a');
+  // los días que pasaron se olvidan
+  r = avisar({}, 10, { '1|2026-11-04|41': 4, '1|2026-11-05|41': 4 }); assert.deepStrictEqual(r.e, { '1|2026-11-05|41': 4 });
+});
+
+prueba('avisos al celular: si Firebase falla no se marca, y se reintenta en la hora siguiente', () => {
+  const hoy = '2026-11-05', al = { 3: [[hoy, 41, 0, 0, 4, 0, 0]], 4: [[hoy, 41, 0, 0, 4, 0, 0]] };
+  const d = gs.decidirAvisos(al, hoy, 10, {});
+  const e = JSON.parse(JSON.stringify(gs.aplicarMarcas(d.estado, d.mensajes, d.mensajes.map(x => x.m !== 4))));
+  assert.deepStrictEqual(e, { '3|2026-11-05|41': 4 }, 'solo queda marcado lo que salió');
+  assert.deepStrictEqual(Array.from(gs.decidirAvisos(al, hoy, 11, e).mensajes, x => x.m), [4]);
+});
+
+prueba('avisos al celular: texto del aviso y mensaje para Firebase (abre la localidad al tocarlo)', () => {
+  const hoy = '2026-11-05';
+  let t = gs.textoAviso(1, [{ m: 1, dia: hoy, ev: 41, nivel: 4, extra: 1, franjas: [0, 0, 4, 4] }], hoy);
+  assert.strictEqual(t.titulo, 'Alerta naranja por tormentas en Barranqueras');
+  assert.strictEqual(t.cuerpo, 'Naranja por tormentas con posible granizo: hoy a la tarde y a la noche.\nTocá para ver qué hacer.');
+  t = gs.textoAviso(1, [{ m: 1, dia: '2026-11-07', ev: 37, nivel: 3, extra: 0, franjas: [3, 3, 3, 3] }, { m: 1, dia: '2026-11-06', ev: 39, nivel: 5, extra: 2, franjas: [5, 0, 0, 0] }], hoy);
+  assert.strictEqual(t.titulo, 'Alertas del SMN en Barranqueras');
+  assert.strictEqual(t.cuerpo, 'Roja por viento con ráfagas: mañana de madrugada.\nAmarilla por lluvias: el sábado 7/11 todo el día.\nTocá para ver qué hacer.');
+  const uno = gs.mensajeFcm({ m: 1, temas: ['m1a'], items: [{ m: 1, dia: hoy, ev: 41, nivel: 3, extra: 0, franjas: [3, 0, 0, 0] }] }, hoy).message;
+  assert.strictEqual(uno.topic, 'm1a'); assert.strictEqual(uno.condition, undefined);
+  assert.strictEqual(uno.webpush.fcm_options.link, 'https://panel-alertas-chaco.netlify.app/?loc=1');
+  assert.strictEqual(uno.data.loc, '1'); assert.strictEqual(uno.webpush.notification.tag, 'smn-1');
+  const varios = gs.mensajeFcm({ m: 1, temas: ['m1', 'm1a'], items: [{ m: 1, dia: hoy, ev: 41, nivel: 4, extra: 0, franjas: [4, 0, 0, 0] }] }, hoy).message;
+  assert.strictEqual(varios.condition, "'m1' in topics || 'm1a' in topics"); assert.strictEqual(varios.topic, undefined);
+});
+
+prueba('avisos al celular: la dirección para anotarse revisa todo y tiene tope diario', () => {
+  const id = 'fAbC123_-:'.repeat(15);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.revisarPedido({ accion: 'alta', id, tema: 'm3a', antes: 'm5' }))), { accion: 'alta', id, tema: 'm3a', antes: 'm5' });
+  assert.strictEqual(gs.revisarPedido({ accion: 'alta', id, tema: 'm3', antes: 'm3' }).antes, '', 'mismo tema: no se borra');
+  for (const [q, err] of [[null, 'formato'], [{ accion: 'otra', id, tema: 'm3' }, 'accion'], [{ accion: 'alta', id: 'corto', tema: 'm3' }, 'id'],
+    [{ accion: 'alta', id: id + '/x', tema: 'm3' }, 'id'], [{ accion: 'alta', id, tema: 'm99' }, 'tema'], [{ accion: 'baja', id, tema: 'm3', antes: 'x' }, 'antes']])
+    assert.strictEqual(gs.revisarPedido(q).error, err, JSON.stringify(q));
+  const base = 'https://fcm.googleapis.com/v1/projects/rios-y-clima-chaco/registrations/' + encodeURIComponent(id) + '/topicSubscriptions';
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.pedidosTemas(gs.revisarPedido({ accion: 'alta', id, tema: 'm3a', antes: 'm5' })))),
+    [{ url: base + '?topicName=m3a', method: 'post' }, { url: base + '/m5?allowMissing=true', method: 'delete' }]);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.pedidosTemas(gs.revisarPedido({ accion: 'baja', id, tema: 'm3a' })))), [{ url: base + '/m3a?allowMissing=true', method: 'delete' }]);
+  assert.ok(!/iid\.googleapis/.test(fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8')), 'nunca la vía vieja (Instance ID), que se cierra en 2027');
+  let c = gs.contarPedido(null, '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|1', true]);
+  c = gs.contarPedido('2026-11-05|2999', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|3000', true]);
+  c = gs.contarPedido('2026-11-05|3000', '2026-11-05'); assert.strictEqual(c.paso, false, 'pasado el tope, no');
+  c = gs.contarPedido('2026-11-04|3000', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|1', true], 'al otro día empieza de nuevo');
+  const man = JSON.parse(fs.readFileSync(path.join(raiz, 'apps-script', 'appsscript.json'), 'utf8'));
+  for (const s of ['script.external_request', 'script.send_mail', 'script.scriptapp', 'userinfo.email', 'firebase.messaging']) assert.ok(man.oauthScopes.includes('https://www.googleapis.com/auth/' + s), s);
+  const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
+  assert.ok(gsTxt.includes("if (!r.falla) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e)"), 'aislado: nunca frena la renovación ni avisa con datos viejos');
+});
+
 (async () => {
   // Robot de la lluvia, con Open-Meteo simulado: los municipios fallan y queda la copia anterior
   const { armar } = require('../robot/lluvia.js'), real = global.fetch;
@@ -1309,7 +1405,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8'), csp = (/Content-Security-Policy = "([^"]+)"/.exec(toml) || [])[1];
     assert.ok(csp, 'falta la regla en netlify.toml');
     const h = require('../herramientas/csp.js').huella(html), regla = n => (new RegExp('(?:^|; )' + n + ' ([^;]+)').exec(csp) || [])[1] || '';
-    assert.strictEqual(regla('script-src'), h, 'la huella quedó vieja: correr  node herramientas/csp.js');
+    assert.strictEqual(regla('script-src'), "'self' " + h, 'la huella quedó vieja: correr  node herramientas/csp.js (\'self\': la biblioteca de Firebase de los avisos)');
     assert.ok(/default-src 'none'/.test(csp) && /object-src 'none'/.test(csp) && /base-uri 'none'/.test(csp));
     assert.strictEqual(regla('frame-ancestors'), "'self' https://gobiernoabierto.chaco.gob.ar", 'solo el portal de Gobierno Abierto puede mostrar el sitio en su página');
     assert.ok(!/X-Frame-Options *=/.test(toml), 'X-Frame-Options no deja nombrar al portal: no tiene que estar');
@@ -1479,7 +1575,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(pv.includes('<title>Política de privacidad · Ríos y Clima del Chaco</title>') && pv.includes('<h1>Política de privacidad</h1>'), 'se llama "Política de privacidad" (lo pide Google Play)');
     assert.ok(!/<script/i.test(pv) && !/\son[a-z]+=["']/i.test(pv) && !pv.includes('javascript:'), 'sin código: no hace falta y la regla del navegador (CSP) no lo dejaría correr');
     assert.ok(!pv.includes('marianoavalos.tech@') && pv.includes('marianoavalos&#46;tech&#64;gmail&#46;com'), 'el correo no está escrito tal cual (para los robots que buscan direcciones)');
-    for (const t of ['No es un servicio oficial', 'no representa al Gobierno del Chaco', 'La app no pide permisos', 'No usa cookies', 'GoatCounter', 'Borrar datos', 'menores de 13 años', 'HTTPS', 'Última actualización'])
+    for (const t of ['No es un servicio oficial', 'no representa al Gobierno del Chaco', 'La app no pide ubicación', 'Solo pide permiso para mostrar avisos, y solo si los pedís', 'No usa cookies', 'GoatCounter', 'Borrar datos', 'menores de 13 años', 'HTTPS', 'Última actualización'])
       assert.ok(pv.includes(t), 'falta en la política: ' + t);
     for (const f of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(pv.includes('url(fuentes/' + f + ')'), 'la misma letra que el sitio');
     assert.ok(html.includes('<a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>') && html.indexOf('href="privacidad.html"') > html.indexOf('id="t-acerca"'), 'se abre desde "Acerca de este sitio": Play pide que esté también dentro de la app');
@@ -1699,6 +1795,70 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(t.includes('class="pT c-rojo"') && t.includes('<span class="pSr">Rojo: </span>'), 'el color con borde y dicho');
     assert.ok(!S(`pT('#t-rio','rio','Río Paraná','2,10 m','verde')`).includes('c-verde'), 'en verde, sin color');
     assert.ok(codigo.includes("const n=por&&por.getClientRects().length?por:ind0;"), '"↑ Índice" sube hasta la portada cuando es la que se ve');
+  });
+  prueba('avisos al celular (5/11): página — botón solo en el celular, fuera del portal y, durante la prueba, solo para verificadores', () => {
+    assert.ok(codigo.includes('const AVISOS_TODOS=false;'), 'durante la prueba cerrada, no para todos');
+    assert.ok(html.includes('<div class="dAv" id="dAv" hidden></div>'), 'el bloque va en la ventana "Tu localidad"');
+    const guardado = {}, ls = { getItem: k => k in guardado ? guardado[k] : null, setItem: (k, v) => { guardado[k] = String(v) }, removeItem: k => { delete guardado[k] } };
+    const antes = { ls: sitio.localStorage, mm: sitio.matchMedia, loc: sitio.location };
+    sitio.localStorage = ls; sitio.navigator = { serviceWorker: {} }; sitio.PushManager = function () {}; sitio.Notification = { permission: 'default' };
+    let compu = false; sitio.matchMedia = q => ({ matches: q.includes('hover:hover') ? compu : false });
+    sitio.location = { search: '', hash: '' };
+    try {
+      assert.strictEqual(S('avPuede()'), false, 'sin ser verificador, no');
+      sitio.location = { search: '?avisos=1', hash: '' };
+      assert.strictEqual(S('avPuede()'), true, 'con el enlace especial, sí');
+      sitio.location = { search: '', hash: '' };
+      assert.strictEqual(S('avPuede()'), true, 'y queda recordado');
+      compu = true; assert.strictEqual(S('avPuede()'), false, 'en la computadora, no'); compu = false;
+      delete sitio.PushManager; assert.strictEqual(S('avPuede()'), false, 'navegador sin avisos (iPhone sin agregar a inicio), no'); sitio.PushManager = function () {};
+      delete guardado['anc-avisos-prueba'];
+      // estado guardado: solo localidad y opciones, revisado
+      assert.strictEqual(S('avTema(3,true)'), 'm3a'); assert.strictEqual(S('avTema(3,false)'), 'm3');
+      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, t: 'm3a', f: 1 });
+      assert.strictEqual(S('avEstado().t'), 'm3a'); assert.strictEqual(S('avPuede()'), true, 'quien ya está anotado sigue viendo el botón para darse de baja');
+      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, t: 'm9', f: 1 }); assert.strictEqual(S('avEstado()'), null, 'tema que no coincide: se descarta');
+      guardado['anc-avisos'] = JSON.stringify({ m: 99, a: false, t: 'm99' }); assert.strictEqual(S('avEstado()'), null);
+      guardado['anc-avisos'] = '{roto'; assert.strictEqual(S('avEstado()'), null);
+    } finally { sitio.localStorage = antes.ls; sitio.matchMedia = antes.mm; sitio.location = antes.loc; delete sitio.navigator; delete sitio.PushManager; delete sitio.Notification; }
+    // textos que piden Mariano y el plan
+    assert.ok(codigo.includes('Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.'));
+    assert.ok(codigo.includes("'También las alertas amarillas'") && !codigo.includes('Avisarme también de noche'), 'una sola casilla: la noche es automática');
+    assert.ok(codigo.includes("contador(ya?'avisos-cambio':'avisos-alta',true)") && codigo.includes("contador('avisos-baja',true)"), 'el contador suma solo el toque');
+    // la biblioteca: copia fija en el sitio, cargada solo al pedir avisos; con la configuración pública del proyecto
+    for (const f of ['firebase-app-compat.js', 'firebase-messaging-compat.js']) {
+      const t = fs.readFileSync(path.join(raiz, 'firebase', f), 'utf8');
+      assert.ok(t.includes(f.includes('app') ? '"firebase","12.19.0"' : '"@firebase/messaging-compat","0.2.30"') && !t.includes('sourceMappingURL'), f + ': la versión de firebase 12.19.0');
+      assert.ok(codigo.includes("cargar('/firebase/" + f + "')"), f);
+    }
+    assert.ok(!html.includes('gstatic.com'), 'nunca desde los servidores de Google');
+    assert.ok(codigo.includes("projectId:'rios-y-clima-chaco'") && codigo.includes("const FB_VAPID='BOt_eK-pVmXgGY"), 'proyecto y clave pública de avisos');
+    assert.ok(!/localStorage\.setItem\([^)]*(token|id)\b/i.test(codigo), 'el identificador de Firebase no se guarda');
+    // regla del navegador
+    const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8'), csp = /Content-Security-Policy = "([^"]+)"/.exec(toml)[1];
+    assert.ok(/connect-src [^;]*https:\/\/fcmregistrations\.googleapis\.com https:\/\/firebaseinstallations\.googleapis\.com/.test(csp) && /worker-src 'self'/.test(csp));
+    assert.ok(/for = "\/avisos-sw\.js"\n  \[headers\.values\]\n    Cache-Control = "no-cache"/.test(toml), 'el service worker no se guarda viejo');
+    // privacidad
+    const priv = fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8');
+    assert.ok(priv.includes('<h2>Avisos al celular (si los pedís)</h2>') && priv.includes('Dejar de avisarme') && html.includes('solo si pedís avisos al celular, a Firebase'));
+  });
+  prueba('avisos al celular: el service worker muestra el aviso y al tocarlo abre la localidad', async () => {
+    const ev = {}, mostrado = [], abiertos = [];
+    const self = { location: { origin: 'https://panel-alertas-chaco.netlify.app' }, addEventListener: (t, f) => { ev[t] = f },
+      registration: { showNotification: (t, o) => { mostrado.push([t, o]); return Promise.resolve() } },
+      clients: { matchAll: () => Promise.resolve([]), openWindow: u => { abiertos.push(u); return Promise.resolve() }, claim: () => Promise.resolve() }, skipWaiting() {} };
+    vm.runInNewContext(fs.readFileSync(path.join(raiz, 'avisos-sw.js'), 'utf8'), { self, String, JSON, Promise });
+    let espera; ev.push({ data: { json: () => ({ notification: { title: 'Alerta naranja por tormentas en Barranqueras', body: 'Naranja…' }, data: { loc: '1' } }) }, waitUntil: p => { espera = p } });
+    assert.strictEqual(mostrado[0][0], 'Alerta naranja por tormentas en Barranqueras');
+    assert.strictEqual(mostrado[0][1].data.url, 'https://panel-alertas-chaco.netlify.app/?loc=1'); assert.strictEqual(mostrado[0][1].tag, 'smn-1');
+    ev.push({ data: { json: () => ({ data: { loc: '../x' } }) }, waitUntil() {} });
+    assert.strictEqual(mostrado[1][1].data.url, 'https://panel-alertas-chaco.netlify.app/', 'localidad rara: solo el sitio');
+    let p2; ev.notificationclick({ notification: { close() {}, data: { url: 'https://otro.sitio/' } }, waitUntil: p => { p2 = p } }); await p2;
+    assert.strictEqual(abiertos[0], 'https://panel-alertas-chaco.netlify.app/', 'nunca abre otro sitio');
+    ev.notificationclick({ notification: { close() {}, data: mostrado[0][1].data }, waitUntil: p => { p2 = p } }); await p2;
+    assert.strictEqual(abiertos[1], 'https://panel-alertas-chaco.netlify.app/?loc=1');
+    // la página: ?loc= queda como tu localidad y se muestra en el mapa
+    assert.ok(codigo.includes("const q=/[?&]loc=(\\d{1,2})(&|$)/.exec(location.search||'');if(!q||EMB)return;") && codigo.includes("guardarMiLoc(i);contador('aviso-tocado',true);"));
   });
   console.log('\n' + ok + ' pruebas bien.');
 })();
