@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 05/11/2026 (ventana "Tu localidad" sin cortes)
+
+Pedido de Mariano (5/11): con el bloque de avisos, la ventana "Tu localidad" se veía cortada. Abría ya bajada (sin el título ni la ✕: `scrollIntoView` de la lista movía también la ventana) y la lista terminaba a mitad de renglón.
+- Título y ✕ fijos arriba; la ventana abre siempre desde arriba; lo de abajo se corre dentro de `#dLocCuerpo`. La lista se corre sola hasta la localidad elegida sin mover la ventana, con borde y sombras arriba y abajo que muestran que sigue.
+- Con avisos (`conAv`), dos partes: "Ver … en el mapa", avisos y "Elegir otra localidad ›"; ese botón pasa al buscador con la lista a todo lo alto ("Otra localidad", "‹" para volver). Sin avisos, todo junto como antes. Probado a 320, 360 y 390 px, y con letra grande. Huella nueva del código.
+
 ## 05/11/2026 (primer aviso real: al tocarlo, directo a la ficha)
 
 Primer aviso real (5/11, 15:52): Mariano se anotó desde Firefox en su celular (en Chrome no se puede mientras la app de Play 1.0.0 tenga las notificaciones apagadas: Android le pasa ese bloqueo a Chrome), se corrió `probarAviso()` (Firebase 200) y el aviso llegó y abrió Resistencia.

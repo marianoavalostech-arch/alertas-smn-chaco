@@ -703,11 +703,12 @@ footer{font-size:.85rem;color:var(--muted)}
 @keyframes pBrillo{to{background-position:-250% 0}}
 @media (prefers-reduced-motion:reduce){.pCarga{animation:none}}
 /* elegir tu localidad: ventana con "Ver en el mapa" y una lista para cambiarla */
-.dLoc{width:min(420px,calc(100vw - 32px));max-height:min(560px,calc(100vh - 48px));box-sizing:border-box;border:0;border-radius:20px;padding:16px;background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(11,49,88,.3);flex-direction:column;gap:10px}
+.dLoc{width:min(420px,calc(100vw - 32px));max-height:min(640px,calc(100vh - 32px));max-height:min(640px,calc(100dvh - 32px));box-sizing:border-box;border:0;border-radius:20px;padding:0;overflow:hidden;background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(11,49,88,.3);flex-direction:column}
 .dLoc[open]{display:flex;animation:abreSuave .22s ease-out}
 .dLoc::backdrop{background:rgba(11,49,88,.45)}
-.dLocCab{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.dLocCab h2{margin:0;font-family:var(--font-tit);font-size:1.2rem;color:var(--titulo)}
+.dLocCab{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 12px 10px 16px;border-bottom:1px solid var(--line)}
+.dLocCuerpo{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:12px 16px 16px}
+.dLocCab h2{flex:1;margin:0;font-family:var(--font-tit);font-size:1.2rem;color:var(--titulo)}
 .dLocMapa{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:99px;background:var(--degrade);color:#fff;font-weight:800;text-align:center;box-shadow:var(--sombra-degrade)}
 .dLocMapa:active{transform:scale(.97)}.dLocMapa:focus-visible{outline:3px solid var(--acento);outline-offset:3px}
 .dAv{border:1.5px solid var(--borde-boton);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
@@ -724,12 +725,24 @@ footer{font-size:.85rem;color:var(--muted)}
 .dLocEt{font-size:.9rem;font-weight:700;color:var(--muted);margin-top:4px}
 .dLoc input{font:inherit;border:1.5px solid var(--borde-boton);border-radius:99px;padding:9px 16px;min-height:44px;box-sizing:border-box;width:100%}
 .dLoc input:focus{outline:3px solid var(--acento-soft);border-color:var(--acento)}
-.dLocLista{list-style:none;margin:0;padding:0;overflow-y:auto;min-height:120px;flex:1 1 auto;border-top:1px solid var(--line)}
-.dLocLista button{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;padding:11px 8px;border-bottom:1px solid #eeeaf6;font-weight:600}
+.dLocParte{display:flex;flex-direction:column;gap:10px;min-height:0}
+.dLocBuscar{flex:1 1 auto}
+.dLocInicio{flex:none}
+.dLocCambiar,.dLocVolver{display:none}
+.dLocCambiar{min-height:46px;width:100%;white-space:nowrap}
+.dLocVolver{min-width:40px;padding:0 10px;font-size:1.3rem;line-height:1}
+.dLoc.conAv .dLocCambiar{display:block}
+.dLoc.conAv:not(.buscando) .dLocBuscar,.dLoc.conAv.buscando .dLocInicio{display:none}
+.dLoc.conAv.buscando .dLocVolver{display:inline-flex;align-items:center;justify-content:center}
+.dLocLista{flex:1 1 auto;position:relative;list-style:none;margin:0;padding:0;overflow-y:auto;overscroll-behavior:contain;min-height:150px;border:1.5px solid var(--borde-boton);border-radius:14px;
+  background:linear-gradient(var(--card) 30%,rgba(255,255,255,0)) top/100% 28px no-repeat local,linear-gradient(rgba(255,255,255,0),var(--card) 70%) bottom/100% 28px no-repeat local,
+  radial-gradient(farthest-side at 50% 0,rgba(11,49,88,.22),rgba(11,49,88,0)) top/100% 12px no-repeat scroll,radial-gradient(farthest-side at 50% 100%,rgba(11,49,88,.22),rgba(11,49,88,0)) bottom/100% 12px no-repeat scroll}
+.dLocLista li:last-child button{border-bottom:0}
+.dLocLista button{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;padding:11px 14px;border-bottom:1px solid #eeeaf6;font-weight:600}
 .dLocLista button:active,.dLocLista button:hover{background:var(--acento-soft)}
 .dLocLista button:focus-visible{outline:3px solid var(--acento);outline-offset:-3px}
 .dLocLista button[aria-current="true"]{font-weight:800;color:var(--acento)}
-.dLocLista li.nada{padding:12px 8px;color:var(--muted)}
+.dLocLista li.nada{padding:12px 14px;color:var(--muted)}
 @media print{.dLoc{display:none!important}}
 /* letra más grande (botón A+ del encabezado): todo lo que se mide en rem o em crece un octavo */
 html.grande{font-size:112.5%}html.grande body{font-size:18px}
@@ -1132,12 +1145,19 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 </div>
 
   <dialog class="dLoc" id="dLoc" aria-labelledby="dLocTit">
-  <div class="dLocCab"><h2 id="dLocTit">Tu localidad</h2><button class="btn cerrar" type="button" data-dcerrar aria-label="Cerrar">✕</button></div>
+  <div class="dLocCab"><button class="btn dLocVolver" type="button" data-dvolver aria-label="Volver"><span aria-hidden="true">‹</span></button><h2 id="dLocTit">Tu localidad</h2><button class="btn cerrar" type="button" data-dcerrar aria-label="Cerrar">✕</button></div>
+  <div class="dLocCuerpo" id="dLocCuerpo">
+  <div class="dLocParte dLocInicio">
   <button class="btn dLocMapa" type="button" id="dLocMapa"></button>
   <div class="dAv" id="dAv" hidden></div>
+  <button class="btn dLocCambiar" type="button" id="dLocCambiar">Elegir otra localidad <span aria-hidden="true">›</span></button>
+  </div>
+  <div class="dLocParte dLocBuscar">
   <label class="dLocEt" for="dLocBus">Cambiar por otra localidad</label>
   <input id="dLocBus" type="search" autocomplete="off" placeholder="Escribí el nombre…">
   <ul class="dLocLista" id="dLocLista"></ul>
+  </div>
+  </div>
 </dialog>
 <script>
 // Dentro del portal de Gobierno Abierto (en un marco): siempre claro, con el fondo del sitio, y le avisa al portal su alto
@@ -2535,6 +2555,9 @@ function abrirLoc(i){
   const bus=$('dLocBus'),lista=$('dLocLista'),ver=$('dLocMapa');
   ver.textContent='Ver '+GEO.mun[i][0]+' en el mapa';ver.dataset.i=i;bus.value='';
   seguro(()=>avPintar(i));
+  // Con el bloque de avisos, la ventana va en dos partes (5/11/2026): primero el mapa y los avisos; "Cambiar por otra localidad"
+  // pasa al buscador con la lista a todo lo alto, y "‹" vuelve. Sin avisos, todo junto como antes.
+  dl.classList.toggle('conAv',!$('dAv').hidden);dl.classList.remove('buscando');$('dLocTit').textContent='Tu localidad';
   const orden=GEO.mun.map((m,j)=>j).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
   const pintar=()=>{const q=sinTildes(bus.value),l=orden.filter(j=>!q||sinTildes(GEO.mun[j][0]).includes(q));
     lista.innerHTML=l.length?l.map(j=>'<li><button type="button" data-lj="'+j+'"'+(j===i?' aria-current="true"':'')+'>'+esc(GEO.mun[j][0])+'</button></li>').join(''):'<li class="nada">No hay ninguna localidad con ese nombre.</li>'};
@@ -2544,13 +2567,19 @@ function abrirLoc(i){
     dl.addEventListener('click',e=>{
       const r=dl.getBoundingClientRect(),fuera=e.target===dl&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom);
       if(fuera||e.target.closest('[data-dcerrar]')){dl.close();return}   // tocar afuera de la ventana o la ✕ cierra
+      if(e.target.closest('#dLocCambiar')){dl.classList.add('buscando');$('dLocTit').textContent='Otra localidad';$('dLocCuerpo').scrollTop=0;
+        const a=lista.querySelector('[aria-current]');if(a)lista.scrollTop=Math.max(0,a.offsetTop-(lista.clientHeight-a.offsetHeight)/2);bus.focus();return}
+      if(e.target.closest('[data-dvolver]')){dl.classList.remove('buscando');$('dLocTit').textContent='Tu localidad';$('dLocCambiar').focus();return}
       if(e.target.closest('#dLocMapa')){const j=+$('dLocMapa').dataset.i;dl.close();elegir(j,true);marcarSalto();verSec($('t-mapa'));return}
       const b=e.target.closest('[data-lj]');if(!b)return;const j=+b.dataset.lj;
       guardarMiLoc(j);if(MILOC)seguro(pintarMiLoc);seguro(pintarPortada);dl.close();
       const nb=document.querySelector('#portada [data-ploc]');if(nb)nb.focus()});
   }
   dl._pintar=pintar;dl.showModal();
-  try{lista.querySelector('[aria-current]').scrollIntoView({block:'center'})}catch(e){}
+  // Abre siempre desde arriba (título y ✕ a la vista). La lista se corre sola hasta la localidad elegida, sin mover la ventana
+  // (scrollIntoView movía también la ventana y la abría cortada arriba: 5/11/2026).
+  try{dl.scrollTop=0;$('dLocCuerpo').scrollTop=0;const a=lista.querySelector('[aria-current]');
+    if(a)lista.scrollTop=Math.max(0,a.offsetTop-(lista.clientHeight-a.offsetHeight)/2)}catch(e){}
   return true;
 }
 /* ---------- avisos al celular (5/11/2026) ---------- */
