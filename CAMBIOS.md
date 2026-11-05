@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 05/11/2026 (Qué hacer en el celular)
+
+Pedido de Mariano: al ir a "Qué hacer" desde el celular, los teléfonos quedaban en el medio y tapaban los consejos.
+- **En el celular (menos de 600 px, fuera del portal)**, dentro de "Qué hacer" van primero "Ahora en el Chaco" y "¿Qué está pasando?", y después los **teléfonos de emergencia** (que ya tienen su recuadro en la portada; tocarlo sigue llevando a ellos). Solo cambia el orden con CSS (`order`); en la computadora y en el portal queda igual. Sin cambios en el código ni en la huella.
+
 ## 04/11/2026 (portada del celular)
 
 Pedido de Mariano: la portada del boceto, solo en el celular, para llegar rápido a cada sección.

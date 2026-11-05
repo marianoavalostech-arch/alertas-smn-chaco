@@ -649,6 +649,9 @@ footer{font-size:.85rem;color:var(--muted)}
 @media screen and (max-width:599px){
   html:not(.emb) .portada{display:grid}
   html:not(.emb) #rioBanda,html:not(.emb) #indice,html:not(.emb) #miLoc{display:none!important}
+  /* en "Qué hacer", los consejos primero: los teléfonos (que tienen su propio recuadro en la portada) pasan después de "¿Qué está pasando?" */
+  html:not(.emb) #t-tel{order:1}
+  html:not(.emb) #t-tel~div:last-child{order:2}
   /* el cartel de arriba queda en una frase: los teléfonos y las alertas del SMN ya están en la portada */
   html:not(.emb) .aviso .avMas{display:none}
   html:not(.emb) .aviso[data-corto]{font-size:.84rem;padding:7px 12px}
