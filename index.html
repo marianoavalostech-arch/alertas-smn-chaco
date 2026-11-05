@@ -640,11 +640,14 @@ footer{font-size:.85rem;color:var(--muted)}
 @media screen and (max-width:599px){
   html:not(.emb) .portada{display:grid}
   html:not(.emb) #rioBanda,html:not(.emb) #indice,html:not(.emb) #miLoc{display:none!important}
+  /* el cartel de arriba queda en una frase: los teléfonos y las alertas del SMN ya están en la portada */
+  html:not(.emb) .aviso .avMas{display:none}
+  html:not(.emb) .aviso[data-corto]{font-size:.84rem;padding:7px 12px}
 }
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
 .pHoy b{font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo)}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
-.pT{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:var(--card);border-radius:18px;border:1.5px solid #ebe6f5;box-shadow:0 1px 2px rgba(80,89,188,.06),0 6px 18px rgba(80,89,188,.09);padding:10px 10px 11px;display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;min-height:100px;color:var(--ink);text-align:left;transition:transform .12s,box-shadow .12s}
+.pT{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:var(--card);border-radius:18px;border:1.5px solid #ebe6f5;box-shadow:0 1px 2px rgba(80,89,188,.06),0 6px 18px rgba(80,89,188,.09);padding:11px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;min-height:100px;color:var(--ink);text-align:center;transition:transform .12s,box-shadow .12s}
 .pT:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 .pT:active{transform:scale(.96);box-shadow:0 1px 2px rgba(80,89,188,.08)}
 /* ícono en un cuadradito de color suave: violeta; agua en celeste; con color de estado, el del estado */
@@ -652,12 +655,12 @@ footer{font-size:.85rem;color:var(--muted)}
 .pIc svg{width:20px;height:20px}
 .pAgua .pIc{background:var(--water-soft);color:var(--water)}
 .pN{font-size:.76rem;font-weight:800;line-height:1.15;color:var(--muted);overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;max-width:100%}
-@media (max-width:359px){.pT{padding:9px 8px 10px}.pN{font-size:.7rem}.pD{font-size:.94rem}}
+@media (max-width:359px){.pT{padding:9px 6px 10px}.pN{font-size:.7rem}.pD{font-size:.94rem}}
 .pD{margin-top:auto;display:block;font-family:var(--font-tit);font-weight:700;font-size:1.02rem;line-height:1.12;color:var(--titulo)}
 .pT.c-amarillo{border-color:var(--amarillo-mapa);background:linear-gradient(170deg,#fff 45%,#fdf4d6)}.pT.c-amarillo .pIc{background:#fbefc4;color:var(--amarillo-txt)}
 .pT.c-naranja{border-color:var(--naranja);background:linear-gradient(170deg,#fff 45%,#fde8d8)}.pT.c-naranja .pIc{background:#fbe3cf;color:var(--naranja-txt)}
 .pT.c-rojo{border-color:var(--rojo);background:linear-gradient(170deg,#fff 45%,#fbe4e1)}.pT.c-rojo .pIc{background:#f8dedb;color:var(--rojo-txt)}
-.pLuces{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}.pLuces i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.pLuces{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:2px}.pLuces i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .pFl{color:var(--water);font-family:var(--font)}
 /* teléfonos: el único recuadro oscuro, para encontrarlo rápido */
 .pT.pTelT{background:var(--marino);border-color:var(--marino)}.pTelT .pIc{background:rgba(255,255,255,.14);color:#fff}.pTelT .pN{color:#dcdaf7}.pTelT .pD{color:#fff}
@@ -729,7 +732,7 @@ footer{font-size:.85rem;color:var(--muted)}
 
   <main>
   <div class="aviso info" role="note" data-corto>
-    <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales. Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-tel">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a>
+    <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.<span class="avMas"> Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-tel">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a></span>
   </div>
 
   <div id="smnBanda" role="status" hidden></div>
@@ -2351,7 +2354,7 @@ const pFlecha=d=>d==null||Math.abs(d)<=0.05?'':'<span class="pFl"><span aria-hid
 // Un recuadro: ícono, nombre de la sección y un dato corto. Con color fuera del verde, borde y punto de ese color (y el color dicho para el lector de pantalla).
 // cl: clase extra (pAgua para los ríos, pTelT para teléfonos).
 const pT=(href,ico,nom,dato,c,cl)=>'<a class="pT'+(cl?' '+cl:'')+(pFuera(c)?' c-'+c:'')+'" href="'+href+'">'+pIco(ico)+'<span class="pN">'+nom+'</span><span class="pD">'
-  +(pFuera(c)?'<span class="pSr">'+ETQ[c]+': </span>':'')+dato+'</span></a>';
+  +(pFuera(c)&&!/^Alerta /.test(dato)?'<span class="pSr">'+ETQ[c]+': </span>':'')+dato+'</span></a>';
 const pEspera=()=>LISTO?'Sin datos':'…';
 function pRio(){const R=riesgoRio(),r=resumenRio(),ok=r&&r.atraso<4;
   return pT('#t-rio','rio','Río Paraná',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),R.c,'pAgua')}
@@ -2365,7 +2368,7 @@ function pSmn(){
   let dato,c='';
   if(!smnVigente())dato=SMN_LISTO||SMN.emitido?'Sin informe':'…';
   else{let max=0;GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{if(a.niv>max)max=a.niv}));
-    if(max){c=(SMN_NIV[max]||['amarillo'])[0];dato=mayus((SMN_NIV[max]||['',''])[1])}
+    if(max){c=(SMN_NIV[max]||['amarillo'])[0];dato='Alerta '+(SMN_NIV[max]||['',''])[1]}
     else dato=SMN.leidas===0?'Sin confirmar':(Date.now()-new Date(SMN.capturado))/36e5>6?'Sin renovar':'Ninguna'}
   return pT('#t-smn','smn','Alertas del SMN',dato,c);
 }
