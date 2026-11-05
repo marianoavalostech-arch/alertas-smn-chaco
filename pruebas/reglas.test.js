@@ -1465,7 +1465,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       const r=[miLocGuardada()];guardarMiLoc(GEO.mun.findIndex(m=>m[0]==='Barranqueras'));r.push(v,GEO.mun[miLocGuardada()][0]);v='Un pueblo que no existe';r.push(miLocGuardada());
       localStorage.getItem=()=>{throw new Error('bloqueado')};r.push(miLocGuardada());localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
     assert.strictEqual(g, '[-1,"Barranqueras","Barranqueras",-1,-1]', 'guarda el nombre; un nombre raro o el navegador bloqueado no rompen nada');
-    assert.ok(codigo.includes("if(i>=0){guardarMiLoc(i);if(MILOC)pintarMiLoc()}"), 'elegir un municipio lo guarda; el renglón solo se actualiza si ya estaba a la vista');
+    assert.ok(codigo.includes("if(i>=0){const a=miLocGuardada();guardarMiLoc(i);if(MILOC)pintarMiLoc();if(a!==i)seguro(pintarPortada)}"), 'elegir un municipio lo guarda; el renglón solo se actualiza si ya estaba a la vista; la portada, si cambió');
     assert.ok(codigo.includes('if(MILOC===null)MILOC=i>=0;'), 'si al abrir no había localidad guardada, el renglón no aparece en esa visita');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez'), 'la privacidad lo cuenta');
@@ -1688,8 +1688,8 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes('data-ploc'), 'tu localidad');
     assert.ok(S(`pFlecha(-0.2)`).includes('bajando') && S(`pFlecha(0.2)`).includes('creciendo') && S(`pFlecha(0.03)`) === '', 'flecha con texto para el lector de pantalla');
     const t = S(`pT('#t-rio','rio','Río Paraná','6,90 m','rojo')`);
-    assert.ok(t.includes('class="pT c-rojo"') && t.includes('<span class="pSr">Rojo: </span>'), 'el color con borde, punto y dicho');
-    assert.ok(!S(`pT('#t-rio','rio','Río Paraná','2,10 m','verde')`).includes('pPunto'), 'en verde, sin punto');
+    assert.ok(t.includes('class="pT c-rojo"') && t.includes('<span class="pSr">Rojo: </span>'), 'el color con borde y dicho');
+    assert.ok(!S(`pT('#t-rio','rio','Río Paraná','2,10 m','verde')`).includes('c-verde'), 'en verde, sin color');
     assert.ok(codigo.includes("const n=por&&por.getClientRects().length?por:ind0;"), '"↑ Índice" sube hasta la portada cuando es la que se ve');
   });
   console.log('\n' + ok + ' pruebas bien.');

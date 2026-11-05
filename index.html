@@ -642,17 +642,27 @@ footer{font-size:.85rem;color:var(--muted)}
   html:not(.emb) #rioBanda,html:not(.emb) #indice,html:not(.emb) #miLoc{display:none!important}
 }
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.pT{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border-radius:16px;border:1.5px solid transparent;box-shadow:var(--sombra);padding:9px 9px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;min-height:88px;color:var(--ink);text-align:left}
+.pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
+.pHoy b{font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo)}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
+.pT{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:var(--card);border-radius:18px;border:1.5px solid #ebe6f5;box-shadow:0 1px 2px rgba(80,89,188,.06),0 6px 18px rgba(80,89,188,.09);padding:10px 10px 11px;display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;min-height:100px;color:var(--ink);text-align:left;transition:transform .12s,box-shadow .12s}
 .pT:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
-.pT:active{transform:scale(.97)}
-.pT>svg{flex:none;width:20px;height:20px}
-.pN{font-size:.76rem;font-weight:800;line-height:1.15;color:var(--titulo);overflow-wrap:anywhere}
-.pD{margin-top:auto;display:block;font-family:var(--font-tit);font-weight:700;font-size:.92rem;line-height:1.15;color:var(--titulo)}
-.pT.c-amarillo{border-color:var(--amarillo-mapa)}.pT.c-naranja{border-color:var(--naranja)}.pT.c-rojo{border-color:var(--rojo)}
-.pPunto{display:inline-block;width:.62em;height:.62em;border-radius:50%;margin-right:4px;vertical-align:.05em}
+.pT:active{transform:scale(.96);box-shadow:0 1px 2px rgba(80,89,188,.08)}
+/* ícono en un cuadradito de color suave: violeta; agua en celeste; con color de estado, el del estado */
+.pIc{flex:none;width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:#efecfc;color:var(--acento)}
+.pIc svg{width:20px;height:20px}
+.pAgua .pIc{background:var(--water-soft);color:var(--water)}
+.pN{font-size:.76rem;font-weight:800;line-height:1.15;color:var(--muted);overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;max-width:100%}
+@media (max-width:359px){.pT{padding:9px 8px 10px}.pN{font-size:.7rem}.pD{font-size:.94rem}}
+.pD{margin-top:auto;display:block;font-family:var(--font-tit);font-weight:700;font-size:1.02rem;line-height:1.12;color:var(--titulo)}
+.pT.c-amarillo{border-color:var(--amarillo-mapa);background:linear-gradient(170deg,#fff 45%,#fdf4d6)}.pT.c-amarillo .pIc{background:#fbefc4;color:var(--amarillo-txt)}
+.pT.c-naranja{border-color:var(--naranja);background:linear-gradient(170deg,#fff 45%,#fde8d8)}.pT.c-naranja .pIc{background:#fbe3cf;color:var(--naranja-txt)}
+.pT.c-rojo{border-color:var(--rojo);background:linear-gradient(170deg,#fff 45%,#fbe4e1)}.pT.c-rojo .pIc{background:#f8dedb;color:var(--rojo-txt)}
+.pLuces{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}.pLuces i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .pFl{color:var(--water);font-family:var(--font)}
+/* teléfonos: el único recuadro oscuro, para encontrarlo rápido */
+.pT.pTelT{background:var(--marino);border-color:var(--marino)}.pTelT .pIc{background:rgba(255,255,255,.14);color:#fff}.pTelT .pN{color:#dcdaf7}.pTelT .pD{color:#fff}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.pT:active{transform:none}}
+@media (prefers-reduced-motion:reduce){.pT{transition:none}.pT:active{transform:none}}
 @media print{.portada{display:none!important}}
 /* Disposición en el celular (pedido de Mariano, 24/10/2026): encabezado más bajo, índice más apretado, vista previa más corta en las secciones cerradas
    y tarjetas de "¿Qué está pasando?" en renglones (el dibujo a la izquierda y el nombre al lado; abiertas quedan como antes; en pantallas de menos
@@ -1659,7 +1669,7 @@ function elegir(i,enf){
   if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
   if(i!==M.sel)M.detAb=false;
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
-  if(i>=0){guardarMiLoc(i);if(MILOC)pintarMiLoc()}
+  if(i>=0){const a=miLocGuardada();guardarMiLoc(i);if(MILOC)pintarMiLoc();if(a!==i)seguro(pintarPortada)}
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
   resaltar();pintarInfo();
   if(enf&&i>=0)enfocar(i);else if(i<0&&habia&&M.antes){ponerVista(M.antes,true);M.antes=null}
@@ -2330,20 +2340,21 @@ const PIC={
  nino:'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
  hacer:'<path d="M10 6h10M10 12h10M10 18h10M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',
  tel:'<path d="M5 3h4l2 5-3 2a12 12 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A18 18 0 0 1 3 5a2 2 0 0 1 2-2z"/>',
- sem:'<path d="M9 3h6v18H9zM12 7h.01M12 12h.01M12 17h.01"/>',
+ sem:'<rect x="7.5" y="2.5" width="9" height="19" rx="3"/><circle cx="12" cy="7" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="17" r="1.6"/>',
  datos:'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 11v6M12 7.5h.01"/>'
 };
-const pIco=(k,c)=>'<svg viewBox="0 0 24 24" fill="none" stroke="'+(c||'var(--acento)')+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+PIC[k]+'</svg>';
+const pIco=k=>'<span class="pIc" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+PIC[k]+'</svg></span>';
 const pColor=c=>'var(--'+(c==='amarillo'?'amarillo-mapa':c)+')';
 const pFuera=c=>!!c&&c!=='verde'&&c!=='gris';
 // Flecha de la tendencia en 3 días (con texto para el lector de pantalla).
 const pFlecha=d=>d==null||Math.abs(d)<=0.05?'':'<span class="pFl"><span aria-hidden="true">'+(d<0?'↓':'↑')+'</span><span class="pSr">'+(d<0?', bajando':', creciendo')+'</span></span>';
 // Un recuadro: ícono, nombre de la sección y un dato corto. Con color fuera del verde, borde y punto de ese color (y el color dicho para el lector de pantalla).
-const pT=(href,ico,nom,dato,c,ic)=>'<a class="pT'+(pFuera(c)?' c-'+c:'')+'" href="'+href+'">'+pIco(ico,ic)+'<span class="pN">'+nom+'</span><span class="pD">'
-  +(pFuera(c)?'<i class="pPunto" style="background:'+pColor(c)+'"></i><span class="pSr">'+ETQ[c]+': </span>':'')+dato+'</span></a>';
+// cl: clase extra (pAgua para los ríos, pTelT para teléfonos).
+const pT=(href,ico,nom,dato,c,cl)=>'<a class="pT'+(cl?' '+cl:'')+(pFuera(c)?' c-'+c:'')+'" href="'+href+'">'+pIco(ico)+'<span class="pN">'+nom+'</span><span class="pD">'
+  +(pFuera(c)?'<span class="pSr">'+ETQ[c]+': </span>':'')+dato+'</span></a>';
 const pEspera=()=>LISTO?'Sin datos':'…';
 function pRio(){const R=riesgoRio(),r=resumenRio(),ok=r&&r.atraso<4;
-  return pT('#t-rio','rio','Río Paraná',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),R.c,'var(--water)')}
+  return pT('#t-rio','rio','Río Paraná',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),R.c,'pAgua')}
 function pMapa(){
   if(!LISTO)return pT('#t-mapa','mapa','Mapa','…');
   const n={};GEO.mun.forEach((m,i)=>{let c='gris';try{c=colorDe(i).c||'gris'}catch(e){}n[c]=(n[c]||0)+1});
@@ -2369,7 +2380,7 @@ function pLoc(){
     if(a>=0&&mm&&mm[a]!=null){const v=Math.round(Number(mm[a])),cd=src.cod&&src.cod[r]&&src.cod[r][a]!=null?Number(src.cod[r][a]):null;
       dato='<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+'<span class="pSr"> hoy</span>'}}catch(e){}
   return '<button type="button" class="pT'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'">'+pIco('loc')+'<span class="pN">'+(g>=0?'':'<span class="pSr">Elegí tu localidad. Ahora: </span>')+esc(GEO.mun[i][0])+'</span><span class="pD">'
-    +(pFuera(k.c)?'<i class="pPunto" style="background:'+pColor(k.c)+'"></i><span class="pSr">'+ETQ[k.c]+': </span>':'')+dato+'</span></button>';
+    +(pFuera(k.c)?'<span class="pSr">'+ETQ[k.c]+': </span>':'')+dato+'</span></button>';
 }
 function pLluvia(){
   let dato=pEspera();
@@ -2377,16 +2388,24 @@ function pLluvia(){
   return pT('#t-lluvia','lluvia','Lluvias, 7 días',dato);
 }
 function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&r.atraso<4;let c='';try{c=riesgoParaguay().c}catch(e){}
-  return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'var(--water)')}
-function pNino(){const sv=oniServidor(),o=sv?sv.v:ONI,v=o[o.length-1][2];
-  return pT('#t-nino','nino','El Niño',v>=2?'Muy fuerte':v>=1.5?'Fuerte':v>=1?'Moderado':v>=0.5?'Débil':v<=-0.5?'La Niña':'No hay')}
+  return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'pAgua')}
+// Sin la palabra de la fuerza (pedido de Mariano, 4/11): solo lleva a los datos.
+function pNino(){
+  return pT('#t-nino','nino','El Niño','Datos')}
+function pSem(){
+  const R=M.R&&M.R.length?M.R.slice(0,LOCS.length):null;
+  const dato=R?'<span class="pLuces">'+R.map((q,j)=>'<i style="background:'+pColor(q.c||'gris')+'" title="'+LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')+'"></i>').join('')+'</span>'
+    +'<span class="pSr">'+R.map((q,j)=>LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')).join(', ')+'</span>':'…';
+  return pT('#t-sem','sem','Riesgo en 6 ciudades',dato);
+}
 function pintarPortada(){
   const el=$('portada');if(!el||EMB)return;
   const uno=f=>{try{return f()}catch(e){console.error(e);return ''}};
   let fuera=false;try{fuera=pFuera(riesgoRio().c)}catch(e){}
   const l=[pRio,pMapa];if(!fuera)l.reverse();
-  el.innerHTML=[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107'),
-    ()=>pT('#t-sem','sem','Por localidad','6 ciudades'),pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','Hoy y mañana'),pOtros,pNino,
+  const d=new Date(hoy+'T12:00:00Z');
+  el.innerHTML='<p class="pHoy"><b>El Chaco hoy</b><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+'</span></p>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+    pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','Hoy y mañana'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.clic){el.dataset.clic='1';
     el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;elegir(i,true);marcarSalto();verSec($('t-mapa'))})}
