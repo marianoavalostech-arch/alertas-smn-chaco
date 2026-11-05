@@ -543,7 +543,7 @@ footer{font-size:.85rem;color:var(--muted)}
    La caja (#instalar) tiene los dos; nunca se ve dentro del portal ni al imprimir */
 .instalar{margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 /* Hasta que corre el código, el lugar del botón Compartir queda reservado (invisible): así la página no salta cuando aparece. */
-@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir{display:inline-flex!important}}
+@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir,html:not(.emb) #instalar[hidden] #btnLetra{display:inline-flex!important}}
 .btnInst{display:inline-flex;align-items:center;gap:8px;padding:5px 16px 5px 6px}
 .btnInst img{width:28px;height:28px;border-radius:8px;display:block}
 .btnComp{padding:5px 16px 5px 12px}
@@ -690,6 +690,43 @@ footer{font-size:.85rem;color:var(--muted)}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}.portada .pT{animation:none}}
 @media print{.portada{display:none!important}}
+/* Mejoras de la portada (4/11/2026, pedido de Mariano) */
+/* hora de los datos debajo del día */
+.pHoy span{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.pHoy .pAct{font-size:.72rem;font-weight:600;color:var(--muted);margin-top:1px}
+.pHoy .pAct.viejo{color:var(--naranja-txt);font-weight:800}
+/* mientras llegan los datos: una barrita gris con brillo en lugar de "…" */
+.pCarga{display:inline-block;width:3.6em;height:.8em;border-radius:6px;vertical-align:-.05em;background:linear-gradient(90deg,#ece9f4 0%,#f8f7fc 45%,#ece9f4 90%) 0 0/250% 100%;animation:pBrillo 1.2s linear infinite}
+@keyframes pBrillo{to{background-position:-250% 0}}
+@media (prefers-reduced-motion:reduce){.pCarga{animation:none}}
+/* elegir tu localidad: ventana con "Ver en el mapa" y una lista para cambiarla */
+.dLoc{width:min(420px,calc(100vw - 32px));max-height:min(560px,calc(100vh - 48px));box-sizing:border-box;border:0;border-radius:20px;padding:16px;background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(11,49,88,.3);flex-direction:column;gap:10px}
+.dLoc[open]{display:flex;animation:abreSuave .22s ease-out}
+.dLoc::backdrop{background:rgba(11,49,88,.45)}
+.dLocCab{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dLocCab h2{margin:0;font-family:var(--font-tit);font-size:1.2rem;color:var(--titulo)}
+.dLocMapa{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:99px;background:var(--degrade);color:#fff;font-weight:800;text-align:center;box-shadow:var(--sombra-degrade)}
+.dLocMapa:active{transform:scale(.97)}.dLocMapa:focus-visible{outline:3px solid var(--acento);outline-offset:3px}
+.dLocEt{font-size:.9rem;font-weight:700;color:var(--muted);margin-top:4px}
+.dLoc input{font:inherit;border:1.5px solid var(--borde-boton);border-radius:99px;padding:9px 16px;min-height:44px;box-sizing:border-box;width:100%}
+.dLoc input:focus{outline:3px solid var(--acento-soft);border-color:var(--acento)}
+.dLocLista{list-style:none;margin:0;padding:0;overflow-y:auto;min-height:120px;flex:1 1 auto;border-top:1px solid var(--line)}
+.dLocLista button{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;padding:11px 8px;border-bottom:1px solid #eeeaf6;font-weight:600}
+.dLocLista button:active,.dLocLista button:hover{background:var(--acento-soft)}
+.dLocLista button:focus-visible{outline:3px solid var(--acento);outline-offset:-3px}
+.dLocLista button[aria-current="true"]{font-weight:800;color:var(--acento)}
+.dLocLista li.nada{padding:12px 8px;color:var(--muted)}
+@media print{.dLoc{display:none!important}}
+/* letra más grande (botón A+ del encabezado): todo lo que se mide en rem o em crece un octavo */
+html.grande{font-size:112.5%}html.grande body{font-size:18px}
+.btnHerr{padding:5px 14px;min-height:40px;gap:6px}
+.btnHerr svg{width:20px;height:20px;display:block;flex:none}
+#btnLetra{padding:5px 14px 5px 12px}
+.aMas{font-family:var(--font-tit);font-weight:700;font-size:.95rem;line-height:1}.aMas span{font-size:1.3em}
+#btnLetra[aria-pressed="true"]{background:var(--acento);color:#fff;border-color:var(--acento)}
+#btnActualizar.gira svg{animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#btnActualizar.gira svg{animation:none}}
 /* Disposición en el celular (pedido de Mariano, 24/10/2026): encabezado más bajo, índice más apretado, vista previa más corta en las secciones cerradas
    y tarjetas de "¿Qué está pasando?" en renglones (el dibujo a la izquierda y el nombre al lado; abiertas quedan como antes; en pantallas de menos
    de 360 px no entran y quedan como antes). En la computadora no cambia nada. */
@@ -715,6 +752,9 @@ footer{font-size:.85rem;color:var(--muted)}
     <div class="instalar" id="instalar" hidden>
       <button class="btn btnInst" id="btnInstalar" type="button" hidden><img src="icono.svg" alt="" width="28" height="28">Instalar app</button>
       <button class="btn btnInst btnComp" id="btnCompartir" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>
+      <button class="btn btnInst btnHerr" id="btnLetra" type="button" aria-pressed="false" aria-label="Letra más grande" hidden><span class="aMas" aria-hidden="true">A<span>A</span></span>Letra</button>
+      <button class="btn btnInst btnHerr" id="btnActualizar" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Actualizar</button>
+      <span class="pSr" id="actAviso" role="status"></span>
       <div class="compOpc" id="compOpc" hidden>
         <a class="btn" id="compWa" href="https://wa.me/" target="_blank" rel="noopener">Enviar por WhatsApp</a>
         <button class="btn" id="compCopiar" type="button">Copiar enlace</button>
@@ -1068,7 +1108,7 @@ footer{font-size:.85rem;color:var(--muted)}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste, si pediste la letra más grande y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
   </section>
 
   </main>
@@ -1077,6 +1117,13 @@ footer{font-size:.85rem;color:var(--muted)}
   <a class="aIndice" id="aIndice" href="#indice" hidden>↑ Índice</a>
 </div>
 
+  <dialog class="dLoc" id="dLoc" aria-labelledby="dLocTit">
+  <div class="dLocCab"><h2 id="dLocTit">Tu localidad</h2><button class="btn cerrar" type="button" data-dcerrar aria-label="Cerrar">✕</button></div>
+  <button class="btn dLocMapa" type="button" id="dLocMapa"></button>
+  <label class="dLocEt" for="dLocBus">Cambiar por otra localidad</label>
+  <input id="dLocBus" type="search" autocomplete="off" placeholder="Escribí el nombre…">
+  <ul class="dLocLista" id="dLocLista"></ul>
+</dialog>
 <script>
 // Dentro del portal de Gobierno Abierto (en un marco): siempre claro, con el fondo del sitio, y le avisa al portal su alto
 // para que el marco no tenga barra propia. Solo le habla al portal; en cualquier otro lugar el aviso no sale.
@@ -1086,6 +1133,9 @@ const CANAL='ga-panel-alertas-chaco-v1';
 let VISTA=null,FIJO=false,AVISAR_ALTO=null;   // lo que avisa el portal de su pantalla (recibirVista); FIJO: marco del alto de la pantalla (computadora en el portal)
 const EMB=(()=>{try{return window.self!==window.top||/[?&]embebido=1(&|$)/.test(location.search)}catch(e){return false}})();
 if(EMB&&document.documentElement)document.documentElement.classList.add('emb');
+// Letra más grande (4/11/2026): se aplica antes de dibujar, para que la página no salte. Se recuerda en el dispositivo. En el portal, no.
+const LETRA_K='anc-letra';
+try{if(!EMB&&localStorage.getItem(LETRA_K)==='1')document.documentElement.classList.add('grande')}catch(e){}
 const ONI_CARGA='2026-10-06';   // día en que se cargó a mano el ONI (independiente de la captura)
 // ONI cargado a mano: se usa si el script de Google no lo trae. [año, trimestre, °C]
 const ONI=[["2026","feb-abr",0.11],["2026","mar-may",0.46],["2026","abr-jun",0.95],["2026","may-jul",1.39],["2026","jun-ago",1.8],["2026","jul-sep",2.16]];
@@ -2391,18 +2441,20 @@ const pFlecha=d=>d==null||Math.abs(d)<=0.05?'':'<span class="pFl"><span aria-hid
 // cl: clase extra (pAgua para los ríos, pTelT para teléfonos).
 const pT=(href,ico,nom,dato,c,cl)=>'<a class="pT'+(cl?' '+cl:'')+(pFuera(c)?' c-'+c:'')+'" href="'+href+'">'+pIco(ico)+'<span class="pN">'+nom+'</span><span class="pD">'
   +(pFuera(c)&&!/^Alerta /.test(nom)?'<span class="pSr">'+ETQ[c]+': </span>':'')+dato+'</span></a>';
-const pEspera=()=>LISTO?'Sin datos':'…';
+// Mientras llegan los datos, una barrita gris con brillo (4/11/2026): la portada no salta cuando llega el número.
+const pCargando='<span class="pCarga" aria-hidden="true"></span><span class="pSr">Cargando</span>';
+const pEspera=()=>LISTO?'Sin datos':pCargando;
 function pRio(){const R=riesgoRio(),r=resumenRio(),ok=r&&r.atraso<4;
   return pT('#t-rio','rio','Río Paraná',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),R.c,'pAgua')}
 function pMapa(){
-  if(!LISTO)return pT('#t-mapa','mapa','Mapa','…');
+  if(!LISTO)return pT('#t-mapa','mapa','Mapa',pCargando);
   const n={};GEO.mun.forEach((m,i)=>{let c='gris';try{c=colorDe(i).c||'gris'}catch(e){}n[c]=(n[c]||0)+1});
   const c=['rojo','naranja','amarillo'].find(x=>n[x]);
   return pT('#t-mapa','mapa','Mapa',c?n[c]+' en '+c:n.verde===GEO.mun.length?'Todo verde':(n.verde||0)+' en verde',c);
 }
 function pSmn(){
   let dato,c='';
-  if(!smnVigente())dato=SMN_LISTO||SMN.emitido?'Sin informe':'…';
+  if(!smnVigente())dato=SMN_LISTO||SMN.emitido?'Sin informe':pCargando;
   else{let max=0;GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{if(a.niv>max)max=a.niv}));
     // Con alerta, el nombre pasa a "Alerta del SMN" y el dato es el nivel ("Amarilla"), para que entre en un renglón.
     if(max){c=(SMN_NIV[max]||['amarillo'])[0];dato=mayus((SMN_NIV[max]||['',''])[1])}
@@ -2435,8 +2487,15 @@ function pNino(){
 function pSem(){
   const R=M.R&&M.R.length?M.R.slice(0,LOCS.length):null;
   const dato=R?'<span class="pLuces">'+R.map((q,j)=>'<i style="background:'+pColor(q.c||'gris')+'" title="'+LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')+'"></i>').join('')+'</span>'
-    +'<span class="pSr">'+R.map((q,j)=>LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')).join(', ')+'</span>':'…';
+    +'<span class="pSr">'+R.map((q,j)=>LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')).join(', ')+'</span>':pCargando;
   return pT('#t-sem','sem','Riesgo en 6 ciudades',dato);
+}
+// Hora de los datos debajo del día (4/11/2026): la de la lluvia, que se renueva cada hora. Con más de 3 horas, en naranja ("sin renovar").
+const F_HM=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+function pAct(){
+  const d=D.lluvia,t=d&&d.datos&&d.t;if(!t||isNaN(t))return '';
+  const viejo=Date.now()-t>3*36e5,h=diaAR(t)===hoy?'de las '+F_HM.format(t)+' h':'del '+fFechaHora(t);
+  return '<small class="pAct'+(viejo?' viejo':'')+'">'+(viejo?'Sin renovar: datos ':'Datos ')+h+'</small>';
 }
 function pintarPortada(){
   const el=$('portada');if(!el||EMB)return;
@@ -2444,12 +2503,37 @@ function pintarPortada(){
   let fuera=false;try{fuera=pFuera(riesgoRio().c)}catch(e){}
   const l=[pRio,pMapa];if(!fuera)l.reverse();
   const d=new Date(hoy+'T12:00:00Z');
-  el.innerHTML='<p class="pHoy"><b>El Chaco hoy</b><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+'</span></p>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+  el.innerHTML='<p class="pHoy"><b>El Chaco hoy</b><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span></p>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
-    el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;elegir(i,true);marcarSalto();verSec($('t-mapa'))})}
+    el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;
+      if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}})}
+}
+// Tu localidad (4/11/2026): al tocar su recuadro se abre una ventana con "Ver en el mapa" (lo de antes) y una lista con buscador para cambiarla.
+// Si el navegador no tiene ventanas (<dialog>), sigue como antes: va al mapa. Devuelve true si la abrió.
+function abrirLoc(i){
+  const dl=$('dLoc');if(!dl||typeof dl.showModal!=='function'||EMB)return false;
+  const bus=$('dLocBus'),lista=$('dLocLista'),ver=$('dLocMapa');
+  ver.textContent='Ver '+GEO.mun[i][0]+' en el mapa';ver.dataset.i=i;bus.value='';
+  const orden=GEO.mun.map((m,j)=>j).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
+  const pintar=()=>{const q=sinTildes(bus.value),l=orden.filter(j=>!q||sinTildes(GEO.mun[j][0]).includes(q));
+    lista.innerHTML=l.length?l.map(j=>'<li><button type="button" data-lj="'+j+'"'+(j===i?' aria-current="true"':'')+'>'+esc(GEO.mun[j][0])+'</button></li>').join(''):'<li class="nada">No hay ninguna localidad con ese nombre.</li>'};
+  pintar();
+  if(!dl.dataset.listo){dl.dataset.listo='1';
+    bus.addEventListener('input',()=>{const f=dl._pintar;if(f)f()});
+    dl.addEventListener('click',e=>{
+      const r=dl.getBoundingClientRect(),fuera=e.target===dl&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom);
+      if(fuera||e.target.closest('[data-dcerrar]')){dl.close();return}   // tocar afuera de la ventana o la ✕ cierra
+      if(e.target.closest('#dLocMapa')){const j=+$('dLocMapa').dataset.i;dl.close();elegir(j,true);marcarSalto();verSec($('t-mapa'));return}
+      const b=e.target.closest('[data-lj]');if(!b)return;const j=+b.dataset.lj;
+      guardarMiLoc(j);if(MILOC)seguro(pintarMiLoc);seguro(pintarPortada);dl.close();
+      const nb=document.querySelector('#portada [data-ploc]');if(nb)nb.focus()});
+  }
+  dl._pintar=pintar;dl.showModal();
+  try{lista.querySelector('[aria-current]').scrollIntoView({block:'center'})}catch(e){}
+  return true;
 }
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
@@ -2920,7 +3004,7 @@ function pasosIos(ua){
   if(abrir)abrir.hidden=!(otro&&viejo);
 }
 // La caja del encabezado se ve solo si tiene algo a la vista: el botón de instalar (con los pasos de iPhone) o el de compartir.
-function cajaCab(){const c=$('instalar');if(c)c.hidden=['btnInstalar','instIos','instAviso','btnCompartir'].every(id=>{const e=$(id);return !e||!!e.hidden})}
+function cajaCab(){const c=$('instalar');if(c)c.hidden=['btnInstalar','instIos','instAviso','btnCompartir','btnLetra','btnActualizar'].every(id=>{const e=$(id);return !e||!!e.hidden})}
 seguro(instalarApp);
 
 // Compartir: un botón para pasar la dirección del sitio por WhatsApp, Facebook, mensajes, etc. No manda nada solo: elige la persona.
@@ -2949,6 +3033,21 @@ function compartirSitio(){
   });
 }
 seguro(compartirSitio);
+// Letra más grande y Actualizar (4/11/2026). Van con Compartir: solo en celulares y tablets, nunca en el portal.
+// "Actualizar" solo en la app (instalada o de Google Play), que no tiene la barra del navegador para recargar.
+function herramientas(){
+  if(EMB)return;
+  const L=$('btnLetra'),A=$('btnActualizar'),av=$('actAviso'),raiz=document.documentElement;
+  if(L){L.hidden=false;L.setAttribute('aria-pressed',String(raiz.classList.contains('grande')));
+    L.addEventListener('click',()=>{const g=!raiz.classList.contains('grande');raiz.classList.toggle('grande',g);L.setAttribute('aria-pressed',String(g));
+      try{if(g)localStorage.setItem(LETRA_K,'1');else localStorage.removeItem(LETRA_K)}catch(e){}})}
+  const app=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||desdePlay();
+  if(A&&app){A.hidden=false;
+    A.addEventListener('click',()=>{if(A.classList.contains('gira'))return;A.classList.add('gira');if(av)av.textContent='Actualizando…';
+      ULT=0;renovar();setTimeout(()=>{A.classList.remove('gira');if(av)av.textContent='Datos actualizados.'},1500)})}
+  cajaCab();
+}
+seguro(herramientas);
 // Índice (pedido de Mariano, 19/10/2026): el botón "↑ Índice" de la esquina aparece cuando el índice ya quedó arriba, fuera de la pantalla.
 // Para que no tape lo que se está leyendo (24/10/2026): se esconde mientras se baja y vuelve al subir un poco, después de un salto
 // (índice, botones, Atrás) y al llegar al final de la página.

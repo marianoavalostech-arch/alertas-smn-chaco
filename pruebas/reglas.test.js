@@ -448,7 +448,7 @@ prueba('celulares lentos: formatos armados una sola vez, la página no salta al 
   assert.strictEqual(S("fFechaHora(new Date('2026-10-18T22:51:00Z'))"), '18/10, 19:51 h');
   assert.strictEqual(S("diaAR(new Date('2026-10-19T02:30:00Z'))"), '2026-10-18'); assert.strictEqual(S("fDiaLargo('2026-10-21')"), 'miércoles 21/10');
   // El lugar del botón Compartir queda reservado hasta que corre el código (el botón sigue empezando oculto), y el del mapa también
-  assert.ok(html.includes('@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir{display:inline-flex!important}}'), 'lugar reservado para Compartir');
+  assert.ok(html.includes('@media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir,html:not(.emb) #instalar[hidden] #btnLetra{display:inline-flex!important}}'), 'lugar reservado para Compartir (y A+, desde el 4/11)');
   const base = S('BASE'), ar = /#mapa\{[^}]*aspect-ratio:(\d+)\/(\d+)\}/.exec(html);
   assert.ok(ar && Number(ar[1]) === base.w && Number(ar[2]) === base.h, 'el lugar del mapa tiene la misma forma que BASE (si cambia BASE, cambiar aspect-ratio)');
   // El botón "Instalar app" usa el ícono liviano (el mismo dibujo que los íconos de la app), que ya está en caché como ícono de la pestaña
@@ -1675,6 +1675,14 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)
     assert.ok(/#mInfo\.tarj\{background:var\(--marino\)/.test(html) && codigo.includes("el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj'"), 'solo el detalle de un municipio');
     S(`D.prono={datos:null}`);
+  });
+  prueba('mejoras de la portada (4/11): hora de los datos, barrita de carga, letra grande, actualizar y tu localidad', () => {
+    assert.ok(codigo.includes("const LETRA_K='anc-letra';") && html.includes('html.grande{font-size:112.5%}'), 'letra grande recordada');
+    assert.ok(html.includes('si pediste la letra más grande') && fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8').includes('letra más grande'), 'la privacidad lo cuenta');
+    assert.ok(codigo.includes("if(A&&app){A.hidden=false;"), '"Actualizar" solo en la app');
+    assert.ok(codigo.includes("if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
+    assert.ok(codigo.includes("const pEspera=()=>LISTO?'Sin datos':pCargando;"), 'barrita mientras carga');
+    assert.ok(codigo.includes("'Sin renovar: datos ':'Datos '"), 'hora de los datos, en naranja si está vieja');
   });
   prueba('portada del celular (4/11): un recuadro chico por sección, solo en el celular y fuera del portal', () => {
     assert.ok(html.includes('<nav class="portada" id="portada" aria-label="El Chaco hoy: un recuadro por sección"></nav>\n\n  <div class="miLoc"'), 'arriba de "Tu localidad" y del índice');
