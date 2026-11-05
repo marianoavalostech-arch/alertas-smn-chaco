@@ -4,8 +4,9 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## 04/11/2026 (portada del celular)
 
-Pedido de Mariano: la portada del boceto ("tablero de entrada"), solo en el celular.
-- **Portada** arriba de todo en pantallas de menos de 600 px: un recuadro por sección con su dato del momento (Paraná con gráfico chico de 30 días, mapa en chico con cuántos municipios hay de cada color, alertas del SMN, tu localidad o Resistencia con hoy y mañana, lluvia por hora, lluvias, otros ríos, El Niño, qué hacer con "Mi mochila" y teléfonos para tocar). Tocar un recuadro lleva a su sección. El Paraná va primero cuando sale del verde.
+Pedido de Mariano: la portada del boceto, solo en el celular, para llegar rápido a cada sección.
+- **Portada** arriba de todo en pantallas de menos de 600 px: 12 recuadros chicos, de a 3 por renglón, cada uno con el nombre de la sección y un solo dato del momento (Paraná 6,90 m ↓, Mapa "4 en rojo", SMN "Ninguna", tu localidad o Resistencia con la lluvia de hoy, Qué hacer, Teléfonos, Por localidad, Lluvias, Lluvia por hora, Paraguay y Bermejo, El Niño, Datos y Acerca). Tocar un recuadro lleva a su sección. Fuera del verde, borde y punto del color. El Paraná va primero cuando sale del verde. Entra en una pantalla.
+- Una primera versión con gráfico del río, mapa chico y textos quedaba muy larga (casi dos pantallas): se dejó un dato por recuadro; el detalle sigue en cada sección.
 - En el celular, la portada reemplaza la franja del río, "Tu localidad" y el índice "Ir a:"; "↑ Índice" sube hasta ella. La franja del SMN y el resto de la página no cambian. En la computadora, en el portal y al imprimir no cambia nada.
 - Revisado con la regla del navegador y los datos del 4/11 a 320 y 360 px y en la computadora: sin errores; axe sin errores en la portada. Una prueba nueva. Huella nueva del código. 81 pruebas.
 
