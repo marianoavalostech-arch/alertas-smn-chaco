@@ -433,11 +433,11 @@ function decidirAviso(t, ahora, avisado) {
 
 /* ---------- avisos al celular: funciones puras ---------- */
 // Avisos por alertas del SMN (decididos por Mariano el 5/11/2026). Los manda Firebase Cloud Messaging (FCM) con temas:
-// cada celular está anotado en un solo tema de su localidad: m<n> (naranja y roja), m<n>a (también amarillas),
-// m<n>n (naranja y roja, también de noche) o m<n>an (todo, también de noche). n = número del municipio (0 a 69).
-// Firebase guarda quién está en cada tema: este script no guarda celulares, solo qué alerta ya avisó (propiedades "av").
-// De noche (22 a 7 h), quien no pidió avisos de noche recibe en el momento solo lo que rige hoy o empieza en la madrugada
-// siguiente (de 0 a 6 h); lo demás le llega a las 7. Las alertas salen del mismo resultado que el mapa (alertas[municipio]).
+// cada celular está anotado en un solo tema de su localidad: m<n> (naranja y roja) o m<n>a (también amarillas).
+// n = número del municipio (0 a 69). Firebase guarda quién está en cada tema: este script no guarda celulares,
+// solo qué alerta ya avisó (propiedades "av"). De noche (22 a 7 h) salen en el momento solo las alertas que rigen hoy
+// o empiezan a la mañana siguiente antes del mediodía (franjas de 0 a 6 y de 6 a 12 h); las demás salen a las 7.
+// Es igual para todos (sin casilla "de noche", decisión del 5/11). Las alertas salen del mismo resultado que el mapa.
 var FCM_PROYECTO = 'rios-y-clima-chaco';
 var SITIO = 'https://panel-alertas-chaco.netlify.app/';
 var TOPE_PEDIDOS = 3000;   // pedidos por día a la dirección para anotarse (doPost): cuida la cuota diaria del script
@@ -445,14 +445,14 @@ var MUNICIPIOS = ["Avia Terai","Barranqueras","Basail","Campo Largo","Capitán S
 // Nombre de cada fenómeno: los mismos que SMN_EV en el sitio.
 var EV_NOMBRE = { 41: 'tormentas', 37: 'lluvias', 42: 'nevadas', 39: 'viento', 47: 'viento zonda', 101: 'calor extremo', 102: 'frío extremo', 103: 'niebla', 104: 'humo', 105: 'polvo' };
 var COLOR_AVISO = { 3: 'amarilla', 4: 'naranja', 5: 'roja' };
-var SUFIJOS = ['', 'a', 'n', 'an'];
+var SUFIJOS = ['', 'a'];
 
-function temaAviso(m, amarilla, noche) { return 'm' + m + (amarilla ? 'a' : '') + (noche ? 'n' : ''); }
-function temaValido(t) { return typeof t === 'string' && /^m([0-9]|[1-6][0-9])a?n?$/.test(t); }
+function temaAviso(m, amarilla) { return 'm' + m + (amarilla ? 'a' : ''); }
+function temaValido(t) { return typeof t === 'string' && /^m([0-9]|[1-6][0-9])a?$/.test(t); }
 function esNoche(hora) { return hora >= 22 || hora < 7; }
 
 // Alertas del resultado del mapa que se pueden avisar: amarilla o más, de hoy y los 2 días siguientes (como el sitio).
-// Clave: municipio|día|fenómeno. urgente = rige hoy o empieza en la madrugada de mañana (de 0 a 6 h): sale aunque sea de noche.
+// Clave: municipio|día|fenómeno. urgente = rige hoy o empieza mañana antes del mediodía: sale aunque sea de noche.
 function alertasParaAvisar(alertas, hoy) {
   var dias = [hoy, sumarDias(hoy, 1), sumarDias(hoy, 2)], out = {};
   Object.keys(alertas || {}).forEach(function (m) {
@@ -460,27 +460,26 @@ function alertasParaAvisar(alertas, hoy) {
     (alertas[m] || []).forEach(function (a) {
       var i = dias.indexOf(a[0]); if (i < 0) return;
       var niv = Math.max(a[2] || 0, a[3] || 0, a[4] || 0, a[5] || 0); if (niv < 3) return;
-      out[m + '|' + a[0] + '|' + a[1]] = { m: +m, dia: a[0], ev: a[1], nivel: niv, extra: a[6] || 0, franjas: [a[2] || 0, a[3] || 0, a[4] || 0, a[5] || 0], urgente: i === 0 || (i === 1 && a[2] >= 3) };
+      out[m + '|' + a[0] + '|' + a[1]] = { m: +m, dia: a[0], ev: a[1], nivel: niv, extra: a[6] || 0, franjas: [a[2] || 0, a[3] || 0, a[4] || 0, a[5] || 0], urgente: i === 0 || (i === 1 && (a[2] >= 3 || a[3] >= 3)) };
     });
   });
   return out;
 }
 
-// Decide qué avisar. estado = lo ya avisado {clave: [nivel avisado de día, nivel avisado a los de noche]} o null (primera vez).
-// Avisa cuando una alerta es nueva o sube de nivel. La primera vez solo marca lo que ya estaba, sin mandar nada.
+// Decide qué avisar. estado = lo ya avisado {clave: nivel} o null (primera vez).
+// Avisa cuando una alerta es nueva o sube de nivel; de noche, solo las urgentes (las demás quedan para las 7).
+// La primera vez solo marca lo que ya estaba, sin mandar nada.
 // Devuelve { mensajes: [{ m, temas, items, marcas }], estado } (estado sin lo de los mensajes: se marca con aplicarMarcas si salieron bien).
 function decidirAvisos(alertas, hoy, hora, estado) {
   var act = alertasParaAvisar(alertas, hoy), noche = esNoche(hora), primera = !estado, base = {}, porMun = {}, k;
   estado = estado || {};
-  for (k in estado) if (k.split('|')[1] >= hoy) base[k] = estado[k].slice();   // los días que ya pasaron se olvidan
+  for (k in estado) if (k.split('|')[1] >= hoy && typeof estado[k] === 'number') base[k] = estado[k];   // los días que ya pasaron se olvidan
   Object.keys(act).sort().forEach(function (k) {
-    var a = act[k], ya = base[k] || [0, 0];
-    if (primera) { base[k] = [a.nivel, a.nivel]; return; }
-    var deDia = a.nivel > ya[0] && (!noche || a.urgente), deNoche = a.nivel > ya[1];
-    if (!base[k]) base[k] = [0, 0];
+    var a = act[k];
+    if (primera) { base[k] = a.nivel; return; }
+    if (a.nivel <= (base[k] || 0) || (noche && !a.urgente)) return;
     SUFIJOS.forEach(function (s) {
-      var n = s.indexOf('n') >= 0;
-      if (!(n ? deNoche : deDia) || (a.nivel < 4 && s.indexOf('a') < 0)) return;   // amarilla: solo a quienes la pidieron
+      if (a.nivel < 4 && s !== 'a') return;   // amarilla: solo a quienes la pidieron
       ((porMun[a.m] = porMun[a.m] || {})[s] = porMun[a.m][s] || []).push(k);
     });
   });
@@ -489,12 +488,9 @@ function decidirAvisos(alertas, hoy, hora, estado) {
     var grupos = {};   // temas que reciben exactamente lo mismo van en un solo mensaje
     SUFIJOS.forEach(function (s) { var l = porMun[m][s]; if (!l) return; var g = l.join(','); (grupos[g] = grupos[g] || []).push(s); });
     Object.keys(grupos).forEach(function (g) {
-      var sufs = grupos[g], claves = g.split(','), marcas = [];
-      claves.forEach(function (c) {
-        if (sufs.some(function (s) { return s.indexOf('n') < 0; })) marcas.push([c, 0, act[c].nivel]);
-        if (sufs.some(function (s) { return s.indexOf('n') >= 0; })) marcas.push([c, 1, act[c].nivel]);
-      });
-      mensajes.push({ m: +m, temas: sufs.map(function (s) { return 'm' + m + s; }), items: claves.map(function (c) { return act[c]; }), marcas: marcas });
+      var claves = g.split(',');
+      mensajes.push({ m: +m, temas: grupos[g].map(function (s) { return 'm' + m + s; }), items: claves.map(function (c) { return act[c]; }),
+        marcas: claves.map(function (c) { return [c, act[c].nivel]; }) });
     });
   });
   return { mensajes: mensajes, estado: base };
@@ -503,12 +499,11 @@ function decidirAvisos(alertas, hoy, hora, estado) {
 // Marca lo avisado por los mensajes que salieron bien. Si una alerta iba en un mensaje que falló, no se marca: se reintenta en la hora siguiente.
 function aplicarMarcas(estado, mensajes, ok) {
   var fallo = {};
-  mensajes.forEach(function (x, i) { if (!ok[i]) x.marcas.forEach(function (q) { fallo[q[0] + '#' + q[1]] = 1; }); });
+  mensajes.forEach(function (x, i) { if (!ok[i]) x.marcas.forEach(function (q) { fallo[q[0]] = 1; }); });
   mensajes.forEach(function (x, i) {
     if (!ok[i]) return;
-    x.marcas.forEach(function (q) { if (fallo[q[0] + '#' + q[1]]) return; var e = estado[q[0]] = estado[q[0]] || [0, 0]; e[q[1]] = Math.max(e[q[1]], q[2]); });
+    x.marcas.forEach(function (q) { if (!fallo[q[0]]) estado[q[0]] = Math.max(estado[q[0]] || 0, q[1]); });
   });
-  Object.keys(estado).forEach(function (k) { if (!estado[k][0] && !estado[k][1]) delete estado[k]; });
   return estado;
 }
 
@@ -551,7 +546,7 @@ function mensajeFcm(x, hoy) {
 }
 
 // Revisa un pedido de la página para anotarse o borrarse. Devuelve { error } o el pedido limpio.
-// q = { accion: 'alta' | 'baja', id: identificador que entrega Firebase, tema: 'm<n>[a][n]', antes: tema anterior (opcional) }
+// q = { accion: 'alta' | 'baja', id: identificador que entrega Firebase, tema: 'm<n>' o 'm<n>a', antes: tema anterior (opcional) }
 function revisarPedido(q) {
   if (!q || typeof q !== 'object') return { error: 'formato' };
   if (q.accion !== 'alta' && q.accion !== 'baja') return { error: 'accion' };
@@ -774,7 +769,7 @@ function anotar(q) {
 }
 
 // Prueba: manda un aviso que dice "prueba" a quienes estén anotados en un municipio (por defecto, Resistencia),
-// con cualquiera de las cuatro opciones. Sirve también para dar el permiso de Firebase la primera vez.
+// con cualquiera de las dos opciones. Sirve también para dar el permiso de Firebase la primera vez.
 function probarAviso(m) {
   m = m == null ? MUNICIPIOS.indexOf('Resistencia') : m;
   var x = { m: m, temas: SUFIJOS.map(function (s) { return 'm' + m + s; }), items: [] }, j = mensajeFcm(x, '');

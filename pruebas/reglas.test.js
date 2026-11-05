@@ -970,54 +970,54 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('avisos al celular (5/11): nombres de municipios y fenómenos iguales a los del sitio; temas por localidad', () => {
   assert.deepStrictEqual(JSON.parse(JSON.stringify(vm.runInContext('MUNICIPIOS', gs))), JSON.parse(JSON.stringify(S('GEO.mun.map(m=>m[0])'))));
   assert.deepStrictEqual(JSON.parse(JSON.stringify(vm.runInContext('EV_NOMBRE', gs))), JSON.parse(JSON.stringify(S('SMN_EV'))));
-  assert.strictEqual(gs.temaAviso(5, false, false), 'm5'); assert.strictEqual(gs.temaAviso(69, true, true), 'm69an'); assert.strictEqual(gs.temaAviso(12, false, true), 'm12n');
-  for (const t of ['m0', 'm9a', 'm10n', 'm69an']) assert.ok(gs.temaValido(t), t);
-  for (const t of ['m70', 'm-1', 'm05', 'mx', 'm1na', 'm1 ', 'm1a; x', '', null]) assert.ok(!gs.temaValido(t), String(t));
+  assert.strictEqual(gs.temaAviso(5, false), 'm5'); assert.strictEqual(gs.temaAviso(69, true), 'm69a');
+  for (const t of ['m0', 'm9a', 'm10', 'm69a']) assert.ok(gs.temaValido(t), t);
+  for (const t of ['m70', 'm-1', 'm05', 'mx', 'm1n', 'm1an', 'm1 ', 'm1a; x', '', null]) assert.ok(!gs.temaValido(t), String(t));
 });
 
-prueba('avisos al celular: qué se avisa, a quién y cuándo (nueva, sube de nivel, amarilla, noche, primera vez)', () => {
+prueba('avisos al celular: qué se avisa, a quién y cuándo (nueva, sube de nivel, amarilla, noche igual para todos, primera vez)', () => {
   const hoy = '2026-11-05', man = '2026-11-06', pas = '2026-11-07';
   const temas = d => d.mensajes.map(x => x.m + ':' + x.temas.join('+')).sort().join(' ');
   const avisar = (al, hora, est) => { const d = gs.decidirAvisos(al, hoy, hora, est); const e = gs.aplicarMarcas(d.estado, d.mensajes, d.mensajes.map(() => true)); return { d, e: JSON.parse(JSON.stringify(e)) }; };
   // primera vez: marca lo que ya estaba y no manda nada
   let r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]] }, 10, null);
-  assert.strictEqual(r.d.mensajes.length, 0, 'la primera vez no avisa'); assert.deepStrictEqual(r.e, { '3|2026-11-05|41': [4, 4] });
+  assert.strictEqual(r.d.mensajes.length, 0, 'la primera vez no avisa'); assert.deepStrictEqual(r.e, { '3|2026-11-05|41': 4 });
   // la misma alerta en la hora siguiente: nada
   r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]] }, 11, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'no repite');
-  // naranja nueva de día: a los cuatro temas en un solo mensaje
-  r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]], 7: [[man, 37, 0, 4, 0, 0, 0]] }, 11, r.e);
-  assert.strictEqual(temas(r.d), '7:m7+m7a+m7n+m7an');
+  // naranja nueva de día: a los dos temas en un solo mensaje
+  r = avisar({ 3: [[hoy, 41, 0, 0, 4, 4, 0]], 7: [[pas, 37, 0, 4, 0, 0, 0]] }, 11, r.e);
+  assert.strictEqual(temas(r.d), '7:m7+m7a');
   // amarilla nueva: solo a quienes pidieron amarillas
-  r = avisar({ 7: [[man, 37, 0, 4, 0, 0, 0]], 9: [[hoy, 39, 3, 0, 0, 0, 0]] }, 12, r.e);
-  assert.strictEqual(temas(r.d), '9:m9a+m9an');
+  r = avisar({ 7: [[pas, 37, 0, 4, 0, 0, 0]], 9: [[hoy, 39, 3, 0, 0, 0, 0]] }, 12, r.e);
+  assert.strictEqual(temas(r.d), '9:m9a');
   // la amarilla sube a naranja: a todos
-  r = avisar({ 9: [[hoy, 39, 3, 4, 0, 0, 0]] }, 13, r.e); assert.strictEqual(temas(r.d), '9:m9+m9a+m9n+m9an');
+  r = avisar({ 9: [[hoy, 39, 3, 4, 0, 0, 0]] }, 13, r.e); assert.strictEqual(temas(r.d), '9:m9+m9a');
   // baja de nivel o se va: nada
   r = avisar({ 9: [[hoy, 39, 3, 0, 0, 0, 0]] }, 14, r.e); assert.strictEqual(r.d.mensajes.length, 0);
   // el cuarto día no se avisa (como el sitio)
   r = avisar({ 9: [['2026-11-08', 41, 4, 0, 0, 0, 0]] }, 15, r.e); assert.strictEqual(r.d.mensajes.length, 0);
-  // de noche: lo de pasado mañana sale ya solo a los de noche; al resto, a las 7
-  let e = {};
-  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 23, e); assert.strictEqual(temas(r.d), '20:m20n+m20an', 'de noche, solo a los de noche');
+  // de noche: lo de pasado mañana espera hasta las 7
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 23, {}); assert.strictEqual(r.d.mensajes.length, 0, 'de noche, lo de pasado mañana espera');
   r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 3, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'sigue esperando');
-  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 7, r.e); assert.strictEqual(temas(r.d), '20:m20+m20a', 'a las 7 al resto, sin repetir a los de noche');
-  // de noche, lo de hoy y lo que empieza en la madrugada de mañana sale a todos
-  r = avisar({ 21: [[hoy, 41, 0, 0, 0, 4, 0]], 22: [[man, 41, 4, 0, 0, 0, 0]], 23: [[man, 41, 0, 4, 0, 0, 0]] }, 22, {});
-  assert.strictEqual(temas(r.d), '21:m21+m21a+m21n+m21an 22:m22+m22a+m22n+m22an 23:m23n+m23an');
-  // amarilla de noche no urgente: solo a "también amarillas y de noche"
-  r = avisar({ 24: [[pas, 37, 3, 0, 0, 0, 0]] }, 1, {}); assert.strictEqual(temas(r.d), '24:m24an');
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 7, r.e); assert.strictEqual(temas(r.d), '20:m20+m20a', 'a las 7 sale');
+  r = avisar({ 20: [[pas, 41, 0, 0, 5, 0, 0]] }, 8, r.e); assert.strictEqual(r.d.mensajes.length, 0, 'y no se repite');
+  // de noche sale en el momento: lo de hoy, lo de mañana de madrugada y lo de mañana de 6 a 12; lo de mañana a la tarde espera
+  r = avisar({ 21: [[hoy, 41, 0, 0, 0, 4, 0]], 22: [[man, 41, 4, 0, 0, 0, 0]], 23: [[man, 41, 0, 4, 0, 0, 0]], 24: [[man, 41, 0, 0, 4, 0, 0]] }, 22, {});
+  assert.strictEqual(temas(r.d), '21:m21+m21a 22:m22+m22a 23:m23+m23a');
+  // pasada la medianoche, "hoy" es el día nuevo: lo de la mañana ya cuenta como de hoy
+  r = avisar({ 25: [[hoy, 37, 0, 3, 0, 0, 0]] }, 2, {}); assert.strictEqual(temas(r.d), '25:m25a');
   // naranja y amarilla juntas en el mismo municipio: quien pidió amarillas recibe las dos, el resto solo la naranja
   r = avisar({ 30: [[hoy, 41, 0, 4, 0, 0, 1], [hoy, 37, 0, 3, 0, 0, 0]] }, 10, {});
-  assert.strictEqual(temas(r.d), '30:m30+m30n 30:m30a+m30an');
+  assert.strictEqual(temas(r.d), '30:m30 30:m30a');
   // los días que pasaron se olvidan
-  r = avisar({}, 10, { '1|2026-11-04|41': [4, 4], '1|2026-11-05|41': [4, 4] }); assert.deepStrictEqual(r.e, { '1|2026-11-05|41': [4, 4] });
+  r = avisar({}, 10, { '1|2026-11-04|41': 4, '1|2026-11-05|41': 4 }); assert.deepStrictEqual(r.e, { '1|2026-11-05|41': 4 });
 });
 
 prueba('avisos al celular: si Firebase falla no se marca, y se reintenta en la hora siguiente', () => {
   const hoy = '2026-11-05', al = { 3: [[hoy, 41, 0, 0, 4, 0, 0]], 4: [[hoy, 41, 0, 0, 4, 0, 0]] };
   const d = gs.decidirAvisos(al, hoy, 10, {});
   const e = JSON.parse(JSON.stringify(gs.aplicarMarcas(d.estado, d.mensajes, d.mensajes.map(x => x.m !== 4))));
-  assert.deepStrictEqual(e, { '3|2026-11-05|41': [4, 4] }, 'solo queda marcado lo que salió');
+  assert.deepStrictEqual(e, { '3|2026-11-05|41': 4 }, 'solo queda marcado lo que salió');
   assert.deepStrictEqual(Array.from(gs.decidirAvisos(al, hoy, 11, e).mensajes, x => x.m), [4]);
 });
 
@@ -1814,16 +1814,17 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       delete sitio.PushManager; assert.strictEqual(S('avPuede()'), false, 'navegador sin avisos (iPhone sin agregar a inicio), no'); sitio.PushManager = function () {};
       delete guardado['anc-avisos-prueba'];
       // estado guardado: solo localidad y opciones, revisado
-      assert.strictEqual(S('avTema(3,true,false)'), 'm3a');
-      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, n: false, t: 'm3a', f: 1 });
+      assert.strictEqual(S('avTema(3,true)'), 'm3a'); assert.strictEqual(S('avTema(3,false)'), 'm3');
+      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, t: 'm3a', f: 1 });
       assert.strictEqual(S('avEstado().t'), 'm3a'); assert.strictEqual(S('avPuede()'), true, 'quien ya está anotado sigue viendo el botón para darse de baja');
-      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, n: false, t: 'm9', f: 1 }); assert.strictEqual(S('avEstado()'), null, 'tema que no coincide: se descarta');
-      guardado['anc-avisos'] = JSON.stringify({ m: 99, a: false, n: false, t: 'm99' }); assert.strictEqual(S('avEstado()'), null);
+      guardado['anc-avisos'] = JSON.stringify({ m: 3, a: true, t: 'm9', f: 1 }); assert.strictEqual(S('avEstado()'), null, 'tema que no coincide: se descarta');
+      guardado['anc-avisos'] = JSON.stringify({ m: 99, a: false, t: 'm99' }); assert.strictEqual(S('avEstado()'), null);
       guardado['anc-avisos'] = '{roto'; assert.strictEqual(S('avEstado()'), null);
     } finally { sitio.localStorage = antes.ls; sitio.matchMedia = antes.mm; sitio.location = antes.loc; delete sitio.navigator; delete sitio.PushManager; delete sitio.Notification; }
     // textos que piden Mariano y el plan
     assert.ok(codigo.includes('Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.'));
-    assert.ok(codigo.includes("'También las alertas amarillas'") && codigo.includes("'Avisarme también de noche'"), 'las dos casillas');
+    assert.ok(codigo.includes("'También las alertas amarillas'") && !codigo.includes('Avisarme también de noche'), 'una sola casilla: la noche es automática');
+    assert.ok(codigo.includes('De noche (de 22 a 7) solo te avisamos las alertas de esa noche y de la mañana siguiente; las demás, a las 7.'), 'se cuenta la regla de la noche');
     assert.ok(codigo.includes("contador(ya?'avisos-cambio':'avisos-alta',true)") && codigo.includes("contador('avisos-baja',true)"), 'el contador suma solo el toque');
     // la biblioteca: copia fija en el sitio, cargada solo al pedir avisos; con la configuración pública del proyecto
     for (const f of ['firebase-app-compat.js', 'firebase-messaging-compat.js']) {

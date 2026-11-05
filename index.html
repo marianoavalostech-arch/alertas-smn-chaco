@@ -2554,7 +2554,8 @@ function abrirLoc(i){
   return true;
 }
 /* ---------- avisos al celular (5/11/2026) ---------- */
-// Avisos por alertas del SMN: naranja y roja (y amarilla, si se pide), para una localidad. Los manda el script de Google
+// Avisos por alertas del SMN: naranja y roja (y amarilla, si se pide), para una localidad. De noche (22 a 7) llegan solo las de esa noche
+// y la mañana siguiente; las demás, a las 7 (igual para todos: sin casilla "de noche", decisión del 5/11/2026). Los manda el script de Google
 // con Firebase Cloud Messaging. Solo en el celular (app de Google Play o navegador), nunca en la computadora ni dentro del portal.
 // Durante la prueba cerrada de Google Play, el botón se ve solo en la app de Play o con el enlace ?avisos=1 (queda recordado).
 // La biblioteca de Firebase (copia en firebase/) se carga solo al tocar "Avisarme" o "Dejar de avisarme". El identificador del
@@ -2565,8 +2566,8 @@ const FB_CONF={apiKey:'AIzaSyBUFcscmDx-RSA3huGBnEBxRkedHDjFs-A',authDomain:'rios
 const FB_VAPID='BOt_eK-pVmXgGY-soUcC3uXWWLKWc9PSFOcmk7KdsLc79eJJt8GoiyCIfu2eHvU59IZFyBwd4Nfjr5S9JrnOeQE';
 const AV_ERR={tope:'Hoy se anotaron muchos celulares. Probá de nuevo mañana.',bloqueado:'Tu celular no deja que este sitio muestre avisos. Para activarlos, permití las notificaciones de este sitio (o de la app) en la configuración del celular.',
   sinPermiso:'Para recibir avisos, tocá "Permitir" cuando el celular lo pregunte.',red:'No se pudo anotar. Revisá la conexión y probá de nuevo.'};
-const avTema=(m,a,n)=>'m'+m+(a?'a':'')+(n?'n':'');
-function avEstado(){try{const e=JSON.parse(localStorage.getItem(AV_K)||'null');return e&&Number.isInteger(e.m)&&e.m>=0&&e.m<GEO.mun.length&&e.t===avTema(e.m,e.a,e.n)?e:null}catch(x){return null}}
+const avTema=(m,a)=>'m'+m+(a?'a':'');
+function avEstado(){try{const e=JSON.parse(localStorage.getItem(AV_K)||'null');return e&&Number.isInteger(e.m)&&e.m>=0&&e.m<GEO.mun.length&&e.t===avTema(e.m,e.a)?e:null}catch(x){return null}}
 function avGuardar(e){try{if(e)localStorage.setItem(AV_K,JSON.stringify(e));else localStorage.removeItem(AV_K)}catch(x){}}
 // ¿Se muestra el botón? Celular o tablet, fuera del portal, con un navegador que recibe avisos (en iPhone: el sitio agregado a inicio, iOS 16.4 o más).
 function avPuede(){
@@ -2592,15 +2593,15 @@ async function avToken(){
 // Pedido al script de Google (doPost). Como texto simple: el navegador no hace la consulta previa que el script no contesta.
 async function avPedido(q){const r=await fetch(SMN_URL,{method:'POST',body:JSON.stringify(q)});return r.json()}
 // Anota el celular (o cambia localidad u opciones). Devuelve '' si salió bien o la clave del error.
-async function avAlta(m,a,n,pedir){
+async function avAlta(m,a,pedir){
   try{
     if(pedir){if(Notification.permission==='denied')return 'bloqueado';
       const p=await Notification.requestPermission();if(p!=='granted')return p==='denied'?'bloqueado':'sinPermiso'}
     else if(Notification.permission!=='granted')return 'sinPermiso';
-    const id=await avToken(),ant=avEstado(),t=avTema(m,a,n);
+    const id=await avToken(),ant=avEstado(),t=avTema(m,a);
     const j=await avPedido({accion:'alta',id,tema:t,antes:ant&&ant.t!==t?ant.t:''});
     if(!j||!j.ok)return j&&j.error==='tope'?'tope':'red';
-    avGuardar({m,a:!!a,n:!!n,t,f:Date.now()});return '';
+    avGuardar({m,a:!!a,t,f:Date.now()});return '';
   }catch(e){console.warn('Avisos:',e);return 'red'}
 }
 // Deja de avisar: borra del tema, borra el identificador de Firebase y el service worker de avisos. Aunque falle la red,
@@ -2614,7 +2615,7 @@ async function avBaja(){
 async function avRenovar(){
   const e=avEstado();if(!e||EMB||typeof Notification==='undefined')return;
   if(Notification.permission==='denied'){avGuardar(null);return}
-  if(Notification.permission==='granted'&&Date.now()-(e.f||0)>AV_SEMANA)await avAlta(e.m,e.a,e.n,false);
+  if(Notification.permission==='granted'&&Date.now()-(e.f||0)>AV_SEMANA)await avAlta(e.m,e.a,false);
 }
 // Bloque de avisos dentro de la ventana "Tu localidad" (i = localidad de la ventana).
 function avPintar(i){
@@ -2622,18 +2623,17 @@ function avPintar(i){
   if(!avPuede()){el.hidden=true;return}
   const e=avEstado(),nom=esc(GEO.mun[i][0]),bloq=Notification.permission==='denied';
   const cas=(k,t,on)=>'<label class="avCas"><input type="checkbox" data-av="'+k+'"'+(on?' checked':'')+'> '+t+'</label>';
-  const opciones=(a,n)=>cas('a','También las alertas amarillas',a)+cas('n','Avisarme también de noche',n)
-    +'<p class="avNota">Sin "de noche", de 22 a 7 solo te avisamos lo de hoy o la madrugada; lo demás, a las 7.</p>';
+  const opciones=a=>cas('a','También las alertas amarillas',a);
   let h='<h3>🔔 Avisos de alertas del SMN</h3>';
-  if(e&&e.m===i)h+='<p>Te avisamos cuando el SMN ponga una alerta '+(e.a?'amarilla, naranja o roja':'naranja o roja')+' para <b>'+nom+'</b>.</p>'+opciones(e.a,e.n)
+  if(e&&e.m===i)h+='<p>Te avisamos cuando el SMN ponga una alerta '+(e.a?'amarilla, naranja o roja':'naranja o roja')+' para <b>'+nom+'</b>.</p>'+opciones(e.a)
     +'<button class="btn avBtn avNo" type="button" data-avno>Dejar de avisarme</button>';
   else if(e)h+='<p>Ahora recibís avisos para <b>'+esc(GEO.mun[e.m][0])+'</b>.</p>'
     +'<button class="btn avBtn" type="button" data-avsi>Pasar los avisos a '+nom+'</button><button class="btn avBtn avNo" type="button" data-avno>Dejar de avisarme</button>';
-  else h+='<p>Te avisamos al celular cuando el SMN ponga una alerta naranja o roja para <b>'+nom+'</b>.</p>'+opciones(false,false)
+  else h+='<p>Te avisamos al celular cuando el SMN ponga una alerta naranja o roja para <b>'+nom+'</b>.</p>'+opciones(false)
     +'<button class="btn avBtn" type="button" data-avsi'+(bloq?' disabled':'')+'>Avisarme</button>';
   if(bloq&&!e)h+='<p class="avEst">'+AV_ERR.bloqueado+'</p>';
   h+='<p class="avEst" id="avEst" role="status" aria-live="polite"></p>'
-    +'<p class="avNota">Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>';
+    +'<p class="avNota">De noche (de 22 a 7) solo te avisamos las alertas de esa noche y de la mañana siguiente; las demás, a las 7. Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>';
   el.innerHTML=h;el.dataset.i=i;el.hidden=false;
   if(el.dataset.listo)return;el.dataset.listo='1';
   let ocupado=false;
@@ -2641,14 +2641,14 @@ function avPintar(i){
     let err='';try{err=await f()}catch(x){err='red'}
     ocupado=false;el.classList.remove('avOcupado');avPintar(+el.dataset.i);const s2=$('avEst');if(s2)s2.textContent=err?AV_ERR[err]||AV_ERR.red:ok;
     if(MILOC)seguro(pintarMiLoc);seguro(pintarPortada)};
-  const marcadas=()=>{const v=k=>{const c=el.querySelector('[data-av="'+k+'"]');return !!(c&&c.checked)};return [v('a'),v('n')]};
+  const marcada=()=>{const c=el.querySelector('[data-av="a"]');return !!(c&&c.checked)};
   el.addEventListener('click',ev=>{
     const j=+el.dataset.i;
-    if(ev.target.closest('[data-avsi]')){const ya=avEstado(),[a,n]=ya?[ya.a,ya.n]:marcadas();
-      hacer(()=>avAlta(j,a,n,true),'Listo: te vamos a avisar las alertas para '+GEO.mun[j][0]+'.');contador(ya?'avisos-cambio':'avisos-alta',true)}
+    if(ev.target.closest('[data-avsi]')){const ya=avEstado(),a=ya?ya.a:marcada();
+      hacer(()=>avAlta(j,a,true),'Listo: te vamos a avisar las alertas para '+GEO.mun[j][0]+'.');contador(ya?'avisos-cambio':'avisos-alta',true)}
     else if(ev.target.closest('[data-avno]')){hacer(async()=>{await avBaja();return ''},'Listo: ya no te vamos a mandar avisos.');contador('avisos-baja',true)}});
   el.addEventListener('change',ev=>{const c=ev.target.closest('[data-av]'),ya=avEstado();if(!c||!ya||ya.m!==+el.dataset.i)return;
-    const [a,n]=marcadas();hacer(()=>avAlta(ya.m,a,n,false),'Listo: cambiamos tus avisos.')});
+    hacer(()=>avAlta(ya.m,marcada(),false),'Listo: cambiamos tus avisos.')});
 }
 // Al tocar un aviso se abre el sitio con ?loc=<n>: queda como tu localidad y se muestra en el mapa con su detalle.
 function avDesdeAviso(){
