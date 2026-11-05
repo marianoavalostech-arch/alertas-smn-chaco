@@ -143,7 +143,7 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
   const v = S('VILELAS');
   assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));
   assert.ok(/m\[0\]==='Puerto Vilelas'\?'<p>[^']*'\+VILELAS/.test(codigo), 'falta en el detalle del municipio');
-  assert.ok(/\+lineaYacy\(\)\+RIO_LEER\(\)\+\(pf\.length\?RIO_PRONO\(\):''\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
+  assert.ok(/\+RIO_LEER\(\)\+\(pf\.length\?RIO_PRONO\(\):''\)\+lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
   assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
 });
 
@@ -1158,12 +1158,12 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo
 prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en el pronóstico; explicaciones del río', () => {
     const l = (h, obs) => S(`hoy='${h}';D.yacy={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};lineaYacy()`);
     const o = [['2026-10-06', 21800], ['2026-10-12', 27200], ['2026-10-13', 32830]];
-    // 23/10 (Mariano): título "Yacyretá" a secas; lo medido y lo estimado en tono neutro
-    assert.strictEqual(l('2026-10-13', o), '<div class="yacy"><p class="yacyTit">Yacyretá <small>(m³ de agua por segundo)</small></p>'
+    // 23/10 (Mariano): título "Yacyretá" a secas; lo medido y lo estimado en tono neutro. 4/11: en un desplegable cerrado que ya dice cuánto sale
+    assert.strictEqual(l('2026-10-13', o), '<details class="det" id="d-rio-yacy"><summary>Yacyretá: sale 32.800 m³ de agua por segundo</summary><div class="yacy">'
       + '<dl class="datos"><div><dt>Sale de la represa</dt><dd>32.800</dd></div><div><dt>Normal para octubre</dt><dd>unos 13.100</dd></div></dl>'
       + '<p>Medido hoy. Esa agua tarda unos 3 días en llegar a Barranqueras; el INA la incluye en su pronóstico.</p>'
       + '<p>Para el río junto a la represa, el INA considera alto un caudal desde 25.000 m³ por segundo. Para la costa del Chaco valen los niveles de Barranqueras.</p>'
-      + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>');
+      + '<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div></details>');
     assert.ok(!/triple|doble|evacuación|alarma|peligro/.test(l('2026-10-13', o)), 'tono neutro: sin palabras que alarmen');
     // niveles del INA para Yacyretá: solo se nombran desde la alerta, y nunca cambian colores
     assert.deepStrictEqual(JSON.parse(S('JSON.stringify(YACY_NIVEL)')), { alerta: 25000, evac: 30000 });

@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 04/11/2026 (desplegables de los ríos)
+
+Revisión de los desplegables con Mariano (en el celular se veía raro el Paraguay plegado).
+- **Ríos Paraguay y Bermejo cerrada**: el botón "↑ Volver al mapa" ya no aparece en la vista previa (ahí no se podía tocar: abría la sección) y deja ver el río y su altura. Con la sección abierta sigue donde estaba.
+- **Río Paraná**: sigue siempre abierta (es lo más consultado y la regla es lo principal), pero más corta: Yacyretá pasa a un desplegable cerrado, después de "¿Cómo leer estos números?" y "¿Cómo calcula el INA…?", con el título "Yacyretá: sale 29.300 m³ de agua por segundo"; adentro, la misma cajita. En un teléfono de 360 px la sección pasa de unos 1.840 a 1.530 px; en la computadora, de 1.450 a 1.080.
+- Huella nueva del código. 80 pruebas (la de Yacyretá, al día con el desplegable).
+
 ## 04/11/2026 (tarjeta del municipio más corta)
 
 Mariano lo probó en el sitio: la regla del río queda bien, pero la tarjeta del municipio era muy larga.

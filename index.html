@@ -270,6 +270,8 @@ footer{font-size:.85rem;color:var(--muted)}
 .irRio{align-self:flex-start;font-weight:700}
 /* Botón "Volver al mapa" arriba a la derecha de las secciones de los ríos */
 .filaRio{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.filaRio>h2{flex:1;min-width:0}.filaRio.abajo{justify-content:flex-end;margin-top:-4px}
+/* Con «Ríos Paraguay y Bermejo» cerrada, el botón no va en la vista previa: ahí no se puede tocar y le quitaba lugar al río (celular, 04/11) */
+.plegable.cerrada .filaRio.abajo{display:none}
 .indice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .miLoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 6px 6px 12px;border:1.5px solid var(--borde-boton);border-radius:14px;background:var(--card)}
 .miLoc[hidden]{display:none}
@@ -2070,7 +2072,7 @@ function pintarRio(){
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA y su rango</span>':'')+'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
-   +lineaYacy()+RIO_LEER()+(pf.length?RIO_PRONO():'')
+   +RIO_LEER()+(pf.length?RIO_PRONO():'')+lineaYacy()
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
    +meta('rio','Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
@@ -2091,11 +2093,12 @@ function lineaYacy(){
   const mes=Number(dia.slice(5,7))-1;
   // 23/10 (Mariano): título "Yacyretá" a secas; lo medido y lo estimado en tono neutro, sin palabras que alarmen.
   const m3=x=>nf(Math.round(x/100)*100);
-  return '<div class="yacy"><p class="yacyTit">Yacyretá <small>(m³ de agua por segundo)</small></p>'
+  // 4/11 (Mariano): en un desplegable más, para acortar la sección en el celular; el título ya dice cuánto sale.
+  return det('d-rio-yacy','Yacyretá: sale '+m3(v)+' m³ de agua por segundo','<div class="yacy">'
     +'<dl class="datos"><div><dt>Sale de la represa</dt><dd>'+m3(v)+'</dd></div><div><dt>Normal para '+MESES[mes]+'</dt><dd>unos '+m3(YACY_NORMAL[mes])+'</dd></div></dl>'
     +'<p>'+medidoTxt(dia)+' Esa agua tarda unos 3 días en llegar a Barranqueras; el INA la incluye en su pronóstico.</p>'
     +yacyNivel(v)
-    +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>';
+    +'<p class="meta">Fuente: Entidad Binacional Yacyretá, vía INA.</p></div>');
 }
 // Niveles del INA para lo que sale de Yacyretá ("Yacyretá efluente", m³/s), tomados de su informe diario (confirmado el 16/10/2026).
 // La serie 937 no los trae (nivel_alerta y nivel_evacuacion vacíos): si el INA los cambia, hay que cambiarlos acá.
