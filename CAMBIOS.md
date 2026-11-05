@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 05/11/2026 (avisos al celular por alertas del SMN, en prueba, sin publicar)
+
+Decisión de Mariano: avisos al celular solo por alertas del SMN, con Firebase Cloud Messaging, mandados por el script de Google. Primero solo para los verificadores de la prueba cerrada de Google Play.
+- **Script de Google**: `avisarAlertas` en cada renovación (aislada: nunca frena la renovación y no avisa si el canal del SMN falló), con `decidirAvisos` y `aplicarMarcas` (nuevas o que suben de nivel, hoy y los 2 días siguientes, regla de la noche, primera vez sin mandar, reintento si Firebase falla y correo una vez por caída), `textoAviso` y `mensajeFcm` (título, una línea por alerta, abre `?loc=<n>`), `doPost`/`anotar` con `revisarPedido`, `pedidosTemas` (API nueva de temas) y tope diario `contarPedido` con `LockService`, y `probarAviso()`. `MUNICIPIOS` y `EV_NOMBRE` iguales a los del sitio (una prueba lo controla). Nuevo `apps-script/appsscript.json` con todos los permisos, también `firebase.messaging`. Propiedad `AVISOS = no` para apagarlos.
+- **Página**: bloque "🔔 Avisos de alertas del SMN" en la ventana "Tu localidad", con "Avisarme", "También las alertas amarillas", "Avisarme también de noche", "Pasar los avisos a …" y "Dejar de avisarme"; en tablets, botón "🔔 Avisarme" en "Tu localidad". Solo en celulares y tablets, fuera del portal y, mientras `AVISOS_TODOS=false`, solo en la app de Play o con `?avisos=1` (queda recordado). Biblioteca de Firebase 12.19.0 copiada en `firebase/`, cargada solo al tocar los botones. `avisos-sw.js`, solo para mostrar avisos (sin `fetch`, alcance `/avisos-sw/`). Al abrir con `?loc=<n>` (al tocar un aviso), la localidad queda elegida y se muestra en el mapa. Confirmación semanal de la anotación. El contador suma `avisos-alta`, `avisos-cambio`, `avisos-baja` y `aviso-tocado`.
+- **Regla del navegador**: `'self'` en `script-src`, `worker-src 'self'` y Firebase en `connect-src`; `herramientas/csp.js` respeta el `'self'`. `avisos-sw.js` sin caché. Privacidad en la página y en `privacidad.html` (sección "Avisos al celular").
+- Probado en Chromium con la regla del navegador y los datos del 5/11: la biblioteca carga, el service worker se registra sin controlar la página, sin señal de avisos (en la nube) muestra "No se pudo anotar" sin romper nada, y `?loc=1` abre Barranqueras en el mapa. 7 pruebas nuevas: 89. **No probado todavía con Firebase de verdad** (hace falta un celular). Huella nueva del código.
+
 ## 05/11/2026 (Qué hacer en el celular)
 
 Pedido de Mariano: al ir a "Qué hacer" desde el celular, los teléfonos quedaban en el medio y tapaban los consejos.

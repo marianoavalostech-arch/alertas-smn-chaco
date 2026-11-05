@@ -710,6 +710,17 @@ footer{font-size:.85rem;color:var(--muted)}
 .dLocCab h2{margin:0;font-family:var(--font-tit);font-size:1.2rem;color:var(--titulo)}
 .dLocMapa{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:8px 16px;border-radius:99px;background:var(--degrade);color:#fff;font-weight:800;text-align:center;box-shadow:var(--sombra-degrade)}
 .dLocMapa:active{transform:scale(.97)}.dLocMapa:focus-visible{outline:3px solid var(--acento);outline-offset:3px}
+.dAv{border:1.5px solid var(--borde-boton);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.dAv[hidden]{display:none}
+.dAv h3{margin:0;font-size:1rem;font-family:var(--font-tit);color:var(--titulo)}
+.dAv p{margin:0}
+.avCas{display:flex;align-items:center;gap:10px;min-height:40px;font-weight:600;line-height:1.25}
+.dLoc .avCas input{flex:none;width:22px;height:22px;min-height:0;margin:0;padding:0;border-radius:4px;accent-color:var(--acento)}
+.avBtn{align-self:flex-start;min-height:44px}
+.avNo{background:none}
+.avNota{font-size:.85rem;color:var(--muted)}
+.avEst{font-weight:700}.avEst:empty{display:none}
+.avOcupado{opacity:.6;pointer-events:none}
 .dLocEt{font-size:.9rem;font-weight:700;color:var(--muted);margin-top:4px}
 .dLoc input{font:inherit;border:1.5px solid var(--borde-boton);border-radius:99px;padding:9px 16px;min-height:44px;box-sizing:border-box;width:100%}
 .dLoc input:focus{outline:3px solid var(--acento-soft);border-color:var(--acento)}
@@ -1111,7 +1122,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste, si pediste la letra más grande y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); y a GoatCounter, solo para sumar la visita. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste, si pediste la letra más grande y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); a GoatCounter, solo para sumar la visita; y, solo si pedís avisos al celular, a Firebase (de Google), que guarda un identificador de tu celular y la localidad elegida para mandarte los avisos. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
   </section>
 
   </main>
@@ -1123,6 +1134,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   <dialog class="dLoc" id="dLoc" aria-labelledby="dLocTit">
   <div class="dLocCab"><h2 id="dLocTit">Tu localidad</h2><button class="btn cerrar" type="button" data-dcerrar aria-label="Cerrar">✕</button></div>
   <button class="btn dLocMapa" type="button" id="dLocMapa"></button>
+  <div class="dAv" id="dAv" hidden></div>
   <label class="dLocEt" for="dLocBus">Cambiar por otra localidad</label>
   <input id="dLocBus" type="search" autocomplete="off" placeholder="Escribí el nombre…">
   <ul class="dLocLista" id="dLocLista"></ul>
@@ -2061,9 +2073,11 @@ function pintarMiLoc(){
   el.innerHTML='<span>📍 Tu localidad: <b>'+esc(GEO.mun[i][0])+'</b></span>'
     +(c?'<span class="miC"><i style="background:var(--'+(c==='amarillo'?'amarillo-mapa':c)+')"></i>'+ETQ[c]+'</span>':'')
     +'<button class="btn" type="button" data-miver>Ver en el mapa</button>'
+    +(avPuede()&&$('dLoc')&&typeof $('dLoc').showModal==='function'?'<button class="btn" type="button" data-miav>🔔 '+(avEstado()?'Avisos':'Avisarme')+'</button>':'')
     +'<button class="miX" type="button" data-miolv aria-label="Olvidar mi localidad" title="Olvidar mi localidad">✕</button>';
   el.onclick=e=>{
     if(e.target.closest('[data-miver]')){elegir(i,true);marcarSalto();verSec($('t-mapa'))}
+    else if(e.target.closest('[data-miav]'))abrirLoc(i);
     else if(e.target.closest('[data-miolv]')){try{localStorage.removeItem(MILOC_K)}catch(x){}MILOC=false;el.hidden=true}};
   el.hidden=false}
 function colorearMapa(R){
@@ -2520,6 +2534,7 @@ function abrirLoc(i){
   const dl=$('dLoc');if(!dl||typeof dl.showModal!=='function'||EMB)return false;
   const bus=$('dLocBus'),lista=$('dLocLista'),ver=$('dLocMapa');
   ver.textContent='Ver '+GEO.mun[i][0]+' en el mapa';ver.dataset.i=i;bus.value='';
+  seguro(()=>avPintar(i));
   const orden=GEO.mun.map((m,j)=>j).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
   const pintar=()=>{const q=sinTildes(bus.value),l=orden.filter(j=>!q||sinTildes(GEO.mun[j][0]).includes(q));
     lista.innerHTML=l.length?l.map(j=>'<li><button type="button" data-lj="'+j+'"'+(j===i?' aria-current="true"':'')+'>'+esc(GEO.mun[j][0])+'</button></li>').join(''):'<li class="nada">No hay ninguna localidad con ese nombre.</li>'};
@@ -2537,6 +2552,111 @@ function abrirLoc(i){
   dl._pintar=pintar;dl.showModal();
   try{lista.querySelector('[aria-current]').scrollIntoView({block:'center'})}catch(e){}
   return true;
+}
+/* ---------- avisos al celular (5/11/2026) ---------- */
+// Avisos por alertas del SMN: naranja y roja (y amarilla, si se pide), para una localidad. Los manda el script de Google
+// con Firebase Cloud Messaging. Solo en el celular (app de Google Play o navegador), nunca en la computadora ni dentro del portal.
+// Durante la prueba cerrada de Google Play, el botón se ve solo en la app de Play o con el enlace ?avisos=1 (queda recordado).
+// La biblioteca de Firebase (copia en firebase/) se carga solo al tocar "Avisarme" o "Dejar de avisarme". El identificador del
+// celular que entrega Firebase no se guarda: solo la localidad y las opciones elegidas (anc-avisos).
+const AVISOS_TODOS=false;   // true: el botón para todos (cuando termine la prueba)
+const AV_K='anc-avisos',AV_PRUEBA_K='anc-avisos-prueba',AV_SEMANA=7*864e5;
+const FB_CONF={apiKey:'AIzaSyBUFcscmDx-RSA3huGBnEBxRkedHDjFs-A',authDomain:'rios-y-clima-chaco.firebaseapp.com',projectId:'rios-y-clima-chaco',storageBucket:'rios-y-clima-chaco.firebasestorage.app',messagingSenderId:'755067985516',appId:'1:755067985516:web:a12ad085fdf6750ae40249'};
+const FB_VAPID='BOt_eK-pVmXgGY-soUcC3uXWWLKWc9PSFOcmk7KdsLc79eJJt8GoiyCIfu2eHvU59IZFyBwd4Nfjr5S9JrnOeQE';
+const AV_ERR={tope:'Hoy se anotaron muchos celulares. Probá de nuevo mañana.',bloqueado:'Tu celular no deja que este sitio muestre avisos. Para activarlos, permití las notificaciones de este sitio (o de la app) en la configuración del celular.',
+  sinPermiso:'Para recibir avisos, tocá "Permitir" cuando el celular lo pregunte.',red:'No se pudo anotar. Revisá la conexión y probá de nuevo.'};
+const avTema=(m,a,n)=>'m'+m+(a?'a':'')+(n?'n':'');
+function avEstado(){try{const e=JSON.parse(localStorage.getItem(AV_K)||'null');return e&&Number.isInteger(e.m)&&e.m>=0&&e.m<GEO.mun.length&&e.t===avTema(e.m,e.a,e.n)?e:null}catch(x){return null}}
+function avGuardar(e){try{if(e)localStorage.setItem(AV_K,JSON.stringify(e));else localStorage.removeItem(AV_K)}catch(x){}}
+// ¿Se muestra el botón? Celular o tablet, fuera del portal, con un navegador que recibe avisos (en iPhone: el sitio agregado a inicio, iOS 16.4 o más).
+function avPuede(){
+  if(EMB||typeof navigator==='undefined'||!('serviceWorker' in navigator)||typeof PushManager==='undefined'||typeof Notification==='undefined')return false;
+  if(matchMedia('(hover:hover) and (pointer:fine)').matches)return false;   // computadora
+  let prueba=false;
+  try{if(desdePlay()||/[?&]avisos=1(&|$)/.test(location.search||''))localStorage.setItem(AV_PRUEBA_K,'1');prueba=localStorage.getItem(AV_PRUEBA_K)==='1'}catch(x){}
+  return AVISOS_TODOS||prueba||!!avEstado();
+}
+let FB=null;
+function avCargar(){
+  if(FB)return FB;
+  const cargar=src=>new Promise((ok,mal)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>mal(new Error('no cargó '+src));document.head.appendChild(s)});
+  FB=cargar('/firebase/firebase-app-compat.js').then(()=>cargar('/firebase/firebase-messaging-compat.js')).then(()=>{
+    const f=window.firebase,app=f.apps.length?f.app():f.initializeApp(FB_CONF);return f.messaging(app)}).catch(e=>{FB=null;throw e});
+  return FB;
+}
+async function avToken(){
+  const reg=await navigator.serviceWorker.register('/avisos-sw.js',{scope:'/avisos-sw/'});
+  const msg=await avCargar();
+  return msg.getToken({vapidKey:FB_VAPID,serviceWorkerRegistration:reg});
+}
+// Pedido al script de Google (doPost). Como texto simple: el navegador no hace la consulta previa que el script no contesta.
+async function avPedido(q){const r=await fetch(SMN_URL,{method:'POST',body:JSON.stringify(q)});return r.json()}
+// Anota el celular (o cambia localidad u opciones). Devuelve '' si salió bien o la clave del error.
+async function avAlta(m,a,n,pedir){
+  try{
+    if(pedir){if(Notification.permission==='denied')return 'bloqueado';
+      const p=await Notification.requestPermission();if(p!=='granted')return p==='denied'?'bloqueado':'sinPermiso'}
+    else if(Notification.permission!=='granted')return 'sinPermiso';
+    const id=await avToken(),ant=avEstado(),t=avTema(m,a,n);
+    const j=await avPedido({accion:'alta',id,tema:t,antes:ant&&ant.t!==t?ant.t:''});
+    if(!j||!j.ok)return j&&j.error==='tope'?'tope':'red';
+    avGuardar({m,a:!!a,n:!!n,t,f:Date.now()});return '';
+  }catch(e){console.warn('Avisos:',e);return 'red'}
+}
+// Deja de avisar: borra del tema, borra el identificador de Firebase y el service worker de avisos. Aunque falle la red,
+// sin el service worker el celular ya no recibe nada.
+async function avBaja(){
+  const e=avEstado();avGuardar(null);
+  try{if(e&&Notification.permission==='granted'){const id=await avToken();await avPedido({accion:'baja',id,tema:e.t});await (await avCargar()).deleteToken()}}catch(x){console.warn('Avisos:',x)}
+  try{const r=await navigator.serviceWorker.getRegistration('/avisos-sw/');if(r)await r.unregister()}catch(x){}
+}
+// Una vez por semana, quien está anotado confirma su anotación (Firebase puede cambiar el identificador). Si sacó el permiso, se olvida.
+async function avRenovar(){
+  const e=avEstado();if(!e||EMB||typeof Notification==='undefined')return;
+  if(Notification.permission==='denied'){avGuardar(null);return}
+  if(Notification.permission==='granted'&&Date.now()-(e.f||0)>AV_SEMANA)await avAlta(e.m,e.a,e.n,false);
+}
+// Bloque de avisos dentro de la ventana "Tu localidad" (i = localidad de la ventana).
+function avPintar(i){
+  const el=$('dAv');if(!el)return;
+  if(!avPuede()){el.hidden=true;return}
+  const e=avEstado(),nom=esc(GEO.mun[i][0]),bloq=Notification.permission==='denied';
+  const cas=(k,t,on)=>'<label class="avCas"><input type="checkbox" data-av="'+k+'"'+(on?' checked':'')+'> '+t+'</label>';
+  const opciones=(a,n)=>cas('a','También las alertas amarillas',a)+cas('n','Avisarme también de noche',n)
+    +'<p class="avNota">Sin "de noche", de 22 a 7 solo te avisamos lo de hoy o la madrugada; lo demás, a las 7.</p>';
+  let h='<h3>🔔 Avisos de alertas del SMN</h3>';
+  if(e&&e.m===i)h+='<p>Te avisamos cuando el SMN ponga una alerta '+(e.a?'amarilla, naranja o roja':'naranja o roja')+' para <b>'+nom+'</b>.</p>'+opciones(e.a,e.n)
+    +'<button class="btn avBtn avNo" type="button" data-avno>Dejar de avisarme</button>';
+  else if(e)h+='<p>Ahora recibís avisos para <b>'+esc(GEO.mun[e.m][0])+'</b>.</p>'
+    +'<button class="btn avBtn" type="button" data-avsi>Pasar los avisos a '+nom+'</button><button class="btn avBtn avNo" type="button" data-avno>Dejar de avisarme</button>';
+  else h+='<p>Te avisamos al celular cuando el SMN ponga una alerta naranja o roja para <b>'+nom+'</b>.</p>'+opciones(false,false)
+    +'<button class="btn avBtn" type="button" data-avsi'+(bloq?' disabled':'')+'>Avisarme</button>';
+  if(bloq&&!e)h+='<p class="avEst">'+AV_ERR.bloqueado+'</p>';
+  h+='<p class="avEst" id="avEst" role="status" aria-live="polite"></p>'
+    +'<p class="avNota">Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>';
+  el.innerHTML=h;el.dataset.i=i;el.hidden=false;
+  if(el.dataset.listo)return;el.dataset.listo='1';
+  let ocupado=false;
+  const hacer=async(f,ok)=>{if(ocupado)return;ocupado=true;el.classList.add('avOcupado');const st=$('avEst');if(st)st.textContent='Un momento…';
+    let err='';try{err=await f()}catch(x){err='red'}
+    ocupado=false;el.classList.remove('avOcupado');avPintar(+el.dataset.i);const s2=$('avEst');if(s2)s2.textContent=err?AV_ERR[err]||AV_ERR.red:ok;
+    if(MILOC)seguro(pintarMiLoc);seguro(pintarPortada)};
+  const marcadas=()=>{const v=k=>{const c=el.querySelector('[data-av="'+k+'"]');return !!(c&&c.checked)};return [v('a'),v('n')]};
+  el.addEventListener('click',ev=>{
+    const j=+el.dataset.i;
+    if(ev.target.closest('[data-avsi]')){const ya=avEstado(),[a,n]=ya?[ya.a,ya.n]:marcadas();
+      hacer(()=>avAlta(j,a,n,true),'Listo: te vamos a avisar las alertas para '+GEO.mun[j][0]+'.');contador(ya?'avisos-cambio':'avisos-alta',true)}
+    else if(ev.target.closest('[data-avno]')){hacer(async()=>{await avBaja();return ''},'Listo: ya no te vamos a mandar avisos.');contador('avisos-baja',true)}});
+  el.addEventListener('change',ev=>{const c=ev.target.closest('[data-av]'),ya=avEstado();if(!c||!ya||ya.m!==+el.dataset.i)return;
+    const [a,n]=marcadas();hacer(()=>avAlta(ya.m,a,n,false),'Listo: cambiamos tus avisos.')});
+}
+// Al tocar un aviso se abre el sitio con ?loc=<n>: queda como tu localidad y se muestra en el mapa con su detalle.
+function avDesdeAviso(){
+  const q=/[?&]loc=(\d{1,2})(&|$)/.exec(location.search||'');if(!q||EMB)return;
+  try{const u=new URLSearchParams(location.search);u.delete('loc');history.replaceState(history.state,'',location.pathname+(u.toString()?'?'+u:'')+location.hash)}catch(e){}
+  const i=+q[1];if(!(i>=0&&i<GEO.mun.length))return;
+  guardarMiLoc(i);contador('aviso-tocado',true);
+  let n=0;const t=setInterval(()=>{if(M.ok||++n>60){clearInterval(t);if(M.ok)seguro(()=>{elegir(i,true);verSec($('t-mapa'))})}},250);
 }
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
@@ -3051,6 +3171,9 @@ function herramientas(){
   cajaCab();
 }
 seguro(herramientas);
+// Avisos al celular (5/11/2026): abrir la localidad del aviso tocado y, una vez por semana, confirmar la anotación. Van acá, después del contador.
+seguro(avDesdeAviso);
+if(typeof navigator!=='undefined'&&'serviceWorker' in navigator)setTimeout(()=>avRenovar().catch(()=>{}),8000);
 // Índice (pedido de Mariano, 19/10/2026): el botón "↑ Índice" de la esquina aparece cuando el índice ya quedó arriba, fuera de la pantalla.
 // Para que no tape lo que se está leyendo (24/10/2026): se esconde mientras se baja y vuelve al subir un poco, después de un salto
 // (índice, botones, Atrás) y al llegar al final de la página.

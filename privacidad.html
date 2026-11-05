@@ -31,7 +31,7 @@ a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 <a class="volver" href="./">← Volver a Ríos y Clima del Chaco</a>
 <div class="caja">
 <h1>Política de privacidad</h1>
-<p class="meta">Ríos y Clima del Chaco: sitio web y app para Android. Última actualización: 24 de octubre de 2026.</p>
+<p class="meta">Ríos y Clima del Chaco: sitio web y app para Android. Última actualización: 5 de noviembre de 2026 (avisos al celular).</p>
 
 <p>Ríos y Clima del Chaco es un sitio informativo hecho por Mariano Avalos, como iniciativa ciudadana y sin fines comerciales. <b>No es un servicio oficial:</b> no representa al Gobierno del Chaco, al Servicio Meteorológico Nacional (SMN), al Instituto Nacional del Agua (INA) ni a ningún otro organismo. Esta política vale para el sitio <a href="https://panel-alertas-chaco.netlify.app/">panel-alertas-chaco.netlify.app</a>, para cuando se muestra dentro del portal de Gobierno Abierto del Chaco y para la app de Google Play, que abre el mismo sitio.</p>
 
@@ -39,9 +39,10 @@ a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 <p><b>En pocas palabras</b></p>
 <ul>
 <li>No hace falta crear una cuenta ni dar ningún dato.</li>
+<li>Los avisos al celular son opcionales: solo si tocás «Avisarme». Para mandarlos, Firebase (de Google) guarda un identificador de tu celular y la localidad que elegiste. Nada más.</li>
 <li>No usa cookies ni publicidad, y no vende ni comparte datos de nadie.</li>
-<li>La app no pide permisos: ni ubicación, ni cámara, ni micrófono, ni contactos, ni fotos.</li>
-<li>Lo que el sitio recuerda queda guardado solo en tu teléfono o computadora.</li>
+<li>La app no pide ubicación, cámara, micrófono, contactos ni fotos. Solo pide permiso para mostrar avisos, y solo si los pedís.</li>
+<li>Fuera de los avisos, lo que el sitio recuerda queda guardado solo en tu teléfono o computadora.</li>
 </ul>
 </div>
 
@@ -52,12 +53,13 @@ a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 <li>qué secciones abriste o cerraste;</li>
 <li>lo que tildaste en la mochila de emergencia;</li>
 <li>si pediste la letra más grande (botón «A+»);</li>
-<li>el último municipio que elegiste en el mapa, para mostrártelo arriba la próxima vez («Tu localidad»).</li>
+<li>el último municipio que elegiste en el mapa, para mostrártelo arriba la próxima vez («Tu localidad»);</li>
+<li>si pediste avisos, la localidad y las opciones elegidas (también amarillas, también de noche) y la fecha en que se confirmó la anotación.</li>
 </ul>
-<p>Eso no sale de tu dispositivo. Lo podés borrar cuando quieras: en el navegador, borrando los datos del sitio; en la app, desde los Ajustes del teléfono → Aplicaciones → Ríos y Clima → Almacenamiento → Borrar datos. «Tu localidad» también se borra con la ✕ que tiene al lado.</p>
+<p>Eso no sale de tu dispositivo (los avisos se explican más abajo). Lo podés borrar cuando quieras: en el navegador, borrando los datos del sitio; en la app, desde los Ajustes del teléfono → Aplicaciones → Ríos y Clima → Almacenamiento → Borrar datos. «Tu localidad» también se borra con la ✕ que tiene al lado.</p>
 
 <h2>Cuántas visitas tiene</h2>
-<p>Para saber cuántas personas lo usan, el sitio cuenta las veces que se abre con <a href="https://goatcounter.com/privacy" target="_blank" rel="noopener">GoatCounter</a>, un contador que no usa cookies, no guarda nada en tu dispositivo y no guarda la dirección IP. Solo se le avisa qué se abrió (el sitio, la app instalada desde el navegador, la app de Google Play o el portal) y si alguien tocó los botones «Instalar app» o «Compartir». No se le manda tu nombre, de qué página venís ni el tamaño de tu pantalla.</p>
+<p>Para saber cuántas personas lo usan, el sitio cuenta las veces que se abre con <a href="https://goatcounter.com/privacy" target="_blank" rel="noopener">GoatCounter</a>, un contador que no usa cookies, no guarda nada en tu dispositivo y no guarda la dirección IP. Solo se le avisa qué se abrió (el sitio, la app instalada desde el navegador, la app de Google Play o el portal) y si alguien tocó los botones «Instalar app», «Compartir», «Avisarme» o «Dejar de avisarme», o abrió el sitio tocando un aviso. No se le manda tu nombre, de qué página venís ni el tamaño de tu pantalla.</p>
 
 <h2>A qué servicios se conecta</h2>
 <p>Para traer los datos, tu navegador (o la app) se conecta a:</p>
@@ -66,21 +68,33 @@ a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
 <li><b>Google</b> (Apps Script), solo si esas copias están atrasadas;</li>
 <li><b>la NASA</b>, para las imágenes del satélite y del mar;</li>
 <li><b>GoatCounter</b>, solo para sumar la visita;</li>
+<li><b>Firebase</b> (de Google), solo si pedís avisos al celular (ver abajo);</li>
 <li><b>Netlify</b>, que es donde está alojado el sitio.</li>
 </ul>
 <p>Como pasa con cualquier sitio de internet, esos servicios reciben la dirección IP y el tipo de navegador para poder responder; los manejan según sus propias políticas. El sitio no les manda datos personales. Nunca se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todas las conexiones van cifradas (HTTPS).</p>
+
+<h2>Avisos al celular (si los pedís)</h2>
+<p>En el celular, en la ventana «Tu localidad», podés pedir que te avisen cuando el Servicio Meteorológico Nacional ponga una alerta para esa localidad. Es opcional y se activa solo si tocás «Avisarme» y le das permiso al sitio (o a la app) para mostrar avisos.</p>
+<ul>
+<li>Los avisos los manda <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase Cloud Messaging</a>, un servicio de Google. Para poder mandártelos, Firebase guarda un identificador de tu celular (un código al azar que crea Firebase, que no dice quién sos) y la lista de avisos en la que estás anotado: tu localidad y si pediste también las alertas amarillas o también de noche.</li>
+<li>No se guarda tu nombre, tu número de teléfono, tu correo ni tu ubicación. La localidad la elegís vos de la lista.</li>
+<li>El sitio no guarda ese identificador en ningún lado: solo se lo pasa a Firebase al anotarte, al cambiar la localidad o las opciones, al dejar de recibir avisos y una vez por semana, para confirmar que la anotación sigue vigente.</li>
+<li>Los datos se usan solo para mandar los avisos de alertas. No se comparten ni se venden, y no se usan para publicidad.</li>
+<li>Para dejar de recibirlos: tocá «Dejar de avisarme» en la misma ventana. Se borra la anotación y el identificador. También podés sacarle el permiso de notificaciones al sitio o a la app desde la configuración del celular, o desinstalar la app: Firebase borra solo los identificadores que dejan de usarse.</li>
+</ul>
+<p>Los avisos pueden demorar hasta una hora y pueden no llegar (por ejemplo, sin señal o con el celular apagado). Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>
 
 <h2>Enlaces, teléfonos y WhatsApp</h2>
 <p>Los enlaces a otros sitios (SMN, INA, organismos del Estado) abren esas páginas, que tienen sus propias políticas. Los botones de teléfono y de WhatsApp abren la app de llamadas o WhatsApp de tu teléfono: el sitio no ve ni guarda esas llamadas ni esos mensajes.</p>
 
 <h2>La app de Google Play</h2>
-<p>La app muestra este mismo sitio usando Chrome (es una «aplicación web de confianza»), así que todo lo de arriba vale igual. No tiene permisos especiales ni funciones escondidas. Google Play puede registrar datos propios de la instalación, como las descargas o los errores de la app, según la política de privacidad de Google.</p>
+<p>La app muestra este mismo sitio usando Chrome (es una «aplicación web de confianza»), así que todo lo de arriba vale igual. No tiene funciones escondidas. El único permiso que puede pedir es el de mostrar avisos, y solo si tocás «Avisarme». Google Play puede registrar datos propios de la instalación, como las descargas o los errores de la app, según la política de privacidad de Google.</p>
 
 <h2>Chicos y chicas</h2>
 <p>El sitio no está dirigido a menores de 13 años y no junta datos personales de nadie, de ninguna edad.</p>
 
 <h2>Cuánto tiempo se guardan los datos</h2>
-<p>No se guardan datos personales. Lo que queda en tu dispositivo se queda ahí hasta que lo borres. GoatCounter guarda solo totales (cuántas visitas hubo cada día), sin datos de cada persona.</p>
+<p>No se guardan datos personales. Lo que queda en tu dispositivo se queda ahí hasta que lo borres. Si pediste avisos, Firebase guarda el identificador de tu celular y tu localidad mientras sigas anotado; al tocar «Dejar de avisarme» se borran. GoatCounter guarda solo totales (cuántas visitas hubo cada día), sin datos de cada persona.</p>
 
 <h2>Cambios</h2>
 <p>Si esta política cambia, se publica en esta misma página, con la fecha nueva arriba.</p>

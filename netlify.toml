@@ -18,6 +18,9 @@
 #   manifest-src 'self': el archivo manifest.webmanifest, que permite instalar el sitio como app (ícono en la pantalla del celular).
 #   frame-ancestors: solo el propio sitio y el portal de Gobierno Abierto del Chaco pueden mostrarlo dentro de su página
 #   (por eso no hay X-Frame-Options: esa cabecera no deja nombrar un sitio permitido).
+#   Avisos al celular (5/11/2026): 'self' en script-src deja correr la copia de la biblioteca de Firebase guardada en firebase/
+#   (la página la carga solo al tocar "Avisarme"); worker-src 'self', el service worker de avisos (avisos-sw.js), que no guarda páginas;
+#   fcmregistrations y firebaseinstallations (googleapis.com): donde Firebase anota el celular para poder mandarle avisos.
 # Permissions-Policy: el sitio no usa cámara, micrófono, ubicación ni pagos; quedan apagados.
 [[headers]]
   for = "/*"
@@ -25,7 +28,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-    Content-Security-Policy = "default-src 'none'; script-src 'sha256-K7qMlH+rijoI5k5A01psjCilpzeRXTljpNUAJsAnI4Y='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://raw.githubusercontent.com https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
+    Content-Security-Policy = "default-src 'none'; script-src 'self' 'sha256-ory6y974bHMjAVBNITWboib767+Yf8ljle96zbZ1f7c='; style-src 'self' 'unsafe-inline'; font-src 'self'; manifest-src 'self'; img-src 'self' data: blob: https://raw.githubusercontent.com https://gibs.earthdata.nasa.gov https://riosyclimachaco.goatcounter.com; connect-src https://raw.githubusercontent.com https://script.google.com https://script.googleusercontent.com https://gibs.earthdata.nasa.gov https://fcmregistrations.googleapis.com https://firebaseinstallations.googleapis.com; worker-src 'self'; frame-ancestors 'self' https://gobiernoabierto.chaco.gob.ar; base-uri 'none'; form-action 'none'; object-src 'none'"
 
 # Archivo para instalar el sitio como app: con su tipo correcto.
 [[headers]]
@@ -48,5 +51,17 @@
 
 [[headers]]
   for = "/icono.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Service worker de avisos: el navegador lo revisa siempre (sin guardarlo), así un cambio llega enseguida.
+[[headers]]
+  for = "/avisos-sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Biblioteca de Firebase: una semana. Si se cambia de versión, el archivo cambia y conviene cambiarle el nombre a la carpeta o esperar.
+[[headers]]
+  for = "/firebase/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
