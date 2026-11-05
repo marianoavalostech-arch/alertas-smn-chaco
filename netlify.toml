@@ -7,6 +7,10 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Control de secretos de Netlify: la clave de Firebase (apiKey "AIza…") de index.html NO es secreta.
+  # Es la clave pública de la app web de Firebase: va siempre en la página y está limitada en Google Cloud
+  # a https://panel-alertas-chaco.netlify.app/* (solo sirve desde este sitio). Sin esta línea, Netlify frena la publicación.
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyBUFcscmDx-RSA3huGBnEBxRkedHDjFs-A"
 
 # Cabeceras de seguridad.
 # Content-Security-Policy: el navegador solo corre el código de la página (identificado por su huella) y solo se conecta a:
