@@ -2633,7 +2633,7 @@ function avPintar(i){
     +'<button class="btn avBtn" type="button" data-avsi'+(bloq?' disabled':'')+'>Avisarme</button>';
   if(bloq&&!e)h+='<p class="avEst">'+AV_ERR.bloqueado+'</p>';
   h+='<p class="avEst" id="avEst" role="status" aria-live="polite"></p>'
-    +'<p class="avNota">De noche (de 22 a 7) solo te avisamos las alertas de esa noche y de la mañana siguiente; las demás, a las 7. Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>';
+    +'<p class="avNota">Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.</p>';
   el.innerHTML=h;el.dataset.i=i;el.hidden=false;
   if(el.dataset.listo)return;el.dataset.listo='1';
   let ocupado=false;

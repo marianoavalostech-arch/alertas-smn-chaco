@@ -1824,7 +1824,6 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     // textos que piden Mariano y el plan
     assert.ok(codigo.includes('Los avisos pueden demorar hasta una hora. Si no te llega un aviso, no quiere decir que no haya alerta: mirá siempre el SMN y Defensa Civil.'));
     assert.ok(codigo.includes("'También las alertas amarillas'") && !codigo.includes('Avisarme también de noche'), 'una sola casilla: la noche es automática');
-    assert.ok(codigo.includes('De noche (de 22 a 7) solo te avisamos las alertas de esa noche y de la mañana siguiente; las demás, a las 7.'), 'se cuenta la regla de la noche');
     assert.ok(codigo.includes("contador(ya?'avisos-cambio':'avisos-alta',true)") && codigo.includes("contador('avisos-baja',true)"), 'el contador suma solo el toque');
     // la biblioteca: copia fija en el sitio, cargada solo al pedir avisos; con la configuración pública del proyecto
     for (const f of ['firebase-app-compat.js', 'firebase-messaging-compat.js']) {
