@@ -15,6 +15,7 @@ self.addEventListener('push', e => {
   e.waitUntil(self.registration.showNotification(titulo, {
     body: String(n.body || 'Tocá para ver qué hacer.').slice(0, 600),
     icon: SITIO + 'iconos/icono-192.png',
+    badge: SITIO + 'iconos/badge-96.png',   // ícono blanco de la barra de arriba del teléfono
     tag: loc ? 'smn-' + loc : 'smn',
     renotify: true,
     lang: 'es',

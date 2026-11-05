@@ -444,7 +444,10 @@ var TOPE_PEDIDOS = 3000;   // pedidos por día a la dirección para anotarse (do
 var MUNICIPIOS = ["Avia Terai","Barranqueras","Basail","Campo Largo","Capitán Solari","Charadai","Charata","Chorotis","Ciervo Petiso","Colonia Aborigen","Colonia Benítez","Colonia Elisa","Colonia Popular","Colonias Unidas","Concepción del Bermejo","Coronel Du Graty","Corzuela","Cote Lai","El Sauzalito","Enrique Urién","Fontana","Fuerte Esperanza","Gancedo","General Capdevila","General Pinedo","General San Martín","General Vedia","Hermoso Campo","Isla del Cerrito","Juan José Castelli","La Clotilde","La Eduvigis","La Escondida","La Leonesa","La Tigra","La Verde","Laguna Blanca","Laguna Limpia","Lapachito","Las Breñas","Las Garcitas","Las Palmas","Los Frentones","Machagai","Makallé","Margarita Belén","Miraflores","Misión Nueva Pompeya","Napenay","Pampa Almirón","Pampa del Indio","Pampa del Infierno","Presidencia de la Plaza","Presidencia Roca","Presidencia Roque Sáenz Peña","Puerto Bermejo","Puerto Eva Perón","Puerto Tirol","Puerto Vilelas","Quitilipi","Resistencia","Samuhú","San Bernardo","Santa Sylvina","Taco Pozo","Tres Isletas","Villa Ángela","Villa Berthet","Villa Río Bermejito","El Espinillo"];
 // Nombre de cada fenómeno: los mismos que SMN_EV en el sitio.
 var EV_NOMBRE = { 41: 'tormentas', 37: 'lluvias', 42: 'nevadas', 39: 'viento', 47: 'viento zonda', 101: 'calor extremo', 102: 'frío extremo', 103: 'niebla', 104: 'humo', 105: 'polvo' };
+// Dibujito de cada fenómeno: los mismos que SMN_ICO en el sitio. Y un circulito con el color del nivel del SMN.
+var EV_ICO = { 41: '⛈️', 37: '🌧️', 42: '❄️', 39: '💨', 47: '💨', 101: '🌡️', 102: '🥶', 103: '🌫️', 104: '🌫️', 105: '🌫️' };
 var COLOR_AVISO = { 3: 'amarilla', 4: 'naranja', 5: 'roja' };
+var CIRCULO = { 3: '🟡', 4: '🟠', 5: '🔴' };
 var SUFIJOS = ['', 'a'];
 
 function temaAviso(m, amarilla) { return 'm' + m + (amarilla ? 'a' : ''); }
@@ -521,11 +524,13 @@ function fenomeno(a) {
   if (a.extra & 1) x.push('posible granizo'); if (a.extra & 2) x.push('ráfagas');
   return (f ? ' por ' + f : '') + (x.length ? ' con ' + lista(x) : '');
 }
-// Texto del aviso: título corto y una línea por alerta, de la más grave a la más leve.
+// Texto del aviso: título corto y una línea por alerta, de la más grave a la más leve. El título empieza con el circulito
+// del color del SMN (el de la alerta más grave) y, si es una sola alerta, el dibujito del fenómeno; con varias, cada línea lleva el suyo.
 function textoAviso(m, items, hoy) {
   var l = items.slice().sort(function (a, b) { return b.nivel - a.nivel || (a.dia < b.dia ? -1 : a.dia > b.dia ? 1 : 0); }), mun = MUNICIPIOS[m];
-  var titulo = l.length === 1 ? 'Alerta ' + COLOR_AVISO[l[0].nivel] + fenomeno(l[0]).replace(/ con .*/, '') + ' en ' + mun : 'Alertas del SMN en ' + mun;
-  var cuerpo = l.map(function (a) { var c = COLOR_AVISO[a.nivel]; return c.charAt(0).toUpperCase() + c.slice(1) + fenomeno(a) + ': ' + cuandoAviso(a, hoy) + '.'; }).join('\n');
+  var ico = function (a) { return EV_ICO[a.ev] || '⚠️'; }, varias = l.length > 1;
+  var titulo = !l.length ? 'Alertas del SMN en ' + mun : CIRCULO[l[0].nivel] + (varias ? ' Alertas del SMN en ' + mun : ico(l[0]) + ' Alerta ' + COLOR_AVISO[l[0].nivel] + fenomeno(l[0]).replace(/ con .*/, '') + ' en ' + mun);
+  var cuerpo = l.map(function (a) { var c = COLOR_AVISO[a.nivel]; return (varias ? ico(a) + ' ' : '') + c.charAt(0).toUpperCase() + c.slice(1) + fenomeno(a) + ': ' + cuandoAviso(a, hoy) + '.'; }).join('\n');
   return { titulo: titulo, cuerpo: cuerpo + '\nTocá para ver qué hacer.' };
 }
 // Mensaje para la API de FCM (v1). Varios temas van con una condición: Firebase no repite el aviso a quien está en más de uno.
@@ -536,7 +541,7 @@ function mensajeFcm(x, hoy) {
     data: { loc: String(x.m) },
     webpush: {
       headers: { Urgency: 'high', TTL: '43200' },
-      notification: { icon: SITIO + 'iconos/icono-192.png', tag: 'smn-' + x.m, renotify: true, lang: 'es' },
+      notification: { icon: SITIO + 'iconos/icono-192.png', badge: SITIO + 'iconos/badge-96.png', tag: 'smn-' + x.m, renotify: true, lang: 'es' },
       fcm_options: { link: SITIO + '?loc=' + x.m }
     }
   };

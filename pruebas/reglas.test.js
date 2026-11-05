@@ -1024,15 +1024,20 @@ prueba('avisos al celular: si Firebase falla no se marca, y se reintenta en la h
 prueba('avisos al celular: texto del aviso y mensaje para Firebase (abre la localidad al tocarlo)', () => {
   const hoy = '2026-11-05';
   let t = gs.textoAviso(1, [{ m: 1, dia: hoy, ev: 41, nivel: 4, extra: 1, franjas: [0, 0, 4, 4] }], hoy);
-  assert.strictEqual(t.titulo, 'Alerta naranja por tormentas en Barranqueras');
+  assert.strictEqual(t.titulo, '🟠⛈️ Alerta naranja por tormentas en Barranqueras');
   assert.strictEqual(t.cuerpo, 'Naranja por tormentas con posible granizo: hoy a la tarde y a la noche.\nTocá para ver qué hacer.');
   t = gs.textoAviso(1, [{ m: 1, dia: '2026-11-07', ev: 37, nivel: 3, extra: 0, franjas: [3, 3, 3, 3] }, { m: 1, dia: '2026-11-06', ev: 39, nivel: 5, extra: 2, franjas: [5, 0, 0, 0] }], hoy);
-  assert.strictEqual(t.titulo, 'Alertas del SMN en Barranqueras');
-  assert.strictEqual(t.cuerpo, 'Roja por viento con ráfagas: mañana de madrugada.\nAmarilla por lluvias: el sábado 7/11 todo el día.\nTocá para ver qué hacer.');
+  assert.strictEqual(t.titulo, '🔴 Alertas del SMN en Barranqueras', 'con varias, el color de la más grave');
+  assert.strictEqual(t.cuerpo, '💨 Roja por viento con ráfagas: mañana de madrugada.\n🌧️ Amarilla por lluvias: el sábado 7/11 todo el día.\nTocá para ver qué hacer.');
+  assert.strictEqual(gs.textoAviso(1, [{ m: 1, dia: hoy, ev: 0, nivel: 3, extra: 0, franjas: [3, 0, 0, 0] }], hoy).titulo, '🟡⚠️ Alerta amarilla en Barranqueras', 'fenómeno desconocido');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(vm.runInContext('EV_ICO', gs))), JSON.parse(JSON.stringify(S('SMN_ICO'))), 'los mismos dibujitos que el sitio');
   const uno = gs.mensajeFcm({ m: 1, temas: ['m1a'], items: [{ m: 1, dia: hoy, ev: 41, nivel: 3, extra: 0, franjas: [3, 0, 0, 0] }] }, hoy).message;
   assert.strictEqual(uno.topic, 'm1a'); assert.strictEqual(uno.condition, undefined);
   assert.strictEqual(uno.webpush.fcm_options.link, 'https://panel-alertas-chaco.netlify.app/?loc=1');
   assert.strictEqual(uno.data.loc, '1'); assert.strictEqual(uno.webpush.notification.tag, 'smn-1');
+  assert.strictEqual(uno.webpush.notification.badge, 'https://panel-alertas-chaco.netlify.app/iconos/badge-96.png');
+  const bd = fs.readFileSync(path.join(raiz, 'iconos', 'badge-96.png'));
+  assert.ok(bd.toString('latin1', 1, 4) === 'PNG' && bd.readUInt32BE(16) === 96 && bd.readUInt32BE(20) === 96 && bd[25] === 6, 'ícono de la barra: 96 × 96, con transparencia');
   const varios = gs.mensajeFcm({ m: 1, temas: ['m1', 'm1a'], items: [{ m: 1, dia: hoy, ev: 41, nivel: 4, extra: 0, franjas: [4, 0, 0, 0] }] }, hoy).message;
   assert.strictEqual(varios.condition, "'m1' in topics || 'm1a' in topics"); assert.strictEqual(varios.topic, undefined);
 });
@@ -1851,6 +1856,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     let espera; ev.push({ data: { json: () => ({ notification: { title: 'Alerta naranja por tormentas en Barranqueras', body: 'Naranja…' }, data: { loc: '1' } }) }, waitUntil: p => { espera = p } });
     assert.strictEqual(mostrado[0][0], 'Alerta naranja por tormentas en Barranqueras');
     assert.strictEqual(mostrado[0][1].data.url, 'https://panel-alertas-chaco.netlify.app/?loc=1'); assert.strictEqual(mostrado[0][1].tag, 'smn-1');
+    assert.strictEqual(mostrado[0][1].badge, 'https://panel-alertas-chaco.netlify.app/iconos/badge-96.png');
     ev.push({ data: { json: () => ({ data: { loc: '../x' } }) }, waitUntil() {} });
     assert.strictEqual(mostrado[1][1].data.url, 'https://panel-alertas-chaco.netlify.app/', 'localidad rara: solo el sitio');
     let p2; ev.notificationclick({ notification: { close() {}, data: { url: 'https://otro.sitio/' } }, waitUntil: p => { p2 = p } }); await p2;

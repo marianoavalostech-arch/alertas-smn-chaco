@@ -77,6 +77,30 @@ def icono(n, lleno):
     return img if not lleno else img.convert('RGB')
 
 
+# Ícono chico de los avisos al celular (badge): la silueta del ícono en blanco sobre fondo transparente.
+# Android lo muestra en la barra de arriba del teléfono, donde solo cuenta la forma (pinta todo de un color).
+# Semáforo con sus 3 luces caladas, la nube y una ola del río; sin el sol (pegado a la nube, no se distinguiría).
+def badge(n=96):
+    N = n * SS
+    e = N / 150
+    img = Image.new('RGBA', (N, N), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    b = (255, 255, 255, 255)
+    c = lambda x, y, r, f: d.ellipse([(x - r) * e, (y - r) * e, (x + r) * e, (y + r) * e], fill=f)
+    d.rounded_rectangle([14 * e, 16 * e, 48 * e, 100 * e], radius=17 * e, fill=b)
+    for y in (36, 58, 80):
+        c(31, y, 9, (0, 0, 0, 0))
+    for x, y, r in ((108, 74, 18), (86, 60, 25), (62, 78, 16)):
+        c(x, y, r, b)
+    d.rounded_rectangle([46 * e, 72 * e, 126 * e, 98 * e], radius=13 * e, fill=b)
+    import math   # ola del río: una línea ondulada, como en el ícono
+    pts = [((22 + t) * e, (124 - 6 * math.sin(t / 106 * 4 * math.pi)) * e) for t in range(0, 107, 2)]
+    d.line(pts, fill=b, width=int(11 * e), joint='curve')
+    for x, y in (pts[0], pts[-1]):
+        r = 5.5 * e
+        d.ellipse([x - r, y - r, x + r, y + r], fill=b)
+    return img.resize((n, n), Image.LANCZOS)
+
 if __name__ == '__main__':
     carpeta = os.path.join(RAIZ, 'iconos')
     os.makedirs(carpeta, exist_ok=True)
@@ -84,3 +108,5 @@ if __name__ == '__main__':
                              ('icono-maskable-512.png', 512, True), ('icono-apple-180.png', 180, True)]:
         icono(n, lleno).save(os.path.join(carpeta, nombre), optimize=True)
         print('iconos/' + nombre)
+    badge().save(os.path.join(carpeta, 'badge-96.png'), optimize=True)
+    print('iconos/badge-96.png')
