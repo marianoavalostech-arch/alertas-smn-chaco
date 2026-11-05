@@ -9,7 +9,8 @@ Mariano lo probó en el sitio: la regla del río queda bien, pero la tarjeta del
 - **Cuadritos en píldoras** ("Lluvia ● Amarillo", "SMN ● Sin alertas", "Río Paraná ● Rojo"). Sin alertas confirmadas del SMN va la píldora "SMN: Sin alertas" en lugar del renglón "SMN Sin alertas oficiales en el informe del…"; con alertas, o si el informe no se pudo confirmar o es viejo, el renglón sigue.
 - **La superficie pasa a "Seguir leyendo"** y la vista previa de ese texto es más corta.
 - Nombre del municipio un poco más chico en pantallas angostas, para que no se corte.
-- En un teléfono de 360 px la tarjeta pasa de unos 790 a 550 px. Revisado a 320, 360, 412 y 1280 px con la regla del navegador; axe sin errores. 80 pruebas.
+- **Textos más cortos** (pedido de Mariano: "resume lo que veas extenso, pero que se entienda"): el botón dice "¿A qué hora llueve? ↓"; en "Seguir leyendo", el renglón "Costa del Paraná · Rojo" ya no se repite (lo dice la píldora), la explicación del río en la costa va en dos frases ("En la costa, el color sigue al río Paraná… Vale para la costa y las islas fuera de las defensas, que protegen la ciudad hasta unos 9,50 m. Seguí los avisos oficiales."), los municipios con techo en una frase menos, el Gran Resistencia dice "Por la lluvia está en amarillo, como todo el Gran Resistencia" y la nota de la lluvia medida queda en "Estación automática (Red Hidrológica Nacional, vía INA): dato sin revisar, no se usa para el color.". Dentro de la tarjeta ese texto va más chico y sin justificar.
+- En un teléfono de 360 px la tarjeta cerrada pasa de unos 790 a 500 px. Revisado a 320, 360, 412 y 1280 px con la regla del navegador; axe sin errores. 80 pruebas.
 
 ## 04/11/2026 (más visual: regla del puerto en el Paraná y tarjeta del municipio)
 

@@ -623,6 +623,11 @@ footer{font-size:.85rem;color:var(--muted)}
 #mInfo.tarj .dia:not(:first-child) .dL b{font-size:1rem}
 #mInfo.tarj .dia:not(:first-child) .dA{grid-area:dA;margin:2px 0 2px}
 #mInfo.tarj .mDet.vista{max-height:3.6rem}
+/* Dentro de la tarjeta, el texto de "Seguir leyendo" más chico y sin justificar (en la columna angosta quedaban huecos);
+   el renglón "Costa del Paraná · Rojo" no se repite: ya lo dice la píldora "Rojo en el mapa" (los avisos de "no disponible" sí se ven). */
+#mInfo.tarj .mDet p{text-align:left;-webkit-hyphens:manual;hyphens:manual;font-size:.92rem;line-height:1.45}
+#mInfo.tarj .mDet p.meta{font-size:.84rem}
+#mInfo.tarj:has(.mPill) .mDet>p:first-child:has(>.estado:not(.falla)):has(>b){display:none}
 @media (max-width:359px){#mInfo.tarj .dia:first-child{column-gap:8px;padding:8px 10px}#mInfo.tarj .dia:first-child .ico{font-size:2.2rem}#mInfo.tarj .dia:first-child .dT b{font-size:1.15rem}#mInfo.tarj .dia:first-child .dL b{font-size:1.05rem}#mInfo.tarj .dia:not(:first-child){padding:6px 10px;column-gap:6px}#mInfo.tarj .dia:not(:first-child) .ico{font-size:1.35rem}#mInfo.tarj .dia:not(:first-child) :is(.dD,.dT b,.dL b){font-size:.88rem}#mInfo.tarj .dia:not(:first-child) .dL{min-width:0}}
 #mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 14px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;font-size:.86rem;text-decoration:none}
 #mInfo.tarj .aHora:hover{background:var(--acento-soft)}
@@ -1601,9 +1606,9 @@ function colorDe(i){
 }
 // Párrafo del detalle cuando el color del municipio sale del Paraná.
 const rioInfo=k=>!k.rio?'':k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
-  +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' '+DEFENSAS.replace(' Igual, seguí los avisos oficiales.',''):'')+' Las alertas oficiales por la crecida del Paraná incluyen zonas de este municipio. Para caminos cortados y evacuaciones, valen los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
-  :'<p><b>Por estar sobre la costa del Paraná, el color sigue al río ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
-  +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':k.rio.pr?' El rojo sale de la altura de hoy y de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas. '+DEFENSAS+' <a href="#t-rio">Ver el río</a></p>';
+  +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')+' Las alertas oficiales por la crecida incluyen zonas de este municipio: para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
+  :'<p><b>En la costa, el color sigue al río Paraná ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
+  +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':k.rio.pr?' El rojo sale de la altura de hoy y de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas, que protegen la ciudad hasta unos 9,50 m. Seguí los avisos oficiales. <a href="#t-rio">Ver el río</a></p>';
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
   if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}
@@ -1675,7 +1680,7 @@ function pintarInfo(){
   const m=GEO.mun[i],k=colorDe(i);let h;
   if(k.tipo==='seg')h=k.rio?'<p><span class="estado">Lluvia y río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>'+(M.R[k.j].c==='gris'?'':'Por la lluvia, su semáforo está en '+M.R[k.j].et.toLowerCase()+'. ')+M.R[k.j].por+'</p>'
     :'<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
-  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Forma parte del Gran Resistencia: por la lluvia comparte su semáforo, que está en '+M.R[0].et.toLowerCase()+'. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
+  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Por la lluvia está en '+M.R[0].et.toLowerCase()+', como todo el Gran Resistencia. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
     h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
      +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(rojoLejos(s)&&k.c==='amarillo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
@@ -1753,7 +1758,7 @@ function diasInfo(i,k){
     return '<div class="dias" role="list" aria-label="Pronóstico de hoy y los próximos días" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
       +'<p class="meta">'+(conT?'Pronóstico de Open-Meteo':'Lluvia prevista por Open-Meteo; el ícono muestra la lluvia, no si habrá sol')+(hayAl?'. Las alertas son del SMN':'')+'. '
       // A "Lluvia hora por hora" (pedido de Mariano, 23/10/2026); en las 6 localidades del semáforo y el Gran Resistencia, ya con la localidad elegida.
-      +'<a class="aHora" href="#t-anim" data-hora="'+(k.tipo==='seg'||k.tipo==='gran'?k.j:'')+'">Ver a qué hora llueve hoy y mañana ↓</a></p>';
+      +'<a class="aHora" href="#t-anim" data-hora="'+(k.tipo==='seg'||k.tipo==='gran'?k.j:'')+'">¿A qué hora llueve? ↓</a></p>';
   }catch(e){console.error(e);return ''}
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
@@ -1776,7 +1781,7 @@ function medidaInfo(i){
     return '<p><b>Lluvia medida</b> en la estación '+esc(x[0])+', '+(c.km<1?'a menos de 1 km':'a '+nf(c.km)+' km')+(l?' de '+esc(l.n):'')+': '+mmTxt(x[4])+' en 24 horas y '+mmTxt(x[5])+' en 3 días, hasta el '+fFechaHora(new Date(x[3]))+'.</p>'
      +(x[6]&2?'<p><b>Ojo:</b> las estaciones vecinas midieron mucho menos. Puede ser una tormenta muy local o un error de la estación.</p>':'')
      +(x[6]&1?'<p class="meta">Faltan lecturas de esta estación en las últimas 24 horas: puede haber llovido más.</p>':'')
-     +'<p class="meta">Estación automática de la Red Hidrológica Nacional, vía INA. Es un dato sin revisar: puede tener errores y no se usa para el color. Las estaciones que marcan 0 mientras sus vecinas miden lluvia no se usan.</p>';
+     +'<p class="meta">Estación automática (Red Hidrológica Nacional, vía INA): dato sin revisar, no se usa para el color.</p>';
   }catch(e){console.error(e);return ''}
 }
 
