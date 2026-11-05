@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 04/11/2026 (tarjeta del municipio más corta)
+
+Mariano lo probó en el sitio: la regla del río queda bien, pero la tarjeta del municipio era muy larga.
+- **Días siguientes en renglones**: jueves y viernes van cada uno en un renglón (ícono, día, máxima / mínima y mm de lluvia); la palabra del tiempo y la fecha siguen en el texto para lectores de pantalla. Una alerta del SMN ese día sigue con su etiqueta y su color.
+- **Cuadritos en píldoras** ("Lluvia ● Amarillo", "SMN ● Sin alertas", "Río Paraná ● Rojo"). Sin alertas confirmadas del SMN va la píldora "SMN: Sin alertas" en lugar del renglón "SMN Sin alertas oficiales en el informe del…"; con alertas, o si el informe no se pudo confirmar o es viejo, el renglón sigue.
+- **La superficie pasa a "Seguir leyendo"** y la vista previa de ese texto es más corta.
+- Nombre del municipio un poco más chico en pantallas angostas, para que no se corte.
+- En un teléfono de 360 px la tarjeta pasa de unos 790 a 550 px. Revisado a 320, 360, 412 y 1280 px con la regla del navegador; axe sin errores. 80 pruebas.
+
 ## 04/11/2026 (más visual: regla del puerto en el Paraná y tarjeta del municipio)
 
 Pedido de Mariano: ir haciendo el sitio más visual y menos para leer, sin romper nada; empezar por la regla del río y la tarjeta de la localidad del boceto.

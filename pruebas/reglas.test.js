@@ -1667,6 +1667,9 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(t.includes('<small>Alerta del SMN</small><span><i data-c="naranja"></i>Alerta naranja'), 'con alerta del SMN: ' + t);
     S(`SMN=SMN_VACIO`);
     assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
+    t = S(`porQue(${idx('Barranqueras')},colorDe(${idx('Barranqueras')}),true)`);
+    assert.ok(t.includes('<small>SMN</small><span><i data-c="verde"></i>Sin alertas'), 'sin alertas confirmadas: cuadrito del SMN en lugar del renglón');
+    assert.ok(codigo.includes("pq+(pq&&sinSmn?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
     const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
     assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)
