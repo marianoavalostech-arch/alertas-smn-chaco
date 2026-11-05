@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 05/11/2026 (primer aviso real: al tocarlo, directo a la ficha)
+
+Primer aviso real (5/11, 15:52): Mariano se anotó desde Firefox en su celular (en Chrome no se puede mientras la app de Play 1.0.0 tenga las notificaciones apagadas: Android le pasa ese bloqueo a Chrome), se corrió `probarAviso()` (Firebase 200) y el aviso llegó y abrió Resistencia.
+- **Al tocar un aviso, la página baja directo a la ficha de la localidad** (`#mInfo`, con 10 px de margen arriba), no al principio del mapa, que dejaba la ficha abajo en el celular (pedido de Mariano). Huella nueva del código.
+
 ## 05/11/2026 (los avisos se acumulan)
 
 Decisión de Mariano (5/11, 15:27): cada aviso queda aparte en la lista de notificaciones del teléfono, en lugar de reemplazar al anterior de la misma localidad. Como cada aviso trae solo lo nuevo, si reemplazaba, una alerta amarilla nueva (por ejemplo, viento para mañana) tapaba a una naranja que seguía vigente (tormentas para hoy).

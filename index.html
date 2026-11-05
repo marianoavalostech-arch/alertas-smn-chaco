@@ -354,7 +354,7 @@ footer{font-size:.85rem;color:var(--muted)}
 #mTip{position:absolute;pointer-events:none;background:var(--ink);color:var(--card);font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-150%);z-index:2}
 .leyenda{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted)}
 .leyenda i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
-#mInfo{border-left:5px solid var(--gris);background:var(--bg);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.95rem;min-height:3.2em}
+#mInfo{border-left:5px solid var(--gris);background:var(--bg);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:.95rem;min-height:3.2em;scroll-margin-top:10px}
 .smnChip{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.98rem;line-height:1.2;padding:4px 11px 4px 8px;border-radius:99px;border:2px solid var(--line);background:var(--card);color:var(--ink);margin:0 8px 2px 0;vertical-align:middle;white-space:nowrap}
 .smnGrupo ul{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:8px}
 .smnChip.n0{border-color:var(--muted)}
@@ -2656,7 +2656,7 @@ function avDesdeAviso(){
   try{const u=new URLSearchParams(location.search);u.delete('loc');history.replaceState(history.state,'',location.pathname+(u.toString()?'?'+u:'')+location.hash)}catch(e){}
   const i=+q[1];if(!(i>=0&&i<GEO.mun.length))return;
   guardarMiLoc(i);contador('aviso-tocado',true);
-  let n=0;const t=setInterval(()=>{if(M.ok||++n>60){clearInterval(t);if(M.ok)seguro(()=>{elegir(i,true);verSec($('t-mapa'))})}},250);
+  let n=0;const t=setInterval(()=>{if(M.ok||++n>60){clearInterval(t);if(M.ok)seguro(()=>{elegir(i,true);verSec($('mInfo')||$('t-mapa'))})}},250);   // directo a la ficha de la localidad (el mapa queda arriba)
 }
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
