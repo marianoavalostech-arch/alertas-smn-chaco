@@ -528,7 +528,16 @@ footer{font-size:.85rem;color:var(--muted)}
 .hSit details[data-h="niebla"]{--ic1:#f1f0f5;--ic2:#dfdce9;--ic3:#bdb8cd}
 .hSit details[data-h="mochila"]{--ic1:#fdecf9;--ic2:#f9d3ef;--ic3:#eca2d9}
 .hSit details[open]{box-shadow:var(--sombra-boton-alta)}
-@media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.vermapa,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}}
+/* Transiciones leves (pedido de Mariano, 4/11/2026): al tocar, todos los botones se achican apenas, como los recuadros de la portada;
+   lo que se abre (tarjetas de "¿Qué está pasando?", desplegables con flecha) aparece con un fundido corto. Solo opacidad y movimiento: livianos en celulares viejos. */
+.btn:active:not(:disabled),.ley:active,.hTel a:active,.sem .nombres button:active,.sem .nombres a:active,.vermapa:active,.mas:active,.pleg:active>.pv,.hIr:active,.hSit details:not([open])>summary:active{transform:scale(.96);transition-duration:.06s}
+.hSit details:not([open]):has(>summary:active){transform:scale(.96);transition-duration:.06s}
+@keyframes abreSuave{from{opacity:0;transform:translateY(-4px)}}
+.hSit details[open]>:not(summary),details.det[open]>:not(summary){animation:abreSuave .26s ease-out}
+@keyframes cambiaSuave{from{opacity:.35;transform:translateY(5px)}}
+.cambia{animation:cambiaSuave .24s ease-out}
+@media (prefers-reduced-motion:reduce){.btn,.ley,.hTel a,.hSit details,.sem .nombres button,.sem .nombres a,.vermapa,.mas,.pleg>.pv,.hIr{transition:none;transform:none!important}
+  .hSit details[open]>:not(summary),details.det[open]>:not(summary),.cambia{animation:none}}
 @media print{.hTel a::before{display:none}.btn,.ley,.hTel a,.hSit details,.mas{box-shadow:none}}
 /* instalar app: botón (Android y computadora) o explicación (iPhone); compartir: botón en todos lados.
    La caja (#instalar) tiene los dos; nunca se ve dentro del portal ni al imprimir */
@@ -1380,15 +1389,23 @@ const $=id=>document.getElementById(id);
 const PLEG_K='anc-plegadas',PLEG={},AL_ABRIR={};
 const plegGuardadas=()=>{try{const o=JSON.parse(localStorage.getItem(PLEG_K));return o&&typeof o==='object'?o:{}}catch(e){return {}}};
 const abierta=id=>!PLEG[id]||PLEG[id].abierta;
+// Transiciones leves (4/11/2026): lo que cambia de alto al tocarlo (desplegables, "Seguir leyendo") se estira o encoge en vez de saltar.
+// h0: alto antes del cambio. Sin movimiento si el teléfono pide reducirlo.
+const conMov=()=>!matchMedia('(prefers-reduced-motion: reduce)').matches;
+function deslizar(el,h0){
+  if(!el||!el.animate||!conMov())return;
+  const h1=el.offsetHeight;if(!h1||Math.abs(h1-h0)<4)return;
+  try{el.animate([{height:h0+'px',overflow:'hidden'},{height:h1+'px',overflow:'hidden'}],{duration:Math.min(360,180+Math.abs(h1-h0)/8),easing:'cubic-bezier(.2,.8,.3,1)'})}catch(e){}
+}
 function abrirSec(id,abrir,guardar){
   const p=PLEG[id];if(!p||p.abierta===abrir)return;
-  const y0=guardar?p.sec.getBoundingClientRect().top:0;
+  const y0=guardar?p.sec.getBoundingClientRect().top:0,h0=guardar?p.cuerpo.offsetHeight:0;
   p.abierta=abrir;p.cuerpo.classList.toggle('vista',!abrir);p.cuerpo.inert=!abrir;p.mas.hidden=abrir;p.sec.classList.toggle('cerrada',!abrir);p.btn.setAttribute('aria-expanded',abrir);p.txt.textContent=abrir?'Ocultar':'Mostrar';
   if(guardar){const g=plegGuardadas();g[id]=abrir;try{localStorage.setItem(PLEG_K,JSON.stringify(g))}catch(e){}}
   (AL_ABRIR[id]||[]).forEach(f=>seguro(()=>f(abrir)));
   acomodarPlegables();
   // En computadora, al abrir o cerrar con un toque la sección puede cambiar de lugar (de a dos ↔ a lo ancho): la pantalla la sigue.
-  if(guardar){const d=p.sec.getBoundingClientRect().top-y0;if(Math.abs(d)>2)scrollBy({top:d,behavior:'instant'})}
+  if(guardar){const d=p.sec.getBoundingClientRect().top-y0;if(Math.abs(d)>2)scrollBy({top:d,behavior:'instant'});deslizar(p.cuerpo,h0)}
 }
 // En computadora las secciones cerradas van de a dos; una que quedaría sola en su fila (la siguiente está abierta o no hay) va a lo ancho.
 function acomodarPlegables(){
@@ -1438,6 +1455,8 @@ function iniciarPlegables(){
   // Un enlace a una sección cerrada (por ejemplo "Ver el río") la abre antes de ir.
   // Dentro del portal el salto lo hace el portal (el marco no tiene barra propia).
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#t-"]');if(!a)return;const id=a.getAttribute('href').slice(1);abrirSec(id,true,false);
+    // Desde la portada del celular, la pantalla baja deslizando hasta la sección en vez de saltar (4/11/2026). El enlace queda en la dirección y en el historial.
+    if(!EMB&&a.closest('.portada')&&$(id)&&conMov()){e.preventDefault();try{history.pushState({salto:1},'','#'+id)}catch(x){}verSec($(id));return}
     if(id==='t-smn'&&a.classList.contains('bBtn'))document.querySelectorAll('#smn details.det').forEach(d=>{d.open=true});
     if(EMB&&$(id)){e.preventDefault();verSec($(id))}},true);
   const porHash=()=>{const hs=location.hash.slice(1);if(PLEG[hs]){abrirSec(hs,true,false);verSec($(hs),true)}};
@@ -1597,7 +1616,7 @@ function armarMapa(){
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
   const soltarFoco=()=>{if(M.rio)verRio(null);else if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
-    if(e.target.closest('[data-mas]')||e.target.closest('.mDet.vista')){e.preventDefault();M.detAb=!M.detAb;pintarInfo();return}
+    if(e.target.closest('[data-mas]')||e.target.closest('.mDet.vista')){e.preventDefault();const h0=$('mDet')?$('mDet').offsetHeight:0;M.detAb=!M.detAb;pintarInfo();deslizar($('mDet'),h0);return}
     // Municipio que no está en "Lluvia en": queda "Todo el Chaco" (pedido de Mariano, 23/10/2026).
     // Si el pronóstico por hora todavía no llegó (se pide al abrir la sección), la localidad queda elegida para cuando llegue.
     const hh=e.target.closest('[data-hora]');if(hh){const l=hh.dataset.hora!==''?+hh.dataset.hora:-1;if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}
@@ -1685,10 +1704,13 @@ function elegir(i,enf){
   const habia=M.sel>=0;
   if(i>=0&&!habia)M.antes={...M.vb};   // vista a la que se vuelve al quitar la selección
   if(i!==M.sel)M.detAb=false;
+  const antes=M.sel;
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
   if(i>=0){const a=miLocGuardada();guardarMiLoc(i);if(MILOC)pintarMiLoc();if(a!==i)seguro(pintarPortada)}
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
+  const otro=i>=0&&i!==antes;
   resaltar();pintarInfo();
+  if(otro&&conMov()){const t=$('mInfo');t.classList.remove('cambia');void t.offsetWidth;t.classList.add('cambia')}   // fundido corto: se nota que cambió el municipio
   if(enf&&i>=0)enfocar(i);else if(i<0&&habia&&M.antes){ponerVista(M.antes,true);M.antes=null}
 }
 // Al tocar un municipio con el dedo (pedido de Mariano, 24/10/2026): si las tarjetas del clima quedaron debajo de la pantalla, la página baja
