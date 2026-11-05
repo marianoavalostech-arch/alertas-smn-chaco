@@ -647,12 +647,23 @@ footer{font-size:.85rem;color:var(--muted)}
 /* todos los recuadros del mismo alto (el del renglón más alto); el título "El Chaco hoy" va aparte, en su renglón */
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:8px}
 .pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
-.pHoy b{font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo)}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
-.pT{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:var(--card);border-radius:18px;border:1.5px solid #ebe6f5;box-shadow:0 1px 2px rgba(80,89,188,.06),0 6px 18px rgba(80,89,188,.09);padding:8px 6px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;min-height:0;color:var(--ink);text-align:center;transition:transform .12s,box-shadow .12s}
+.pHoy b{position:relative;font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo);padding-bottom:5px}
+.pHoy b::after{content:"";position:absolute;left:0;bottom:0;width:34px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--violeta),#8d58e8,var(--rosa))}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
+.pT{all:unset;box-sizing:border-box;cursor:pointer;position:relative;background:linear-gradient(180deg,#fff 55%,#faf9fe);border-radius:18px;border:1.5px solid #ebe6f5;box-shadow:0 1px 2px rgba(80,89,188,.06),0 6px 18px rgba(80,89,188,.09);padding:8px 6px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;min-height:0;overflow:hidden;color:var(--ink);text-align:center;-webkit-tap-highlight-color:transparent;transition:transform .16s cubic-bezier(.3,.7,.4,1.4),box-shadow .16s,border-color .16s}
 .pT:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
-.pT:active{transform:scale(.96);box-shadow:0 1px 2px rgba(80,89,188,.08)}
+.pT:active{transform:scale(.95);box-shadow:0 1px 2px rgba(80,89,188,.08),inset 0 2px 6px rgba(80,89,188,.08);transition-duration:.06s}
+/* al tocar: un brillo que se abre desde el centro y el ícono que salta un poco (4/11/2026, pedido de Mariano: efectos en los botones) */
+.pT::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 50% 45%,rgba(80,89,188,.2),rgba(80,89,188,0) 65%);opacity:0;transform:scale(.4);transition:opacity .45s,transform .45s;pointer-events:none}
+.pT:active::after{opacity:1;transform:scale(1.3);transition:opacity .05s,transform .25s}
+.pT:active .pIc{transform:scale(1.12)}
+@media (hover:hover){.pT:hover{transform:translateY(-2px);border-color:#d8d1ef;box-shadow:0 2px 4px rgba(80,89,188,.08),0 10px 24px rgba(80,89,188,.14)}}
+/* al abrir, los recuadros entran uno detrás de otro (solo la primera vez: después la portada queda quieta) */
+@keyframes pEntra{from{opacity:0;transform:translateY(10px) scale(.97)}}
+.portada:not(.pQuieta) .pT{animation:pEntra .42s cubic-bezier(.2,.8,.3,1) backwards}
+.portada .pT:nth-child(3){animation-delay:35ms}.portada .pT:nth-child(4){animation-delay:70ms}.portada .pT:nth-child(5){animation-delay:105ms}.portada .pT:nth-child(6){animation-delay:140ms}.portada .pT:nth-child(7){animation-delay:175ms}.portada .pT:nth-child(8){animation-delay:210ms}.portada .pT:nth-child(9){animation-delay:245ms}.portada .pT:nth-child(10){animation-delay:280ms}.portada .pT:nth-child(11){animation-delay:315ms}.portada .pT:nth-child(12){animation-delay:350ms}.portada .pT:nth-child(13){animation-delay:385ms}.portada .pT:nth-child(14){animation-delay:420ms}
+
 /* ícono en un cuadradito de color suave: violeta; agua en celeste; con color de estado, el del estado */
-.pIc{flex:none;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#efecfc;color:var(--acento)}
+.pIc{flex:none;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#efecfc;color:var(--acento);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(80,89,188,.1);transition:transform .2s cubic-bezier(.3,.7,.4,1.6)}
 .pIc svg{width:17px;height:17px}
 .pAgua .pIc{background:var(--water-soft);color:var(--water)}
 .pN{font-size:.76rem;font-weight:800;line-height:1.15;color:var(--muted);overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;max-width:100%}
@@ -663,10 +674,12 @@ footer{font-size:.85rem;color:var(--muted)}
 .pT.c-rojo{border-color:var(--rojo);background:linear-gradient(170deg,#fff 45%,#fbe4e1)}.pT.c-rojo .pIc{background:#f8dedb;color:var(--rojo-txt)}
 .pLuces{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:2px}.pLuces i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .pFl{color:var(--water);font-family:var(--font)}
-/* teléfonos: el único recuadro oscuro, para encontrarlo rápido */
-.pT.pTelT{background:var(--marino);border-color:var(--marino)}.pTelT .pIc{background:rgba(255,255,255,.14);color:#fff}.pTelT .pN{color:#dcdaf7}.pTelT .pD{color:#fff}
+/* teléfonos: fondo blanco como los demás y el teléfono en verde, para encontrarlo rápido (4/11/2026: el azul marino no resaltaba) */
+.pTelT .pIc{background:linear-gradient(160deg,#3aa76b,var(--verde));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(44,138,87,.35)}
+.pTelT .pD{color:#1f6b42}
+.pT.pTelT::after{background:radial-gradient(circle at 50% 45%,rgba(44,138,87,.22),rgba(44,138,87,0) 65%)}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.pT{transition:none}.pT:active{transform:none}}
+@media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}.portada .pT{animation:none}}
 @media print{.portada{display:none!important}}
 /* Disposición en el celular (pedido de Mariano, 24/10/2026): encabezado más bajo, índice más apretado, vista previa más corta en las secciones cerradas
    y tarjetas de "¿Qué está pasando?" en renglones (el dibujo a la izquierda y el nombre al lado; abiertas quedan como antes; en pantallas de menos
@@ -2412,6 +2425,7 @@ function pintarPortada(){
   el.innerHTML='<p class="pHoy"><b>El Chaco hoy</b><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+'</span></p>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
+  if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
     el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;elegir(i,true);marcarSalto();verSec($('t-mapa'))})}
 }
