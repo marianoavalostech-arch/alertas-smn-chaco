@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 04/11/2026 (más visual: regla del puerto en el Paraná y tarjeta del municipio)
+
+Pedido de Mariano: ir haciendo el sitio más visual y menos para leer, sin romper nada; empezar por la regla del río y la tarjeta de la localidad del boceto.
+- **Regla del puerto en la sección del Paraná** (`reglaRio`): la escala de Barranqueras dibujada, con el agua a la altura de la última lectura, las marcas de alerta, evacuación y defensas, y un corchete que muestra cuánto pasó la alerta o la evacuación. Al lado, el número grande, la fecha, la frase de situación y la tendencia (sin justificar, para que no queden huecos). Debajo, "Las marcas valen para la zona ribereña fuera de las defensas…". El gráfico, Yacyretá, los desplegables y las fuentes no cambian. Solo el gráfico se lee con el dedo, la regla no.
+- **Pronóstico del INA en tarjetas** ("Lo que prevé el INA"): una por fecha, con la altura más probable y el rango, cuando no hay aviso. Los avisos de "prevé pasar el nivel de evacuación" y "puede llegar" quedan igual.
+- **Detalle de un municipio como tarjeta azul marino** (`#mInfo.tarj`): nombre en grande, "Rojo en el mapa" y cuadritos de dónde sale el color (`porQue`: la lluvia, la alerta del SMN si sube el color y el Paraná en la costa, con el techo de cada municipio). Hoy en una tarjeta ancha; los 2 días siguientes debajo, de a dos. "Ver a qué hora llueve hoy y mañana" como botón. El texto completo sigue en "Seguir leyendo". La lista del filtro de color y el aviso al tocar un río quedan como antes.
+- Revisado con la regla del navegador y los datos del 4/11 a 320, 360, 412 y 1280 px y en una copia del portal: sin errores ni desbordes nuevos; axe sin errores en las dos partes. Casos probados: río a 2,40, 6,20, 6,90 y 10,40 m, sin pronóstico, municipio del interior con alerta naranja del SMN, filtro de color y río tocado.
+- **Pruebas**: una nueva (regla en todos los rangos, corchete, tarjetas del pronóstico, cuadritos del color con y sin río, con alerta del SMN y sin datos). Huella nueva del código. 80 pruebas.
+
 ## 26/10/2026 (la app de Google Play reconoce al sitio)
 
 - **`.well-known/assetlinks.json`**: une la app de Google Play (`com.marianoavalos.riosyclimachaco`) con el sitio, para que abra a pantalla completa, sin la barra de dirección de Chrome. Lleva las dos huellas SHA-256 de Play Console: la clave de firma de apps de Google (`6A:35:…:87:18`) y la clave de carga de PWABuilder (`B1:64:…:57:88`). Armado con `herramientas/assetlinks.js`. No cambia nada de lo que se ve en el sitio.

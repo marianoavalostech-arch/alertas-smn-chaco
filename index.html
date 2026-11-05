@@ -558,6 +558,61 @@ footer{font-size:.85rem;color:var(--muted)}
 .btnInst.resalta{outline:3px solid #f26df9;outline-offset:3px}
 .cab .instAviso{flex:1 1 100%;margin:0;font-size:.92rem;color:var(--ink);background:var(--acento-soft);border-radius:10px;padding:10px 14px}
 .cab .instAviso[hidden]{display:none}
+/* Más visual, menos para leer (pedido de Mariano, 4/11/2026). Regla del puerto en la sección del Paraná y pronóstico del INA en tarjetas. */
+#rio .rioRegla{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;max-width:560px}
+#rio svg.regla{flex:0 0 auto;width:146px;height:300px;max-width:none;cursor:default;touch-action:auto;overflow:visible}
+#rio .rgTxt{flex:1 1 130px;display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;-webkit-hyphens:manual;hyphens:manual}
+#rio .rgTxt .grande{font-size:2.35rem}
+#rio .rgTxt .grande small{font-size:.9rem}
+#rio .rgTxt p{margin:0;text-align:left;-webkit-hyphens:manual;hyphens:manual}
+#rio .rgTxt .lectura{margin-top:-4px}
+.rgM{font-size:10.5px;font-weight:800}
+.prevINA{display:flex;flex-direction:column;gap:8px}
+.prevINA .pTit{margin:0;font-weight:800;color:var(--titulo)}
+.prevINA p.meta{margin:0}
+.pCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;max-width:560px}
+.pCards>div{border:1.5px solid var(--line);border-radius:14px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;background:var(--card)}
+.pCards .pD{font-size:.85rem;font-weight:700;color:var(--muted)}
+.pCards .pA{font-family:var(--font-tit);font-weight:700;font-size:1.6rem;line-height:1.1;color:var(--titulo);font-variant-numeric:tabular-nums}
+.pCards .pR{font-size:.82rem;color:var(--muted)}
+/* Detalle de un municipio como tarjeta azul marino: nombre grande, el color del mapa y de dónde sale, hoy en grande y los 2 días siguientes. */
+#mInfo.tarj{background:var(--marino);color:#fff;border:0;border-radius:20px;padding:14px 14px 16px;gap:10px;box-shadow:0 10px 28px rgba(11,49,88,.22)}
+#mInfo.tarj .mNom{font-family:var(--font-tit);font-weight:700;font-size:1.75rem;line-height:1.05;color:#fff;overflow-wrap:anywhere}
+#mInfo.tarj p.meta,#mInfo.tarj .meta{color:#ccd0e8}
+#mInfo.tarj a{color:#dedbff}
+#mInfo.tarj .estado{border-color:rgba(255,255,255,.45)}
+#mInfo.tarj .estado.falla{border-color:#ff8f86;color:#ffb3ad}
+#mInfo.tarj .nodisp{color:#ccd0e8}
+#mInfo.tarj .mCol{margin:-2px 0 0}
+#mInfo .mPill{display:inline-flex;align-items:center;gap:7px;padding:4px 13px 4px 9px;border-radius:99px;background:#fff;color:var(--ink);font-weight:800;font-size:1rem}
+#mInfo .mPill i,#mInfo .mPor i{width:12px;height:12px;border-radius:50%;flex-shrink:0;background:#9aa3a6}
+#mInfo .mPor{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px}
+#mInfo .mPor li{background:rgba(255,255,255,.1);border-radius:12px;padding:7px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+#mInfo .mPor small{font-size:.76rem;font-weight:700;color:#dcdaf7}
+#mInfo .mPor span{display:flex;align-items:center;gap:6px;font-weight:800;font-size:.92rem}
+#mInfo .mPor i{width:10px;height:10px}
+#mInfo :is(.mPill,.mPor) i[data-c="verde"]{background:#3fbf7f}
+#mInfo :is(.mPill,.mPor) i[data-c="amarillo"]{background:var(--amarillo-mapa)}
+#mInfo :is(.mPill,.mPor) i[data-c="naranja"]{background:#f08a3c}
+#mInfo :is(.mPill,.mPor) i[data-c="rojo"]{background:#ff6a5c}
+#mInfo .mPill i[data-c="verde"]{background:var(--verde)}
+#mInfo .mPill i[data-c="naranja"]{background:var(--naranja)}
+#mInfo .mPill i[data-c="rojo"]{background:var(--rojo)}
+#mInfo.tarj .dias{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+#mInfo.tarj .dia{color:var(--ink);border-radius:14px}
+#mInfo.tarj .dia:first-child{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ico dD dT" "ico dC dT" "ico dF dL" "dA dA dA";column-gap:12px;row-gap:1px;align-items:center;justify-items:start;text-align:left;padding:10px 14px}
+#mInfo.tarj .dia:first-child .ico{grid-area:ico;font-size:2.9rem;margin:0}
+#mInfo.tarj .dia:first-child .dD{grid-area:dD;font-size:1.05rem}
+#mInfo.tarj .dia:first-child .dC{grid-area:dC;font-size:.9rem}
+#mInfo.tarj .dia:first-child .dF{grid-area:dF}
+#mInfo.tarj .dia:first-child .dT{grid-area:dT;justify-self:end;margin:0;gap:10px}
+#mInfo.tarj .dia:first-child .dT b{font-size:1.45rem}
+#mInfo.tarj .dia:first-child .dL{grid-area:dL;justify-self:end;align-self:end;flex-direction:row;align-items:baseline;gap:6px;margin:0;padding:0;border:0}
+#mInfo.tarj .dia:first-child .dL b{font-size:1.2rem}
+#mInfo.tarj .dia:first-child .dA{grid-area:dA;margin-top:6px}
+#mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 16px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;text-decoration:none}
+#mInfo.tarj .aHora:hover{background:var(--acento-soft)}
+@media print{#mInfo.tarj{background:none;color:inherit;box-shadow:none;border:1px solid var(--line)}#mInfo.tarj .mNom{color:inherit}#mInfo .mPor li{background:none;border:1px solid var(--line)}}
 /* Disposición en el celular (pedido de Mariano, 24/10/2026): encabezado más bajo, índice más apretado, vista previa más corta en las secciones cerradas
    y tarjetas de "¿Qué está pasando?" en renglones (el dibujo a la izquierda y el nombre al lado; abiertas quedan como antes; en pantallas de menos
    de 360 px no entran y quedan como antes). En la computadora no cambia nada. */
@@ -1614,12 +1669,28 @@ function pintarInfo(){
   else if(k.tipo==='rio')h='<p><span class="estado">Río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
-  el.className=k.c&&k.c!=='gris'?k.c:'';
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem">'+esc(m[0])+'</b>'+x+'</div><p class="meta">Superficie: '+nf(m[4])+' km²</p>'+smnInfo(i)+diasInfo(i,k)
+  // Tarjeta del municipio (4/11/2026, pedido de Mariano: más visual): nombre grande, el color del mapa y de dónde sale, y las tarjetas de los días.
+  el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj';
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+porQue(i,k)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p>'+smnInfo(i)+diasInfo(i,k)
    +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'</div>'
    +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>';
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
+}
+// De dónde sale el color del municipio (4/11/2026, pedido de Mariano: que se vea sin leer): el color del mapa y, en cuadritos, la lluvia
+// (su semáforo o su estimación), la alerta del SMN cuando sube el color y, en los municipios de la costa, el Paraná con el techo de cada uno.
+// Son los mismos datos que usa colorDe; el texto completo sigue en "Seguir leyendo".
+function porQue(i,k){
+  try{
+    if(!k.c||k.c==='gris')return '';
+    const b=colorBase(i),s=pisoSMN(i),ch=[['Lluvia',b.c&&b.c!=='gris'?b.c:'gris']];
+    if(s&&SMN_NIV[s.a.niv])ch.push(['Alerta del SMN',SMN_NIV[s.a.niv][0],'Alerta '+SMN_NIV[s.a.niv][1]]);
+    if(RIBI[i]||RIPI[i]){const r=riesgoRio();let c=r.c||'gris';
+      if(RIPI[i]&&NIVELES.indexOf(c)>0)c=NIVELES[Math.min(NIVELES.indexOf(c),NIVELES.indexOf(RIBERA_PISO[RIPI[i]].t))];
+      ch.push(['Río Paraná',c])}
+    return '<p class="mCol"><span class="mPill"><i data-c="'+k.c+'"></i>'+ETQ[k.c]+' en el mapa</span></p>'
+      +'<ul class="mPor" aria-label="De dónde sale el color">'+ch.map(x=>'<li><small>'+x[0]+'</small><span><i data-c="'+x[1]+'"></i>'+(x[2]||ETQ[x[1]]||ETQ.gris)+'</span></li>').join('')+'</ul>';
+  }catch(e){console.error(e);return ''}
 }
 // Tarjetas de hoy y los 2 días siguientes (los mismos que cubren las alertas del SMN): tipo de tiempo, temperatura máxima y mínima
 // y lluvia prevista de Open-Meteo (la misma lluvia que usa el color: la de la localidad del semáforo o la del municipio).
@@ -1882,7 +1953,7 @@ async function cargarTodos(){
 let RIOG=null;
 // Lectura del gráfico con el dedo o el mouse: marca la lectura más cercana y la dice en texto.
 function leerRio(e){
-  const sv=e.target.closest&&e.target.closest('#rio svg');if(!sv||!RIOG)return;
+  const sv=e.target.closest&&e.target.closest('#rio .rioGraf svg');if(!sv||!RIOG)return;
   const b=sv.getBoundingClientRect(),vx=(e.clientX-b.left)/b.width*RIOG.W;
   let p=RIOG.pts[0];RIOG.pts.forEach(q=>{if(Math.abs(q[0]-vx)<Math.abs(p[0]-vx))p=q});
   const m=sv.querySelector('#rioMarca');m.setAttribute('visibility','visible');
@@ -1897,6 +1968,26 @@ function rioSit(h,N){
   return h>=N.evac?(Math.round((h-N.evac)*100)?'Está '+c(h-N.evac)+' arriba del nivel de evacuación ('+nf(N.evac,2)+' m).':'Llegó al nivel de evacuación ('+nf(N.evac,2)+' m).')
     :h>=N.alerta?(Math.round((h-N.alerta)*100)?'Está '+c(h-N.alerta)+' arriba del nivel de alerta ('+nf(N.alerta,2)+' m)':'Llegó al nivel de alerta ('+nf(N.alerta,2)+' m)')+'. Le faltan '+c(N.evac-h)+' para el de evacuación ('+nf(N.evac,2)+' m).'
     :'Le faltan '+c(N.alerta-h)+' para el nivel de alerta ('+nf(N.alerta,2)+' m) y '+c(N.evac-h)+' para el de evacuación ('+nf(N.evac,2)+' m).';
+}
+// Regla del puerto (4/11/2026, pedido de Mariano: más visual y menos para leer): la escala de Barranqueras dibujada, con el agua a la altura
+// de la última lectura y las marcas de alerta, evacuación y defensas de la ciudad. Muestra lo mismo que dicen las frases de al lado; no agrega nada propio.
+// Va de 4 m (o menos, si el río está más bajo) hasta pasar las defensas. Con el río arriba de la alerta, un corchete marca cuánto la pasó.
+function reglaRio(h,N){
+  const lo=Math.max(0,Math.min(4,Math.floor(h-0.8))),hi=Math.max(N.defensa+0.5,Math.ceil(h+0.6));
+  const T=14,B=290,X=96,A=24,y=v=>B-(v-lo)*(B-T)/(hi-lo),dm=Math.round((hi-lo)*10),p=(B-T)/dm,f=v=>v.toFixed(1);
+  let e='';for(let d=0;d<dm;d++){const w=d%2?7:A,x=Math.floor(d/5)%2?X+A-w:X;e+='M'+x+' '+f(B-(d+1)*p)+'h'+w+'v'+f(p)+'h-'+w+'z'}
+  const yh=Math.max(T,y(h)),ola='M'+(X-8)+' '+f(yh)+' q5 -4 10 0 t10 0 t10 0 t10 0';
+  const marca=(v,c,t)=>'<line x1="'+(X-8)+'" x2="'+(X+A+8)+'" y1="'+f(y(v))+'" y2="'+f(y(v))+'" stroke="var(--'+c+')" stroke-width="2.5"/>'
+    +'<text x="'+(X-12)+'" y="'+f(y(v)+4)+'" text-anchor="end" class="rgM" style="fill:var(--'+(c==='muted'?'muted':c+'-txt')+')">'+t+'</text>';
+  const ref=h>=N.evac?['evac','rojo']:h>=N.alerta?['alerta','amarillo']:null;
+  const corchete=ref&&h-N[ref[0]]>=0.03?'<path d="M'+(X+A+16)+' '+f(yh)+'h5V'+f(y(N[ref[0]]))+'h-5" fill="none" stroke="var(--'+ref[1]+')" stroke-width="2.2"/>':'';
+  return '<svg class="regla" width="146" height="300" viewBox="0 0 146 300" role="img" aria-label="Regla del puerto de Barranqueras: el río está en '+nf(h,2)+' metros. Alerta en '+nf(N.alerta,2)+' metros, evacuación en '+nf(N.evac,2)+' metros; las defensas de la ciudad llegan a unos '+nf(N.defensa,2)+' metros.">'
+    +'<rect x="'+(X-2)+'" y="'+(T-2)+'" width="'+(A+4)+'" height="'+(B-T+4)+'" rx="3" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>'
+    +'<path d="'+e+'" fill="var(--titulo)"/>'
+    +'<path d="'+ola+'V'+B+'H'+(X-8)+'Z" fill="var(--water)" fill-opacity=".5"/><path d="'+ola+'" fill="none" stroke="var(--water)" stroke-width="2"/>'
+    +marca(N.defensa,'muted','Defensas '+nf(N.defensa,2))+marca(N.evac,'rojo','Evacuación '+nf(N.evac,2))+marca(N.alerta,'amarillo','Alerta '+nf(N.alerta,2))
+    +corchete+'<path d="M'+(X+A+3)+' '+f(yh)+'l8 -5v10z" fill="var(--titulo)"/>'
+    +'<line x1="'+(X-14)+'" x2="'+(X+A+14)+'" y1="'+B+'" y2="'+B+'" stroke="var(--line)" stroke-width="2"/></svg>';
 }
 function pintarRio(){
   const r=resumenRio();
@@ -1943,12 +2034,15 @@ function pintarRio(){
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
    +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
-  $('rio').innerHTML='<div class="fila"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span><span><b>'+tend+'</b></span></div>'+lecturaCorta(D.rio.datos,r)
+  // Pronóstico en tarjetas (4/11/2026): una por fecha prevista, con la altura más probable y el rango. Los avisos (evacuación o "puede llegar") quedan como estaban.
+  const pTarj=pf.length?'<div class="prevINA"><p class="pTit">Lo que prevé el INA</p><div class="pCards" role="list">'+pf.slice(0,3).map(q=>'<div role="listitem"><span class="pD">'+mayus(fDiaLargo(q[0]))+'</span><span class="pA">'+nf(q[2],2)+' m</span>'+(q[3]>q[1]?'<span class="pR">entre '+nf(q[1],2)+' y '+nf(q[3],2)+'</span>':'')+'</div>').join('')+'</div>':'';
+  $('rio').innerHTML='<div class="rioRegla">'+reglaRio(r.h,NIVEL)+'<div class="rgTxt"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span>'+lecturaCorta(D.rio.datos,r)+'<p class="rgSit">'+sit.replace(/ m\)/g,'\u00a0m)')+'</p><p><b>'+tend+'</b></p></div></div>'
+   +'<p class="meta">Las marcas valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
    +(!pn||!pn.fut?'':(c=>c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>'+pronoTxt(pn)+' El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.'+pronoAtraso(pn)+'</div>'
      :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.'+pronoAtraso(pn)+'</div>'
+     :pTarj?pTarj+(x=>x?'<p class="meta">'+x+'</p>':'')(((r.h>=NIVEL.evac?'':'Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)).trim())+'</div>'
      :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
-   +viejo+'<p>'+sit+'</p>'
-   +'<p class="meta">Valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
+   +viejo
    +stats+'<div class="rioCuerpo"><div class="rioGraf">'+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')

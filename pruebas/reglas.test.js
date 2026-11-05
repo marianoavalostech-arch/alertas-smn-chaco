@@ -1625,5 +1625,53 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       S('SALTO=0');
     }
   });
+  prueba('más visual (4/11): regla del puerto en la sección del Paraná, pronóstico en tarjetas y tarjeta del municipio con de dónde sale el color', () => {
+    // Regla: el agua a la altura de hoy, las tres marcas con sus valores y el corchete solo cuando el río pasó la alerta
+    const rg = h => S(`reglaRio(${h},NIVEL)`);
+    for (const h of [0.3, 2.4, 6.2, 6.9, 10.4]) {
+      const g = rg(h);
+      assert.ok(g.startsWith('<svg class="regla"') && !/NaN|undefined|Infinity/.test(g), 'regla con ' + h);
+      assert.ok(g.includes('el río está en ' + S(`nf(${h},2)`) + ' metros'), 'dice la altura para quien no ve el dibujo');
+      for (const t of ['Defensas 9,50', 'Evacuación 6,50', 'Alerta 6,00']) assert.ok(g.includes('>' + t + '<'), t);
+    }
+    const corchete = c => 'stroke="var(--' + c + ')" stroke-width="2.2"';
+    assert.ok(!rg(5.5).includes(corchete('amarillo')) && !rg(5.5).includes(corchete('rojo')), 'debajo de la alerta, sin corchete');
+    assert.ok(rg(6.2).includes(corchete('amarillo')) && !rg(6.2).includes(corchete('rojo')), 'entre la alerta y la evacuación: corchete amarillo');
+    assert.ok(rg(6.9).includes(corchete('rojo')), 'arriba de la evacuación: corchete rojo');
+    // La sección del Paraná: regla, número y frases, la aclaración al lado y el pronóstico del INA en tarjetas
+    const e = { style: {} }; elementos.rio = e;
+    S(`hoy='2027-03-10';LISTO=true;D.rio={datos:{obs:[['2027-03-07',7.02],['2027-03-10',6.9]]},vivo:true,t:new Date()};
+      D.prono={datos:{emitido:'2027-03-09T03:00:00.000Z',p:[['2027-03-16',6.3,6.64,7.1],['2027-03-23',5.8,6.31,6.6]]},vivo:true,t:new Date()};pintarRio()`);
+    delete elementos.rio;
+    const h = e.innerHTML;
+    assert.ok(h.startsWith('<div class="rioRegla"><svg class="regla"') && h.includes('Está 40 cm arriba del nivel de evacuación (6,50 m).') && h.includes('Está bajando: bajó 12 cm en 3 días.'), 'regla, número y frases');
+    assert.ok(h.includes('<p class="pTit">Lo que prevé el INA</p>') && h.includes('<span class="pA">6,64 m</span><span class="pR">entre 6,30 y 7,10</span>') && h.includes('<span class="pA">6,31 m</span>'), 'pronóstico en tarjetas');
+    assert.ok(h.indexOf('Las marcas valen') > 0 && h.indexOf('Las marcas valen') < h.indexOf('Lo que prevé el INA'), 'la aclaración, junto a la regla');
+    assert.ok(!h.includes('<b>Pronóstico oficial:</b>'), 'el pronóstico ya no va en un párrafo');
+    assert.ok(codigo.includes("e.target.closest('#rio .rioGraf svg')"), 'solo el gráfico se lee con el dedo, la regla no');
+    // Tarjeta del municipio: el color del mapa y, en cuadritos, de dónde sale
+    // (otras pruebas dejan riesgoRio reemplazado: se vuelve a cargar la del sitio)
+    { const a = codigo.indexOf('function riesgoRio(){'); S(codigo.slice(a, codigo.indexOf('\n// ', a))); }
+    S(`hoy='2026-10-17';LISTO=true;SMN=SMN_VACIO;D.rio={datos:{obs:[['2026-10-17',6.9]]},vivo:true,t:new Date()};D.prono={datos:null};
+      M.R=LOCS.map(()=>({c:'amarillo',et:'Amarillo',por:'x'}));M.est=Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'verde',ll:{cayo:0,viene:0,max:0}}]));M.tEst=Date.now();M.todos='listo'`);
+    const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`), pq = n => S(`porQue(${idx(n)},colorDe(${idx(n)}))`);
+    let t = pq('Barranqueras');
+    assert.ok(t.includes('<i data-c="rojo"></i>Rojo en el mapa') && t.includes('<small>Lluvia</small><span><i data-c="amarillo"></i>Amarillo') && t.includes('<small>Río Paraná</small><span><i data-c="rojo"></i>Rojo'), t);
+    t = pq('Resistencia');
+    assert.ok(t.includes('Naranja en el mapa') && t.includes('<small>Río Paraná</small><span><i data-c="naranja"></i>Naranja'), 'el río con el techo del municipio: ' + t);
+    t = pq('Charata');
+    assert.ok(t.includes('Amarillo en el mapa') && !t.includes('Río Paraná') && !t.includes('SMN'), 'interior sin alerta: solo la lluvia');
+    const ch = idx('Charata');
+    S(`SMN={emitido:'2026-10-17T03:00:00Z',capturado:'2026-10-17T03:00:00Z',fechas:['2026-10-17'],areas:GEO.mun.map((m,i)=>i),alertas:{${ch}:[['2026-10-17',41,0,0,4,4,0]]}};horaAR=()=>5`);
+    t = pq('Charata');
+    assert.ok(t.includes('<small>Alerta del SMN</small><span><i data-c="naranja"></i>Alerta naranja'), 'con alerta del SMN: ' + t);
+    S(`SMN=SMN_VACIO`);
+    assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
+    const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
+    assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
+    // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)
+    assert.ok(/#mInfo\.tarj\{background:var\(--marino\)/.test(html) && codigo.includes("el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj'"), 'solo el detalle de un municipio');
+    S(`D.prono={datos:null}`);
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();
