@@ -16,8 +16,8 @@ self.addEventListener('push', e => {
     body: String(n.body || 'Tocá para ver qué hacer.').slice(0, 600),
     icon: SITIO + 'iconos/icono-192.png',
     badge: SITIO + 'iconos/badge-96.png',   // ícono blanco de la barra de arriba del teléfono
-    tag: loc ? 'smn-' + loc : 'smn',
-    renotify: true,
+    // Sin "tag": cada aviso queda aparte en la lista del teléfono. Así un aviso nuevo (por ejemplo, una amarilla por viento
+    // para mañana) no tapa a uno anterior que sigue vigente (una naranja por tormentas para hoy). Cada aviso trae solo lo nuevo.
     lang: 'es',
     data: { url: SITIO + (loc ? '?loc=' + loc : '') }
   }));

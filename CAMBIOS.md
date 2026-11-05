@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 05/11/2026 (los avisos se acumulan)
+
+Decisión de Mariano (5/11, 15:27): cada aviso queda aparte en la lista de notificaciones del teléfono, en lugar de reemplazar al anterior de la misma localidad. Como cada aviso trae solo lo nuevo, si reemplazaba, una alerta amarilla nueva (por ejemplo, viento para mañana) tapaba a una naranja que seguía vigente (tormentas para hoy).
+- `avisos-sw.js` muestra el aviso sin `tag` ni `renotify`. El script de Google no cambia (su `tag` en `webpush.notification` no se usa, porque el aviso lo muestra el service worker). La prueba del service worker controla que no lleve `tag`. 89 pruebas.
+
 ## 05/11/2026 (avisos al celular por alertas del SMN, en prueba para los verificadores)
 
 Decisión de Mariano: avisos al celular solo por alertas del SMN, con Firebase Cloud Messaging, mandados por el script de Google. Primero solo para los verificadores de la prueba cerrada de Google Play.

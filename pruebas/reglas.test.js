@@ -1855,7 +1855,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     vm.runInNewContext(fs.readFileSync(path.join(raiz, 'avisos-sw.js'), 'utf8'), { self, String, JSON, Promise });
     let espera; ev.push({ data: { json: () => ({ notification: { title: 'Alerta naranja por tormentas en Barranqueras', body: 'Naranja…' }, data: { loc: '1' } }) }, waitUntil: p => { espera = p } });
     assert.strictEqual(mostrado[0][0], 'Alerta naranja por tormentas en Barranqueras');
-    assert.strictEqual(mostrado[0][1].data.url, 'https://panel-alertas-chaco.netlify.app/?loc=1'); assert.strictEqual(mostrado[0][1].tag, 'smn-1');
+    assert.strictEqual(mostrado[0][1].data.url, 'https://panel-alertas-chaco.netlify.app/?loc=1'); assert.ok(!('tag' in mostrado[0][1]) && !('renotify' in mostrado[0][1]), 'los avisos se acumulan: uno nuevo no tapa al anterior');
     assert.strictEqual(mostrado[0][1].badge, 'https://panel-alertas-chaco.netlify.app/iconos/badge-96.png');
     ev.push({ data: { json: () => ({ data: { loc: '../x' } }) }, waitUntil() {} });
     assert.strictEqual(mostrado[1][1].data.url, 'https://panel-alertas-chaco.netlify.app/', 'localidad rara: solo el sitio');
