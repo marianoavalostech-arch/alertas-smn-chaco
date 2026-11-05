@@ -634,6 +634,52 @@ footer{font-size:.85rem;color:var(--muted)}
 #mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 14px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;font-size:.86rem;text-decoration:none}
 #mInfo.tarj .aHora:hover{background:var(--acento-soft)}
 @media print{#mInfo.tarj{background:none;color:inherit;box-shadow:none;border:1px solid var(--line)}#mInfo.tarj .mNom{color:inherit}#mInfo .mPor li{background:none;border:1px solid var(--line)}}
+/* Portada del celular (pedido de Mariano, 4/11/2026): un recuadro por sección con su dato del momento; tocarlo lleva a la sección.
+   Solo en pantallas de menos de 600 px y fuera del portal: ahí reemplaza la franja del río, "Tu localidad" y el índice "Ir a:". */
+.portada{display:none}
+@media screen and (max-width:599px){
+  html:not(.emb) .portada{display:grid}
+  html:not(.emb) #rioBanda,html:not(.emb) #indice,html:not(.emb) #miLoc{display:none!important}
+}
+.portada{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pCard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border-radius:20px;border:1.5px solid transparent;box-shadow:var(--sombra);padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0;color:var(--ink);text-align:left}
+.pCard:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+.pCard:active{transform:scale(.98)}
+.pAncho{grid-column:1/-1}
+.pTit{display:flex;align-items:center;gap:7px;font-size:.82rem;font-weight:800;color:var(--titulo);line-height:1.2}
+.pTit>svg{flex:none;width:18px;height:18px}.pTit>span:first-of-type{flex:1;min-width:0}
+.pEt{flex:none;padding:2px 9px;border-radius:10px;font-size:.75rem;font-weight:800;background:#eef0f1;color:var(--muted)}
+.pNum{font-family:var(--font-tit);font-weight:700;font-size:2.6rem;line-height:.95;color:var(--titulo)}.pNum small{font-size:1.3rem;margin-left:2px}
+.pDato{display:flex;align-items:center;gap:6px;font-family:var(--font-tit);font-weight:700;font-size:1.3rem;line-height:1.15;color:var(--titulo)}
+.pDato .ico{font-size:1.2rem;line-height:1}
+.pTx{font-size:.8rem;line-height:1.35;color:var(--muted)}
+.pFila{display:flex;align-items:flex-end;gap:10px}.pFila>.pCol{flex:none}
+.pCol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pCam{font-size:.8rem;font-weight:700}
+.pGraf{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;gap:2px}.pGraf svg{width:100%;max-width:170px;height:auto;display:block}.pGraf small{font-size:.68rem;font-weight:700;color:var(--muted);text-align:right}
+.pRio.c-amarillo{border-color:var(--amarillo-mapa)}.pRio.c-naranja{border-color:var(--naranja)}.pRio.c-rojo{border-color:var(--rojo)}
+.c-amarillo .pEt{background:#fbefc4;color:var(--amarillo-txt)}.c-naranja .pEt{background:#fbe3cf;color:var(--naranja-txt)}.c-rojo .pEt{background:#f8dedb;color:var(--rojo-txt)}.c-verde .pEt{background:#dcefe3;color:#1f6b42}
+.pMapa{flex-direction:row;align-items:center;gap:12px}.pMapa>.pCol{flex:1;gap:6px}
+.pMini{flex:none;width:44%;max-width:160px;height:auto;display:block}
+.pCnt{display:flex;flex-direction:column;gap:3px;font-size:.78rem;font-weight:700}.pCnt span{display:flex;align-items:center;gap:6px}.pCnt i{flex:none;width:10px;height:10px;border-radius:3px}
+.pBtn{display:flex;align-items:center;justify-content:center;min-height:38px;border-radius:19px;border:1.5px solid var(--borde-boton);font-size:.82rem;font-weight:800;color:var(--acento);padding:0 10px;text-align:center}
+.pSmn.n3{border-color:var(--amarillo-mapa)}.pSmn.n4{border-color:var(--naranja)}.pSmn.n5{border-color:var(--rojo)}
+.pPunto{flex:none;display:inline-block;width:.7em;height:.7em;border-radius:50%}.pEnMapa{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--ink)}
+.pRen{display:flex;flex-direction:column;gap:1px}.pRen small{font-size:.74rem;font-weight:700;color:var(--muted)}.pRen b{font-family:var(--font-tit);font-size:1.2rem;color:var(--titulo);display:flex;align-items:center;gap:5px}
+.pFl{color:var(--water);font-family:Manrope,sans-serif}
+.pBarra{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,#dde9f6,#efecfc 45%,#f8dedb)}.pBarra i{position:absolute;top:-4px;width:4px;height:16px;margin-left:-2px;border-radius:2px;background:var(--titulo)}
+.pAcc{display:flex;gap:8px}.pAcc>*{flex:1}
+.pAcc a,.pAcc button{all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;text-align:center;padding:0 8px}
+.pAcc .pPri{background:var(--degrade);color:#fff;box-shadow:var(--sombra-degrade,none)}.pAcc .pSec{border:1.5px solid var(--borde-boton);color:var(--acento);background:var(--card)}
+.pAcc a:focus-visible,.pAcc button:focus-visible,.pTel a:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+.pTelC{background:var(--marino);color:#fff;cursor:default}.pTelC .pTit{color:#fff}
+.pTel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pTel a{min-height:56px;border-radius:14px;background:rgba(255,255,255,.13);color:#fff;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1}
+.pTel b{font-family:var(--font-tit);font-size:1.25rem}.pTel span{font-size:.68rem;font-weight:700;color:#dcdaf7}.pTel a.pMas b{font-family:Manrope,sans-serif;font-size:.78rem}
+.pPie{grid-column:1/-1;text-align:center;padding:4px 0 0}.pPie a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;font-weight:700;font-size:.9rem;color:var(--acento)}
+.pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.pCard:active{transform:none}}
+@media print{.portada{display:none!important}}
 /* Disposición en el celular (pedido de Mariano, 24/10/2026): encabezado más bajo, índice más apretado, vista previa más corta en las secciones cerradas
    y tarjetas de "¿Qué está pasando?" en renglones (el dibujo a la izquierda y el nombre al lado; abiertas quedan como antes; en pantallas de menos
    de 360 px no entran y quedan como antes). En la computadora no cambia nada. */
@@ -706,6 +752,8 @@ footer{font-size:.85rem;color:var(--muted)}
   <div id="rioBanda" role="status" hidden></div>
 
   <div class="captura" id="bannerCaptura" hidden></div>
+
+  <nav class="portada" id="portada" aria-label="El Chaco hoy: un recuadro por sección"></nav>
 
   <div class="miLoc" id="miLoc" role="region" aria-label="Tu localidad" hidden></div>
 
@@ -1478,7 +1526,7 @@ function armarMapa(){
    +'<g transform="scale(.1)">'
    // La zona sensible de los ríos va debajo de los municipios: así solo se toca del lado de afuera y no le saca lugar a ninguno.
    +'<path class="rioT" data-rio="Río Bermejo" data-ir="t-otros" d="'+RIOS.bermejo+'"/><path class="rioT" data-rio="Río Paraguay" data-ir="t-otros" d="'+RIOS.paraguay+'"/><path class="rioT" data-rio="Río Paraná" d="'+RIOS.parana+'"/>'
-   +GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')
+   +'<g id="mMuns">'+GEO.mun.map((m,i)=>'<path class="mun" data-m="'+i+'" d="'+m[1]+'"/>').join('')+'</g>'
    +'<path class="ov" d="'+GEO.prov+'" stroke="var(--muted)" stroke-width="1.5"/>'
    +'<path class="rio" d="'+RIOS.bermejo+'"/><path class="rio" d="'+RIOS.paraguay+'"/><path class="rio" d="'+RIOS.parana+'"/>'
    +'<path class="ov" d="M5250 1840L5335 3185" stroke="var(--water)" stroke-width="1.2"/>'
@@ -1920,7 +1968,7 @@ function smnInfo(i){
 function cargarSMN(){
   SRV_P.then(j=>{
     if(smnVale(j)){SMN=j;SMN_VIVO=true;MEM.guardar('smn',{emitido:j.emitido,capturado:j.capturado,fechas:j.fechas,areas:j.areas,alertas:j.alertas,leidas:j.leidas},new Date())}
-    SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarHacer);seguro(pintarNino);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
+    SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarHacer);seguro(pintarNino);seguro(pintarPortada);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
   });
 }
 // Tu localidad: la última que se eligió en el mapa (o en el buscador) queda guardada solo en este navegador o en la app instalada.
@@ -1951,7 +1999,7 @@ function colorearMapa(R){
   M.puntos.forEach((p,j)=>{const c=M.R[j]?M.R[j].c:'gris';p.setAttribute('fill','var(--'+(c==='amarillo'?'amarillo-mapa':c)+')')});
   // En el celular, el botón "Sin datos" se esconde si ningún municipio está en gris (24/10/2026): así los colores entran en un renglón.
   try{document.querySelector('.leyenda').classList.toggle('sinGris',M.filtro!=='gris'&&!M.paths.some((p,i)=>colorDe(i).c==='gris'))}catch(e){}
-  resaltar();pintarInfo();seguro(pintarMiLoc);
+  resaltar();pintarInfo();seguro(pintarMiLoc);seguro(pintarPortada);
   if(!M.todos)cargarTodos();   // la estimación de toda la provincia se pide sola la primera vez
 }
 // Una sola consulta trae la lluvia de todos los municipios (en el centro de cada uno).
@@ -2293,6 +2341,133 @@ function pintarBanner(){
 }
 // Cada sección se pinta por separado. Si un dato inesperado rompe una, las demás siguen;
 // lo guardado de esa fuente se borra para que no vuelva a fallar al recargar, y se pinta de nuevo sin ese dato.
+/* ---------- portada del celular ---------- */
+// Pedido de Mariano (4/11/2026): en el celular, arriba de todo, un recuadro por sección con su dato del momento; tocarlo lleva a la sección.
+// La muestra el CSS solo en pantallas de menos de 600 px y fuera del portal; ahí no se ven la franja del río, "Tu localidad" ni el índice "Ir a:".
+// Usa los mismos datos y funciones que las secciones (no calcula nada propio). El Paraná va primero si salió del verde; si no, el mapa.
+const PIC={
+ rio:'<path d="M2 8c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0M2 14c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0M2 20c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/>',
+ mapa:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
+ smn:'<path d="M12 3 2 20h20L12 3zM12 10v4M12 17h.01"/>',
+ loc:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12zM9.5 9a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0"/>',
+ hora:'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 7v5l3 2"/>',
+ lluvia:'<path d="M7 15a4 4 0 0 1-.5-8A6 6 0 0 1 18 8a3.5 3.5 0 0 1 0 7H7zM8 18l-1 3M12 18l-1 3M16 18l-1 3"/>',
+ nino:'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+ hacer:'<path d="M10 6h10M10 12h10M10 18h10M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',
+ tel:'<path d="M5 3h4l2 5-3 2a12 12 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A18 18 0 0 1 3 5a2 2 0 0 1 2-2z"/>'
+};
+const pIco=(k,c)=>'<svg viewBox="0 0 24 24" fill="none" stroke="'+(c||'var(--acento)')+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+PIC[k]+'</svg>';
+const pTit=(k,t,et,c)=>'<span class="pTit">'+pIco(k,c)+'<span>'+t+'</span>'+(et||'')+'</span>';
+const pColor=c=>'var(--'+(c==='amarillo'?'amarillo-mapa':c)+')';
+// Flecha de la tendencia en 3 días (con texto para el lector de pantalla).
+const pFlecha=d=>d==null||Math.abs(d)<=0.05?'':'<span class="pFl"><span aria-hidden="true">'+(d<0?'↓':'↑')+'</span><span class="pSr">'+(d<0?', bajando':', creciendo')+'</span></span>';
+const pCm=d=>{const x=Math.round(Math.abs(d)*100);return x>=100?nf(x/100,2)+' m':x+' cm'};
+const pCambio=d=>d==null?'':Math.round(Math.abs(d)*100)===0?'Sin cambios en 3 días':(d<0?'Bajó ':'Subió ')+pCm(d)+' en 3 días';
+// Altura de los últimos 30 días, en chico, con la raya del nivel de evacuación si el río anda cerca.
+function pGrafRio(o,N){
+  const lim=masDias(o[o.length-1][0],-30),q=o.filter(p=>p[0]>=lim);if(q.length<2)return '';
+  const v=q.map(p=>p[1]);let lo=Math.min(...v),hi=Math.max(...v);const raya=hi>=N.alerta-0.5;
+  if(raya){hi=Math.max(hi,N.evac+0.1);lo=Math.min(lo,N.evac-0.3)}
+  if(hi-lo<0.4){const m=(hi+lo)/2;lo=m-0.2;hi=m+0.2}
+  const W=150,H=56,X=j=>(j*W/(q.length-1)).toFixed(1),Y=h=>(5+(hi-h)/(hi-lo)*(H-10)).toFixed(1),l=q.map((p,j)=>X(j)+' '+Y(p[1])).join(' L');
+  return '<span class="pGraf"><svg viewBox="-4 0 158 '+H+'" aria-hidden="true">'
+    +(raya?'<line x1="0" x2="'+W+'" y1="'+Y(N.evac)+'" y2="'+Y(N.evac)+'" stroke="var(--rojo)" stroke-width="1.2" stroke-dasharray="3 3"/>':'')
+    +'<path d="M'+l+' L'+W+' '+(H-2)+' L0 '+(H-2)+' Z" fill="var(--water-soft)"/><path d="M'+l+'" fill="none" stroke="var(--water)" stroke-width="2.2" stroke-linejoin="round"/>'
+    +'<circle cx="'+W+'" cy="'+Y(v[v.length-1])+'" r="3.6" fill="var(--titulo)" stroke="#fff" stroke-width="1.5"/></svg>'
+    +'<small>Últimos 30 días'+(raya?'; raya roja: '+nf(N.evac,2)+' m':'')+'</small></span>';
+}
+function pRio(){
+  const R=riesgoRio(),r=resumenRio(),pn=resumenProno(),ok=r&&r.atraso<4,fuera=R.c!=='verde'&&R.c!=='gris',tx=[];
+  if(r&&r.atraso>=2)tx.push((ok?'Lectura del ':'La última lectura es del ')+fDia(r.dia)+'.');
+  if(fuera)tx.push('Islas y costa fuera de las defensas.');
+  if(pn&&pn.fut)tx.push('El INA prevé '+nf(pn.fut[0][2],2)+' m para el '+fDia(pn.fut[0][0])+'.');
+  return '<a class="pCard pAncho pRio c-'+R.c+'" href="#t-rio">'+pTit('rio','Río Paraná en Barranqueras','<span class="pEt">'+(R.c==='gris'?(LISTO?'Sin datos':'Consultando…'):'En '+R.c)+'</span>','var(--water)')
+    +(ok?'<span class="pFila"><span class="pCol"><span class="pNum">'+nf(r.h,2)+'<small>m</small></span><span class="pCam">'+pFlecha(r.d3)+' '+pCambio(r.d3)+'</span></span>'+pGrafRio(D.rio.datos.obs,NIVEL)+'</span>':'')
+    +(tx.length?'<span class="pTx">'+tx.join(' ')+'</span>':'')+'</a>';
+}
+function pMapa(){
+  const n={};if(LISTO)GEO.mun.forEach((m,i)=>{let c='gris';try{c=colorDe(i).c||'gris'}catch(e){}n[c]=(n[c]||0)+1});
+  return '<a class="pCard pAncho pMapa" href="#t-mapa"><svg class="pMini" viewBox="200 0 5300 4960" aria-hidden="true"><use href="#mMuns" stroke="#fff" stroke-width="10" stroke-linejoin="round"/></svg>'
+    +'<span class="pCol">'+pTit('mapa','Mapa de la provincia')
+    +'<span class="pCnt">'+(LISTO?['rojo','naranja','amarillo','verde','gris'].filter(c=>n[c]).map(c=>'<span><i style="background:'+pColor(c)+'"></i>'+n[c]+' '+(c==='gris'?'sin datos':'en '+c)+'</span>').join(''):'<span>Consultando…</span>')+'</span>'
+    +'<span class="pBtn">Ver tu municipio</span></span></a>';
+}
+function pSmn(){
+  let cl='',dato,tx='';
+  if(!smnVigente()){dato=SMN_LISTO||SMN.emitido?'Sin informe':'Consultando…';tx=SMN_LISTO||SMN.emitido?'Consultalas en el SMN.':''}
+  else{
+    let max=0,mun=0;const ev=new Set(),dias=new Set();
+    GEO.mun.forEach((m,i)=>{const l=smnDe(i);if(l.length)mun++;l.forEach(a=>{ev.add(SMN_EV[a.ev]||'otro fenómeno');dias.add(a.dia);if(a.niv>max)max=a.niv})});
+    if(!mun){const fs=SMN.fechas.filter(d=>d>=hoy&&d<=smnTope());
+      if(SMN.leidas===0){dato='Sin confirmar';tx='Confirmalo en el SMN.'}
+      else if((Date.now()-new Date(SMN.capturado))/36e5>6){dato='Sin renovar';tx='Puede haber alertas nuevas.'}
+      else{dato='<svg style="flex:none;width:22px;height:22px" viewBox="0 0 24 24" fill="none" stroke="var(--verde)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0"/><path d="m8 12 3 3 5-6"/></svg>Ninguna';tx=mayus(smnDiasTxt(new Set(fs)))+', en todo el Chaco.'}}
+    else{cl=' n'+max;const T=GEO.mun.length;
+      dato='<i class="pPunto" style="background:'+pColor((SMN_NIV[max]||['amarillo'])[0])+'"></i>'+mayus((SMN_NIV[max]||['',''])[1]);
+      tx='Por '+[...ev].join(' y ')+', '+smnDiasTxt(dias)+'. '+(mun===T?'Toda la provincia':mun+' de '+T+' municipios')+'.'}
+  }
+  return '<a class="pCard pSmn'+cl+'" href="#t-smn">'+pTit('smn','Alertas del SMN')+'<span class="pDato">'+dato+'</span>'+(tx?'<span class="pTx">'+tx+'</span>':'')+'</a>';
+}
+// Hoy y mañana en un municipio, con la misma fuente que las tarjetas del detalle (diasInfo).
+function pDias(i){
+  const k=colorDe(i);let src,r;
+  if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){src=D.lluvia.datos;r=k.j}
+  else if(k.tipo==='est'&&M.dMun){src=M.dMun;r=i}
+  const dias=src&&src.dias,mm=src&&src.mm&&src.mm[r];if(!dias||!mm)return null;
+  const a=dias.indexOf(hoy);if(a<0)return null;
+  const fila=x=>Array.isArray(x)&&Array.isArray(x[r])&&x[r].length===dias.length?x[r]:null,tx=fila(src.tmax),tn=fila(src.tmin),cd=fila(src.cod),al=smnDe(i);
+  return [a,a+1].filter(d=>d<dias.length).map(d=>{const v=mm[d]==null?null:Math.round(Number(mm[d])),c=cd&&cd[d]!=null?Number(cd[d]):null,
+    ad=al.filter(x=>x.dia===dias[d]).sort((x,y)=>y.niv-x.niv)[0];let [ic,pal]=icoDia(v,c);
+    if(ad){ic=SMN_ICO[ad.ev]||'⚠️';pal=mayus(SMN_EV[ad.ev]||'otro fenómeno')}
+    return {v,ic,pal,t:tx&&tn&&tx[d]!=null&&tn[d]!=null?tx[d]+'° / '+tn[d]+'°':''}});
+}
+function pLoc(){
+  const g=miLocGuardada(),i=g>=0?g:GEO.mun.findIndex(m=>m[0]==='Resistencia');if(i<0)return '';
+  let c='',d=null;try{c=colorDe(i).c||'';d=pDias(i)}catch(e){}
+  const h=d&&d[0],m=d&&d[1];
+  return '<button type="button" class="pCard" data-ploc="'+i+'">'+pTit('loc',esc(GEO.mun[i][0]))
+    +(h?'<span class="pDato"><span class="ico" aria-hidden="true">'+h.ic+'</span>'+(h.v==null?h.pal:nf(h.v)+' mm')+'</span>'
+      +'<span class="pTx">Hoy '+h.pal.toLowerCase()+(h.t?', '+h.t:'')+'.'+(m?' Mañana, '+m.pal.toLowerCase()+(m.v>=1?' ('+nf(m.v)+' mm)':'')+'.':'')+'</span>':'<span class="pTx">'+(LISTO?'Sin pronóstico ahora.':'Consultando…')+'</span>')
+    +(c&&c!=='gris'?'<span class="pTx pEnMapa"><i class="pPunto" style="background:'+pColor(c)+'"></i>En '+c+'</span>':'')
+    +'<span class="pTx"><b>'+(g>=0?'Tu localidad':'Elegí la tuya en el mapa')+'</b></span></button>';
+}
+const pHora=()=>'<a class="pCard" href="#t-anim">'+pTit('hora','Lluvia por hora')+'<span class="pDato">¿A qué hora llueve?</span><span class="pTx">Mapa animado de hoy y mañana, con satélite.</span></a>';
+function pLluvia(){
+  let dato='Consultando…',tx='';
+  if(D.lluvia&&D.lluvia.datos&&!lluviaVieja()){let b=-1,bi=0;LOCS.forEach((l,j)=>{const s=resumenLluvia(j);if(s&&s.viene>b){b=s.viene;bi=j}});
+    dato=b<1?'Casi nada':nf(b)+' mm';tx=b<1?'En los próximos 7 días, en las 6 localidades.':'Lo más que se espera en 7 días, en '+LOCS[bi].n+'.'}
+  else if(LISTO){dato='Sin datos';tx='No hay pronóstico de lluvia reciente.'}
+  return '<a class="pCard" href="#t-lluvia">'+pTit('lluvia','Lluvias')+'<span class="pDato">'+dato+'</span>'+(tx?'<span class="pTx">'+tx+'</span>':'')+'</a>';
+}
+function pOtros(){
+  const fila=(k,nom,c)=>{const o=OTROS[k],r=resumenRio(k,o.nivel),ok=r&&r.atraso<4;
+    return '<span class="pRen"><small>'+nom+'</small><b>'+(c&&c!=='verde'&&c!=='gris'?'<i class="pPunto" style="background:'+pColor(c)+'" title="'+ETQ[c]+'"></i>':'')+(ok?nf(r.h,2)+' m'+pFlecha(r.d3):'Sin datos')+'</b></span>'};
+  let cp='';try{cp=riesgoParaguay().c}catch(e){}
+  return '<a class="pCard" href="#t-otros">'+pTit('rio','Otros ríos',0,'var(--water)')+fila('paraguay','Paraguay, Pto. Bermejo',cp)+fila('bermejo','Bermejo, El Colorado')+'</a>';
+}
+function pNino(){
+  const sv=oniServidor(),o=sv?sv.v:ONI,u=o[o.length-1],v=u[2];
+  const w=v>=2?'Muy fuerte':v>=1.5?'Fuerte':v>=1?'Moderado':v>=0.5?'Débil':v<=-0.5?'Hay La Niña':'No hay';
+  return '<a class="pCard" href="#t-nino">'+pTit('nino','El Niño')+'<span class="pDato">'+w+'</span>'
+    +'<span class="pBarra" aria-hidden="true"><i style="left:'+Math.max(2,Math.min(98,50+v*20))+'%"></i></span>'
+    +'<span class="pTx">Índice ONI '+(v>0?'+':'')+nf(v,1)+' ('+u[1]+').</span></a>';
+}
+const pHacer=()=>'<div class="pCard pAncho" style="cursor:default">'+pTit('hacer','Qué hacer ante una alerta')
+  +'<span class="pTx" style="font-size:.88rem;color:var(--ink)">Qué hacer en una tormenta, una crecida o con calor, y qué llevar en la mochila de emergencia.</span>'
+  +'<span class="pAcc"><a class="pPri" href="#t-hacer">Ver qué hacer</a><button type="button" class="pSec" data-h="mochila">Mi mochila</button></span></div>';
+const pTel=()=>'<div class="pCard pAncho pTelC">'+pTit('tel','Teléfonos de emergencia',0,'#fff')
+  +'<span class="pTel"><a href="tel:911"><b>911</b><span>Policía</span></a><a href="tel:100"><b>100</b><span>Bomberos</span></a><a href="tel:107"><b>107</b><span>Salud</span></a>'
+  +'<a class="pMas" href="#t-tel"><b>Defensa Civil</b><span>y SECHEEP</span></a></span></div>';
+function pintarPortada(){
+  const el=$('portada');if(!el||EMB)return;
+  const uno=f=>{try{return f()}catch(e){console.error(e);return ''}};
+  const rio=uno(pRio),mapa=uno(pMapa);let fuera=false;try{const R=riesgoRio();fuera=R.c!=='verde'&&R.c!=='gris'}catch(e){}
+  const c=fuera?[rio,mapa]:[mapa,rio];
+  [pSmn,pLoc,pHora,pLluvia,pOtros,pNino,pHacer,pTel].forEach(f=>c.push(uno(f)));
+  el.innerHTML=c.join('')+'<p class="pPie"><a href="#t-fuentes">Datos y Acerca</a></p>';
+  if(!el.dataset.clic){el.dataset.clic='1';
+    el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;elegir(i,true);marcarSalto();verSec($('t-mapa'))})}
+}
 function seguro(f,ks){
   try{f();return}catch(e){console.error(e)}
   (ks||[]).forEach(k=>{MEM.borrar(k);if(D[k])D[k]={datos:null,error:true};
@@ -2309,6 +2484,7 @@ function pintar(){
   seguro(pintarBanner);
   seguro(pintarRioBanda,['rio','prono','paraguay']);
   seguro(pintarHacer);
+  seguro(pintarPortada);
 }
 
 /* ---------- qué hacer ante una alerta ---------- */
@@ -2794,9 +2970,11 @@ seguro(compartirSitio);
 // Para que no tape lo que se está leyendo (24/10/2026): se esconde mientras se baja y vuelve al subir un poco, después de un salto
 // (índice, botones, Atrás) y al llegar al final de la página.
 function botonIndice(){
-  const b=$('aIndice'),ind=$('indice');if(!b||!ind||EMB||typeof innerHeight!=='number')return;
+  const b=$('aIndice'),ind0=$('indice'),por=$('portada');if(!b||!ind0||EMB||typeof innerHeight!=='number')return;
+  let ind=ind0;   // en el celular, la portada hace de índice (4/11/2026)
   let pend=false,ant=scrollY,ext=scrollY,ve=true;   // ext: el punto más alto (si se ve) o más bajo (si no) desde el último cambio
   const ver=()=>{pend=false;const y=scrollY,H=innerHeight;
+    const n=por&&por.getClientRects().length?por:ind0;if(n!==ind){ind=n;b.setAttribute('href','#'+n.id)}
     if(Math.abs(y-ant)>H*0.8||Date.now()-SALTO<2500){ve=true;ext=y}
     else if(ve?y-ext>24:ext-y>24){ve=!ve;ext=y}
     else ext=ve?Math.min(ext,y):Math.max(ext,y);

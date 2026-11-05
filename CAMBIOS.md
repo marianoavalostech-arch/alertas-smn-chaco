@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 04/11/2026 (portada del celular)
+
+Pedido de Mariano: la portada del boceto ("tablero de entrada"), solo en el celular.
+- **Portada** arriba de todo en pantallas de menos de 600 px: un recuadro por sección con su dato del momento (Paraná con gráfico chico de 30 días, mapa en chico con cuántos municipios hay de cada color, alertas del SMN, tu localidad o Resistencia con hoy y mañana, lluvia por hora, lluvias, otros ríos, El Niño, qué hacer con "Mi mochila" y teléfonos para tocar). Tocar un recuadro lleva a su sección. El Paraná va primero cuando sale del verde.
+- En el celular, la portada reemplaza la franja del río, "Tu localidad" y el índice "Ir a:"; "↑ Índice" sube hasta ella. La franja del SMN y el resto de la página no cambian. En la computadora, en el portal y al imprimir no cambia nada.
+- Revisado con la regla del navegador y los datos del 4/11 a 320 y 360 px y en la computadora: sin errores; axe sin errores en la portada. Una prueba nueva. Huella nueva del código. 81 pruebas.
+
 ## 04/11/2026 (desplegables de los ríos)
 
 Revisión de los desplegables con Mariano (en el celular se veía raro el Paraguay plegado).

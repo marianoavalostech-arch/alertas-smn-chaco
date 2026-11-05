@@ -1676,5 +1676,22 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(/#mInfo\.tarj\{background:var\(--marino\)/.test(html) && codigo.includes("el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj'"), 'solo el detalle de un municipio');
     S(`D.prono={datos:null}`);
   });
+  prueba('portada del celular (4/11): un recuadro por sección, solo en el celular y fuera del portal', () => {
+    assert.ok(html.includes('<nav class="portada" id="portada" aria-label="El Chaco hoy: un recuadro por sección"></nav>\n\n  <div class="miLoc"'), 'arriba de "Tu localidad" y del índice');
+    assert.ok(html.includes('.portada{display:none}') && /@media screen and \(max-width:599px\)\{\n  html:not\(\.emb\) \.portada\{display:grid\}\n  html:not\(\.emb\) #rioBanda,html:not\(\.emb\) #indice,html:not\(\.emb\) #miLoc\{display:none!important\}/.test(html), 'solo en menos de 600 px y fuera del portal, en lugar de la franja del río, "Tu localidad" y el índice');
+    assert.ok(html.includes('@media print{.portada{display:none!important}}'), 'nunca al imprimir');
+    assert.ok(codigo.includes("const el=$('portada');if(!el||EMB)return;"), 'en el portal no se arma');
+    assert.ok(codigo.includes("'<g id=\"mMuns\">'+GEO.mun.map") && codigo.includes('<use href="#mMuns"'), 'el mapa chico reusa las formas del mapa');
+    for (const h of ['#t-rio', '#t-mapa', '#t-smn', '#t-anim', '#t-lluvia', '#t-otros', '#t-nino', '#t-hacer', '#t-tel', '#t-fuentes']) assert.ok(codigo.includes('href="' + h + '"'), h);
+    assert.strictEqual(S(`pCambio(-0.12)`), 'Bajó 12 cm en 3 días');
+    assert.strictEqual(S(`pCambio(1.234)`), 'Subió 1,23 m en 3 días');
+    assert.strictEqual(S(`pCambio(0.004)`), 'Sin cambios en 3 días');
+    assert.strictEqual(S(`pCambio(null)`), '');
+    assert.ok(S(`pFlecha(-0.2)`).includes('bajando') && S(`pFlecha(0.2)`).includes('creciendo') && S(`pFlecha(0.03)`) === '', 'flecha con texto para el lector de pantalla');
+    const g = S(`pGrafRio([['2026-10-01',5.2],['2026-10-15',6.8],['2026-11-04',6.9]],NIVEL)`);
+    assert.ok(g.includes('stroke="var(--rojo)"') && g.includes('raya roja: 6,50 m'), 'raya de evacuación cerca del nivel');
+    assert.ok(!S(`pGrafRio([['2026-10-01',2.1],['2026-11-04',2.4]],NIVEL)`).includes('raya'), 'sin raya con el río bajo');
+    assert.ok(codigo.includes("const n=por&&por.getClientRects().length?por:ind0;"), '"↑ Índice" sube hasta la portada cuando es la que se ve');
+  });
   console.log('\n' + ok + ' pruebas bien.');
 })();
