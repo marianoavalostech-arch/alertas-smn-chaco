@@ -13,7 +13,7 @@ Pedido de Mariano: tocar el mapa interactivo no tiene que cambiar la localidad p
 ## 12/11/2026 ("¿Cómo se decide el color?" más claro)
 
 Pedido de Mariano: la explicación no quedaba bien (una tabla de una sola fila y párrafos largos).
-- En "Riesgo por localidad", la tabla y los párrafos pasan a una tarjetita por color (rojo, naranja, amarillo, verde, `.regCol`) con lo que lo da, marcado SMN, Lluvia o Río (`.rcE`), y notas cortas abajo (`.regNotas`). Mismas reglas y mismos milímetros.
+- En "Riesgo por localidad", la tabla y los párrafos pasan a una tarjetita por color (rojo, naranja, amarillo, verde, `.regCol`) con lo que lo da, marcado SMN, Río o Lluvia (`.rcE`), una frase arriba (`.regIntro`: depende del SMN y, en la costa, del Paraná) y dos notas cortas (`.regNotas`). Texto sintético; mismas reglas y mismos milímetros (el detalle del Paraná sigue en su sección).
 - La prueba que ata los milímetros del texto al cálculo (`nivelLluvia`) lee las tarjetitas y controla que la lluvia no figure en naranja, amarillo ni verde.
 
 ## 12/11/2026 (la alerta naranja del SMN pinta naranja)

@@ -288,12 +288,12 @@ prueba('umbrales de lluvia', () => {
   for (let c = 0; c <= 200; c += 10) for (let v = 0; v <= 200; v += 10) for (const m of [0, 45, 79, 80])
     assert.notStrictEqual(n3(c, v + 50, m, v, Math.min(m, v)), 1, 'la lluvia nunca da amarillo');
   assert.ok(S(`rojoLejos({cayo:16,viene:130,max:115,viene3:10,max3:5})`) && !S(`rojoLejos({cayo:0,viene:130,max:85,viene3:120,max3:85})`));
-  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && html.includes('Las alertas del SMN y la lluvia cuentan solo para hoy y los 2 días siguientes'));
+  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && html.includes('Solo cuentan hoy y los 2 días siguientes.'));
   // Textos: el amarillo sale del SMN, no de la lluvia
   assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
   assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN, o el Paraná alto'));
   assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN, o, en la costa'));
-  assert.ok(html.includes('La lluvia, sola, nunca da amarillo ni naranja: esos colores los da el SMN o el río.'));
+  assert.ok(html.includes('La lluvia, sola, solo da rojo si es muy fuerte.'));
   const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
   assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
   assert.ok(S(`txtViene({cayo:0,viene:60,max:50,maxDia:'2026-11-13',viene3:60,max3:50,maxDia3:'2026-11-13'},'entre hoy')`).includes('en un solo día'));
@@ -862,9 +862,9 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
   // "¿Cómo se decide el color?" (tarjetitas desde el 12/11/2026): los milímetros del texto son los umbrales del cálculo; la lluvia solo da rojo
   const rojo = html.slice(html.indexOf('<li data-c="rojo"><b>Rojo</b>'), html.indexOf('<li data-c="naranja"><b>Naranja</b>'));
-  const mm = re => +re.exec(rojo)[1], n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
-  const r7 = mm(/(\d+) mm o más entre hoy y los 2 días siguientes/), r1 = mm(/(\d+) mm o más en un solo día/),
-    rc = /Ya cayeron (\d+) mm en 7 días y vienen (\d+) más/.exec(rojo).slice(1).map(Number);
+  const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
+  const lr = /(\d+) mm en 3 días, (\d+) mm en un día, o (\d+) mm si ya cayeron (\d+) mm/.exec(rojo).slice(1).map(Number);
+  const r7 = lr[0], r1 = lr[1], rc = [lr[3], lr[2]];
   assert.strictEqual(n(0, r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 0);
   assert.strictEqual(n(0, 0, r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 0);
   assert.strictEqual(n(...rc, 0), 2); assert.strictEqual(n(rc[0] - 1, rc[1], 0), 0);
