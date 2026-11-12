@@ -9,6 +9,7 @@ Decisión de Mariano.
 - Mapa: con el dato oficial al día, ese nivel reemplaza al cálculo con el Paraná (`ofiNivel`, `colorDe`); sin él (o con más de 24 horas), sigue el cálculo de antes. Tarjeta del municipio con el cuadrito "Oficial", un párrafo que lo explica y "Localidades con alerta" (`locInfo`, `munDeLL`).
 - Río Paraná: "Medido hoy a las 12 h" con la lectura por hora. "Ríos Paraguay y Bermejo": desplegable "Más estaciones, hora por hora" (`estacionesHora`).
 - Textos: leyenda, "¿Cómo se decide el color?", "De dónde salen los datos". Pruebas nuevas, entre ellas una que controla que no haya direcciones de esas fuentes en el repositorio. Huella nueva del código.
+- Colores del mapa (relleno, puntitos, leyenda, tarjeta y "¿Cómo se decide?") con los tonos de las alertas oficiales: verde #2ea043, amarillo #f5c400, naranja #f07c00, rojo #e5302f (`--*-mapa`, `cMapa`). Los textos y etiquetas siguen con sus tonos de buen contraste.
 
 ## 12/11/2026 (tocar el mapa no cambia tu localidad)
 

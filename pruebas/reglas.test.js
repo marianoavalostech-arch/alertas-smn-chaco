@@ -372,7 +372,8 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   // Pide a los navegadores que no lo oscurezcan solos (modo oscuro automático de Chrome)
   assert.ok(html.includes('<meta name="color-scheme" content="only light">') && html.includes(':root{color-scheme:only light}'), 'solo claro: sin oscurecido automático');
   // En el mapa, el amarillo es más claro que en el resto del sitio, para que no se confunda con el naranja
-  assert.ok(/--amarillo-mapa:#f0c419/.test(html) && codigo.includes("k.c==='amarillo'?'amarillo-mapa'") && codigo.includes("c==='amarillo'?'amarillo-mapa'") && /data-c="amarillo"[^>]*><i style="background:var\(--amarillo-mapa\)/.test(html), 'amarillo claro en el mapa, sus puntos y la leyenda');
+  assert.ok(/--amarillo-mapa:#f5c400; --verde-mapa:#2ea043; --naranja-mapa:#f07c00; --rojo-mapa:#e5302f;/.test(html) && codigo.includes("p.setAttribute('fill','var(--'+(k.c?cMapa(k.c):'land')+')');") && codigo.includes("p.setAttribute('fill','var(--'+cMapa(c)+')')});") && ['verde','amarillo','naranja','rojo'].every(c=>new RegExp('data-c="'+c+'"[^>]*><i style="background:var\\(--'+c+'-mapa\\)').test(html)), 'colores del mapa, sus puntos y la leyenda con los tonos de las alertas oficiales (12/11/2026)');
+  assert.deepStrictEqual(JSON.parse(S("JSON.stringify(['verde','amarillo','naranja','rojo','gris'].map(cMapa))")), ['verde-mapa','amarillo-mapa','naranja-mapa','rojo-mapa','gris']);
   // El Paraguay no tiene naranja (no hay pronóstico en Puerto Bermejo)
   const py = codigo.slice(codigo.indexOf('function riesgoParaguay'), codigo.indexOf('/* ---------- pantalla'));
   assert.ok(py.length > 100 && !py.includes("'naranja'"));
@@ -417,7 +418,7 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja: alerta naranja del SMN (desde el 12/11/2026) o el Paraná en la costa
-  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.</li>'), 'leyenda');
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja-mapa\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.</li>'), 'leyenda');
   assert.ok(['amarillo','naranja','rojo'].every(c=>new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del SMN o alerta oficial').test(html)), 'la leyenda nombra la alerta oficial en amarillo, naranja y rojo (12/11/2026)');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');

@@ -89,7 +89,7 @@
   --marino:#0b3158; --violeta:#5059bc; --rosa:#f26df9; --titulo:#0b3158;
   --degrade:linear-gradient(135deg,#5059bc 0%,#8d58e8 55%,#f26df9 100%);
   --fondo:linear-gradient(90deg,#f4f5fa 0%,#f7f5fa 42%,#faf3f9 72%,#fcecf9 100%);
-  --verde:#2c8a57; --amarillo:#d99a00; --amarillo-mapa:#f0c419; --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
+  --verde:#2c8a57; --amarillo:#d99a00; --amarillo-mapa:#f5c400; --verde-mapa:#2ea043; --naranja-mapa:#f07c00; --rojo-mapa:#e5302f; /* colores del mapa (12/11/2026, pedido de Mariano: los tonos de las alertas oficiales) */ --naranja:#d9730d; --rojo:#c5392f; --gris:#8a9699;
   --verde-bg:#e2f2e8; --amarillo-bg:#fbefcc; --naranja-bg:#fbe2cc; --rojo-bg:#f8dedb;
   --aviso-bg:#fff4d6; --aviso-ink:#5a4300;
   /* texto de las etiquetas "alerta amarilla / naranja / roja": el mismo color, más oscuro, para que se lea al sol (contraste 5:1 o más sobre blanco) */
@@ -138,14 +138,14 @@ details.det[open]>summary{padding-bottom:4px}
 .estSit{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .estSit i{width:10px;height:10px;border-radius:50%;background:#c9cfd1;flex-shrink:0}
 .estLey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.88rem;margin:6px 0 0}
-.estSit i[data-c="verde"]{background:var(--verde)}.estSit i[data-c="amarillo"]{background:var(--amarillo-mapa)}.estSit i[data-c="rojo"]{background:var(--rojo)}
+.estSit i[data-c="verde"]{background:var(--verde-mapa)}.estSit i[data-c="amarillo"]{background:var(--amarillo-mapa)}.estSit i[data-c="rojo"]{background:var(--rojo-mapa)}
 /* "¿Cómo se decide el color?" (12/11/2026): una tarjetita por color con lo que lo da (SMN, lluvia, río), en lugar de la tabla de una fila. */
 .regCol{list-style:none;padding:0!important;margin:10px 0;display:grid;gap:8px}
 .regCol>li{border:1px solid var(--line);border-left:7px solid #9aa3a6;border-radius:12px;padding:8px 12px;background:var(--card)}
-.regCol>li[data-c="rojo"]{border-left-color:var(--rojo)}
-.regCol>li[data-c="naranja"]{border-left-color:var(--naranja)}
+.regCol>li[data-c="rojo"]{border-left-color:var(--rojo-mapa)}
+.regCol>li[data-c="naranja"]{border-left-color:var(--naranja-mapa)}
 .regCol>li[data-c="amarillo"]{border-left-color:var(--amarillo-mapa)}
-.regCol>li[data-c="verde"]{border-left-color:var(--verde)}
+.regCol>li[data-c="verde"]{border-left-color:var(--verde-mapa)}
 .regCol>li>b{display:block;font-family:var(--font-tit);font-size:1.08rem;margin-bottom:3px}
 .regCol ul,.regNotas{list-style:none;padding:0!important;margin:0;display:flex;flex-direction:column;gap:4px}
 .regCol li li,.regNotas li{text-align:left;-webkit-hyphens:manual;hyphens:manual;line-height:1.4}
@@ -624,13 +624,10 @@ footer{font-size:.85rem;color:var(--muted)}
 #mInfo .mPor small{font-size:.76rem;font-weight:700;color:#dcdaf7}
 #mInfo .mPor span{display:flex;align-items:center;gap:5px;font-weight:800;font-size:.82rem;line-height:1.2}
 #mInfo .mPor i{width:10px;height:10px}
-#mInfo :is(.mPill,.mPor) i[data-c="verde"]{background:#3fbf7f}
+#mInfo :is(.mPill,.mPor) i[data-c="verde"]{background:var(--verde-mapa)}
 #mInfo :is(.mPill,.mPor) i[data-c="amarillo"]{background:var(--amarillo-mapa)}
-#mInfo :is(.mPill,.mPor) i[data-c="naranja"]{background:#f08a3c}
-#mInfo :is(.mPill,.mPor) i[data-c="rojo"]{background:#ff6a5c}
-#mInfo .mPill i[data-c="verde"]{background:var(--verde)}
-#mInfo .mPill i[data-c="naranja"]{background:var(--naranja)}
-#mInfo .mPill i[data-c="rojo"]{background:var(--rojo)}
+#mInfo :is(.mPill,.mPor) i[data-c="naranja"]{background:var(--naranja-mapa)}
+#mInfo :is(.mPill,.mPor) i[data-c="rojo"]{background:var(--rojo-mapa)}
 #mInfo.tarj .dias{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
 #mInfo.tarj .dia{color:var(--ink);border-radius:14px}
 #mInfo.tarj .dia:first-child{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ico dD dT" "ico dC dT" "ico dF dL" "dA dA dA";column-gap:12px;row-gap:1px;align-items:center;justify-items:start;text-align:left;padding:10px 14px}
@@ -883,10 +880,10 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     </div>
     <div id="mapa"></div>
     <div class="leyenda">
-      <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde);opacity:.7"></i>Verde</button>
+      <button class="ley" type="button" data-c="verde" aria-pressed="false"><i style="background:var(--verde-mapa);opacity:.7"></i>Verde</button>
       <button class="ley" type="button" data-c="amarillo" aria-pressed="false"><i style="background:var(--amarillo-mapa);opacity:.7"></i>Amarillo</button>
-      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja);opacity:.7"></i>Naranja</button>
-      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo);opacity:.7"></i>Rojo</button>
+      <button class="ley" type="button" data-c="naranja" aria-pressed="false"><i style="background:var(--naranja-mapa);opacity:.7"></i>Naranja</button>
+      <button class="ley" type="button" data-c="rojo" aria-pressed="false"><i style="background:var(--rojo-mapa);opacity:.7"></i>Rojo</button>
       <button class="ley" type="button" data-c="gris" aria-pressed="false"><i style="background:var(--gris);opacity:.5"></i>Sin datos</button>
       <span><i class="punteado"></i>Borde punteado: alerta del SMN</span>
     </div>
@@ -1430,6 +1427,8 @@ const lluviaVieja=()=>!D.lluvia||!D.lluvia.datos||(!D.lluvia.vivo&&Date.now()-D.
 // Piso oficial: el color no baja del de la alerta del SMN. Desde el 12/11/2026 (decisión de Mariano) se usa el color del SMN tal cual:
 // amarilla → amarillo, naranja → naranja, roja → rojo. n es la posición en NIVELES (1, 2 o 3).
 const NIVELES=['verde','amarillo','naranja','rojo'];
+// Color de relleno del mapa (y de sus puntitos): desde el 12/11/2026, los tonos de las alertas oficiales.
+const cMapa=c=>NIVELES.includes(c)?c+'-mapa':c;
 function pisoSMN(i){
   if(i==null||i<0)return null;
   const a=smnDe(i);if(!a.length)return null;
@@ -2183,7 +2182,7 @@ function pintarMiLoc(){
   if(!MILOC||i<0){el.hidden=true;return}
   let c='';try{c=colorDe(i).c||''}catch(e){}if(c==='gris')c='';
   el.innerHTML='<span>📍 Tu localidad: <b>'+esc(GEO.mun[i][0])+'</b></span>'
-    +(c?'<span class="miC"><i style="background:var(--'+(c==='amarillo'?'amarillo-mapa':c)+')"></i>'+ETQ[c]+'</span>':'')
+    +(c?'<span class="miC"><i style="background:var(--'+cMapa(c)+')"></i>'+ETQ[c]+'</span>':'')
     +'<button class="btn" type="button" data-miver>Ver en el mapa</button>'
     +(avPuede()&&$('dLoc')&&typeof $('dLoc').showModal==='function'?'<button class="btn" type="button" data-miav>🔔 '+(avEstado()?'Avisos':'Avisarme')+'</button>':'')
     +'<button class="miX" type="button" data-miolv aria-label="Olvidar mi localidad" title="Olvidar mi localidad">✕</button>';
@@ -2196,9 +2195,9 @@ function colorearMapa(R){
   if(R)M.R=R;if(!M.ok)armarMapa();
   // Mismo tono para todos los municipios (lluvia y SMN; en la costa del Paraná, también el río); gris = sin datos.
   M.paths.forEach((p,i)=>{const k=colorDe(i);
-    p.setAttribute('fill','var(--'+(k.c==='amarillo'?'amarillo-mapa':k.c||'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
+    p.setAttribute('fill','var(--'+(k.c?cMapa(k.c):'land')+')');p.setAttribute('fill-opacity',!k.c?1:k.c==='gris'?.5:.7);
     if(smnVigente()&&smnDe(i).length)p.setAttribute('data-smn','1');else p.removeAttribute('data-smn');});
-  M.puntos.forEach((p,j)=>{const c=M.R[j]?M.R[j].c:'gris';p.setAttribute('fill','var(--'+(c==='amarillo'?'amarillo-mapa':c)+')')});
+  M.puntos.forEach((p,j)=>{const c=M.R[j]?M.R[j].c:'gris';p.setAttribute('fill','var(--'+cMapa(c)+')')});
   // En el celular, el botón "Sin datos" se esconde si ningún municipio está en gris (24/10/2026): así los colores entran en un renglón.
   try{document.querySelector('.leyenda').classList.toggle('sinGris',M.filtro!=='gris'&&!M.paths.some((p,i)=>colorDe(i).c==='gris'))}catch(e){}
   resaltar();pintarInfo();seguro(pintarMiLoc);seguro(pintarPortada);
@@ -2581,7 +2580,7 @@ const PIC={
  datos:'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 11v6M12 7.5h.01"/>'
 };
 const pIco=k=>'<span class="pIc" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+PIC[k]+'</svg></span>';
-const pColor=c=>'var(--'+(c==='amarillo'?'amarillo-mapa':c)+')';
+const pColor=c=>'var(--'+cMapa(c)+')';
 const pFuera=c=>!!c&&c!=='verde'&&c!=='gris';
 // Flecha de la tendencia en 3 días (con texto para el lector de pantalla).
 const pFlecha=d=>d==null||Math.abs(d)<=0.05?'':'<span class="pFl"><span aria-hidden="true">'+(d<0?'↓':'↑')+'</span><span class="pSr">'+(d<0?', bajando':', creciendo')+'</span></span>';
