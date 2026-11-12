@@ -211,14 +211,13 @@ Desde el 20/10/2026 (pedido de Mariano):
 
 ## Reglas del color
 
-**Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). "Cayó" son los 7 días anteriores a hoy; "viene" es hoy y los 6 días siguientes. **Desde el 17/10/2026, el rojo mira solo hoy y los 2 días siguientes** (`viene3` y `max3` de `sumarLluvia`; pedido de Mariano, porque un pronóstico a 4 o más días cambia mucho: el 17/10 La Leonesa salía en rojo por 115 mm previstos para el 23/10). El amarillo sigue mirando los 7 días. Si con los 7 días sería rojo pero lo fuerte llega en más de 3 días, el texto lo dice (`ROJO_LEJOS`): "por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque".
+**Lluvia** (`nivelLluvia`, igual para las 6 localidades y los 70 municipios). **Desde el 12/11/2026 la lluvia sola no da amarillo** (decisión de Mariano: el amarillo sigue el criterio del SMN y lo da su alerta; antes, con 70 mm previstos en 7 días, un municipio salía amarillo sin ninguna alerta oficial, como Los Frentones ese día). La lluvia solo da verde o rojo. "Cayó" son los 7 días anteriores a hoy; para el rojo cuenta solo hoy y los 2 días siguientes (`viene3`, `max3` y `maxDia3` de `sumarLluvia`; desde el 17/10/2026, porque un pronóstico a 4 o más días cambia mucho). Si con los 7 días sería rojo pero lo fuerte llega en más de 3 días, el texto lo dice (`ROJO_LEJOS`): "por ahora no cambia el color, y pasa a rojo si el pronóstico se mantiene cuando se acerque". La frase de la lluvia (`txtViene`) dice lo previsto para hoy y los 2 días siguientes y, entre paréntesis, lo de la semana.
 
-| Color | Viene (rojo: en 3 días; amarillo: en 7) | En un solo día (rojo: dentro de los 3 días) | Con lo ya caído |
+| Color | Viene en 3 días | En un solo día (dentro de los 3) | Con lo ya caído |
 |---|---|---|---|
 | Rojo | 120 mm o más | 80 mm o más | cayeron 100 y vienen 70 |
-| Amarillo | 70 mm o más | 45 mm o más | cayó + viene suman 120 |
 
-**Alerta del SMN:** es un piso. Amarilla o naranja → al menos amarillo; roja → rojo.
+**Alerta del SMN:** amarilla o naranja → amarillo (es la única fuente del amarillo fuera de la costa del Paraná); roja → rojo.
 
 **Amarillo del mapa** (desde el 17/10/2026; pedido de Mariano): los municipios, los puntos de las localidades y la muestra de la leyenda usan `--amarillo-mapa` (#f0c419), más claro que el `--amarillo` del resto del sitio (#d99a00), porque con la transparencia del mapa el amarillo oscuro se parecía al naranja. Letras, bordes y el semáforo siguen con `--amarillo`, que se lee mejor sobre blanco.
 
@@ -289,7 +288,7 @@ El pronóstico del Paraná no se usa si tiene más de 7 días (ni para el amaril
 
 ## Limitaciones conocidas
 
-- Los umbrales de lluvia son orientativos: no están validados por ningún organismo. Se ajustaron el 12/10/2026 con la lluvia diaria de 1991 a 2026 de las 6 localidades del semáforo (archivo de Open-Meteo), aplicando la regla como si el pronóstico hubiera sido perfecto: el amarillo sale unas 5 veces por año en el interior y 8 en Resistencia, el rojo 1 o 2, y enero de 2019 queda en rojo en todas. Ese archivo es un modelo de unos 25 km que suaviza los picos, y no hay una lista oficial de inundaciones para validar día por día.
+- Los umbrales de lluvia son orientativos: no están validados por ningún organismo. Se ajustaron el 12/10/2026 con la lluvia diaria de 1991 a 2026 de las 6 localidades del semáforo (archivo de Open-Meteo), aplicando la regla como si el pronóstico hubiera sido perfecto: el amarillo sale unas 5 veces por año en el interior y 8 en Resistencia, el rojo 1 o 2, y enero de 2019 queda en rojo en todas. Desde el 12/11/2026 la lluvia ya no da amarillo (lo da la alerta del SMN); el rojo sigue con estos números. Ese archivo es un modelo de unos 25 km que suaviza los picos, y no hay una lista oficial de inundaciones para validar día por día.
 - Ríos: series de altura del INA. 20 = Paraná en Barranqueras (alerta 6,00 / evacuación 6,50 m), 58 = Paraguay en Puerto Bermejo (6,50 / 7,00 m), 6697 = Bermejo en El Colorado (estación automática, sin niveles oficiales: solo informativo). El INA publica pronóstico de corto plazo para Barranqueras, Puerto Formosa y Puerto Pilcomayo; no para Puerto Bermejo ni para el Bermejo. Las zonas ribereñas tienen renglón propio en el semáforo; el del Paraná también pinta la costa en el mapa.
 - Un municipio entra en una alerta del SMN si la zona alertada cubre su punto central o alguno de sus puntos interiores (uno cada unos 10 km, a más de 4 km del borde). Si la zona apenas roza el borde, puede no figurar. Doce municipios chicos solo tienen el punto central.
 - El canal del SMN rotula las horas como hora argentina, pero corresponden a UTC. El script las corrige 3 horas (`AJUSTE_H`), verificado contra el mapa del SMN el 6/10/2026. En cada lectura controla que el comienzo de las alertas caiga en las franjas del SMN (0, 6, 12 y 18 h); si la mayoría cae 3 horas antes, el SMN arregló su canal y el script deja de corregir solo (`ajuste.horas` pasa a 0). Necesita al menos 3 alertas en el país para decidir; con menos, sigue con lo que venía usando.

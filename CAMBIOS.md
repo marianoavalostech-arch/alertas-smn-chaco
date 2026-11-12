@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 12/11/2026 (el amarillo sigue el criterio del SMN)
+
+Decisión de Mariano (12/11): el amarillo por lluvia sale solo de la alerta del SMN. Ese día Los Frentones estaba en amarillo sin ninguna alerta oficial, por 72 mm previstos en 7 días (casi todo a 5 o 6 días).
+- `nivelLluvia` da solo verde o rojo; el rojo no cambia (hoy y los 2 días siguientes: 120 mm, 80 mm en un día, o 100 caídos y 70 por venir). Amarillo: alerta amarilla o naranja del SMN, o el Paraná en la costa.
+- Textos: leyenda del mapa, "¿Cómo se decide el color?" (tabla solo con el rojo), "De dónde salen los datos", el renglón "En verde" y la frase de la lluvia de cada municipio (`txtViene`: lo de hoy y los 2 días siguientes, con la semana entre paréntesis). `ROJO_LEJOS`: "por ahora no cambia el color".
+- Pruebas: los casos que antes eran amarillos por lluvia ahora son verdes; ninguna combinación de lluvia da amarillo. Huella nueva del código.
+
 ## 05/11/2026 (ventana "Tu localidad" sin cortes)
 
 Pedido de Mariano (5/11): con el bloque de avisos, la ventana "Tu localidad" se veía cortada. Abría ya bajada (sin el título ni la ✕: `scrollIntoView` de la lista movía también la ventana) y la lista terminaba a mitad de renglón.

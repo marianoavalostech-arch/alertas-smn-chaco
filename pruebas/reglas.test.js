@@ -268,25 +268,34 @@ prueba('secciones contraíbles: las principales siempre abiertas, las contraíbl
 prueba('umbrales de lluvia', () => {
   const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
   assert.strictEqual(n(0, 0, 0), 0);
-  assert.strictEqual(n(0, 69, 44), 0);
   assert.strictEqual(n(80, 0, 0), 0);      // lo ya caído, solo, no alcanza
-  assert.strictEqual(n(0, 70, 0), 1);
-  assert.strictEqual(n(0, 10, 45), 1);
-  assert.strictEqual(n(60, 60, 0), 1);     // suman 120
+  // Desde el 12/11/2026 la lluvia sola no da amarillo (lo da la alerta del SMN): lo que antes era amarillo queda en verde
+  assert.strictEqual(n(0, 70, 0), 0);
+  assert.strictEqual(n(0, 10, 45), 0);
+  assert.strictEqual(n(60, 60, 0), 0);
   assert.strictEqual(n(0, 120, 0), 2);
   assert.strictEqual(n(0, 10, 80), 2);
   assert.strictEqual(n(100, 70, 0), 2);
-  assert.strictEqual(n(100, 69, 0), 1);
-  // Desde el 17/10/2026 el rojo mira solo hoy y los 2 días siguientes; el amarillo, los 7 días
+  assert.strictEqual(n(100, 69, 0), 0);
+  // El rojo mira solo hoy y los 2 días siguientes (desde el 17/10/2026)
   const n3 = (cayo, viene, max, viene3, max3) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max},viene3:${viene3},max3:${max3}})`);
-  assert.strictEqual(n3(16, 130, 115, 10, 5), 1);     // caso real de La Leonesa, 17/10: 115 mm a 6 días → amarillo
+  assert.strictEqual(n3(16, 130, 115, 10, 5), 0);     // La Leonesa, 17/10: 115 mm a 6 días → no cambia el color
+  assert.strictEqual(n3(2, 72.1, 30.4, 8, 7.3), 0);   // Los Frentones, 12/11: 72 mm en la semana, 8 en 3 días → verde
   assert.strictEqual(n3(0, 130, 40, 120, 40), 2);     // 120 mm en 3 días → rojo
   assert.strictEqual(n3(0, 90, 85, 85, 85), 2);       // 80 mm o más en un día dentro de los 3 → rojo
   assert.strictEqual(n3(100, 90, 30, 70, 30), 2);     // cayeron 100 y vienen 70 en 3 días → rojo
-  assert.strictEqual(n3(100, 90, 30, 69, 30), 1);
-  assert.strictEqual(n3(0, 50, 30, 20, 10), 0);       // el amarillo no cambia
+  assert.strictEqual(n3(100, 90, 30, 69, 30), 0);
+  for (let c = 0; c <= 200; c += 10) for (let v = 0; v <= 200; v += 10) for (const m of [0, 45, 79, 80])
+    assert.notStrictEqual(n3(c, v + 50, m, v, Math.min(m, v)), 1, 'la lluvia nunca da amarillo');
   assert.ok(S(`rojoLejos({cayo:16,viene:130,max:115,viene3:10,max3:5})`) && !S(`rojoLejos({cayo:0,viene:130,max:85,viene3:120,max3:85})`));
-  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && /cuenta solo la lluvia prevista para hoy y los 2 días siguientes/.test(html));
+  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && /Cuenta solo la lluvia prevista para hoy y los 2 días siguientes/.test(html));
+  // Textos: el amarillo sale del SMN, no de la lluvia
+  assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
+  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla o naranja del SMN, o el Paraná alto'));
+  assert.ok(html.includes('El amarillo sigue el criterio del SMN: la lluvia prevista, sola, no lo da.'));
+  const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
+  assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
+  assert.ok(S(`txtViene({cayo:0,viene:60,max:50,maxDia:'2026-11-13',viene3:60,max3:50,maxDia3:'2026-11-13'},'entre hoy')`).includes('en un solo día'));
 });
 
 prueba('suma de lluvia: lo caído es antes de hoy, lo que viene incluye hoy', () => {
@@ -845,16 +854,14 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   // Números de fenómeno
   ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
-  // Tabla "¿Cómo se decide el color?": los números del texto son los umbrales del cálculo
+  // Tabla "¿Cómo se decide el color?": los números del texto son los umbrales del cálculo (solo el rojo desde el 12/11/2026)
   const fila = c => new RegExp('<td><b>' + c + '</b></td><td>(\\d+) mm o más</td><td>(\\d+) mm o más</td><td>([^<]+)</td>').exec(html);
   const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
-  const [, r7, r1, rc] = fila('Rojo'), [, a7, a1, ac] = fila('Amarillo'), nums = t => t.match(/\d+/g).map(Number);
-  assert.strictEqual(n(0, +r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 1);
-  assert.strictEqual(n(0, 0, +r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 1);
-  assert.strictEqual(n(...nums(rc), 0), 2); assert.strictEqual(n(nums(rc)[0] - 1, nums(rc)[1], 0), 1);
-  assert.strictEqual(n(0, +a7, 0), 1); assert.strictEqual(n(0, a7 - 1, 0), 0);
-  assert.strictEqual(n(0, 0, +a1), 1); assert.strictEqual(n(0, 0, a1 - 1), 0);
-  assert.strictEqual(n(nums(ac)[0] - 45, 45, 0), 1); assert.strictEqual(n(nums(ac)[0] - 46, 45, 0), 0);
+  const [, r7, r1, rc] = fila('Rojo'), nums = t => t.match(/\d+/g).map(Number);
+  assert.strictEqual(n(0, +r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 0);
+  assert.strictEqual(n(0, 0, +r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 0);
+  assert.strictEqual(n(...nums(rc), 0), 2); assert.strictEqual(n(nums(rc)[0] - 1, nums(rc)[1], 0), 0);
+  assert.strictEqual(fila('Amarillo'), null);
 });
 
 prueba('lluvia medida: el script suma lo caído por estación, descarta lo viejo o imposible y controla con las vecinas', () => {

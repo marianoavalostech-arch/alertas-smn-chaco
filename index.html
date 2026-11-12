@@ -864,10 +864,10 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <details class="det" id="d-colores">
       <summary>¿Qué significa cada color?</summary>
       <ul class="leyLista">
-        <li data-c="verde"><b>Verde:</b> sin lluvia fuerte ni alerta del SMN.</li>
-        <li data-c="amarillo"><b>Amarillo:</b> lluvia importante, alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas.</li>
+        <li data-c="verde"><b>Verde:</b> sin alerta del SMN ni lluvia muy fuerte prevista.</li>
+        <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla o naranja del SMN, o el Paraná alto en la costa y zonas bajas.</li>
         <li data-c="naranja"><b>Naranja:</b> solo en la costa del Paraná y zonas bajas, por la altura del río y el pronóstico del INA. No es una alerta del SMN.</li>
-        <li data-c="rojo"><b>Rojo:</b> lluvia muy fuerte, alerta roja del SMN, o el Paraná muy alto en la costa.</li>
+        <li data-c="rojo"><b>Rojo:</b> alerta roja del SMN, lluvia muy fuerte prevista para hoy o los 2 días siguientes, o el Paraná muy alto en la costa.</li>
         <li data-c="gris"><b>Gris:</b> sin datos.</li>
         <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
       </ul>
@@ -1032,17 +1032,16 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
+      <div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista en 3 días</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
         <tr><td><b>Rojo</b></td><td>120 mm o más</td><td>80 mm o más</td><td>cayeron 100 mm y vienen 70</td></tr>
-        <tr><td><b>Amarillo</b></td><td>70 mm o más</td><td>45 mm o más</td><td>lo caído y lo que viene suman 120 mm</td></tr>
       </tbody></table></div>
       <ul>
-        <li>Alcanza con una de las tres columnas. Para el amarillo, la lluvia prevista para hoy y los 6 días siguientes; para el rojo cuenta solo la lluvia prevista para hoy y los 2 días siguientes, porque un pronóstico más lejano cambia mucho.</li>
-        <li>Alerta del SMN para hoy o los 2 días siguientes: amarilla o naranja, el municipio queda por lo menos en amarillo; roja, en rojo.</li>
+        <li>Alerta del SMN para hoy o los 2 días siguientes: amarilla o naranja, el municipio queda en amarillo; roja, en rojo. El amarillo sigue el criterio del SMN: la lluvia prevista, sola, no lo da.</li>
+        <li>Lluvia muy fuerte: el municipio pasa a rojo aunque el SMN no tenga alerta, si se cumple una de las tres columnas de la tabla. Cuenta solo la lluvia prevista para hoy y los 2 días siguientes, porque un pronóstico más lejano cambia mucho.</li>
         <li>Río Paraná en Barranqueras: amarillo desde 6,00 m o si le faltan menos de 50 cm y sigue creciendo; rojo desde 6,50 m. El pronóstico del INA adelanta el color: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m, y rojo si además el río ya pasó 6,00 m. Vale solo para los municipios de la costa y zonas bajas nombrados en «¿Qué significa cada color?». No es una alerta del SMN.</li>
         <li>Siempre queda el color más alto entre la lluvia, la alerta del SMN y el río.</li>
         <li>Los ríos Paraguay y Bermejo, la lluvia medida en estaciones y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no pintan el mapa.</li>
-        <li>Los números de lluvia son orientativos: no los validó ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el amarillo salga pocas veces por año.</li>
+        <li>Los números de la tabla son orientativos: no los validó ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el rojo salga muy pocas veces por año.</li>
       </ul>
     </details>
   </section>
@@ -1119,7 +1118,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m).</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los umbrales del color se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
+      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los números del rojo por lluvia se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo. El amarillo no sale de la lluvia: lo da la alerta del SMN.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
@@ -1363,19 +1362,25 @@ function resumenLluvia(i){
 }
 // "viene3" y "max3": hoy y los 2 días siguientes (lo que cuenta para el rojo).
 function sumarLluvia(dias,mm,ref){
-  let cayo=0,viene=0,max=0,maxDia='',viene3=0,max3=0,k=0;
-  dias.forEach((dia,j)=>{const v=mm[j];if(dia<ref)cayo+=v;else{viene+=v;if(v>max){max=v;maxDia=dia}if(k++<3){viene3+=v;if(v>max3)max3=v}}});
-  return {cayo,viene,max,maxDia,viene3,max3,ref};
+  let cayo=0,viene=0,max=0,maxDia='',viene3=0,max3=0,maxDia3='',k=0;
+  dias.forEach((dia,j)=>{const v=mm[j];if(dia<ref)cayo+=v;else{viene+=v;if(v>max){max=v;maxDia=dia}if(k++<3){viene3+=v;if(v>max3){max3=v;maxDia3=dia}}}});
+  return {cayo,viene,max,maxDia,viene3,max3,maxDia3,ref};
 }
 // Mismos umbrales de lluvia para los municipios con seguimiento y para la estimación del resto.
 // Calibrados el 12/10/2026 con la lluvia diaria de 1991 a 2026 (archivo de Open-Meteo): amarillo unas 5 veces por año en el interior y 8 en Resistencia; rojo 1 o 2 (enero de 2019 queda en rojo).
-// Desde el 17/10/2026 el rojo mira solo hoy y los 2 días siguientes (viene3, max3): un pronóstico a 4 o más días cambia mucho. El amarillo sigue mirando los 7 días.
+// Desde el 17/10/2026 el rojo mira solo hoy y los 2 días siguientes (viene3, max3): un pronóstico a 4 o más días cambia mucho.
+// Desde el 12/11/2026 (decisión de Mariano) la lluvia sola no da amarillo: el amarillo sigue el criterio del SMN (su alerta, en pisoSMN).
+// La lluvia solo da verde (0) o rojo (2).
 const nivelLluvia=ll=>{const v3=ll.viene3!=null?ll.viene3:ll.viene,m3=ll.max3!=null?ll.max3:ll.max;
-  return (v3>=120||m3>=80||(ll.cayo>=100&&v3>=70))?2:(ll.viene>=70||ll.max>=45||ll.cayo+ll.viene>=120)?1:0};
+  return (v3>=120||m3>=80||(ll.cayo>=100&&v3>=70))?2:0};
 // Sería rojo con los 7 días, pero lo fuerte llega en 3 días o más: se avisa en el texto.
-const ROJO_LEJOS=' Lo más fuerte llega en más de 3 días: por ahora queda en amarillo, y pasa a rojo si el pronóstico se mantiene cuando se acerque.';
+const ROJO_LEJOS=' Lo más fuerte llega en más de 3 días: por ahora no cambia el color, y pasa a rojo si el pronóstico se mantiene cuando se acerque.';
 const rojoLejos=ll=>ll.viene3!=null&&nivelLluvia(ll)<2&&nivelLluvia({cayo:ll.cayo,viene:ll.viene,max:ll.max})===2;
 // Captura guardada de lluvia con más de 36 horas: ya no sirve para calcular el riesgo.
+// Frase de lo que viene (12/11/2026): lo que cuenta para el color son hoy y los 2 días siguientes; la semana va entre paréntesis.
+const txtViene=(ll,desde)=>{const v3=ll.viene3!=null?ll.viene3:ll.viene;
+  return nf(v3)+' mm '+desde+' y los 2 días siguientes'+(ll.viene3!=null&&ll.viene>v3?' ('+nf(ll.viene)+' mm en la semana)':'')
+   +(ll.max3!=null&&ll.max3>=45?', con '+nf(ll.max3)+' mm en un solo día ('+fDia(ll.maxDia3)+')':'')};
 const lluviaVieja=()=>!D.lluvia||!D.lluvia.datos||(!D.lluvia.vivo&&Date.now()-D.lluvia.t>36*36e5);
 // Piso oficial: con alerta amarilla o naranja del SMN el color no baja de amarillo; con roja, es rojo.
 function pisoSMN(i){
@@ -1390,8 +1395,7 @@ function riesgo(loc,i){
   let nivel=-1;const por=[];
   if(ll){
     nivel=nivelLluvia(ll);
-    let t='Llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '+nf(ll.viene)+' mm '+(ll.ref===hoy?'entre hoy':'entre el '+fDia(ll.ref))+' y los 6 días siguientes';
-    if(ll.max>=45)t+=', con '+nf(ll.max)+' mm en un solo día ('+fDia(ll.maxDia)+')';
+    let t='Llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '+txtViene(ll,ll.ref===hoy?'entre hoy':'entre el '+fDia(ll.ref));
     por.push(t+'.'+(rojoLejos(ll)&&!(s&&s.n>=2)?ROJO_LEJOS:''));
   }else por.push(D.lluvia&&D.lluvia.datos?'Los datos de lluvia guardados son del '+fFechaHora(D.lluvia.t)+' y ya no sirven para calcular el riesgo.':LISTO?'No se pudo consultar la lluvia.':'Consultando la lluvia…');
   if(s&&s.n>nivel){nivel=s.n;por.push(pisoTxt(s))}
@@ -1578,7 +1582,7 @@ function pintarSemaforo(){
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
   $('sem').innerHTML=otras.map(f=>f.html).join('')
     +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
-      +'<span class="por">'+(otras.length?'':'Sin lluvia fuerte prevista ni alerta del SMN, y los ríos lejos del nivel de alerta. ')+'Tocá un nombre para ver el detalle.</span>'
+      +'<span class="por">'+(otras.length?'':'Sin alerta del SMN ni lluvia muy fuerte prevista, y los ríos lejos del nivel de alerta. ')+'Tocá un nombre para ver el detalle.</span>'
       +'<span class="nombres">'+verdes.map(f=>f.abre.startsWith(' data-j')?'<button type="button"'+f.abre+'>'+f.n+'</button>':'<a href="'+f.abre.slice(9,-1)+'">'+f.n+'</a>').join('')+'</span></li>':'');
   colorearMapa(R);
 }
@@ -1840,8 +1844,7 @@ function pintarInfo(){
     :'<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Por la lluvia está en '+M.R[0].et.toLowerCase()+', como todo el Gran Resistencia. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
-    h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+nf(s.viene)+' mm '+(M.estFin?'entre hoy y el '+fDia(M.estFin):'en los próximos días')
-     +(s.max>=45?', con '+nf(s.max)+' mm en un solo día ('+fDia(s.maxDia)+')':'')+'.'+(rojoLejos(s)&&k.c==='amarillo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
+    h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+txtViene(s,'entre hoy')+'.'+(rojoLejos(s)&&k.c!=='rojo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
   else if(k.tipo==='rio')h='<p><span class="estado">Río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
