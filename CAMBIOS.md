@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 12/11/2026 (la alerta naranja del SMN pinta naranja)
+
+Decisión de Mariano (12/11, tarde): el mapa y el semáforo toman el color del SMN tal cual. Reemplaza la del 23/10 (alerta naranja → amarillo). Así coinciden con los avisos al celular, que ya usaban el color del SMN.
+- `pisoSMN` da la posición en `NIVELES` (amarilla 1, naranja 2, roja 3); `colorDe` y `riesgo` usan los cuatro colores. El semáforo de las 6 localidades ya mostraba renglones naranjas (los usaba el Paraná).
+- Textos: leyenda (Amarillo: alerta amarilla; Naranja: alerta naranja del SMN o el Paraná en la costa) y "¿Cómo se decide el color?". La frase del SMN dice "por eso el color no baja de naranja".
+- Tarjeta del municipio: en las 6 localidades del semáforo, el cuadrito "Lluvia" muestra solo la lluvia (antes mostraba el color con el piso del SMN y podía decir "Lluvia: Naranja" por una alerta de tormentas).
+- Pruebas al día. Huella nueva del código.
+
 ## 12/11/2026 (el amarillo sigue el criterio del SMN)
 
 Decisión de Mariano (12/11): el amarillo por lluvia sale solo de la alerta del SMN. Ese día Los Frentones estaba en amarillo sin ninguna alerta oficial, por 72 mm previstos en 7 días (casi todo a 5 o 6 días).

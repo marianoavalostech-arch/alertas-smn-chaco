@@ -291,8 +291,9 @@ prueba('umbrales de lluvia', () => {
   assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && /Cuenta solo la lluvia prevista para hoy y los 2 días siguientes/.test(html));
   // Textos: el amarillo sale del SMN, no de la lluvia
   assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
-  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla o naranja del SMN, o el Paraná alto'));
-  assert.ok(html.includes('El amarillo sigue el criterio del SMN: la lluvia prevista, sola, no lo da.'));
+  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN, o el Paraná alto'));
+  assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN, o, en la costa'));
+  assert.ok(html.includes('El amarillo y el naranja siguen el criterio del SMN: la lluvia prevista, sola, no los da.'));
   const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
   assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
   assert.ok(S(`txtViene({cayo:0,viene:60,max:50,maxDia:'2026-11-13',viene3:60,max3:50,maxDia3:'2026-11-13'},'entre hoy')`).includes('en un solo día'));
@@ -415,8 +416,8 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.strictEqual(col('verde', obs17, { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-20', 6.0, 6.3, 6.45]] }, '2026-10-17')[0][0], 'amarillo');
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
-  // Leyenda con el naranja, aclarando que no es una alerta del SMN
-  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && /<li data-c="naranja"><b>Naranja:<\/b> solo en la costa del Paraná[^<]*No es una alerta del SMN\.<\/li>/.test(html), 'leyenda');
+  // Leyenda con el naranja: alerta naranja del SMN (desde el 12/11/2026) o el Paraná en la costa
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && /<li data-c="naranja"><b>Naranja:<\/b> alerta naranja del SMN, o, en la costa del Paraná[^<]*pronóstico del INA\.<\/li>/.test(html), 'leyenda');
   assert.ok(/<li data-c="amarillo"><b>Amarillo:<\/b> [^<]*el Paraná alto[^<]*<\/li>/.test(html) && /<li data-c="rojo"><b>Rojo:<\/b> [^<]*el Paraná muy alto[^<]*<\/li>/.test(html), 'la leyenda nombra al río también en amarillo y en rojo');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
@@ -642,16 +643,21 @@ prueba('SMN: piso del color y franjas que ya pasaron', () => {
   S(`hoy='2026-10-07';SMN={emitido:'2026-10-07T03:00:00Z',capturado:'2026-10-07T03:00:00Z',fechas:['2026-10-07','2026-10-08'],
      areas:GEO.mun.map((m,i)=>i),alertas:{0:[['2026-10-07',41,3,3,0,0]],1:[['2026-10-08',37,0,0,5,0]],2:[['2026-10-07',41,0,4,0,0]]}}`);
   S('horaAR=()=>5');
-  assert.strictEqual(S('pisoSMN(0).n'), 1);            // amarilla: piso amarillo
-  assert.strictEqual(S('pisoSMN(1).n'), 2);            // roja: rojo
-  assert.strictEqual(S('pisoSMN(2).n'), 1);            // naranja: piso amarillo (decisión tomada)
+  // Desde el 12/11/2026 el mapa toma el color del SMN tal cual (posición en NIVELES)
+  assert.strictEqual(S('pisoSMN(0).n'), 1);            // amarilla: amarillo
+  assert.strictEqual(S('pisoSMN(1).n'), 3);            // roja: rojo
+  assert.strictEqual(S('pisoSMN(2).n'), 2);            // naranja: naranja
   assert.strictEqual(S('pisoSMN(3)'), null);
+  assert.strictEqual(S('NIVELES[pisoSMN(2).n]'), 'naranja');
+  assert.ok(S('pisoTxt(pisoSMN(2))').endsWith('por eso el color no baja de naranja.'));
+  assert.strictEqual(S('colorDe(2).c'), 'naranja', 'en el mapa, la alerta naranja pinta naranja');
+  assert.strictEqual(S('colorDe(0).c'), 'amarillo'); assert.strictEqual(S('colorDe(1).c'), 'rojo');
   S('horaAR=()=>7');                                   // terminó la madrugada, sigue la mañana
   assert.deepStrictEqual(Array.from(S('smnDe(0)[0].fr')), ['mañana']);
   S('horaAR=()=>13');                                  // la alerta de hoy ya pasó
   assert.strictEqual(S('pisoSMN(0)'), null);
   assert.strictEqual(S('pisoSMN(2)'), null);
-  assert.strictEqual(S('pisoSMN(1).n'), 2);            // la de mañana sigue
+  assert.strictEqual(S('pisoSMN(1).n'), 3);            // la de mañana sigue
 });
 
 prueba('copia del servidor: solo si es reciente y tiene la forma esperada', () => {
@@ -1764,7 +1770,12 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       M.R=LOCS.map(()=>({c:'amarillo',et:'Amarillo',por:'x'}));M.est=Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'verde',ll:{cayo:0,viene:0,max:0}}]));M.tEst=Date.now();M.todos='listo'`);
     const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`), pq = n => S(`porQue(${idx(n)},colorDe(${idx(n)}))`);
     let t = pq('Barranqueras');
-    assert.ok(t.includes('<i data-c="rojo"></i>Rojo en el mapa') && t.includes('<small>Lluvia</small><span><i data-c="amarillo"></i>Amarillo') && t.includes('<small>Río Paraná</small><span><i data-c="rojo"></i>Rojo'), t);
+    assert.ok(t.includes('<i data-c="rojo"></i>Rojo en el mapa') && t.includes('<small>Lluvia</small><span><i data-c="gris"></i>Sin datos') && t.includes('<small>Río Paraná</small><span><i data-c="rojo"></i>Rojo'), t);   // localidad del semáforo: el cuadrito "Lluvia" sale de la lluvia sola (acá no hay datos), no de su color con el SMN
+    S(`D.lluvia={datos:{dias:['2026-10-17','2026-10-18','2026-10-19'],mm:LOCS.map(()=>[10,90,0])},vivo:true,t:Date.now()}`);
+    assert.ok(pq('Barranqueras').includes('<small>Lluvia</small><span><i data-c="rojo"></i>Rojo'), 'con 100 mm en 3 días, la lluvia en rojo');
+    S(`D.lluvia={datos:{dias:['2026-10-17'],mm:LOCS.map(()=>[5])},vivo:true,t:Date.now()}`);
+    assert.ok(pq('Barranqueras').includes('<small>Lluvia</small><span><i data-c="verde"></i>Verde'), 'la lluvia sola en verde aunque el semáforo esté en amarillo');
+    S(`D.lluvia={datos:null}`);
     t = pq('Resistencia');
     assert.ok(t.includes('Naranja en el mapa') && t.includes('<small>Río Paraná</small><span><i data-c="naranja"></i>Naranja'), 'el río con el techo del municipio: ' + t);
     t = pq('Charata');
