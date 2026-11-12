@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 12/11/2026 (alerta oficial por municipio, localidades con alerta y más estaciones)
+
+Decisión de Mariano.
+- Script de Google: lee el nivel de alerta oficial de cada municipio (`normOficial`, solo el nivel), la lectura por hora de los puertos (`normPuertos`, `aplicarPuerto`) y las localidades con alerta (`normLocalidades`). Las direcciones van en las propiedades del script, no en el repositorio.
+- Mapa: con el dato oficial al día, ese nivel reemplaza al cálculo con el Paraná (`ofiNivel`, `colorDe`); sin él (o con más de 24 horas), sigue el cálculo de antes. Tarjeta del municipio con el cuadrito "Oficial", un párrafo que lo explica y "Localidades con alerta" (`locInfo`, `munDeLL`).
+- Río Paraná: "Medido hoy a las 12 h" con la lectura por hora. "Ríos Paraguay y Bermejo": desplegable "Más estaciones, hora por hora" (`estacionesHora`).
+- Textos: leyenda, "¿Cómo se decide el color?", "De dónde salen los datos". Pruebas nuevas, entre ellas una que controla que no haya direcciones de esas fuentes en el repositorio. Huella nueva del código.
+
 ## 12/11/2026 (tocar el mapa no cambia tu localidad)
 
 Pedido de Mariano: tocar el mapa interactivo no tiene que cambiar la localidad predeterminada.

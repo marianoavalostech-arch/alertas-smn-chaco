@@ -132,6 +132,13 @@ details.det>summary{color:var(--acento);padding:10px 0;font-size:.95rem}
 details.det[open]>summary{padding-bottom:4px}
 #rio details.det p+p{margin-top:6px}
 .leyLista{list-style:none;padding-left:0!important}
+/* Más estaciones, hora por hora (12/11/2026) */
+.estHora th[colspan]{padding-top:10px;color:var(--titulo)}
+.estHora .num{text-align:right;white-space:nowrap}
+.estSit{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.estSit i{width:10px;height:10px;border-radius:50%;background:#c9cfd1;flex-shrink:0}
+.estLey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.88rem;margin:6px 0 0}
+.estSit i[data-c="verde"]{background:var(--verde)}.estSit i[data-c="amarillo"]{background:var(--amarillo-mapa)}.estSit i[data-c="rojo"]{background:var(--rojo)}
 /* "¿Cómo se decide el color?" (12/11/2026): una tarjetita por color con lo que lo da (SMN, lluvia, río), en lugar de la tabla de una fila. */
 .regCol{list-style:none;padding:0!important;margin:10px 0;display:grid;gap:8px}
 .regCol>li{border:1px solid var(--line);border-left:7px solid #9aa3a6;border-radius:12px;padding:8px 12px;background:var(--card)}
@@ -657,6 +664,9 @@ footer{font-size:.85rem;color:var(--muted)}
 @media (max-width:359px){#mInfo.tarj .dia:first-child{column-gap:8px;padding:8px 10px}#mInfo.tarj .dia:first-child .ico{font-size:2.2rem}#mInfo.tarj .dia:first-child .dT b{font-size:1.15rem}#mInfo.tarj .dia:first-child .dL b{font-size:1.05rem}#mInfo.tarj .dia:not(:first-child){padding:6px 10px;column-gap:6px}#mInfo.tarj .dia:not(:first-child) .ico{font-size:1.35rem}#mInfo.tarj .dia:not(:first-child) :is(.dD,.dT b,.dL b){font-size:.88rem}#mInfo.tarj .dia:not(:first-child) .dL{min-width:0}}
 #mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 14px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;font-size:.86rem;text-decoration:none}
 #mInfo.tarj .aHora:hover{background:var(--acento-soft)}
+#mInfo .mLocT{margin:2px 0 -2px;font-size:.82rem;font-weight:700;color:#dcdaf7;text-align:left;-webkit-hyphens:manual;hyphens:manual}
+#mInfo .mLocT small{font-weight:500}
+@media print{#mInfo .mLocT{color:inherit}}
 /* Tu localidad (12/11/2026): tocar el mapa ya no la cambia; desde la tarjeta se elige a propósito. */
 #mInfo .mMia{align-self:flex-start;margin:2px 0 0;font-size:.86rem;font-weight:700}
 #mInfo.tarj p.mMia{color:#dcdaf7}
@@ -886,13 +896,13 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <summary>¿Qué significa cada color?</summary>
       <ul class="leyLista">
         <li data-c="verde"><b>Verde:</b> sin alerta del SMN ni lluvia muy fuerte prevista.</li>
-        <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla del SMN, o el Paraná alto en la costa y zonas bajas.</li>
-        <li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN, o, en la costa del Paraná y zonas bajas, la altura del río y el pronóstico del INA.</li>
-        <li data-c="rojo"><b>Rojo:</b> alerta roja del SMN, lluvia muy fuerte prevista para hoy o los 2 días siguientes, o el Paraná muy alto en la costa.</li>
+        <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla del SMN o alerta oficial amarilla.</li>
+        <li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.</li>
+        <li data-c="rojo"><b>Rojo:</b> alerta roja del SMN o alerta oficial roja, o lluvia muy fuerte prevista para hoy o los 2 días siguientes.</li>
         <li data-c="gris"><b>Gris:</b> sin datos.</li>
         <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
       </ul>
-      <p class="meta">Queda el color más alto entre la lluvia, la alerta del SMN y, en la costa, el Paraná. Cuando el Paraná sale del verde, Barranqueras, Puerto Vilelas, Colonia Benítez e Isla del Cerrito lo siguen hasta rojo; Resistencia y Margarita Belén, hasta naranja; La Leonesa, Las Palmas, Puerto Bermejo, General Vedia y Basail, hasta amarillo, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
+      <p class="meta">Queda el color más alto. Las alertas oficiales por municipio son, en general, por la crecida del Paraná. Si no se pueden consultar, en la costa el color se calcula con la altura del Paraná, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
     </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
   </section>
@@ -1053,24 +1063,24 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <p class="regIntro">El color depende de las alertas del <b>Servicio Meteorológico Nacional</b> y, en la costa, del <b>río Paraná</b>. La lluvia, sola, solo da rojo si es muy fuerte.</p>
+      <p class="regIntro">El color depende de las alertas del <b>Servicio Meteorológico Nacional</b> y de las <b>alertas oficiales</b> de cada municipio (por ejemplo, por la crecida del Paraná). La lluvia, sola, solo da rojo si es muy fuerte.</p>
       <ul class="regCol">
         <li data-c="rojo"><b>Rojo</b><ul>
           <li><span class="rcE">SMN</span> Alerta roja.</li>
-          <li><span class="rcE">Río</span> 6,50 m o más.</li>
+          <li><span class="rcE">Oficial</span> Alerta roja.</li>
           <li><span class="rcE">Lluvia</span> 120 mm en 3 días, 80 mm en un día, o 70 mm si ya cayeron 100 mm.</li></ul></li>
         <li data-c="naranja"><b>Naranja</b><ul>
           <li><span class="rcE">SMN</span> Alerta naranja.</li>
-          <li><span class="rcE">Río</span> El INA prevé 6,50 m.</li></ul></li>
+          <li><span class="rcE">Oficial</span> Alerta naranja.</li></ul></li>
         <li data-c="amarillo"><b>Amarillo</b><ul>
           <li><span class="rcE">SMN</span> Alerta amarilla.</li>
-          <li><span class="rcE">Río</span> 6,00 m o más, o cerca y creciendo.</li></ul></li>
+          <li><span class="rcE">Oficial</span> Alerta amarilla.</li></ul></li>
         <li data-c="verde"><b>Verde</b><ul>
-          <li>Sin alertas y con el río más bajo.</li></ul></li>
+          <li>Sin alertas.</li></ul></li>
       </ul>
       <ul class="regNotas">
         <li>Queda el color más alto. Solo cuentan hoy y los 2 días siguientes.</li>
-        <li>El río cuenta solo en la costa y zonas bajas («¿Qué significa cada color?»).</li>
+        <li>Si la alerta oficial no se puede consultar, en la costa se usa la altura del Paraná.</li>
       </ul>
     </details>
   </section>
@@ -1143,7 +1153,8 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   <section aria-labelledby="t-fuentes" class="plegable" data-cerrada data-pista="Organismos y servicios de donde vienen los datos">
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
-      <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras, publicadas por el Instituto Nacional del Agua (INA). Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
+      <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras: la serie diaria, publicada por el Instituto Nacional del Agua (INA), y, desde el 12/11/2026, una lectura por hora. Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
+      <li><b>Alerta oficial por municipio, localidades con alerta y más estaciones de los ríos:</b> fuentes oficiales que se consultan cada hora. Si la alerta oficial lleva más de un día sin renovarse, en la costa el color se calcula con la altura del Paraná. Las localidades y las estaciones son solo informativas.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m).</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
@@ -1246,6 +1257,11 @@ const FORMA={
  rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
  paraguay:d=>FORMA.rio(d),
  bermejo:d=>FORMA.rio(d),
+ // Nivel de alerta oficial por municipio (12/11/2026): { mun: { nombre: 0 a 3 } }.
+ oficial:d=>!!d.mun&&typeof d.mun==='object'&&Object.keys(d.mun).length>=60&&Object.values(d.mun).every(v=>[0,1,2,3].includes(v)),
+ // Estaciones de los ríos hora por hora y localidades con alerta (12/11/2026).
+ puertos:d=>Array.isArray(d.est)&&d.est.every(x=>Array.isArray(x)&&x.length===6&&typeof x[0]==='string'&&typeof x[2]==='number'&&!isNaN(new Date(x[3]))),
+ localidades:d=>/^\d{4}-\d\d-\d\d$/.test(d.dia)&&Array.isArray(d.loc)&&d.loc.every(x=>Array.isArray(x)&&x.length===5&&[1,2,3].includes(x[1])&&isFinite(x[2])&&isFinite(x[3])),
  yacy:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&p[1]>0&&p[1]<1e5)&&esFecha(d.hora),
  prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v))),
  pronoPy:d=>{const ks=Object.keys(PUERTOS_PY).filter(k=>d[k]!=null);return ks.length>0&&ks.every(k=>FORMA.prono({emitido:d.emitido,p:d[k]}))},
@@ -1786,16 +1802,49 @@ function colorBase(i){
 // En la costa del Paraná (RIBERA) queda el color más alto entre ese y el renglón del Paraná (amarillo, naranja o rojo).
 // En RIBERA_PISO, con el Paraná fuera del verde, sigue al río hasta su techo (amarillo, naranja o rojo).
 function colorDe(i){
-  const k=colorBase(i),s=pisoSMN(i);
+  const k=colorBase(i),s=pisoSMN(i),of=ofiNivel(i);
   if(s&&NIVELES.indexOf(k.c)<s.n){k.c=NIVELES[s.n];k.smn=s;if(k.tipo!=='seg'&&k.tipo!=='gran'&&k.tipo!=='est')k.tipo='smn'}
-  if(RIBI[i]){const r=riesgoRio(),n=NIVELES.indexOf(r.c);
+  // Con el nivel oficial al día, ese reemplaza al cálculo con el Paraná (en todos los municipios).
+  if(of!=null){if(of>0&&of>NIVELES.indexOf(k.c)){k.c=NIVELES[of];k.rio={c:NIVELES[of],et:ETQ[NIVELES[of]],ofi:true};if(!k.tipo)k.tipo='rio'}}
+  else if(RIBI[i]){const r=riesgoRio(),n=NIVELES.indexOf(r.c);
     if(n>0&&n>NIVELES.indexOf(k.c)){k.c=r.c;k.rio=r;if(!k.tipo)k.tipo='rio'}}
   else if(RIPI[i]){const r=riesgoRio(),n=Math.min(NIVELES.indexOf(r.c),NIVELES.indexOf(RIBERA_PISO[RIPI[i]].t));
     if(n>0&&n>NIVELES.indexOf(k.c)){k.c=NIVELES[n];k.rio=r;k.piso=RIPI[i];if(!k.tipo)k.tipo='rio'}}
   return k;
 }
-// Párrafo del detalle cuando el color del municipio sale del Paraná.
-const rioInfo=k=>!k.rio?'':k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
+// Nivel de alerta oficial de cada municipio (12/11/2026, decisión de Mariano).
+// Lo trae el script de Google cada hora; con más de 24 horas sin renovar no se usa y la costa vuelve al cálculo con el Paraná.
+const ofiDatos=()=>{const o=D.oficial;return o&&o.datos&&o.datos.mun&&o.t&&Date.now()-o.t<24*36e5?o.datos:null};
+function ofiNivel(i){const d=ofiDatos();if(!d||i==null||i<0)return null;const v=d.mun[GEO.mun[i][0]];return typeof v==='number'?v:0}
+// Localidades con alerta (12/11/2026): cada localidad se ubica en su municipio por el lugar (punto dentro del límite del mapa;
+// si cae afuera, por ejemplo en una isla, el municipio más cercano a menos de unos 15 km). Solo con el informe de hoy o de ayer.
+const ANILLOS=[];
+function anillosDe(i){
+  if(ANILLOS[i])return ANILLOS[i];const out=[];let x=0,y=0,a=null;
+  for(const t of GEO.mun[i][1].match(/[Mlz]|-?\d+(?:\.\d+)?/g)){
+    if(t==='M'){a=[];out.push(a);x=y=null;continue}if(t==='l'||t==='z')continue;const n=+t;
+    if(a.pend==null){a.pend=n;continue}if(x==null){x=a.pend;y=n}else{x+=a.pend;y+=n}a.pend=null;a.push([-24-y/1120,x/1000-63.7])}
+  return ANILLOS[i]=out}
+function dentroAnillo(la,lo,pol){let ok=false;for(let i=0,j=pol.length-1;i<pol.length;j=i++){const xi=pol[i][1],yi=pol[i][0],xj=pol[j][1],yj=pol[j][0];
+  if((yi>la)!==(yj>la)&&lo<(xj-xi)*(la-yi)/(yj-yi)+xi)ok=!ok}return ok}
+const MUN_LL={};
+function munDeLL(la,lo){
+  const k=la+','+lo;if(MUN_LL[k]!=null)return MUN_LL[k];
+  let i=GEO.mun.findIndex((m,j)=>anillosDe(j).some(a=>dentroAnillo(la,lo,a)));
+  if(i<0){let mejor=0.15;GEO.mun.forEach((m,j)=>anillosDe(j).forEach(a=>a.forEach(p=>{const d=Math.hypot(p[0]-la,(p[1]-lo)*0.89);if(d<mejor){mejor=d;i=j}})))}
+  return MUN_LL[k]=i}
+const locDatos=()=>{const o=D.localidades;return o&&o.datos&&o.t&&Date.now()-o.t<24*36e5&&diasEntre(o.datos.dia,hoy)<=1&&o.datos.vigente!==false?o.datos:null};
+function locDe(i){const d=locDatos();return d&&i>=0?d.loc.filter(l=>munDeLL(l[2],l[3])===i).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'es')):[]}
+const LOC_NIV=['','amarilla','naranja','roja'];
+function locInfo(i){
+  try{const L=locDe(i);if(!L.length)return '';const d=locDatos(),mot=[...new Set(L.map(l=>l[4]).filter(Boolean))];
+    return '<p class="mLocT">Localidades con alerta'+(mot.length===1?', por el '+esc(mot[0]):'')+' <small>(informe del '+fDia(d.dia)+(d.hora?', '+esc(d.hora)+' h':'')+')</small></p>'
+      +'<ul class="mPor" aria-label="Localidades con alerta">'+L.map(l=>'<li><span><i data-c="'+NIVELES[l[1]]+'"></i>'+esc(l[0])+'<span class="pSr">: alerta '+LOC_NIV[l[1]]+'</span></span></li>').join('')+'</ul>';
+  }catch(e){console.error(e);return ''}}
+// Párrafo del detalle cuando el color del municipio sale de la alerta oficial o del Paraná.
+const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>'+ETQ[k.c]+' por la alerta oficial.</b> Es el nivel de alerta oficial vigente para este municipio'
+  +(ofiDatos()?' (consultado el '+fFechaHora(D.oficial.t)+')':'')+'. Para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil.</p>'
+  :k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
   +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')+' Las alertas oficiales por la crecida incluyen zonas de este municipio: para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>En la costa, el color sigue al río Paraná ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
   +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':k.rio.pr?' El rojo sale de la altura de hoy y de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas, que protegen la ciudad hasta unos 9,50 m. Seguí los avisos oficiales. <a href="#t-rio">Ver el río</a></p>';
@@ -1870,19 +1919,19 @@ function pintarInfo(){
      +'<button class="btn irRio" type="button" data-irrio="'+M.rio.ir+'">Ver el '+esc(n.replace('Río','río'))+' ↓</button>';return}
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
-  if(k.tipo==='seg')h=k.rio?'<p><span class="estado">Lluvia y río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>'+(M.R[k.j].c==='gris'?'':'Por la lluvia, su semáforo está en '+M.R[k.j].et.toLowerCase()+'. ')+M.R[k.j].por+'</p>'
+  if(k.tipo==='seg')h=k.rio?'<p><span class="estado">'+(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná')+'</span><b>'+ETQ[k.c]+'</b></p><p>'+(M.R[k.j].c==='gris'?'':'Por la lluvia, su semáforo está en '+M.R[k.j].et.toLowerCase()+'. ')+M.R[k.j].por+'</p>'
     :'<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
-  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?'Costa del Paraná':'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Por la lluvia está en '+M.R[0].et.toLowerCase()+', como todo el Gran Resistencia. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
+  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Por la lluvia está en '+M.R[0].et.toLowerCase()+', como todo el Gran Resistencia. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
   else if(k.tipo==='est'){const s=M.est[i].ll;
-    h='<p><span class="estado">'+(k.rio?'Lluvia y río Paraná':'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+txtViene(s,'entre hoy')+'.'+(rojoLejos(s)&&k.c!=='rojo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.')+'</p>'}
+    h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+txtViene(s,'entre hoy')+'.'+(rojoLejos(s)&&k.c!=='rojo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio'+(ofiDatos()?', la alerta del SMN y la alerta oficial.':' y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.'))+'</p>'}
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
-  else if(k.tipo==='rio')h='<p><span class="estado">Río Paraná</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
+  else if(k.tipo==='rio')h='<p><span class="estado">'+(k.rio&&k.rio.ofi?'Alerta oficial':'Río Paraná')+'</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
   else h='<p><span class="estado falla">No disponible</span>No se pudo consultar la lluvia de este municipio ahora. Probá de nuevo con el botón de abajo.</p>';
   // Tarjeta del municipio (4/11/2026, pedido de Mariano: más visual): nombre grande, el color del mapa y de dónde sale, y las tarjetas de los días.
   el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj';
   const sinSmn=smnVigente()&&SMN.leidas!==0&&!smnViejo()&&!smnDe(i).length,pq=porQue(i,k,sinSmn);
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+(pq&&sinSmn?'':smnInfo(i))+diasInfo(i,k)
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+locInfo(i)+(pq&&sinSmn?'':smnInfo(i))+diasInfo(i,k)
    +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p></div>'
    +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);
   // Si el texto entra entero, no se corta ni lleva botón.
@@ -1900,7 +1949,9 @@ function porQue(i,k,sinSmn){
       cl=b.tipo==='seg'||b.tipo==='gran'?(ll?(nivelLluvia(ll)?'rojo':'verde'):'gris'):b.c,ch=[['Lluvia',cl&&cl!=='gris'?cl:'gris']];
     if(s&&SMN_NIV[s.a.niv])ch.push(['Alerta del SMN',SMN_NIV[s.a.niv][0],'Alerta '+SMN_NIV[s.a.niv][1]]);
     else if(sinSmn)ch.push(['SMN','verde','Sin alertas']);
-    if(RIBI[i]||RIPI[i]){const r=riesgoRio();let c=r.c||'gris';
+    const of=ofiNivel(i);
+    if(of!=null){if(of>0||RIBI[i]||RIPI[i])ch.push(['Oficial',NIVELES[of],of?'Alerta '+['','amarilla','naranja','roja'][of]:'Sin alerta'])}
+    else if(RIBI[i]||RIPI[i]){const r=riesgoRio();let c=r.c||'gris';
       if(RIPI[i]&&NIVELES.indexOf(c)>0)c=NIVELES[Math.min(NIVELES.indexOf(c),NIVELES.indexOf(RIBERA_PISO[RIPI[i]].t))];
       ch.push(['Río Paraná',c])}
     return '<p class="mCol"><span class="mPill"><i data-c="'+k.c+'"></i>'+ETQ[k.c]+' en el mapa</span></p>'
@@ -2273,7 +2324,7 @@ function pintarRio(){
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
    +RIO_LEER()+(pf.length?RIO_PRONO():'')+lineaYacy()
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
-   +meta('rio','Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
+   +meta('rio',D.rio.datos.pna?'Prefectura Naval Argentina (lectura por hora; serie diaria vía INA)':'Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
@@ -2376,7 +2427,26 @@ function pronoPyInfo(){
    +meta('pronoPy','INA, pronóstico de altura para Puerto Formosa y Puerto Pilcomayo','Pronóstico emitido el '+fDia(em)+'.');
 }
 function pintarOtros(){
-  $('otros').innerHTML=Object.keys(OTROS).map(k=>{try{return bloqueOtro(k)}catch(e){console.error(e);MEM.borrar(k);D[k]={datos:null,error:true};return bloqueOtro(k)}}).join('');
+  $('otros').innerHTML=Object.keys(OTROS).map(k=>{try{return bloqueOtro(k)}catch(e){console.error(e);MEM.borrar(k);D[k]={datos:null,error:true};return bloqueOtro(k)}}).join('')+seguroTxt(estacionesHora);
+}
+const seguroTxt=f=>{try{return f()||''}catch(e){console.error(e);return ''}};
+// Más estaciones, hora por hora (12/11/2026): la última lectura de cada estación, río por río.
+// Solo informativo (no pinta el mapa). Se muestran las de menos de 30 horas, en el orden en que baja el agua.
+const ESTACIONES_HORA=[['Paraguay',['Pilcomayo','Formosa','Las Palmas','Isla del Cerrito']],
+  ['Paraná',['Posadas','Ituzaingó','Itatí','Paso de la Patria','Corrientes','Barranqueras','Empedrado']],['Bermejo',['Lavalle','Mansilla','Colorado']]];
+const SIT_TXT=['Normal','Alerta','Evacuación'],SIT_C=['verde','amarillo','rojo'];
+function estacionesHora(){
+  const d=D.puertos&&D.puertos.datos;if(!d||!d.est)return '';
+  const por={};d.est.forEach(x=>{if(Date.now()-new Date(x[3])<30*36e5)por[sinTildes(x[1])+'|'+sinTildes(x[0])]=x});
+  const filas=ESTACIONES_HORA.map(([rio,L])=>{const r=L.map(n=>por[sinTildes(rio)+'|'+sinTildes(n)]).filter(Boolean);if(!r.length)return '';
+    return '<tr><th colspan="3" scope="colgroup">Río '+rio+'</th></tr>'+r.map(x=>'<tr><td><span class="estSit"><i data-c="'+(x[4]==null?'':SIT_C[x[4]])+'"></i>'+esc(x[0])
+      +'<span class="pSr">: '+(x[4]==null?'sin niveles de alerta':SIT_TXT[x[4]].toLowerCase())+'</span></span></td><td class="num"><b>'+nf(x[2],2)+' m</b></td>'
+      +'<td class="num">'+(x[5]==null?'—':(x[5]>0?'+':'')+x[5]+' cm')+'</td></tr>').join('')}).join('');
+  if(!filas)return '';
+  return '<details class="det" id="d-estaciones"><summary>Más estaciones, hora por hora</summary>'
+    +'<div class="tabla" tabindex="0" role="region" aria-label="Más estaciones de los ríos"><table class="estHora"><thead><tr><th>Estación</th><th class="num">Altura</th><th class="num">En 24 h</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+    +'<p class="estLey"><span class="estSit"><i data-c="rojo"></i>Evacuación</span><span class="estSit"><i data-c="amarillo"></i>Alerta</span><span class="estSit"><i data-c="verde"></i>Normal</span><span class="estSit"><i></i>Sin niveles</span></p>'
+    +'<p class="meta">Última lectura de cada estación, con los niveles de alerta y evacuación de cada puerto. Solo informativo: no cambia los colores del mapa.</p></details>';
 }
 // Aviso si la lluvia lleva más de 24 horas sin renovarse (lo normal es una copia nueva por hora). El motivo le llega por correo a quien mantiene el sitio.
 function lluviaAtraso(){
@@ -2738,7 +2808,7 @@ function seguro(f,ks){
 }
 function pintar(){
   seguro(()=>{if(D.rio)pintarRio()},['rio','yacy','prono']);
-  seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo','pronoPy']);
+  seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo','pronoPy','puertos']);
   seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
   seguro(pintarBanner);
@@ -3097,17 +3167,17 @@ seguro(iniciarPlegables);seguro(iniciarDesplegables);
 pedirServidor();seguro(pintarNino);seguro(pintarSMN,['smn']);seguro(iniciarHacer);seguro(pintarHacer);cargarSMN();
 seguro(iniciarAnim);seguro(iniciarGrilla);seguro(iniciarPacifico);
 // Primero lo guardado en este dispositivo (si hay), para no esperar con la página vacía; después cada fuente por separado.
-['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
+['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].forEach(k=>{const g=MEM.leer(k);D[k]=g?{datos:g.datos,vivo:false,t:new Date(g.t)}:{datos:null}});
 (g=>{if(g&&Date.now()-new Date(g.t)<36*36e5){estimar(g.datos,diaAR(new Date(g.t)));M.tEst=new Date(g.t)}})(MEM.leer('municipios'));
 pintar();
-Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g&&A.pedida)seguro(pintarAnim,['grilla'])});
+Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].map(k=>cargar(k).then(pintar))).then(()=>{LISTO=true;pintar();if(!A.g&&A.pedida)seguro(pintarAnim,['grilla'])});
 // Renovación automática: cada 30 minutos con la pestaña a la vista, y al volver a ella si pasaron más de 10 minutos.
 let ULT=Date.now();
 function renovar(){
   if(document.hidden||!LISTO)return;
   ULT=Date.now();hoy=diaAR(new Date());
   pedirServidor();seguro(pintarSMN,['smn']);cargarSMN();
-  Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida'].map(cargar)).then(pintar);
+  Promise.all(['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].map(cargar)).then(pintar);
   cargarTodos();if(A.pedida)cargarGrilla();
 }
 setInterval(renovar,30*60e3);

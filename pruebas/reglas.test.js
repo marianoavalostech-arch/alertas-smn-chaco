@@ -291,8 +291,8 @@ prueba('umbrales de lluvia', () => {
   assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && html.includes('Solo cuentan hoy y los 2 días siguientes.'));
   // Textos: el amarillo sale del SMN, no de la lluvia
   assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
-  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN, o el Paraná alto'));
-  assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN, o, en la costa'));
+  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN o alerta oficial amarilla.'));
+  assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.'));
   assert.ok(html.includes('La lluvia, sola, solo da rojo si es muy fuerte.'));
   const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
   assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
@@ -417,8 +417,8 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja: alerta naranja del SMN (desde el 12/11/2026) o el Paraná en la costa
-  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && /<li data-c="naranja"><b>Naranja:<\/b> alerta naranja del SMN, o, en la costa del Paraná[^<]*pronóstico del INA\.<\/li>/.test(html), 'leyenda');
-  assert.ok(/<li data-c="amarillo"><b>Amarillo:<\/b> [^<]*el Paraná alto[^<]*<\/li>/.test(html) && /<li data-c="rojo"><b>Rojo:<\/b> [^<]*el Paraná muy alto[^<]*<\/li>/.test(html), 'la leyenda nombra al río también en amarillo y en rojo');
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.</li>'), 'leyenda');
+  assert.ok(['amarillo','naranja','rojo'].every(c=>new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del SMN o alerta oficial').test(html)), 'la leyenda nombra la alerta oficial en amarillo, naranja y rojo (12/11/2026)');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
@@ -544,7 +544,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
-  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Colonia Benítez e Isla del Cerrito lo siguen hasta rojo'));
+  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Las alertas oficiales por municipio son, en general, por la crecida del Paraná.'));
   assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
   // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
   const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
@@ -794,6 +794,83 @@ prueba('script: si una fuente falla queda la copia anterior y las demás siguen'
   assert.strictEqual(d.rio.t, 'antes'); assert.ok(d.errores.rio); assert.ok(d.errores.oni); assert.strictEqual(d.oni, undefined);
   assert.ok(d.errores.prono); assert.strictEqual(d.prono, undefined);
   assert.strictEqual(d.lluvia.t, '2026-10-07T12:00:00.000Z'); assert.ok(d.errores.yacy);
+});
+
+prueba('script: alerta oficial por municipio, lectura por hora de los puertos y localidades con alerta (12/11/2026), sin direcciones en el repositorio', () => {
+  // Las direcciones van en las propiedades del script: sin ellas, no se piden (y nada se rompe).
+  assert.strictEqual(gs.fuentesExtra('2026-11-12', new Date(), {}).length, 10);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.fuentesExtra('2026-11-12', new Date(), { oficial: 'https://x/a', rios: 'https://x/b' }).slice(0, 2).map(f => f.k))), ['oficial', 'puertos']);
+  // Nivel oficial: por nombre (con o sin tildes), solo el nivel; menos de 60 municipios reconocidos es un error
+  const lista = JSON.parse(JSON.stringify(gs.MUNICIPIOS)).map(m => ({ municipio: m, nivel_vigente: null, evacuados_personas: 9 }));
+  lista[lista.findIndex(x => x.municipio === 'Barranqueras')].nivel_vigente = 'Rojo';
+  lista[lista.findIndex(x => x.municipio === 'Colonia Benítez')] = { municipio: 'Colonia Benitez', nivel_vigente: 'Naranja' };
+  lista[lista.findIndex(x => x.municipio === 'Basail')].nivel_vigente = 'Amarillo';
+  lista[lista.findIndex(x => x.municipio === 'Misión Nueva Pompeya')] = { municipio: 'Nueva Pompeya', nivel_vigente: 'Amarilla' };
+  const o = JSON.parse(JSON.stringify(gs.normOficial({ municipios: lista })));
+  assert.strictEqual(Object.keys(o.mun).length, 70); assert.deepStrictEqual(Object.keys(o), ['mun'], 'nada de evacuados');
+  assert.deepStrictEqual([o.mun['Barranqueras'], o.mun['Colonia Benítez'], o.mun['Basail'], o.mun['Resistencia'], o.mun['Misión Nueva Pompeya']], [3, 2, 1, 0, 1]);
+  assert.throws(() => gs.normOficial({ municipios: lista.slice(0, 50) })); assert.throws(() => gs.normOficial({}));
+  // Puertos: Barranqueras del Paraná, hora de la Argentina
+  const pref = JSON.parse(JSON.stringify(gs.normPuertos({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraguay', altura_m: 1, fecha_hora: '2026-11-12 12:00:00' } },
+    { properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 6.641, fecha_hora: '2026-11-12 12:00:00' } }] })));
+  assert.deepStrictEqual([pref.v, pref.hora], [6.64, '2026-11-12T15:00:00.000Z']);
+  assert.deepStrictEqual(pref.est, [['Barranqueras', 'Paraguay', 1, '2026-11-12T15:00:00.000Z', null, null], ['Barranqueras', 'Paraná', 6.64, '2026-11-12T15:00:00.000Z', null, null]], 'todas las estaciones');
+  const e2 = JSON.parse(JSON.stringify(gs.normPuertos({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 6.64, fecha_hora: '2026-11-12 12:00:00', situacion_umbral: 'EVACUACION', variacion_24h_cm: -1 } },
+    { properties: { estacion: 'Las Palmas', rio: 'Paraguay', altura_m: 6.66, fecha_hora: '2026-11-12 14:00:00', situacion_umbral: 'ALERTA', variacion_24h_cm: 0 } },
+    { properties: { estacion: 'Eldorado', rio: 'Paraná', altura_m: 18.8, fecha_hora: '2026-11-12 12:00:00', situacion_umbral: 'SIN_UMBRAL', variacion_24h_cm: -20 } },
+    { properties: { estacion: 'Vieja', rio: 'Paraná', altura_m: 3, fecha_hora: '2026-11-01 12:00:00', desactualizado: true } }] }).est));
+  assert.deepStrictEqual(e2.map(x => [x[0], x[4], x[5]]), [['Barranqueras', 2, -1], ['Las Palmas', 1, 0], ['Eldorado', null, -20]], 'situación y cambio; las desactualizadas no');
+  // Localidades con alerta: solo nombre, nivel, lugar y motivo
+  const lc = JSON.parse(JSON.stringify(gs.normLocalidades({ reporte: { fecha_reporte: '2026-11-12', hora_referencia: '08:00:00', nivel_general: 'ROJA', vigente: true },
+    features: [{ properties: { nombre_reportado: 'Isla Soto (referencia aprox.)', nombre_resuelto: 'Isla Soto (referencia aprox.)', nivel: 'ROJA', descripcion: 'EVACUACIÓN Río Paraná: 6,65 m', indicador: 'HIDROLÓGICO', recomendacion: 'interna', observaciones: 'interna' }, geometry: { type: 'Point', coordinates: [-58.8331, -27.8372] } },
+      { properties: { nombre_reportado: 'X', nivel: 'VERDE' }, geometry: { type: 'Point', coordinates: [-58, -27] } }] })));
+  assert.deepStrictEqual(lc, { dia: '2026-11-12', hora: '08:00', niv: 3, vigente: true, loc: [['Isla Soto', 3, -27.837, -58.833, 'río Paraná']] });
+  assert.throws(() => gs.normLocalidades({ features: [] }));
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.fuentesExtra('2026-11-12', new Date(), { loc: 'https://x/c' }).slice(0, 1).map(f => f.k))), ['localidades']);
+  assert.throws(() => gs.normPuertos({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 66, fecha_hora: '2026-11-12 12:00:00' } }] }));
+  const rio = { obs: [['2026-11-11', 6.7], ['2026-11-12', 6.66]], act: 'a', hora: '2026-11-12T03:00:00.000Z', t: 't' }, ahora = new Date('2026-11-12T16:00:00Z');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.aplicarPuerto(rio, pref, ahora))), { obs: [['2026-11-11', 6.7], ['2026-11-12', 6.64]], act: 'a', hora: '2026-11-12T15:00:00.000Z', pna: true, t: 't' }, 'mismo día: la reemplaza, con su hora');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.aplicarPuerto({ ...rio, obs: [['2026-11-11', 6.7]] }, pref, ahora).obs)), [['2026-11-11', 6.7], ['2026-11-12', 6.64]], 'día nuevo: se suma');
+  assert.strictEqual(gs.aplicarPuerto(rio, pref, new Date('2026-11-14T12:00:00Z')), rio, 'vieja: no se usa');
+  assert.strictEqual(rio.obs[1][1], 6.66, 'no toca la serie original');
+  // leerExtras: la lectura por hora entra en la serie del Paraná
+  const pedir = url => url === 'https://x/b' ? { codigo: 200, texto: JSON.stringify({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 6.64, fecha_hora: '2026-11-12 12:00:00' } }] }) }
+    : url.indexOf('/series/20/') >= 0 ? { codigo: 200, texto: JSON.stringify([{ timestart: '2026-11-12T03:00:00.000Z', valor: 6.66 }]) } : { codigo: 500, texto: '' };
+  const d = JSON.parse(JSON.stringify(gs.leerExtras('2026-11-12', ahora, {}, pedir, { rios: 'https://x/b' })));
+  assert.deepStrictEqual([d.rio.obs, d.rio.pna, d.puertos.v], [[['2026-11-12', 6.64]], true, 6.64]);
+  // El repositorio es público: ninguna dirección de las fuentes oficiales. El patrón va codificado.
+  const archivos = require('child_process').execSync('git ls-files', { cwd: path.join(__dirname, '..') }).toString().split('\n').filter(f => f && !/\.(png|jpg|ico|woff2?|ttf|keystore|zip|aab)$/.test(f));
+  const malas = archivos.filter(f => { const t = fs.readFileSync(path.join(__dirname, '..', f), 'utf8'); return new RegExp(Buffer.from('YXBhY2hhY298c2dhZHJ8c2l0XC5jaGFjb1wuZ29iXC5hci8oYXBpfGdlb3NlcnZlcnxwdWJsaWMp', 'base64').toString(), 'i').test(t); });
+  assert.deepStrictEqual(malas, [], 'archivos con direcciones de fuentes oficiales');
+});
+
+prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con el Paraná (12/11/2026)', () => {
+  const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
+  const CB = idx('Colonia Benítez'), BA = idx('Basail'), EP = idx('Puerto Eva Perón'), CH = idx('Charata');
+  const col = (ofi, h) => JSON.parse(S(`hoy='2026-11-12';LISTO=true;SMN=SMN_VACIO;
+    D.rio={datos:{obs:[['2026-11-12',6.66]]},vivo:true,t:new Date()};D.prono={datos:null};
+    M.R=LOCS.map(()=>({c:'verde',et:'Verde',por:'x'}));M.est=Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'verde',ll:{cayo:0,viene:0,max:0}}]));M.tEst=Date.now();M.todos='listo';
+    D.oficial=${ofi ? `{datos:{mun:${JSON.stringify(ofi)}},vivo:true,t:new Date(Date.now()-${h || 0}*36e5)}` : '{datos:null}'};
+    (()=>{const r=JSON.stringify([${CB},${BA},${EP},${CH}].map(i=>{const k=colorDe(i);return [k.c,!!(k.rio&&k.rio.ofi)]}));D.oficial={datos:null};D.rio={datos:null};return r})()`));
+  const ofi = { 'Colonia Benítez': 2, 'Basail': 2, 'Puerto Eva Perón': 1, 'Charata': 0 };
+  assert.deepStrictEqual(col(ofi), [['naranja', true], ['naranja', true], ['amarillo', true], ['verde', false]], 'como la alerta oficial');
+  assert.deepStrictEqual(col(null), [['rojo', false], ['amarillo', false], ['verde', false], ['verde', false]], 'sin el dato oficial: el cálculo con el Paraná');
+  assert.deepStrictEqual(col(ofi, 30), col(null), 'con más de 24 horas tampoco');
+  assert.ok(S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],0]))})`) && !S(`FORMA.oficial({mun:{a:1}})`) && !S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],5]))})`));
+  assert.ok(codigo.includes("['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].map(k=>cargar(k).then(pintar))"));
+  // Localidades con alerta: cada una en su municipio (las islas, en el más cercano); solo con el informe de hoy o de ayer
+  const ll = [['Isla del Cerrito', -27.293, -58.618, 'Isla del Cerrito'], ['Puerto Antequeras', -27.443, -58.85, 'Colonia Benítez'], ['Isla Santa Rosa', -27.483, -58.916, 'Barranqueras'],
+    ['Puerto Bermejo Nuevo', -26.908, -58.542, 'Puerto Bermejo'], ['Margarita Belén', -27.259, -58.97, 'Margarita Belén'], ['Lejos', -30, -50, null]];
+  assert.deepStrictEqual(ll.map(x => S(`(i=>i<0?null:GEO.mun[i][0])(munDeLL(${x[1]},${x[2]}))`)), ll.map(x => x[3]));
+  const locT = d => S(`hoy='2026-11-12';D.localidades={datos:{dia:'${d}',hora:'08:00',niv:3,vigente:true,loc:[['Puerto Antequeras',3,-27.443,-58.85,'río Paraná'],['Colonia Benítez',2,-27.329,-58.95,'río Paraná']]},vivo:true,t:new Date()};
+    (()=>{const r=locInfo(GEO.mun.findIndex(m=>m[0]==='Colonia Benítez'));D.localidades={datos:null};return r})()`);
+  const t1 = locT('2026-11-12');
+  assert.ok(t1.includes('Localidades con alerta, por el río Paraná') && t1.indexOf('Puerto Antequeras') < t1.indexOf('>Colonia Benítez') && t1.includes('data-c="rojo"') && t1.includes('informe del 12/11, 08:00 h'), 'la roja primero');
+  assert.strictEqual(locT('2026-11-09'), '', 'informe viejo: nada');
+  // Más estaciones, hora por hora: en "Otros ríos", en el orden en que baja el agua
+  const est = S(`D.puertos={datos:{v:6.64,hora:new Date().toISOString(),est:[['Barranqueras','Paraná',6.64,new Date().toISOString(),2,-1],['Corrientes','Paraná',6.76,new Date().toISOString(),1,-1],['Las Palmas','Paraguay',6.66,new Date().toISOString(),1,0],['Eldorado','Paraná',18.8,new Date().toISOString(),null,-20],['Vieja','Paraná',1,'2026-01-01T00:00:00Z',0,0]]},vivo:true,t:new Date()};(()=>{const r=estacionesHora();D.puertos={datos:null};return r})()`);
+  assert.ok(est.includes('Más estaciones, hora por hora') && est.indexOf('Río Paraguay') < est.indexOf('Río Paraná') && est.indexOf('Corrientes') < est.indexOf('Barranqueras') && est.includes(': evacuación') && !est.includes('Eldorado') && !est.includes('Vieja') && est.includes('−1 cm'.replace('−','-')), 'tabla');
+  assert.ok(codigo.includes("'<p><b>'+ETQ[k.c]+' por la alerta oficial.</b>"), 'explica la alerta oficial');
 });
 
 prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo demás se renueva', () => {
@@ -1798,7 +1875,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
     t = S(`porQue(${idx('Barranqueras')},colorDe(${idx('Barranqueras')}),true)`);
     assert.ok(t.includes('<small>SMN</small><span><i data-c="verde"></i>Sin alertas'), 'sin alertas confirmadas: cuadrito del SMN en lugar del renglón');
-    assert.ok(codigo.includes("pq+(pq&&sinSmn?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
+    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&sinSmn?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
     const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
     assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)

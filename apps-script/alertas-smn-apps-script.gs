@@ -385,10 +385,88 @@ function serieINA(n, hoy) {
   return 'https://alerta.ina.gob.ar/a5/obs/puntual/series/' + n + '/observaciones?timestart=' + sumarDias(hoy, -30) + '&timeend=' + sumarDias(hoy, 2) + '&format=json';
 }
 
-function fuentesExtra(hoy, ahora) {
+// Fuentes oficiales (12/11/2026, decisión de Mariano): el nivel de alerta vigente de cada municipio, la lectura por hora de los puertos
+// y las localidades con alerta. Sus direcciones NO van en este archivo: se guardan en las propiedades del script
+// (FUENTE_OFICIAL, FUENTE_RIOS y FUENTE_LOCALIDADES). Sin esas propiedades, el sitio sigue como antes (color de la costa calculado con el Paraná).
+function urlsPropias() {
+  try { var p = PropertiesService.getScriptProperties(); return { oficial: p.getProperty('FUENTE_OFICIAL'), rios: p.getProperty('FUENTE_RIOS'), loc: p.getProperty('FUENTE_LOCALIDADES') }; }
+  catch (e) { return {}; }
+}
+function sinTildes(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+var NIVEL_OFICIAL = { amarillo: 1, amarilla: 1, naranja: 2, rojo: 3, roja: 3 };
+// Nivel oficial de cada municipio: { mun: { 'Barranqueras': 3, ... } } (0 sin alerta, 1 amarillo, 2 naranja, 3 rojo). Solo el nivel:
+// ningún otro dato. Da error si reconoce menos de 60 de los 70 municipios.
+function normOficial(j) {
+  var lista = j && j.municipios;
+  if (lista && !Array.isArray(lista) && typeof lista === 'object') lista = Object.keys(lista).map(function (k) { return lista[k]; });
+  if (!Array.isArray(lista)) throw new Error('sin municipios');
+  var claves = MUNICIPIOS.map(sinTildes), mun = {}, n = 0;
+  lista.forEach(function (x) {
+    var c = sinTildes(x && x.municipio), i = claves.indexOf(c);
+    if (i < 0) i = claves.indexOf('mision ' + c);   // "Nueva Pompeya" = Misión Nueva Pompeya
+    if (i < 0 || mun[MUNICIPIOS[i]] != null) return;
+    mun[MUNICIPIOS[i]] = NIVEL_OFICIAL[sinTildes(x.nivel_vigente)] || 0; n++;
+  });
+  if (n < 60) throw new Error('solo se reconocieron ' + n + ' municipios');
+  return { mun: mun };
+}
+// Hora de la Argentina ("2026-11-12 12:00:00") a ISO.
+function horaAR(t) { var d = new Date(String(t || '').replace(' ', 'T') + '-03:00'); return isNaN(d) ? null : d.toISOString(); }
+var SITUACION = { normal: 0, alerta: 1, evacuacion: 2 };
+// Lectura más nueva de Barranqueras (río Paraná): { v: metros, hora: ISO }, y las demás estaciones de los ríos
+// (12/11/2026): est = [[estación, río, metros, hora ISO, situación (0 normal, 1 alerta, 2 evacuación, null sin niveles), cambio en 24 h en cm]].
+function normPuertos(j) {
+  var ps = (j && j.features || []).map(function (x) { return x && x.properties; }).filter(Boolean);
+  var f = ps.filter(function (p) { return sinTildes(p.estacion) === 'barranqueras' && sinTildes(p.rio) === 'parana'; })[0];
+  if (!f) throw new Error('sin Barranqueras');
+  var v = Number(f.altura_m), t = horaAR(f.fecha_hora);
+  if (!(v > -3 && v < 12) || !t) throw new Error('lectura rara');
+  var est = [];
+  ps.forEach(function (p) {
+    var a = Number(p.altura_m), h = horaAR(p.fecha_hora), s = SITUACION[sinTildes(p.situacion_umbral)], c = Number(p.variacion_24h_cm);
+    if (!p.estacion || !p.rio || !isFinite(a) || a < -5 || a > 40 || !h || p.desactualizado === true) return;
+    est.push([String(p.estacion).slice(0, 40), String(p.rio).slice(0, 20), Math.round(a * 100) / 100, h, s == null ? null : s, isFinite(c) && p.variacion_24h_cm != null ? Math.round(c) : null]);
+  });
+  return { v: Math.round(v * 100) / 100, hora: t, est: est };
+}
+// Localidades con alerta (12/11/2026): el informe vigente (día, hora y nivel general) y, por localidad, nombre, nivel
+// (1 amarilla, 2 naranja, 3 roja), lugar y el río o fenómeno. Ningún otro dato.
+var NIVEL_LOC = { amarilla: 1, amarillo: 1, naranja: 2, roja: 3, rojo: 3 };
+function motivoLoc(p) {
+  var t = sinTildes((p.descripcion || '') + ' ' + (p.indicador || ''));
+  return t.indexOf('parana') >= 0 ? 'río Paraná' : t.indexOf('paraguay') >= 0 ? 'río Paraguay' : t.indexOf('bermejo') >= 0 ? 'río Bermejo'
+    : /lluvia|precipit/.test(t) ? 'lluvia' : t.indexOf('hidrolog') >= 0 ? 'agua' : '';
+}
+function normLocalidades(j) {
+  var r = j && j.reporte, out = [];
+  if (!r || !Array.isArray(j.features)) throw new Error('sin informe');
+  j.features.forEach(function (x) {
+    var p = x && x.properties, c = x && x.geometry && x.geometry.coordinates, n = p && NIVEL_LOC[sinTildes(p.nivel)];
+    if (!n || !Array.isArray(c) || !isFinite(c[0]) || !isFinite(c[1])) return;
+    out.push([String(p.nombre_reportado || p.nombre_resuelto || '').replace(/\s*\(.*\)\s*$/, '').trim().slice(0, 60), n, Math.round(c[1] * 1000) / 1000, Math.round(c[0] * 1000) / 1000, motivoLoc(p)]);
+  });
+  return { dia: String(r.fecha_reporte || '').slice(0, 10), hora: String(r.hora_referencia || '').slice(0, 5), niv: NIVEL_LOC[sinTildes(r.nivel_general)] || 0, vigente: r.vigente !== false, loc: out };
+}
+// Suma la lectura por hora de Barranqueras a la serie diaria del INA: si es del mismo día o más nueva, pasa a ser la lectura de ese día
+// y su hora (así la página muestra "Medido hoy a las 12 h"). Una lectura de más de 30 horas no se usa.
+function aplicarPuerto(rio, pref, ahora) {
+  if (!rio || !pref || !Array.isArray(rio.obs) || !rio.obs.length || !(ahora - new Date(pref.hora) < 30 * 36e5)) return rio;
+  var dia = diaAR(pref.hora), u = rio.obs[rio.obs.length - 1][0];
+  if (dia < u) return rio;
+  var obs = rio.obs.map(function (o) { return o.slice(); });
+  if (dia === u) obs[obs.length - 1][1] = pref.v; else obs.push([dia, pref.v]);
+  return { obs: obs, act: rio.act, hora: pref.hora, pna: true, t: rio.t };   // (sin la lista de estaciones)
+}
+
+function fuentesExtra(hoy, ahora, urls) {
   var json = function (f) { return function (t) { return f(JSON.parse(t)); }; };
   ahora = ahora || new Date();
-  return [
+  urls = urls || urlsPropias();
+  var extra = [];
+  if (urls.oficial) extra.push({ k: 'oficial', url: urls.oficial, leer: json(normOficial) });
+  if (urls.rios) extra.push({ k: 'puertos', url: urls.rios, leer: json(normPuertos) });
+  if (urls.loc) extra.push({ k: 'localidades', url: urls.loc, leer: json(normLocalidades) });
+  return extra.concat([
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
     { k: 'municipios', url: urlLluvia(CENTROS), leer: json(function (j) { return normLluvia(j, CENTROS.length); }) },
     { k: 'rio', url: serieINA(20, hoy), leer: json(normRio) },
@@ -399,14 +477,14 @@ function fuentesExtra(hoy, ahora) {
     { k: 'medida', url: urlMedida(ahora), leer: json(function (j) { return normMedida(j, ahora); }) },
     { k: 'yacy', url: serieINA(937, hoy), leer: json(normYacy) },
     { k: 'oni', url: 'https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt', leer: leerOni }
-  ];
+  ]);
 }
 
 // Pide cada fuente por separado. Si una falla, queda la copia anterior (con su hora) y se anota el error.
 // pedir(url) devuelve { codigo, texto }.
-function leerExtras(hoy, ahora, previo, pedir) {
+function leerExtras(hoy, ahora, previo, pedir, urls) {
   var out = {}, errores = {};
-  fuentesExtra(hoy, ahora).forEach(function (f) {
+  fuentesExtra(hoy, ahora, urls).forEach(function (f) {
     try {
       var r = pedir(f.url);
       if (r.codigo !== 200) throw new Error('HTTP ' + r.codigo);
@@ -418,6 +496,7 @@ function leerExtras(hoy, ahora, previo, pedir) {
       if (previo && previo[f.k]) out[f.k] = previo[f.k];
     }
   });
+  if (out.rio && out.puertos) out.rio = aplicarPuerto(out.rio, out.puertos, ahora);
   out.errores = errores;
   return out;
 }
