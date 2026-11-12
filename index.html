@@ -630,29 +630,23 @@ footer{font-size:.85rem;color:var(--muted)}
 #mInfo :is(.mPill,.mPor) i[data-c="rojo"]{background:var(--rojo-mapa)}
 #mInfo.tarj .dias{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
 #mInfo.tarj .dia{color:var(--ink);border-radius:14px}
-#mInfo.tarj .dia:first-child{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ico dD dT" "ico dC dT" "ico dF dL" "dA dA dA";column-gap:12px;row-gap:1px;align-items:center;justify-items:start;text-align:left;padding:10px 14px}
-#mInfo.tarj .dia:first-child .ico{grid-area:ico;font-size:2.9rem;margin:0}
-#mInfo.tarj .dia:first-child .dD{grid-area:dD;font-size:1.05rem}
-#mInfo.tarj .dia:first-child .dC{grid-area:dC;font-size:.9rem}
-#mInfo.tarj .dia:first-child .dF{grid-area:dF}
-#mInfo.tarj .dia:first-child .dT{grid-area:dT;justify-self:end;margin:0;gap:10px}
-#mInfo.tarj .dia:first-child .dT b{font-size:1.45rem}
-#mInfo.tarj .dia:first-child .dL{grid-area:dL;justify-self:end;align-self:end;flex-direction:row;align-items:baseline;gap:6px;margin:0;padding:0;border:0}
-#mInfo.tarj .dia:first-child .dL b{font-size:1.2rem}
-#mInfo.tarj .dia:first-child .dA{grid-area:dA;margin-top:6px}
-/* Los días siguientes en renglones cortos, a lo ancho: ícono, día, máxima / mínima y lluvia (la palabra y la fecha quedan en el texto para lectores de pantalla) */
-#mInfo.tarj .dia:not(:first-child){grid-column:1/-1;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;grid-template-areas:"ico dD dT dL" "dA dA dA dA";column-gap:8px;row-gap:0;align-items:center;justify-items:start;text-align:left;padding:6px 14px}
-#mInfo.tarj .dia:not(:first-child) :is(.dF,.dC,.dT small,.dL small){display:none}
-#mInfo.tarj .dia:not(:first-child) .ico{grid-area:ico;font-size:1.6rem;margin:0}
-#mInfo.tarj .dia:not(:first-child) .dD{grid-area:dD;font-size:.92rem}
-#mInfo.tarj .dia:not(:first-child) .dT{grid-area:dT;justify-self:end;margin:0;gap:4px}
-#mInfo.tarj .dia:not(:first-child) .dT b{font-size:1.05rem}
-#mInfo.tarj .dia:not(:first-child) .dT span+span::before{content:'/';margin-right:4px;color:var(--muted);font-weight:500}
-#mInfo.tarj .dia:not(:first-child) .dT span{flex-direction:row}
-#mInfo.tarj .dia:not(:first-child) .dL{grid-area:dL;align-self:center;margin:0;padding:0;border:0;justify-self:end;min-width:3.6em;align-items:flex-end}
-#mInfo.tarj .dia:not(:first-child) .dL b{font-size:1rem}
-#mInfo.tarj .dia:not(:first-child) .dA{grid-area:dA;margin:2px 0 2px}
-#mInfo.tarj .mDet.vista{max-height:3.6rem}
+/* Los tres días en renglones iguales, a lo ancho: ícono, día, máxima / mínima y lluvia (la palabra y la fecha quedan en el texto para lectores
+   de pantalla). Hoy, con una raya violeta a la izquierda (12/11/2026, Mariano: la tarjeta quedaba muy larga). */
+#mInfo.tarj .dia{grid-column:1/-1;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;grid-template-areas:"ico dD dT dL" "dA dA dA dA";column-gap:8px;row-gap:0;align-items:center;justify-items:start;text-align:left;padding:6px 14px}
+#mInfo.tarj .dia:first-child{box-shadow:inset 5px 0 0 #8d58e8}
+#mInfo.tarj .dia :is(.dF,.dC,.dT small,.dL small){display:none}
+#mInfo.tarj .dia .ico{grid-area:ico;font-size:1.6rem;margin:0}
+#mInfo.tarj .dia .dD{grid-area:dD;font-size:.92rem}
+#mInfo.tarj .dia .dT{grid-area:dT;justify-self:end;margin:0;gap:4px}
+#mInfo.tarj .dia .dT b{font-size:1.05rem}
+#mInfo.tarj .dia .dT span+span::before{content:'/';margin-right:4px;color:var(--muted);font-weight:500}
+#mInfo.tarj .dia .dT span{flex-direction:row}
+#mInfo.tarj .dia .dL{grid-area:dL;align-self:center;margin:0;padding:0;border:0;justify-self:end;min-width:3.6em;align-items:flex-end}
+#mInfo.tarj .dia .dL b{font-size:1rem}
+#mInfo.tarj .dia .dA{grid-area:dA;margin:2px 0 2px}
+#mInfo.tarj .mDet.vista{display:none}
+#mInfo.tarj .mas{margin-top:0}
+@media print{#mInfo.tarj .mDet.vista{display:flex}}
 /* Dentro de la tarjeta, el texto de "Seguir leyendo" más chico y sin justificar (en la columna angosta quedaban huecos);
    el renglón "Costa del Paraná · Rojo" no se repite: ya lo dice la píldora "Rojo en el mapa" (los avisos de "no disponible" sí se ven). */
 #mInfo.tarj .mDet p{text-align:left;-webkit-hyphens:manual;hyphens:manual;font-size:.92rem;line-height:1.45}
@@ -1435,7 +1429,7 @@ function pisoSMN(i){
   const m=a.reduce((p,q)=>q.niv>p.niv?q:p);
   return {n:m.niv>=5?3:m.niv>=4?2:1,a:m};
 }
-const pisoTxt=s=>smnTxt(s.a)+' del SMN para el '+fDiaLargo(s.a.dia)+': por eso el color no baja de '+NIVELES[s.n]+'.';
+const pisoTxt=s=>smnTxt(s.a)+' del SMN para el '+fDiaLargo(s.a.dia)+': por eso está en '+NIVELES[s.n]+'.';
 function riesgo(loc,i){
   const ll=lluviaVieja()?null:resumenLluvia(i),s=pisoSMN(MUNI[i]);
   let nivel=-1;const por=[];
@@ -1841,8 +1835,8 @@ function locInfo(i){
       +'<ul class="mPor" aria-label="Localidades con alerta">'+L.map(l=>'<li><span><i data-c="'+NIVELES[l[1]]+'"></i>'+esc(l[0])+'<span class="pSr">: alerta '+LOC_NIV[l[1]]+'</span></span></li>').join('')+'</ul>';
   }catch(e){console.error(e);return ''}}
 // Párrafo del detalle cuando el color del municipio sale de la alerta oficial o del Paraná.
-const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>'+ETQ[k.c]+' por la alerta oficial.</b> Es el nivel de alerta oficial vigente para este municipio'
-  +(ofiDatos()?' (consultado el '+fFechaHora(D.oficial.t)+')':'')+'. Para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil.</p>'
+const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>'+ETQ[k.c]+' por la alerta oficial</b>'
+  +(ofiDatos()?' (consultada el '+fFechaHora(D.oficial.t)+')':'')+'. Para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil.</p>'
   :k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
   +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')+' Las alertas oficiales por la crecida incluyen zonas de este municipio: para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>En la costa, el color sigue al río Paraná ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
@@ -1918,11 +1912,10 @@ function pintarInfo(){
      +'<button class="btn irRio" type="button" data-irrio="'+M.rio.ir+'">Ver el '+esc(n.replace('Río','río'))+' ↓</button>';return}
   if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
-  if(k.tipo==='seg')h=k.rio?'<p><span class="estado">'+(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná')+'</span><b>'+ETQ[k.c]+'</b></p><p>'+(M.R[k.j].c==='gris'?'':'Por la lluvia, su semáforo está en '+M.R[k.j].et.toLowerCase()+'. ')+M.R[k.j].por+'</p>'
-    :'<p><span class="estado">Localidad del semáforo</span><b>'+M.R[k.j].et+'</b></p><p>'+M.R[k.j].por+'</p>';
-  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+(k.rio?ETQ[k.c]:M.R[0].et)+'</b></p><p>'+(k.rio?'Por la lluvia está en '+M.R[0].et.toLowerCase()+', como todo el Gran Resistencia. ':'Forma parte del Gran Resistencia y comparte su semáforo. ')+M.R[0].por+(k.smn?' '+pisoTxt(k.smn):'')+'</p>';
-  else if(k.tipo==='est'){const s=M.est[i].ll;
-    h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p><p>Llovieron '+nf(s.cayo)+' mm en 7 días y se esperan '+txtViene(s,'entre hoy')+'.'+(rojoLejos(s)&&k.c!=='rojo'?ROJO_LEJOS:'')+(k.smn?' '+pisoTxt(k.smn):'')+'</p><p class="meta">Calculado con la lluvia en el centro del municipio'+(ofiDatos()?', la alerta del SMN y la alerta oficial.':' y la alerta del SMN'+(RIBI[i]||RIPI[i]?'; en la costa, también el Paraná. No mira arroyos.':'. No mira ríos ni arroyos.'))+'</p>'}
+  // Desde el 12/11/2026 (Mariano: la tarjeta quedaba muy larga) el detalle dice la lluvia sola y aparte la alerta del SMN con su horario.
+  if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Localidad del semáforo')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
+  else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
+  else if(k.tipo==='est')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
   else if(k.tipo==='rio')h='<p><span class="estado">'+(k.rio&&k.rio.ofi?'Alerta oficial':'Río Paraná')+'</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora.</p>';
   else if(M.todos==='cargando')h='<p class="nodisp">Consultando las lluvias de este municipio…</p>';
@@ -1930,11 +1923,29 @@ function pintarInfo(){
   // Tarjeta del municipio (4/11/2026, pedido de Mariano: más visual): nombre grande, el color del mapa y de dónde sale, y las tarjetas de los días.
   el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj';
   const sinSmn=smnVigente()&&SMN.leidas!==0&&!smnViejo()&&!smnDe(i).length,pq=porQue(i,k,sinSmn);
-  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+locInfo(i)+(pq&&sinSmn?'':smnInfo(i))+diasInfo(i,k)
-   +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p></div>'
+  el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))+diasInfo(i,k)
+   +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+fuenteTxt(i,k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p></div>'
    +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
+}
+// Lluvia sola del municipio (la de su localidad del semáforo, la del Gran Resistencia o la de su centro), sin el color del SMN.
+function lluviaTxt(i,k){
+  const g=k.tipo==='seg'||k.tipo==='gran',ll=g?(lluviaVieja()?null:resumenLluvia(k.j)):M.est[i]&&M.est[i].ll;
+  if(!ll)return '<p>No hay datos de lluvia al día de este municipio.</p>';
+  return '<p><b>Lluvia'+(k.tipo==='gran'?' (la del Gran Resistencia)':'')+':</b> llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '
+    +txtViene(ll,!g||ll.ref===hoy?'entre hoy':'entre el '+fDia(ll.ref))+'.'+(rojoLejos(ll)&&k.c!=='rojo'?ROJO_LEJOS:'')+'</p>';
+}
+// Alertas del SMN del municipio con el día y el horario (arriba solo va el cuadrito con el nivel).
+function smnDetTxt(i){
+  const a=smnDe(i).slice().sort((x,y)=>x.dia.localeCompare(y.dia)||y.niv-x.niv);if(!a.length)return '';
+  return '<p><b>SMN:</b> '+a.map(x=>smnTxt(x)+(x.x?', con posible '+SMN_X[x.x&3]:'')+', el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('; ')+'.</p>';
+}
+// De dónde salen el pronóstico y las alertas (antes iba a la vista, debajo de los días).
+function fuenteTxt(i,k){
+  if(!DIAS_FTE)return '';
+  return '<p class="meta">'+DIAS_FTE+(k.tipo==='est'?', para el centro del municipio':'')+'. Las alertas son del SMN.'
+    +(k.tipo==='est'&&!(RIBI[i]||RIPI[i])?' El cálculo no mira ríos ni arroyos.':'')+'</p>';
 }
 // De dónde sale el color del municipio (4/11/2026, pedido de Mariano: que se vea sin leer): el color del mapa y, en cuadritos, la lluvia
 // (su semáforo o su estimación), la alerta del SMN cuando sube el color y, en los municipios de la costa, el Paraná con el techo de cada uno.
@@ -1946,7 +1957,7 @@ function porQue(i,k,sinSmn){
     // En las 6 localidades del semáforo, su color ya trae el piso del SMN: el cuadrito "Lluvia" muestra solo lo de la lluvia (12/11/2026).
     const b=colorBase(i),s=pisoSMN(i),ll=(b.tipo==='seg'||b.tipo==='gran')&&!lluviaVieja()?resumenLluvia(b.j):null,
       cl=b.tipo==='seg'||b.tipo==='gran'?(ll?(nivelLluvia(ll)?'rojo':'verde'):'gris'):b.c,ch=[['Lluvia',cl&&cl!=='gris'?cl:'gris']];
-    if(s&&SMN_NIV[s.a.niv])ch.push(['Alerta del SMN',SMN_NIV[s.a.niv][0],'Alerta '+SMN_NIV[s.a.niv][1]]);
+    if(s&&SMN_NIV[s.a.niv])ch.push(['Alerta del SMN',SMN_NIV[s.a.niv][0],mayus(SMN_NIV[s.a.niv][1])+' · '+(SMN_ICO[s.a.ev]||'⚠️')+' '+(s.a.dia===hoy?'hoy':F_SEM.format(new Date(s.a.dia+'T12:00:00Z')).slice(0,3)+' '+fDia(s.a.dia))]);
     else if(sinSmn)ch.push(['SMN','verde','Sin alertas']);
     const of=ofiNivel(i);
     if(of!=null){if(of>0||RIBI[i]||RIPI[i])ch.push(['Oficial',NIVELES[of],of?'Alerta '+['','amarilla','naranja','roja'][of]:'Sin alerta'])}
@@ -1962,7 +1973,7 @@ function porQue(i,k,sinSmn){
 // Las temperaturas y el tipo de tiempo los guarda el robot en lluvia.json desde el 23/10/2026 (tmax, tmin, cod).
 // Si el SMN tiene alerta ese día para el municipio, van su ícono, su fenómeno y el nivel, con el color en el borde.
 // Si la copia no trae temperaturas (la del script de Google, o una vieja), se muestran el ícono de la lluvia y los mm.
-const DIAS_TARJ=3;
+const DIAS_TARJ=3;let DIAS_FTE='';
 // Ícono y palabra del día. Con 1 mm o más manda la lluvia (tormenta si Open-Meteo la prevé); con menos, el cielo del código de la OMM
 // (una llovizna de décimas de mm se muestra como nublado, para que no diga "lluvia" con 0 mm).
 const CIELO={0:['☀️','Despejado'],1:['🌤️','Casi despejado'],2:['⛅','Algo nublado'],3:['☁️','Nublado'],45:['🌫️','Niebla'],48:['🌫️','Niebla']};
@@ -1979,10 +1990,11 @@ function diasInfo(i,k){
     if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){src=D.lluvia.datos;r=k.j}
     else if(k.tipo==='est'&&M.dMun){src=M.dMun;r=i}
     const dias=src&&src.dias,mm=src&&src.mm&&src.mm[r];
-    if(!dias||!mm)return '';
+    DIAS_FTE='';if(!dias||!mm)return '';
     const a=dias.indexOf(hoy);if(a<0)return '';
     const fila=x=>Array.isArray(x)&&Array.isArray(x[r])&&x[r].length===dias.length?x[r]:null;
     const tx=fila(src.tmax),tn=fila(src.tmin),cd=fila(src.cod),conT=!!(tx&&tn);
+    DIAS_FTE=conT?'Pronóstico de Open-Meteo':'Lluvia prevista por Open-Meteo; el ícono muestra la lluvia, no si habrá sol';
     const al=smnDe(i),cel=[],fin=Math.min(dias.length,a+DIAS_TARJ);let hayAl=false;
     for(let d=a;d<fin;d++){
       const s=dias[d],v=mm[d]==null?null:Math.round(Number(mm[d])),c=cd&&cd[d]!=null?Number(cd[d]):null;
@@ -1999,7 +2011,7 @@ function diasInfo(i,k){
         +(ad?'<span class="dA" aria-hidden="true">'+nv+'</span>':'')+'</div>');
     }
     return '<div class="dias" role="list" aria-label="Pronóstico de hoy y los próximos días" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
-      +'<p class="meta">'+(conT?'Pronóstico de Open-Meteo':'Lluvia prevista por Open-Meteo; el ícono muestra la lluvia, no si habrá sol')+(hayAl?'. Las alertas son del SMN':'')+'. '
+      +'<p class="meta mHora">'
       // A "Lluvia hora por hora" (pedido de Mariano, 23/10/2026); en las 6 localidades del semáforo y el Gran Resistencia, ya con la localidad elegida.
       +'<a class="aHora" href="#t-anim" data-hora="'+(k.tipo==='seg'||k.tipo==='gran'?k.j:'')+'">¿A qué hora llueve? ↓</a></p>';
   }catch(e){console.error(e);return ''}

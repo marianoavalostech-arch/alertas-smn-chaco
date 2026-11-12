@@ -410,7 +410,7 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // El detalle de Resistencia (localidad del semáforo) dice el color del mapa (naranja por el río) y aparte el de la lluvia
   const inf = {}; elementos.mInfo = inf; S(`M.sel=${R};pintarInfo();M.sel=-1`); delete elementos.mInfo;
   assert.ok(inf.innerHTML.includes('<b>Naranja</b>') && !inf.innerHTML.includes('<b>Verde</b>'), 'el color grande es el del mapa: ' + inf.innerHTML.slice(0, 300));
-  assert.ok(inf.innerHTML.includes('Por la lluvia, su semáforo está en verde.') && inf.innerHTML.includes('Naranja por el río Paraná'), inf.innerHTML.slice(0, 400));
+  assert.ok(inf.innerHTML.includes('No hay datos de lluvia al día') && !inf.innerHTML.includes('semáforo está en') && inf.innerHTML.includes('Naranja por el río Paraná'), inf.innerHTML.slice(0, 400));
   col('verde', [['2026-10-17', 4.0]], null, '2026-10-17'); const inf2 = {}; elementos.mInfo = inf2; S(`M.sel=${R};pintarInfo();M.sel=-1`); delete elementos.mInfo;
   assert.ok(inf2.innerHTML.includes('Localidad del semáforo') && inf2.innerHTML.includes('<b>Verde</b>'), 'sin el río, como siempre: ' + inf2.innerHTML.slice(0, 200));
   // Río sobre la alerta, pero el pronóstico no pasa la evacuación: sigue amarillo
@@ -650,7 +650,7 @@ prueba('SMN: piso del color y franjas que ya pasaron', () => {
   assert.strictEqual(S('pisoSMN(2).n'), 2);            // naranja: naranja
   assert.strictEqual(S('pisoSMN(3)'), null);
   assert.strictEqual(S('NIVELES[pisoSMN(2).n]'), 'naranja');
-  assert.ok(S('pisoTxt(pisoSMN(2))').endsWith('por eso el color no baja de naranja.'));
+  assert.ok(S('pisoTxt(pisoSMN(2))').endsWith('por eso está en naranja.'));
   assert.strictEqual(S('colorDe(2).c'), 'naranja', 'en el mapa, la alerta naranja pinta naranja');
   assert.strictEqual(S('colorDe(0).c'), 'amarillo'); assert.strictEqual(S('colorDe(1).c'), 'rojo');
   S('horaAR=()=>7');                                   // terminó la madrugada, sigue la mañana
@@ -871,7 +871,7 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
   // Más estaciones, hora por hora: en "Otros ríos", en el orden en que baja el agua
   const est = S(`D.puertos={datos:{v:6.64,hora:new Date().toISOString(),est:[['Barranqueras','Paraná',6.64,new Date().toISOString(),2,-1],['Corrientes','Paraná',6.76,new Date().toISOString(),1,-1],['Las Palmas','Paraguay',6.66,new Date().toISOString(),1,0],['Eldorado','Paraná',18.8,new Date().toISOString(),null,-20],['Vieja','Paraná',1,'2026-01-01T00:00:00Z',0,0]]},vivo:true,t:new Date()};(()=>{const r=estacionesHora();D.puertos={datos:null};return r})()`);
   assert.ok(est.includes('Más estaciones, hora por hora') && est.indexOf('Río Paraguay') < est.indexOf('Río Paraná') && est.indexOf('Corrientes') < est.indexOf('Barranqueras') && est.includes(': evacuación') && !est.includes('Eldorado') && !est.includes('Vieja') && est.includes('−1 cm'.replace('−','-')), 'tabla');
-  assert.ok(codigo.includes("'<p><b>'+ETQ[k.c]+' por la alerta oficial.</b>"), 'explica la alerta oficial');
+  assert.ok(codigo.includes("'<p><b>'+ETQ[k.c]+' por la alerta oficial</b>'"), 'explica la alerta oficial');
 });
 
 prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo demás se renueva', () => {
@@ -1871,12 +1871,12 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const ch = idx('Charata');
     S(`SMN={emitido:'2026-10-17T03:00:00Z',capturado:'2026-10-17T03:00:00Z',fechas:['2026-10-17'],areas:GEO.mun.map((m,i)=>i),alertas:{${ch}:[['2026-10-17',41,0,0,4,4,0]]}};horaAR=()=>5`);
     t = pq('Charata');
-    assert.ok(t.includes('<small>Alerta del SMN</small><span><i data-c="naranja"></i>Alerta naranja'), 'con alerta del SMN: ' + t);
+    assert.ok(t.includes('<small>Alerta del SMN</small><span><i data-c="naranja"></i>Naranja · ⛈️ hoy'), 'con alerta del SMN: ' + t);
     S(`SMN=SMN_VACIO`);
     assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
     t = S(`porQue(${idx('Barranqueras')},colorDe(${idx('Barranqueras')}),true)`);
     assert.ok(t.includes('<small>SMN</small><span><i data-c="verde"></i>Sin alertas'), 'sin alertas confirmadas: cuadrito del SMN en lugar del renglón');
-    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&sinSmn?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
+    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
     const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
     assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)

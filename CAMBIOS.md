@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 12/11/2026 (tarjeta del municipio más corta)
+
+Pedido de Mariano: la tarjeta quedaba muy larga (Resistencia, con alerta del SMN y alerta oficial). En el celular baja de unos 780 a unos 550 px.
+- La alerta del SMN se dice una vez arriba: el cuadrito "Alerta del SMN" lleva el nivel, el ícono y el día ("Amarilla · ⛈️ sáb 14/11"); ya no va el renglón aparte del SMN. La etiqueta del día con alerta queda en su renglón.
+- Los tres días van en renglones iguales (ícono, día, máxima / mínima, mm); hoy, con una raya violeta a la izquierda.
+- Debajo de los días, solo "¿A qué hora llueve? ↓"; la fuente del pronóstico pasa adentro de "Seguir leyendo" (`fuenteTxt`, `DIAS_FTE`).
+- "Seguir leyendo" sin el pedazo de texto difuminado: solo el botón (al imprimir sale todo).
+- Texto de adentro más corto: la lluvia sola (`lluviaTxt`), la alerta del SMN con su horario (`smnDetTxt`) y la alerta oficial en una frase. Arreglado: decía "Por la lluvia, su semáforo está en amarillo" cuando la lluvia estaba en verde y el amarillo venía del SMN. `pisoTxt`: "por eso está en amarillo" (antes "el color no baja de").
+- Pruebas al día. Huella nueva del código.
+
 ## 12/11/2026 (alerta oficial por municipio, localidades con alerta y más estaciones)
 
 Decisión de Mariano.
