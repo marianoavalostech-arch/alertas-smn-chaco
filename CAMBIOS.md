@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 12/11/2026 (tocar el mapa no cambia tu localidad)
+
+Pedido de Mariano: tocar el mapa interactivo no tiene que cambiar la localidad predeterminada.
+- `elegir` ya no guarda la localidad (tampoco el buscador del mapa ni la lista del semáforo).
+- Tarjeta del municipio: botón "📍 Que sea mi localidad" (`miLocInfo`, `hacerMiLoc`); si ya es la tuya, "📍 Es tu localidad". Al tocarlo aparece arriba el renglón "Tu localidad" y cambia el recuadro de la portada. No en el portal ni al imprimir.
+- Siguen eligiéndola: la ventana "Tu localidad" del celular y tocar un aviso.
+- Frase de Privacidad y `privacidad.html` al día. Pruebas al día. Huella nueva del código.
+
 ## 12/11/2026 (la alerta naranja del SMN pinta naranja)
 
 Decisión de Mariano (12/11, tarde): el mapa y el semáforo toman el color del SMN tal cual. Reemplaza la del 23/10 (alerta naranja → amarillo). Así coinciden con los avisos al celular, que ya usaban el color del SMN.

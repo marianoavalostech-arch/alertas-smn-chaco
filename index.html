@@ -642,6 +642,12 @@ footer{font-size:.85rem;color:var(--muted)}
 @media (max-width:359px){#mInfo.tarj .dia:first-child{column-gap:8px;padding:8px 10px}#mInfo.tarj .dia:first-child .ico{font-size:2.2rem}#mInfo.tarj .dia:first-child .dT b{font-size:1.15rem}#mInfo.tarj .dia:first-child .dL b{font-size:1.05rem}#mInfo.tarj .dia:not(:first-child){padding:6px 10px;column-gap:6px}#mInfo.tarj .dia:not(:first-child) .ico{font-size:1.35rem}#mInfo.tarj .dia:not(:first-child) :is(.dD,.dT b,.dL b){font-size:.88rem}#mInfo.tarj .dia:not(:first-child) .dL{min-width:0}}
 #mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 14px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;font-size:.86rem;text-decoration:none}
 #mInfo.tarj .aHora:hover{background:var(--acento-soft)}
+/* Tu localidad (12/11/2026): tocar el mapa ya no la cambia; desde la tarjeta se elige a propósito. */
+#mInfo .mMia{align-self:flex-start;margin:2px 0 0;font-size:.86rem;font-weight:700}
+#mInfo.tarj p.mMia{color:#dcdaf7}
+#mInfo.tarj .btn.mMia{min-height:40px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.4);color:#fff}
+#mInfo.tarj .btn.mMia:hover{background:rgba(255,255,255,.22)}
+@media print{#mInfo .mMia{display:none!important}}
 @media print{#mInfo.tarj{background:none;color:inherit;box-shadow:none;border:1px solid var(--line)}#mInfo.tarj .mNom{color:inherit}#mInfo .mPor li{background:none;border:1px solid var(--line)}}
 /* Portada del celular (pedido de Mariano, 4/11/2026): un recuadro chico por sección, con un solo dato, para llegar rápido; tocarlo lleva a la sección.
    Solo en pantallas de menos de 600 px y fuera del portal: ahí reemplaza la franja del río, "Tu localidad" y el índice "Ir a:". Entra en una pantalla. */
@@ -1134,7 +1140,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <p>Reúne en un solo lugar datos públicos del SMN, el INA, la NOAA, la NASA, el IGN y Open-Meteo, y los explica en lenguaje sencillo. No es un sitio oficial.</p>
     <p><b>Hecho por</b> Mariano Avalos.</p>
     <p><b>¿Viste un error?</b> Escribime a <a id="correo" href="#t-acerca">(la dirección aparece al cargar la página)</a>. Si usás GitHub, también podés avisar en <a href="https://github.com/marianoavalostech-arch/alertas-smn-chaco/issues" target="_blank" rel="noopener">la página del proyecto</a>. El código es público, con licencia MIT; los datos son de cada fuente.</p>
-    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste, si pediste la letra más grande y, si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); a GoatCounter, solo para sumar la visita; y, solo si pedís avisos al celular, a Firebase (de Google), que guarda un identificador de tu celular y la localidad elegida para mandarte los avisos. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
+    <p><b>Privacidad:</b> este sitio no usa cookies ni guarda datos personales. Cuenta cuántas veces se abre la página con <a href="https://www.goatcounter.com/" target="_blank" rel="noopener">GoatCounter</a>, sin cookies ni datos de quien visita. Guarda en tu dispositivo la última consulta de cada dato, para mostrarla si una fuente no responde, qué secciones cerraste, si pediste la letra más grande y, si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez. Para traer los datos, tu navegador se conecta a GitHub, donde se guardan copias de los datos de cada fuente; a Google, solo si esas copias están atrasadas; a la NASA, para las imágenes del satélite (y la del mar, solo si su copia en GitHub falta); a GoatCounter, solo para sumar la visita; y, solo si pedís avisos al celular, a Firebase (de Google), que guarda un identificador de tu celular y la localidad elegida para mandarte los avisos. No se conecta directamente al SMN, al INA, a Open-Meteo ni a la NOAA. Todo el detalle, también para la app de Google Play, en la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>
   </section>
 
   </main>
@@ -1711,6 +1717,7 @@ function armarMapa(){
     // Municipio que no está en "Lluvia en": queda "Todo el Chaco" (pedido de Mariano, 23/10/2026).
     // Si el pronóstico por hora todavía no llegó (se pide al abrir la sección), la localidad queda elegida para cuando llegue.
     const hh=e.target.closest('[data-hora]');if(hh){const l=hh.dataset.hora!==''?+hh.dataset.hora:-1;if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}
+    if(e.target.closest('[data-mimia]')&&M.sel>=0){hacerMiLoc(M.sel);const b=$('mInfo').querySelector('.mMia');if(b){b.tabIndex=-1;b.focus({preventScroll:true})}return}
     if(rv)irSec(rv.dataset.irrio);else if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
   addEventListener('resize',()=>aplicar(M.vb));
@@ -1796,7 +1803,6 @@ function elegir(i,enf){
   if(i!==M.sel)M.detAb=false;
   const antes=M.sel;
   M.sel=i;M.selP.setAttribute('d',i<0?'':GEO.mun[i][1]);
-  if(i>=0){const a=miLocGuardada();guardarMiLoc(i);if(MILOC)pintarMiLoc();if(a!==i)seguro(pintarPortada)}
   if(i>=0&&!colorDe(i).tipo&&!M.todos)cargarTodos();
   const otro=i>=0&&i!==antes;
   resaltar();pintarInfo();
@@ -1855,7 +1861,7 @@ function pintarInfo(){
   const sinSmn=smnVigente()&&SMN.leidas!==0&&!smnViejo()&&!smnDe(i).length,pq=porQue(i,k,sinSmn);
   el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+(pq&&sinSmn?'':smnInfo(i))+diasInfo(i,k)
    +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p></div>'
-   +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>';
+   +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
 }
@@ -2085,12 +2091,18 @@ function cargarSMN(){
     SMN_LISTO=true;seguro(pintarSMN,['smn']);seguro(pintarHacer);seguro(pintarNino);seguro(pintarPortada);if(D.lluvia)seguro(pintarSemaforo,['smn','municipios']);
   });
 }
-// Tu localidad: la última que se eligió en el mapa (o en el buscador) queda guardada solo en este navegador o en la app instalada.
+// Tu localidad: queda guardada solo en este navegador o en la app instalada. Desde el 12/11/2026 (pedido de Mariano) tocar el mapa
+// o buscar un municipio ya no la cambia: se elige a propósito, con "📍 Que sea mi localidad" en la tarjeta del municipio, la ventana
+// "Tu localidad" del celular o al tocar un aviso.
 // Al volver a abrir el sitio aparece arriba, con su color y un botón para verla. Si al abrir no había ninguna guardada,
 // el renglón no aparece en esa visita (para que la página no salte mientras se mira el mapa).
 const MILOC_K='anc-mi-localidad';let MILOC=null;
 function miLocGuardada(){try{const n=localStorage.getItem(MILOC_K);return n?GEO.mun.findIndex(m=>m[0]===n):-1}catch(e){return -1}}
 function guardarMiLoc(i){try{localStorage.setItem(MILOC_K,GEO.mun[i][0])}catch(e){}}
+function hacerMiLoc(i){guardarMiLoc(i);if(miLocGuardada()!==i)return;MILOC=true;seguro(pintarMiLoc);seguro(pintarPortada);pintarInfo()}
+// Renglón de la tarjeta: si es tu localidad, lo dice; si no, botón para que lo sea (no en el portal: ahí no hay renglón ni portada).
+function miLocInfo(i){if(EMB)return '';const g=miLocGuardada();
+  return g===i?'<p class="mMia">📍 Es tu localidad</p>':'<button class="btn mMia" type="button" data-mimia>📍 Que sea mi localidad</button>'}
 function pintarMiLoc(){
   const el=$('miLoc'),i=miLocGuardada();if(!el)return;
   if(MILOC===null)MILOC=i>=0;

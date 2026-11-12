@@ -1579,10 +1579,18 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       const r=[miLocGuardada()];guardarMiLoc(GEO.mun.findIndex(m=>m[0]==='Barranqueras'));r.push(v,GEO.mun[miLocGuardada()][0]);v='Un pueblo que no existe';r.push(miLocGuardada());
       localStorage.getItem=()=>{throw new Error('bloqueado')};r.push(miLocGuardada());localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
     assert.strictEqual(g, '[-1,"Barranqueras","Barranqueras",-1,-1]', 'guarda el nombre; un nombre raro o el navegador bloqueado no rompen nada');
-    assert.ok(codigo.includes("if(i>=0){const a=miLocGuardada();guardarMiLoc(i);if(MILOC)pintarMiLoc();if(a!==i)seguro(pintarPortada)}"), 'elegir un municipio lo guarda; el renglón solo se actualiza si ya estaba a la vista; la portada, si cambió');
+    const el = codigo.slice(codigo.indexOf('function elegir(i,enf){'), codigo.indexOf('function pintarInfo(){'));
+    assert.ok(el && !el.includes('guardarMiLoc'), 'tocar el mapa o buscar un municipio no cambia tu localidad (12/11/2026)');
+    assert.ok(codigo.includes("function hacerMiLoc(i){guardarMiLoc(i);if(miLocGuardada()!==i)return;MILOC=true;seguro(pintarMiLoc);seguro(pintarPortada);pintarInfo()}"), 'se elige a propósito: aparece el renglón y cambia la portada');
+    assert.ok(codigo.includes("+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);") && codigo.includes("data-mimia>📍 Que sea mi localidad</button>") && codigo.includes("📍 Es tu localidad") && codigo.includes("if(e.target.closest('[data-mimia]')&&M.sel>=0){hacerMiLoc(M.sel);"), 'botón en la tarjeta del municipio');
+    assert.ok(codigo.includes("function miLocInfo(i){if(EMB)return '';"), 'no en el portal');
+    const sv = S(`(()=>{const a=localStorage.getItem,b=localStorage.setItem;let v=null;localStorage.setItem=(k,x)=>{if(k==='anc-mi-localidad')v=x};localStorage.getItem=k=>k==='anc-mi-localidad'?v:null;
+      const r=[];try{elegir(GEO.mun.findIndex(m=>m[0]==='Charata'),true)}catch(e){}r.push(v);v='Barranqueras';r.push(miLocInfo(GEO.mun.findIndex(m=>m[0]==='Barranqueras')).includes('Es tu localidad'),miLocInfo(GEO.mun.findIndex(m=>m[0]==='Charata')).includes('data-mimia'));
+      localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
+    assert.strictEqual(sv, '[null,true,true]', 'elegir no guarda; la tarjeta dice si es la tuya');
     assert.ok(codigo.includes('if(MILOC===null)MILOC=i>=0;'), 'si al abrir no había localidad guardada, el renglón no aparece en esa visita');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
-    assert.ok(html.includes('si elegiste un municipio en el mapa, el último, para mostrártelo arriba la próxima vez'), 'la privacidad lo cuenta');
+    assert.ok(html.includes('si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez'), 'la privacidad lo cuenta');
   });
   prueba('teléfonos dentro del portal: los enlaces tel: se abren como ventana nueva', () => {
     const f = html.slice(html.indexOf('function telDesdePortal(){'), html.indexOf('seguro(telDesdePortal);'));
