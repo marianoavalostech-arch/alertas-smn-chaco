@@ -288,12 +288,12 @@ prueba('umbrales de lluvia', () => {
   for (let c = 0; c <= 200; c += 10) for (let v = 0; v <= 200; v += 10) for (const m of [0, 45, 79, 80])
     assert.notStrictEqual(n3(c, v + 50, m, v, Math.min(m, v)), 1, 'la lluvia nunca da amarillo');
   assert.ok(S(`rojoLejos({cayo:16,viene:130,max:115,viene3:10,max3:5})`) && !S(`rojoLejos({cayo:0,viene:130,max:85,viene3:120,max3:85})`));
-  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && /Cuenta solo la lluvia prevista para hoy y los 2 días siguientes/.test(html));
+  assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && html.includes('Las alertas del SMN y la lluvia cuentan solo para hoy y los 2 días siguientes'));
   // Textos: el amarillo sale del SMN, no de la lluvia
   assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
   assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN, o el Paraná alto'));
   assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN, o, en la costa'));
-  assert.ok(html.includes('El amarillo y el naranja siguen el criterio del SMN: la lluvia prevista, sola, no los da.'));
+  assert.ok(html.includes('La lluvia, sola, nunca da amarillo ni naranja: esos colores los da el SMN o el río.'));
   const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
   assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
   assert.ok(S(`txtViene({cayo:0,viene:60,max:50,maxDia:'2026-11-13',viene3:60,max3:50,maxDia3:'2026-11-13'},'entre hoy')`).includes('en un solo día'));
@@ -860,14 +860,16 @@ prueba('sitio y script: lo que está escrito dos veces coincide', () => {
   // Números de fenómeno
   ['Tormentas', 'Lluvias', 'Nevadas', 'Viento', 'Viento Zonda', 'Temperaturas extremas calor', 'Temperaturas extremas frío', 'Niebla', 'Humo', 'Polvo']
     .forEach(n => assert.ok(S(`SMN_EV[${gs.idEvento(n)}]`), n));
-  // Tabla "¿Cómo se decide el color?": los números del texto son los umbrales del cálculo (solo el rojo desde el 12/11/2026)
-  const fila = c => new RegExp('<td><b>' + c + '</b></td><td>(\\d+) mm o más</td><td>(\\d+) mm o más</td><td>([^<]+)</td>').exec(html);
-  const n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
-  const [, r7, r1, rc] = fila('Rojo'), nums = t => t.match(/\d+/g).map(Number);
-  assert.strictEqual(n(0, +r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 0);
-  assert.strictEqual(n(0, 0, +r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 0);
-  assert.strictEqual(n(...nums(rc), 0), 2); assert.strictEqual(n(nums(rc)[0] - 1, nums(rc)[1], 0), 0);
-  assert.strictEqual(fila('Amarillo'), null);
+  // "¿Cómo se decide el color?" (tarjetitas desde el 12/11/2026): los milímetros del texto son los umbrales del cálculo; la lluvia solo da rojo
+  const rojo = html.slice(html.indexOf('<li data-c="rojo"><b>Rojo</b>'), html.indexOf('<li data-c="naranja"><b>Naranja</b>'));
+  const mm = re => +re.exec(rojo)[1], n = (cayo, viene, max) => S(`nivelLluvia({cayo:${cayo},viene:${viene},max:${max}})`);
+  const r7 = mm(/(\d+) mm o más entre hoy y los 2 días siguientes/), r1 = mm(/(\d+) mm o más en un solo día/),
+    rc = /Ya cayeron (\d+) mm en 7 días y vienen (\d+) más/.exec(rojo).slice(1).map(Number);
+  assert.strictEqual(n(0, r7, 0), 2); assert.strictEqual(n(0, r7 - 1, 0), 0);
+  assert.strictEqual(n(0, 0, r1), 2); assert.strictEqual(n(0, 0, r1 - 1), 0);
+  assert.strictEqual(n(...rc, 0), 2); assert.strictEqual(n(rc[0] - 1, rc[1], 0), 0);
+  const fuera = html.slice(html.indexOf('<li data-c="naranja"><b>Naranja</b>'), html.indexOf('<ul class="regNotas">'));
+  assert.ok(fuera && !fuera.includes('Lluvia</span>'), 'la lluvia no aparece en naranja, amarillo ni verde');
 });
 
 prueba('lluvia medida: el script suma lo caído por estación, descarta lo viejo o imposible y controla con las vecinas', () => {
@@ -1682,7 +1684,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(/for = "\/iconos\/\*"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml) && /for = "\/icono\.svg"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml), 'los íconos se guardan una semana en el navegador');
   });
   prueba('accesibilidad (24/10): tablas que se recorren con el teclado, etiquetas de alerta que se leen al sol y títulos del semáforo sin huecos', () => {
-    assert.ok(html.includes('<div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color">') && codigo.includes('<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad">') && html.includes('button:focus-visible,.tabla:focus-visible{outline'), 'las tablas anchas se pueden mover con el teclado y se ve el foco');
+    assert.ok(codigo.includes('<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad">') && html.includes('button:focus-visible,.tabla:focus-visible{outline'), 'las tablas anchas se pueden mover con el teclado y se ve el foco');
     const lum = h => { const v = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
     const contraste = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     for (const n of ['amarillo', 'naranja', 'rojo']) {

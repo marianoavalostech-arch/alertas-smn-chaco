@@ -132,6 +132,20 @@ details.det>summary{color:var(--acento);padding:10px 0;font-size:.95rem}
 details.det[open]>summary{padding-bottom:4px}
 #rio details.det p+p{margin-top:6px}
 .leyLista{list-style:none;padding-left:0!important}
+/* "¿Cómo se decide el color?" (12/11/2026): una tarjetita por color con lo que lo da (SMN, lluvia, río), en lugar de la tabla de una fila. */
+.regCol{list-style:none;padding:0!important;margin:10px 0;display:grid;gap:8px}
+.regCol>li{border:1px solid var(--line);border-left:7px solid #9aa3a6;border-radius:12px;padding:8px 12px;background:var(--card)}
+.regCol>li[data-c="rojo"]{border-left-color:var(--rojo)}
+.regCol>li[data-c="naranja"]{border-left-color:var(--naranja)}
+.regCol>li[data-c="amarillo"]{border-left-color:var(--amarillo-mapa)}
+.regCol>li[data-c="verde"]{border-left-color:var(--verde)}
+.regCol>li>b{display:block;font-family:var(--font-tit);font-size:1.08rem;margin-bottom:3px}
+.regCol ul,.regNotas{list-style:none;padding:0!important;margin:0;display:flex;flex-direction:column;gap:4px}
+.regCol li li,.regNotas li{text-align:left;-webkit-hyphens:manual;hyphens:manual;line-height:1.4}
+.regNotas{margin-top:4px;font-size:.92rem;color:var(--muted)}
+.regNotas li{padding-left:14px;position:relative}.regNotas li::before{content:'·';position:absolute;left:3px;font-weight:800}
+.rcE{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase;padding:1px 7px;border-radius:99px;background:var(--acento-soft);color:var(--titulo);margin-right:3px;vertical-align:1px}
+@media print{.regCol>li{break-inside:avoid}}
 .smnLinea{margin:6px 0 0;font-size:.95rem}
 .smnGrupo details.det>summary{padding:8px 0 2px}
 .captura{background:var(--acento-soft);border-left:5px solid var(--acento);padding:10px 12px;border-radius:4px;font-size:.95rem}
@@ -1038,16 +1052,28 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
       <summary>¿Cómo se decide el color?</summary>
-      <div class="tabla" tabindex="0" role="region" aria-label="Cómo se decide el color"><table class="regla"><thead><tr><th>Color</th><th>Lluvia prevista en 3 días</th><th>En un solo día</th><th>Con lo caído en 7 días</th></tr></thead><tbody>
-        <tr><td><b>Rojo</b></td><td>120 mm o más</td><td>80 mm o más</td><td>cayeron 100 mm y vienen 70</td></tr>
-      </tbody></table></div>
-      <ul>
-        <li>Alerta del SMN para hoy o los 2 días siguientes: el municipio toma su color (amarilla, amarillo; naranja, naranja; roja, rojo). El amarillo y el naranja siguen el criterio del SMN: la lluvia prevista, sola, no los da.</li>
-        <li>Lluvia muy fuerte: el municipio pasa a rojo aunque el SMN no tenga alerta, si se cumple una de las tres columnas de la tabla. Cuenta solo la lluvia prevista para hoy y los 2 días siguientes, porque un pronóstico más lejano cambia mucho.</li>
-        <li>Río Paraná en Barranqueras: amarillo desde 6,00 m o si le faltan menos de 50 cm y sigue creciendo; rojo desde 6,50 m. El pronóstico del INA adelanta el color: amarillo si el valor más alto de su rango llega a 6,00 m; naranja si el valor más probable llega a 6,50 m, y rojo si además el río ya pasó 6,00 m. Vale solo para los municipios de la costa y zonas bajas nombrados en «¿Qué significa cada color?». No es una alerta del SMN.</li>
-        <li>Siempre queda el color más alto entre la lluvia, la alerta del SMN y el río.</li>
-        <li>Los ríos Paraguay y Bermejo, la lluvia medida en estaciones y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo se muestran como información: no pintan el mapa.</li>
-        <li>Los números de la tabla son orientativos: no los validó ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el rojo salga muy pocas veces por año.</li>
+      <ul class="regCol">
+        <li data-c="rojo"><b>Rojo</b><ul>
+          <li><span class="rcE">SMN</span> Alerta roja.</li>
+          <li><span class="rcE">Lluvia</span> 120 mm o más entre hoy y los 2 días siguientes.</li>
+          <li><span class="rcE">Lluvia</span> 80 mm o más en un solo día de esos 3.</li>
+          <li><span class="rcE">Lluvia</span> Ya cayeron 100 mm en 7 días y vienen 70 más en esos 3 días.</li>
+          <li><span class="rcE">Río</span> Paraná desde 6,50 m, o pasó 6,00 m y el INA prevé que llegue a 6,50 m.</li></ul></li>
+        <li data-c="naranja"><b>Naranja</b><ul>
+          <li><span class="rcE">SMN</span> Alerta naranja.</li>
+          <li><span class="rcE">Río</span> El INA prevé que el Paraná llegue a 6,50 m.</li></ul></li>
+        <li data-c="amarillo"><b>Amarillo</b><ul>
+          <li><span class="rcE">SMN</span> Alerta amarilla.</li>
+          <li><span class="rcE">Río</span> Paraná desde 6,00 m, a menos de 50 cm y creciendo, o el INA prevé que puede llegar a 6,00 m.</li></ul></li>
+        <li data-c="verde"><b>Verde</b><ul>
+          <li>Nada de lo anterior. La lluvia, sola, nunca da amarillo ni naranja: esos colores los da el SMN o el río.</li></ul></li>
+      </ul>
+      <ul class="regNotas">
+        <li>Con una sola cosa alcanza: queda el color más alto.</li>
+        <li>Las alertas del SMN y la lluvia cuentan solo para hoy y los 2 días siguientes: un pronóstico más lejano cambia mucho.</li>
+        <li>Lo del río vale solo en la costa y zonas bajas nombradas en «¿Qué significa cada color?», cada una con su techo. No es una alerta del SMN.</li>
+        <li>No pintan el mapa: los ríos Paraguay y Bermejo, la lluvia medida en estaciones y el pronóstico del Paraguay en Formosa y Puerto Pilcomayo.</li>
+        <li>Los milímetros son orientativos: no los validó ningún organismo. Se ajustaron con la lluvia de 1991 a 2026 para que el rojo salga muy pocas veces por año.</li>
       </ul>
     </details>
   </section>
