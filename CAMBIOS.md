@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (sección, mapa y localidades dicen lo mismo)
+
+Decisión de Mariano, después de revisar con los datos del 13/11 (la sección y el mapa coinciden: 3 rojo, 3 naranja, 6 amarillo; las 13 localidades caen dentro de su municipio):
+- Tocar un nombre de "Municipios con alerta oficial" vuelve el mapa a "Monitoreo del Niño" si había quedado en "Servicio Meteorológico" (solo si hay dato del Monitoreo). Antes, Colonia Benítez figuraba naranja en la lista y amarilla en el mapa.
+- Tarjeta del municipio: si alguna localidad tiene un nivel más alto que su municipio, la frase "El nivel de cada localidad puede ser distinto del de su municipio: salen de informes distintos." (`.mLocN`). Hoy: Colonia Benítez (Puerto Antequeras en rojo).
+- "Localidades con alerta" suma también las de municipios sin alerta en el Monitoreo, después de las demás y por nombre.
+- Pruebas al día (92). Huella nueva del código.
+
 ## 13/11/2026 ("Municipios con alerta oficial" más corta y municipios del SMN que se tocan)
 
 Pedido de Mariano: la sección ocupaba casi tres pantallas en el celular (una tarjeta por municipio, cada una con "Ver en el mapa"), y lo único que no estaba en otro lado eran las localidades con alerta.

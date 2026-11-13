@@ -718,7 +718,8 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 #mInfo.tarj .aHora:hover{background:var(--acento-soft)}
 #mInfo .mLocT{margin:2px 0 -2px;font-size:.82rem;font-weight:700;color:#dcdaf7;text-align:left;-webkit-hyphens:manual;hyphens:manual}
 #mInfo .mLocT small{font-weight:500}
-@media print{#mInfo .mLocT{color:inherit}}
+#mInfo .mLocN{margin:0;font-size:.8rem;color:#dcdaf7;text-align:left;-webkit-hyphens:manual;hyphens:manual}
+@media print{#mInfo .mLocT,#mInfo .mLocN{color:inherit}}
 /* Tu localidad (12/11/2026): tocar el mapa ya no la cambia; desde la tarjeta se elige a propósito. */
 #mInfo .mMia{align-self:flex-start;margin:2px 0 0;font-size:.86rem;font-weight:700}
 #mInfo.tarj p.mMia{color:#dcdaf7}
@@ -1751,8 +1752,10 @@ function semOfi(){
 }
 // Desplegable de las localidades con alerta (las mismas de la tarjeta del municipio), agrupadas por municipio y con un punto del color de cada una.
 // Se vuelve a pintar con cada renovación: queda abierto si estaba abierto o si el navegador lo recuerda abierto.
+// Desde el 13/11/2026 (Mariano) suma también las de municipios sin alerta en el Monitoreo, después de los demás y por nombre.
 function semLoc(con){
-  try{const d=locDatos(),L=con.map(i=>[i,locDe(i)]).filter(x=>x[1].length),n=L.reduce((s,x)=>s+x[1].length,0);if(!n)return '';
+  try{const otros=GEO.mun.map((m,i)=>i).filter(i=>!con.includes(i)).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
+    const d=locDatos(),L=con.concat(otros).map(i=>[i,locDe(i)]).filter(x=>x[1].length),n=L.reduce((s,x)=>s+x[1].length,0);if(!n)return '';
     let ab=false;try{ab=!!document.querySelector('#d-sem-loc[open]')||!!(JSON.parse(localStorage.getItem(DET_K))||{})['d-sem-loc']}catch(e){}
     return '<li class="sLoc"><details class="det" id="d-sem-loc"'+(ab?' open':'')+'><summary>Localidades con alerta ('+n+')</summary>'
       +'<ul class="sLocL">'+L.map(([i,ls])=>'<li><b>'+esc(GEO.mun[i][0])+':</b> '+ls.map(l=>'<span class="sLocN"><i data-c="'+NIVELES[l[1]]+'" aria-hidden="true"></i>'+esc(l[0])+'<span class="pSr"> (alerta '+LOC_NIV[l[1]]+')</span></span>').join('<span aria-hidden="true">, </span>')+'</li>').join('')+'</ul>'
@@ -1874,7 +1877,9 @@ function armarMapa(){
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
   $('smn').addEventListener('click',e=>{const b=e.target.closest('[data-ms]');if(!b)return;const i=+b.dataset.ms;if(i<0)return;
     const bm=document.querySelector('.modo [data-modo="smn"]');if(bm&&MODO!=='smn')bm.click();elegir(i,true);marcarSalto();verSec($('t-mapa'))});
-  $('sem').addEventListener('click',e=>{const mm=e.target.closest('[data-m]');if(mm){const i=+mm.dataset.m;elegir(i,true);marcarSalto();verSec($('t-mapa'));return}
+  $('sem').addEventListener('click',e=>{const mm=e.target.closest('[data-m]');if(mm){const i=+mm.dataset.m;
+    // La lista es del Monitoreo del Niño: si el mapa quedó en "Servicio Meteorológico", vuelve al Monitoreo para que el color coincida (13/11/2026, Mariano).
+    const bn=document.querySelector('.modo [data-modo="nino"]');if(bn&&MODO!=='nino'&&ofiDatos())bn.click();elegir(i,true);marcarSalto();verSec($('t-mapa'));return}
     const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
     if(i>=0){elegir(i,true);marcarSalto();verSec($('t-mapa'))}});
   document.querySelectorAll('.ley').forEach(b=>b.onclick=()=>filtrar(b.dataset.c));
@@ -2014,7 +2019,9 @@ const LOC_NIV=['','amarilla','naranja','roja'];
 function locInfo(i){
   try{const L=locDe(i);if(!L.length)return '';const d=locDatos(),mot=[...new Set(L.map(l=>l[4]).filter(Boolean))];
     return '<p class="mLocT">Localidades con alerta'+(mot.length===1?', por el '+esc(mot[0]):'')+' <small>(informe del '+fDia(d.dia)+(d.hora?', '+esc(d.hora)+' h':'')+')</small></p>'
-      +'<ul class="mPor" aria-label="Localidades con alerta">'+L.map(l=>'<li><span><i data-c="'+NIVELES[l[1]]+'"></i>'+esc(l[0])+'<span class="pSr">: alerta '+LOC_NIV[l[1]]+'</span></span></li>').join('')+'</ul>';
+      +'<ul class="mPor" aria-label="Localidades con alerta">'+L.map(l=>'<li><span><i data-c="'+NIVELES[l[1]]+'"></i>'+esc(l[0])+'<span class="pSr">: alerta '+LOC_NIV[l[1]]+'</span></span></li>').join('')+'</ul>'
+      // Si alguna localidad está más alta que su municipio (13/11/2026, Mariano), se aclara que salen de informes distintos.
+      +(Math.max(...L.map(l=>l[1]))>(ofiNivel(i)||0)?'<p class="mLocN">El nivel de cada localidad puede ser distinto del de su municipio: salen de informes distintos.</p>':'');
   }catch(e){console.error(e);return ''}}
 // Párrafo del detalle cuando el color del municipio sale de la alerta oficial o del Paraná.
 const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>Alerta '+['','amarilla','naranja','roja'][NIVELES.indexOf(k.c)]+' en el Monitoreo del Niño</b>'

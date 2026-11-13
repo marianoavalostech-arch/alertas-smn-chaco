@@ -872,6 +872,11 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
   assert.ok(t1.includes('Localidades con alerta, por el río Paraná') && t1.indexOf('Puerto Antequeras') < t1.indexOf('>Colonia Benítez') && t1.includes('data-c="rojo"') && t1.includes('informe del 12/11, 08:00 h'), 'la roja primero');
   assert.ok(locT('2026-11-09').includes('Puerto Antequeras') && locT('2026-11-09').includes('informe del 9/11, 08:00 h'), 'informe viejo: sigue, con su fecha (13/11/2026)');
   assert.ok(codigo.includes('o.datos.vigente!==false?o.datos:null'), 'si la fuente dice que no está vigente, no se muestra');
+  // Aclaración en la tarjeta solo si alguna localidad está más alta que su municipio (13/11/2026)
+  assert.ok(t1.includes('class="mLocN"') && t1.includes('salen de informes distintos'), 'Puerto Antequeras (roja) más alta que Colonia Benítez sin dato del Monitoreo');
+  const locO = n => S(`hoy='2026-11-12';D.oficial={datos:{mun:{'Colonia Benítez':${n}}},vivo:true,t:new Date()};D.localidades={datos:{dia:'2026-11-12',hora:'08:00',niv:3,vigente:true,loc:[['Puerto Antequeras',3,-27.443,-58.85,'río Paraná']]},vivo:true,t:new Date()};
+    (()=>{const r=locInfo(GEO.mun.findIndex(m=>m[0]==='Colonia Benítez'));D.localidades={datos:null};D.oficial={datos:null};return r})()`);
+  assert.ok(!locO(3).includes('mLocN') && locO(2).includes('mLocN'), 'con el municipio en rojo no hace falta aclarar; en naranja, sí');
   // Más estaciones, hora por hora: en "Otros ríos", en el orden en que baja el agua
   const est = S(`D.puertos={datos:{v:6.64,hora:new Date().toISOString(),est:[['Barranqueras','Paraná',6.64,new Date().toISOString(),2,-1],['Corrientes','Paraná',6.76,new Date().toISOString(),1,-1],['Las Palmas','Paraguay',6.66,new Date().toISOString(),1,0],['Eldorado','Paraná',18.8,new Date().toISOString(),null,-20],['Vieja','Paraná',1,'2026-01-01T00:00:00Z',0,0]]},vivo:true,t:new Date()};(()=>{const r=estacionesHora();D.puertos={datos:null};return r})()`);
   assert.ok(est.includes('Más estaciones, hora por hora') && est.indexOf('Río Paraguay') < est.indexOf('Río Paraná') && est.indexOf('Corrientes') < est.indexOf('Barranqueras') && est.includes(': evacuación') && !est.includes('Eldorado') && !est.includes('Vieja') && est.includes('−1 cm'.replace('−','-')), 'tabla');
@@ -904,6 +909,11 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   const semL = S(`D.localidades={datos:{dia:'2026-11-13',hora:'08:00',niv:3,vigente:true,loc:[['Puerto Antequeras',3,-27.443,-58.85,'río Paraná'],['Colonia Benítez',2,-27.329,-58.95,'río Paraná']]},vivo:true,t:new Date()};(()=>{const r=semOfi();D.localidades={datos:null};return r})()`);
   assert.ok(semL.includes('<details class="det" id="d-sem-loc"><summary>Localidades con alerta (2)</summary>') && semL.includes('<b>Colonia Benítez:</b>') && semL.indexOf('Puerto Antequeras') < semL.indexOf('</i>Colonia Benítez')
     && semL.includes('data-c="rojo"') && semL.includes('(alerta roja)') && semL.includes('Informe del 13/11, 08:00 h') && semL.includes('salen de informes distintos'), semL);
+  // También las localidades de municipios sin alerta en el Monitoreo, después y por nombre (13/11/2026)
+  const semX = S(`D.localidades={datos:{dia:'2026-11-13',hora:'08:00',niv:3,vigente:true,loc:[['Isla Santa Rosa',1,-27.483,-58.916,'río Paraná'],['Isla del Cerrito',2,-27.293,-58.618,'río Paraná'],['Puerto Antequeras',3,-27.443,-58.85,'río Paraná']]},vivo:true,t:new Date()};(()=>{const r=semOfi();D.localidades={datos:null};return r})()`);
+  assert.ok(semX.includes('Localidades con alerta (3)') && semX.indexOf('<b>Barranqueras:</b>') < semX.indexOf('<b>Colonia Benítez:</b>') && semX.indexOf('<b>Colonia Benítez:</b>') < semX.indexOf('<b>Isla del Cerrito:</b>'), 'Barranqueras (con alerta) primero; Isla del Cerrito (sin alerta) al final');
+  // Tocar un nombre de la lista vuelve el mapa al Monitoreo del Niño (13/11/2026)
+  assert.ok(codigo.includes(`const bn=document.querySelector('.modo [data-modo="nino"]');if(bn&&MODO!=='nino'&&ofiDatos())bn.click();elegir(i,true);`), 'vuelve al Monitoreo');
   prep('smn', true);
   assert.strictEqual(S('modoEf()'), 'smn');
   assert.deepStrictEqual(cols(), ['verde', 'verde', 'amarillo', 'verde'], 'SMN: solo su alerta (ni el Monitoreo ni la lluvia)');
