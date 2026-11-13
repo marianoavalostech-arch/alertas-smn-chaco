@@ -499,7 +499,7 @@ prueba('accesibilidad y textos: parte principal de la página y la llave de la l
 prueba('navegación: índice arriba del mapa, botón para volver al índice, Atrás vuelve adonde estaba y botones grandes en las franjas', () => {
   // Índice: debajo de las franjas, antes del mapa; cada botón lleva a una sección que existe
   const i0 = html.indexOf('id="indice"');
-  assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 > html.indexOf('id="smnBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
+  assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
   const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
   assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-anim', 't-nino', 't-fuentes']);
   for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
@@ -517,7 +517,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   // Computadora (19/10): columna fija con nombre, Compartir e índice; franjas de a dos; río al lado de sus datos; tarjetas en 2 filas; secciones cerradas de a dos
   assert.ok(ancho.includes('html:is(:not(.emb),.embPc) .cab{grid-column:1;grid-row:1/span 2;position:sticky'), 'nombre del sitio e índice en la columna fija');
   assert.ok(!ancho.includes('>:is(#smnBanda,#rioBanda){grid-column:auto') && ancho.includes('main>section.plegable.cerrada:not(.solo){grid-column:auto}'), 'secciones cerradas de a dos (sin el cartel del SMN, la franja del río va sola)');
-  assert.ok(html.includes('#smnBanda{display:none!important}'), 'el cartel del SMN de arriba no se muestra (13/11/2026)');
+  assert.ok(!html.includes('smnBanda'), 'el cartel del SMN de arriba ya no existe (13/11/2026)');
   assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
   assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(typeof MutationObserver/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral');
@@ -545,7 +545,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(codigo.includes("elegir(i,true);$('mBuscar').blur()") && /if\(t<-4\|\|t>8\)\{marcarSalto\(\);verSec\(\$\('t-mapa'\)\)\}/.test(codigo));
   // Franjas: las acciones son botones de 44 px, no enlaces chicos dentro del texto
   assert.ok(html.includes('.bBtn{display:inline-flex;align-items:center;min-height:44px'));
-  assert.ok(codigo.includes('<a class="btn bBtn" href="#t-smn">Ver días y horarios</a>') && codigo.includes('<button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'));
+  assert.ok(codigo.includes('<button type="button" class="btn bBtn" data-h="rio">Qué hacer</button><a class="btn bBtn" href="'));
 });
 
 prueba('secciones de arriba compactas: lo principal a la vista y el detalle desplegable', () => {
@@ -553,7 +553,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   const av = /<div class="aviso info" role="note" data-corto>([\s\S]*?)<\/div>/.exec(html);
   assert.ok(av, 'cartel corto');
   assert.ok(av[1].includes('<b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.') && av[1].includes('href="tel:911"') && av[1].includes('href="#t-tel"') && av[1].includes('href="https://www.smn.gob.ar/alertas"'));
-  assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="smnBanda"'))), 'el cartel no se esconde');
+  assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="rioBanda"'))), 'el cartel no se esconde');
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
@@ -571,7 +571,8 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   S("hoy='2026-10-19'");
   S(`SMN={emitido:new Date().toISOString(),capturado:new Date().toISOString(),leidas:5,fechas:['2026-10-19','2026-10-20','2026-10-21'],areas:GEO.mun.map((m,i)=>i),alertas:{}}`);
   S("SMN.alertas[0]=[['2026-10-21',41,0,0,3,0,1]];SMN.alertas[1]=[['2026-10-21',41,0,0,3,0,1],['2026-10-20',41,0,0,4,0,0]]");
-  const el = { style: {} }, bd = {}; Object.assign(elementos, { smn: el, smnBanda: bd }); S('pintarSMN()'); delete elementos.smn; delete elementos.smnBanda;
+  const el = { style: {} }; Object.assign(elementos, { smn: el }); S('pintarSMN()'); delete elementos.smn;
+  assert.deepStrictEqual(JSON.parse(S('JSON.stringify(SMN_LADO)')), { niv: 4, dias: 'mañana y el miércoles 21/10' }, 'resumen para el menú lateral');
   const T = S('GEO.mun.length'), h = el.innerHTML;
   assert.strictEqual((h.match(/class="smnGrupo"/g) || []).length, 1, 'un bloque por fenómeno');
   assert.ok(h.includes('<p class="smnLinea">Para mañana y el miércoles 21/10 · 2 de ' + T + ' municipios.</p>'), h.slice(0, 600));
@@ -580,10 +581,9 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   S("SMN_ABIERTOS.add('41');pintarSMN()"); S('SMN_ABIERTOS.clear();SMN=SMN_VACIO');
 });
 
-prueba('franja del río arriba de todo: desde amarillo, con el color y el texto del renglón; primero la más grave', () => {
-  const fr = {}, sb = { hidden: true, className: '' }; let orden = '';
-  sb.before = () => { orden = 'río primero' }; sb.after = () => { orden = 'SMN primero' };
-  Object.assign(elementos, { rioBanda: fr, smnBanda: sb });
+prueba('franja del río arriba de todo: desde amarillo, con el color y el texto del renglón', () => {
+  const fr = {};
+  Object.assign(elementos, { rioBanda: fr });
   const poner = (dia, obs, prono, py) => S(`hoy='${dia}';LISTO=true;D.rio={datos:{obs:${JSON.stringify(obs)}},vivo:true,t:new Date()};
     D.prono=${prono ? `{datos:${JSON.stringify(prono)},vivo:true,t:new Date()}` : '{datos:null}'};
     D.paraguay={datos:{obs:${JSON.stringify(py || [[dia, 3.0]])}},vivo:true,t:new Date()};pintarRioBanda()`);
@@ -611,14 +611,11 @@ prueba('franja del río arriba de todo: desde amarillo, con el color y el texto 
     && fr.innerHTML.includes('href="#t-otros"') && !fr.innerHTML.includes(S('DEFENSAS_CORTA')), fr.innerHTML);
   assert.ok(fr.innerHTML.includes('Río Paraguay en amarillo</b> · <span class="rbAlt">6,10 m</span> en Puerto Bermejo'), 'el Paraguay también lleva su altura destacada: ' + fr.innerHTML);
   assert.ok(!S('DEFENSAS_CORTA').includes('no hace falta') && S('DEFENSAS_CORTA').includes('seguí los avisos oficiales'), 'la frase corta no dice menos que lo oficial');
-  // Con la franja del SMN también a la vista: primero la más grave (si son iguales, la del SMN)
-  sb.hidden = false; sb.className = 'n5'; S('ordenBandas()'); assert.strictEqual(orden, 'SMN primero');
-  sb.className = 'n3'; poner('2026-10-18', [['2026-10-18', 6.8]], null); assert.strictEqual(orden, 'río primero');
-  for (const k of ['rioBanda', 'smnBanda']) delete elementos[k];
+  delete elementos.rioBanda;
   S(`D.prono={datos:null};D.paraguay={datos:null};D.rio={datos:null}`);
   // Se pinta con lo demás, debajo del cartel informativo y antes del mapa; "Ahora en el Chaco" usa el mismo título y la misma zona
   assert.ok(codigo.includes("seguro(pintarRioBanda,['rio','prono','paraguay'])"));
-  assert.ok(html.indexOf('class="aviso info"') < html.indexOf('id="rioBanda"') && html.indexOf('id="smnBanda"') < html.indexOf('id="rioBanda"') && html.indexOf('id="rioBanda"') < html.indexOf('id="t-mapa"'));
+  assert.ok(html.indexOf('class="aviso info"') < html.indexOf('id="rioBanda"') && html.indexOf('id="rioBanda"') < html.indexOf('id="t-mapa"'));
   assert.ok(codigo.includes("txt:'<b>'+rioTit(rio,r)+'</b> · '+RIO_ZONA[rio]"));
 });
 

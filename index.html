@@ -434,13 +434,10 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 @media (max-width:599px){.smnChip{flex-wrap:wrap;column-gap:6px;row-gap:1px;border-radius:14px}.smnChip .con,.smnChip small{white-space:nowrap}.smnChip small{padding-left:0;border-left:0;margin-left:0}}
 /* En el celular, la etiqueta del SMN en el detalle del mapa va chica, en uno o dos renglones, para que las tarjetas del clima se vean enseguida (24/10/2026) */
 @media (max-width:599px){#mInfo .smnChip{flex-wrap:wrap;gap:1px 5px;font-size:.84rem;padding:3px 10px 3px 7px;border-width:1.5px;border-radius:14px;margin:4px 6px 2px 0}#mInfo .smnChip .ico{font-size:1.05em}#mInfo .smnChip .con{white-space:nowrap;font-size:.92em}#mInfo .smnChip small{white-space:nowrap;font-size:.8em;padding-left:0;border-left:0;margin-left:0}}
-#smnBanda,#rioBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-#smnBanda[hidden],#rioBanda[hidden]{display:none}
-/* Cartel del SMN de arriba: no se muestra desde el 13/11/2026 (decisión de Mariano: la alerta ya está en la portada, el menú lateral, el botón del mapa
-   y su sección). Se sigue armando porque el menú lateral toma de ahí el nivel y el día (marcasLado). */
-#smnBanda{display:none!important}
-#smnBanda.n4,#rioBanda.n4{border-color:var(--naranja)}#smnBanda.n5,#rioBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
-#smnBanda b,#rioBanda b{font-size:1.02rem}
+#rioBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+#rioBanda[hidden]{display:none}
+#rioBanda.n4{border-color:var(--naranja)}#rioBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
+#rioBanda b{font-size:1.02rem}
 #rioBanda .rbRio{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}#rioBanda .rbRio+.rbRio{border-top:1px solid var(--line);padding-top:8px}
 #rioBanda .rbTxt{flex:1 1 100%;font-size:.95rem;margin:0}#rioBanda .rbL1{flex:1 1 100%;margin:0;font-size:.95rem}
 /* la altura de hoy, destacada (pedido de Mariano, 24/10/2026): más grande y en negrita, sin color de alarma */
@@ -963,7 +960,6 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.<span class="avMas"> Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-tel">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a></span>
   </div>
 
-  <div id="smnBanda" role="status" hidden></div>
   <div id="rioBanda" role="status" hidden></div>
 
   <div class="captura" id="bannerCaptura" hidden></div>
@@ -2309,18 +2305,12 @@ const smnTxt=a=>'Alerta '+(SMN_NIV[a.niv]||['','nivel '+a.niv])[1]+' por '+(SMN_
 // Etiqueta visible del tipo de alerta: ícono, fenómeno y nivel.
 const SMN_X=['','granizo','ráfagas','granizo y ráfagas'];
 const smnChip=a=>{const f=SMN_EV[a.ev]||'otro fenómeno';return '<span class="smnChip n'+a.niv+'"><span class="ico" aria-hidden="true">'+(SMN_ICO[a.ev]||'⚠️')+'</span>'+f.charAt(0).toUpperCase()+f.slice(1)+(a.x?'<span class="con">con posible '+SMN_X[a.x&3]+(a.parcial?' en algunos horarios':'')+'</span>':'')+(a.niv?'<small>'+(SMN_NIV[a.niv]?'alerta '+SMN_NIV[a.niv][1]:'nivel '+a.niv)+'</small>':'')+'</span>'};
-// Franja de arriba: aparece solo si hay alertas vigentes para el Chaco.
-function pintarBanda(G){
-  const bd=$('smnBanda');
-  if(!G||!G.size){bd.hidden=true;bd.innerHTML='';return}
-  const tipos=new Map(),mun=new Set(),dias=new Set();let max=3;
-  [...G.values()].forEach(g=>{dias.add(g.a.dia);const k=g.a.ev;if(!tipos.has(k))tipos.set(k,{ev:g.a.ev,niv:0,x:0,parcial:false,n:0});const t=tipos.get(k);if(t.n++&&t.x!==g.a.x)t.parcial=true;t.x|=g.a.x;if(g.a.niv>t.niv)t.niv=g.a.niv;g.mun.forEach(m=>mun.add(m));if(g.a.niv>max)max=g.a.niv});
-  const n=mun.size,T=GEO.mun.length;
-  bd.className='n'+max;
-  // Dice para qué días es: una alerta para dentro de 3 días no es para ahora.
-  bd.innerHTML='<b>'+(tipos.size>1?'Alertas':'Alerta')+' del SMN para '+smnDiasTxt(dias)+':</b>'+[...tipos.values()].sort((x,y)=>y.niv-x.niv).map(smnChip).join('')
-    +'<span>'+(n===T?'Toda la provincia':n+' de '+T+' municipios')+'.</span><span class="bAcc"><a class="btn bBtn" href="#t-smn">Ver días y horarios</a></span>';
-  bd.hidden=false;ordenBandas();
+// Resumen de las alertas vigentes para el menú lateral (marcasLado): el nivel más alto y para qué días. El cartel de arriba ya no existe (13/11/2026).
+let SMN_LADO=null,LADO_OK=false;
+function resumenSmn(G){
+  if(!G||!G.size)SMN_LADO=null;
+  else{const dias=new Set();let max=3;[...G.values()].forEach(g=>{dias.add(g.a.dia);if(g.a.niv>max)max=g.a.niv});SMN_LADO={niv:max,dias:smnDiasTxt(dias)}}
+  if(LADO_OK)seguro(marcasLado);
 }
 // Franja de arriba del río (pedido de Mariano, 18/10/2026): aparece cuando el Paraná o el Paraguay salen del verde, desde amarillo,
 // con el color de su renglón y el mismo texto. Los colores salen del INA y de sus niveles oficiales: no dice "alerta"
@@ -2355,14 +2345,7 @@ function pintarRioBanda(){
   });
   if(!filas.length){bd.hidden=true;bd.innerHTML='';return}
   filas.sort((x,y)=>y.n-x.n);
-  bd.className='n'+filas[0].n;bd.innerHTML=filas.map(f=>f.html).join('');bd.hidden=false;ordenBandas();
-}
-// Con las dos franjas a la vista (SMN y río), primero la más grave; si son iguales, la del SMN.
-function ordenBandas(){
-  const s=$('smnBanda'),r=$('rioBanda');
-  if(!s||!r||s.hidden||r.hidden||typeof s.before!=='function')return;
-  const n=e=>Number((/n(\d)/.exec(e.className||'')||[])[1]||0);
-  if(n(r)>n(s))s.before(r);else s.after(r);
+  bd.className='n'+filas[0].n;bd.innerHTML=filas.map(f=>f.html).join('');bd.hidden=false;
 }
 const smnPunto=a=>'<i style="display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;background:'+(SMN_COL[(SMN_NIV[a.niv]||['rojo'])[0]])+'"></i>';
 // Días de las alertas en palabras: "hoy", "mañana", "el miércoles 21/10", unidos con comas e "y".
@@ -2377,12 +2360,12 @@ const smnMeta=()=>'<p class="meta">'+(smnViejo()?'<b>Atención: el informe del S
 const SMN_ABIERTOS=new Set();
 function pintarSMN(){
   const el=$('smn');
-  if(!smnVigente()){pintarBanda(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
+  if(!smnVigente()){resumenSmn(null);el.innerHTML=!SMN.emitido?(SMN_LISTO?'<p><span class="estado falla">No disponible</span>No se pudieron consultar las alertas del SMN ahora. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultalas en el SMN</a>.</p>':'<p class="nodisp">Consultando…</p>')
     :'<p><span class="estado falla">Sin informe vigente</span>El último informe guardado es del '+fFechaHora(new Date(SMN.emitido))+' y ya venció. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Consultá las alertas en el SMN</a>.</p>';return}
   const G=new Map();
   GEO.mun.forEach((m,i)=>smnDe(i).forEach(a=>{const k=a.dia+'|'+a.ev+'|'+a.niv+'|'+a.x+'|'+a.fr.join(', ');if(!G.has(k))G.set(k,{a,mun:[]});G.get(k).mun.push(m[0])}));
   const fs=SMN.fechas.filter(d=>d>=hoy&&d<=smnTope()),rango='entre el '+fDia(fs[0])+' y el '+fDia(fs[fs.length-1]);
-  let h;pintarBanda(G);
+  let h;resumenSmn(G);
   if(!G.size)h=SMN.leidas===0?'<p><b>No se pudo confirmar si hay alertas.</b> En la última lectura el canal del SMN no listó ninguna alerta para todo el país, y eso puede ser una falla del canal. <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Confirmalo en el SMN</a>.</p>'
     :(Date.now()-new Date(SMN.capturado))/36e5>6
     ?'<p><b>No figuran alertas para el Chaco en el último informe leído, pero está sin renovar.</b> Puede haber alertas nuevas: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">confirmalo en el SMN</a>.</p>'
@@ -3648,16 +3631,16 @@ function indiceLateral(){
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
 seguro(indiceLateral);
-// Índice lateral: un punto con el color de la franja de arriba al lado de "Alertas del SMN", "Río Paraná" y "Otros ríos" (Paraguay) cuando salen del verde.
+// Índice lateral: un punto de color al lado de "Alertas del SMN", "Río Paraná" y "Otros ríos" (Paraguay) cuando salen del verde.
 const LADO_COL={3:'amarillo',4:'naranja',5:'rojo'};
 function marcasLado(){
-  const nav=$('lado'),s=$('smnBanda'),r=$('rioBanda');if(!nav||!s||!r)return;
-  const nS=s.hidden?0:Number((/n(\d)/.exec(s.className||'')||[])[1]||0),rios={};
+  const nav=$('lado'),r=$('rioBanda');if(!nav||!r)return;
+  const nS=SMN_LADO?SMN_LADO.niv:0,rios={};
   const alt={};
   if(!r.hidden)for(const b of r.querySelectorAll('.rbL1 b')){const m=/Río (Paraná|Paraguay) en (\w+)/.exec(b.textContent||'');if(m){rios[m[1]]=m[2];
     const h=/· ([\d.,]+ m)/.exec((b.parentNode||{}).textContent||'');alt[m[1]]='En '+m[2]+(h?' · '+h[1]:'')}}
   // Debajo del nombre, en corto: para qué día es la alerta del SMN y la altura de cada río (el río nunca dice "alerta").
-  const fem={3:'amarilla',4:'naranja',5:'roja'},dS=nS?((/para (?:el )?([^:]+):/.exec((s.querySelector('b')||{}).textContent||'')||[])[1]||''):'';
+  const fem={3:'amarilla',4:'naranja',5:'roja'},dS=nS?SMN_LADO.dias.replace(/^el /,''):'';
   const sub={'#t-smn':nS?'Alerta '+fem[nS]+(dS?' · '+dS:''):'','#t-rio':alt['Paraná']||'','#t-otros':alt['Paraguay']||''};
   [['#t-smn',LADO_COL[nS],'Alertas del SMN: hay alerta '+(fem[nS]||'')],['#t-rio',rios['Paraná'],'Río Paraná en '+rios['Paraná']],['#t-otros',rios['Paraguay'],'Río Paraguay en '+rios['Paraguay']]].forEach(([h,c,t])=>{
     const a=nav.querySelector('a[href="'+h+'"]');if(!a)return;
@@ -3670,8 +3653,8 @@ function marcasLado(){
 function iniciarMarcasLado(){
   if(typeof MutationObserver!=='function')return;
   const o=new MutationObserver(()=>seguro(marcasLado));
-  ['smnBanda','rioBanda'].forEach(id=>{const e=$(id);if(e)o.observe(e,{attributes:true,childList:true,subtree:true,characterData:true})});
-  marcasLado();
+  const e=$('rioBanda');if(e)o.observe(e,{attributes:true,childList:true,subtree:true,characterData:true});
+  LADO_OK=true;marcasLado();
 }
 seguro(iniciarMarcasLado);
 seguro(iniciarModo);
