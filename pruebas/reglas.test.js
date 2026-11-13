@@ -892,15 +892,29 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   prep('nino', true);
   assert.strictEqual(S('modoEf()'), 'nino');
   assert.deepStrictEqual(cols(), ['naranja', 'naranja', 'verde', 'verde'], 'Monitoreo: solo su nivel (ni la lluvia ni el SMN)');
-  const semN = S('semOfi((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}))');
-  assert.ok(semN.indexOf('Barranqueras|Rojo') < semN.indexOf('Colonia Benítez|Naranja') && semN.indexOf('Colonia Benítez') < semN.indexOf('Resistencia|Naranja') && semN.includes('Margarita Belén|Amarillo') && !semN.includes('Charata') && semN.includes('Los otros 66 municipios no tienen alerta en el Monitoreo del Niño.'), semN);
+  // Agrupada por color (13/11/2026): un renglón por nivel, del más alto al más bajo, con los nombres que se tocan (data-m) y sin "Ver en el mapa"
+  const semN = S('semOfi()');
+  const gr = c => (semN.match(new RegExp('<li class="sGr" data-c="' + c + '">.*?</li>')) || [''])[0];
+  assert.ok(semN.indexOf('data-c="rojo"') < semN.indexOf('data-c="naranja"') && semN.indexOf('data-c="naranja"') < semN.indexOf('data-c="amarillo"'), 'rojo, naranja, amarillo');
+  assert.ok(gr('rojo').includes('Rojo <span class="sCant">(1)</span>') && gr('rojo').includes('>Barranqueras<'), gr('rojo'));
+  assert.ok(gr('naranja').includes('(2)') && gr('naranja').indexOf('>Colonia Benítez<') < gr('naranja').indexOf('>Resistencia<') && gr('naranja').includes('data-m="' + CB + '"'), gr('naranja'));
+  assert.ok(gr('amarillo').includes('>Margarita Belén<') && !semN.includes('Charata') && !semN.includes('vermapa') && (semN.match(/class="sMun"/g) || []).length === 4, semN);
+  assert.ok(semN.includes('Los otros 66 municipios no tienen alerta en el Monitoreo del Niño.') && !semN.includes('d-sem-loc'), 'sin localidades, sin desplegable');
+  // Las localidades con alerta, en un desplegable cerrado y recordado, agrupadas por municipio, con la fecha del informe y la aclaración de los dos informes
+  const semL = S(`D.localidades={datos:{dia:'2026-11-13',hora:'08:00',niv:3,vigente:true,loc:[['Puerto Antequeras',3,-27.443,-58.85,'río Paraná'],['Colonia Benítez',2,-27.329,-58.95,'río Paraná']]},vivo:true,t:new Date()};(()=>{const r=semOfi();D.localidades={datos:null};return r})()`);
+  assert.ok(semL.includes('<details class="det" id="d-sem-loc"><summary>Localidades con alerta (2)</summary>') && semL.includes('<b>Colonia Benítez:</b>') && semL.indexOf('Puerto Antequeras') < semL.indexOf('</i>Colonia Benítez')
+    && semL.includes('data-c="rojo"') && semL.includes('(alerta roja)') && semL.includes('Informe del 13/11, 08:00 h') && semL.includes('salen de informes distintos'), semL);
   prep('smn', true);
   assert.strictEqual(S('modoEf()'), 'smn');
   assert.deepStrictEqual(cols(), ['verde', 'verde', 'amarillo', 'verde'], 'SMN: solo su alerta (ni el Monitoreo ni la lluvia)');
   // "Municipios con alerta oficial" no depende del botón del mapa: con el SMN elegido, sigue siendo la lista del Monitoreo (13/11/2026)
-  const semS = S('semOfi((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}))');
+  const semS = S('semOfi()');
   assert.strictEqual(semS, semN, 'la misma lista con el SMN elegido');
-  assert.ok(!codigo.includes('semModo') && codigo.includes("if(ofi){$('sem').innerHTML=semOfi(fila)") && html.includes('<h2 id="t-sem">Municipios con alerta oficial</h2>') && html.includes('<a href="#t-sem">Con alerta oficial</a>'), 'sección y menú');
+  assert.ok(!codigo.includes('semModo') && codigo.includes("if(ofi){$('sem').innerHTML=semOfi()") && html.includes('<h2 id="t-sem">Municipios con alerta oficial</h2>') && html.includes('<a href="#t-sem">Con alerta oficial</a>'), 'sección y menú');
+  // En "Alertas oficiales del SMN", los municipios de cada día y horario se tocan: llevan al mapa con el botón "Servicio Meteorológico" (13/11/2026)
+  const smnN = S("smnNombres(['Charata','Resistencia'],3)");
+  assert.ok(smnN.includes('data-ms="' + CH + '">Charata<') && smnN.includes('data-ms="' + RE + '">Resistencia<') && smnN.includes('<span class="sSep" aria-hidden="true">, </span>') && smnN.endsWith('</span>.') && (smnN.match(/sSep/g) || []).length === 1, smnN);
+  assert.ok(codigo.includes(`if(bm&&MODO!=='smn')bm.click();elegir(i,true);marcarSalto();verSec($('t-mapa'))`) && codigo.includes("smnNombres(g.mun,g.a.niv)"), 'tocar un municipio del SMN');
   S('pintarPortada()');
   assert.ok(S("$('portada').innerHTML").includes('Con alerta oficial') && S("$('portada').innerHTML").includes('4 de 70'), 'portada con el SMN elegido: la cuenta del Monitoreo');
   prep('smn', true, false);

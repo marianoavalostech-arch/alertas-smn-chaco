@@ -282,6 +282,33 @@ footer{font-size:.85rem;color:var(--muted)}
 .vNino,.vSmn,.vCalc{display:none!important}
 /* "Municipios con alerta oficial" (13/11/2026): siempre el Monitoreo del Niño; sin su dato al día, el semáforo de antes (clase semCalc en la sección). */
 .semCalc .sOfi,section:not(.semCalc) .sCalc{display:none!important}
+/* Lista agrupada por color (13/11/2026): un renglón por nivel, con borde y fondo del color, nombres que se tocan y localidades en un desplegable. */
+.sem.semOfi{gap:6px}
+.sem.semOfi>li,.sem.semOfi .sLocL>li{display:block;padding:0;border-radius:0;background:none;cursor:default}
+.sem.semOfi>li.sGr{border:1px solid var(--line);border-left:7px solid #9aa3a6;border-radius:12px;padding:6px 12px 6px 12px;line-height:1.55}
+.sem.semOfi>li.sGr[data-c="rojo"]{border-left-color:var(--rojo-mapa);background:var(--rojo-bg)}
+.sem.semOfi>li.sGr[data-c="naranja"]{border-left-color:var(--naranja-mapa);background:var(--naranja-bg)}
+.sem.semOfi>li.sGr[data-c="amarillo"]{border-left-color:var(--amarillo-mapa);background:var(--amarillo-bg)}
+.sNiv{margin-right:4px;white-space:nowrap}
+.sGr[data-c="rojo"] .sNiv{color:var(--rojo-txt)}.sGr[data-c="naranja"] .sNiv{color:var(--naranja-txt)}.sGr[data-c="amarillo"] .sNiv{color:var(--amarillo-txt)}
+.sCant{font-weight:600}
+.sMun{font:inherit;font-weight:700;color:var(--ink);background:none;border:0;padding:5px 1px;margin:0;cursor:pointer;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;border-radius:4px;-webkit-tap-highlight-color:transparent}
+.sGr[data-c="rojo"] .sMun{text-decoration-color:var(--rojo)}.sGr[data-c="naranja"] .sMun{text-decoration-color:var(--naranja)}.sGr[data-c="amarillo"] .sMun{text-decoration-color:var(--amarillo)}
+.sMun:hover{text-decoration-thickness:3px}
+.sMun:focus-visible{outline:3px solid var(--acento);outline-offset:1px}
+.sIt{white-space:nowrap}
+#smn li[data-n]{line-height:1.55}
+#smn li[data-n="3"] .sMun{text-decoration-color:var(--amarillo)}#smn li[data-n="4"] .sMun{text-decoration-color:var(--naranja)}#smn li[data-n="5"] .sMun{text-decoration-color:var(--rojo)}
+.sSep{color:var(--muted)}
+@media (max-width:480px){.sNiv{display:block;margin:2px 0 0}}
+.sem.semOfi>li.sResto{font-size:.92rem;padding:4px 2px 0;text-align:left}
+.sem.semOfi>li.sLoc{padding:0 2px}
+.sLocL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:.95rem;text-align:left}
+.sLocN{white-space:nowrap}
+.sLocN i{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px 0 2px;background:#9aa3a6}
+.sLocN i[data-c="rojo"]{background:var(--rojo-mapa)}.sLocN i[data-c="naranja"]{background:var(--naranja-mapa)}.sLocN i[data-c="amarillo"]{background:var(--amarillo-mapa)}
+.sLocF{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+@media print{.sem.semOfi>li.sGr{break-inside:avoid}.sMun{text-decoration:none;padding:0}}
 html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .modoCaja{margin:2px 0 12px}
 /* Selector del mapa (13/11/2026): dos tarjetitas lado a lado. Cada una dice qué criterio es y, en chico, cuántos municipios tienen alerta con ese
@@ -1699,8 +1726,8 @@ function pintarSemaforo(){
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
   // Desde el 13/11/2026 (decisión de Mariano) la sección es siempre la del Monitoreo del Niño, elija lo que elija el mapa (semOfi).
   // Sin su dato al día, el semáforo de antes, con un renglón que lo avisa. El mapa usa igual R para la lluvia de las tarjetas.
-  const ofi=!!ofiDatos();try{$('secSem').classList.toggle('semCalc',!ofi)}catch(e){}
-  if(ofi){$('sem').innerHTML=semOfi(fila);colorearMapa(R);return}
+  const ofi=!!ofiDatos();try{$('secSem').classList.toggle('semCalc',!ofi);$('sem').classList.toggle('semOfi',ofi)}catch(e){}
+  if(ofi){$('sem').innerHTML=semOfi();colorearMapa(R);return}
   $('sem').innerHTML='<li class="gris"><span class="luz" aria-hidden="true">?</span><span><b>No se pudo leer el Monitoreo del Niño</b></span><span class="por">Mientras tanto, el color de 6 ciudades calculado por este sitio (alertas del SMN, río Paraná y lluvia muy fuerte).</span></li>'
     +otras.map(f=>f.html).join('')
     +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
@@ -1709,18 +1736,28 @@ function pintarSemaforo(){
   colorearMapa(R);
 }
 
-// Renglones de "Municipios con alerta oficial" (13/11/2026): los municipios con alerta en el Monitoreo del Niño, del nivel más alto al más bajo,
-// con sus localidades con alerta. No depende del botón del mapa: las alertas del SMN tienen su propia sección más arriba.
-function semOfi(fila){
-  const ver=i=>'<button class="vermapa" type="button" data-m="'+i+'"><span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>';
+// "Municipios con alerta oficial" (13/11/2026; agrupada por color el mismo día, pedido de Mariano: las tarjetas ocupaban casi tres pantallas).
+// Un renglón por nivel (rojo, naranja, amarillo) con los nombres de los municipios, que se tocan para verlos en el mapa; la frase de los otros
+// y, en un desplegable cerrado (recordado como los demás), las localidades con alerta de cada municipio. No depende del botón del mapa.
+function semOfi(){
   const con=GEO.mun.map((m,i)=>i).filter(i=>(ofiNivel(i)||0)>0).sort((a,b)=>ofiNivel(b)-ofiNivel(a)||GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
-  const filas=con.map(i=>{const c=NIVELES[ofiNivel(i)],L=locDe(i);
-    // El nivel ya va al lado del nombre: el renglón suma solo las localidades con alerta, si las hay.
-    return fila({c,et:ETQ[c],por:L.length?'Localidades con alerta: '+L.map(l=>esc(l[0])+' ('+LOC_NIV[l[1]]+')').join(', ')+'.':''},esc(GEO.mun[i][0]),'',ver(i),'').html});
+  const grupos=['rojo','naranja','amarillo'].map(c=>{const ms=con.filter(i=>NIVELES[ofiNivel(i)]===c);if(!ms.length)return '';
+    return '<li class="sGr" data-c="'+c+'"><b class="sNiv">'+ETQ[c]+' <span class="sCant">('+ms.length+')</span><span class="pSr">:</span></b> '
+      +ms.map((i,k)=>'<span class="sIt"><button type="button" class="sMun" data-m="'+i+'">'+esc(GEO.mun[i][0])+'<span class="pSr">, ver en el mapa</span></button>'
+        +(k<ms.length-1?'<span class="sSep" aria-hidden="true"> · </span>':'')+'</span>').join(' ')+'</li>'}).join('');
   const resto=GEO.mun.length-con.length,t=fFechaHora(D.oficial.t);
-  return filas.join('')+'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(con.length?'Sin alerta':'Ningún municipio con alerta')+'</b></span>'
-    +'<span class="por">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' Última lectura: '+t+'.</span></li>';
+  const pie='<li class="sResto">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' <span class="sIt">Última lectura: '+t+'.</span></li>';
+  return grupos+pie+semLoc(con);
 }
+// Desplegable de las localidades con alerta (las mismas de la tarjeta del municipio), agrupadas por municipio y con un punto del color de cada una.
+// Se vuelve a pintar con cada renovación: queda abierto si estaba abierto o si el navegador lo recuerda abierto.
+function semLoc(con){
+  try{const d=locDatos(),L=con.map(i=>[i,locDe(i)]).filter(x=>x[1].length),n=L.reduce((s,x)=>s+x[1].length,0);if(!n)return '';
+    let ab=false;try{ab=!!document.querySelector('#d-sem-loc[open]')||!!(JSON.parse(localStorage.getItem(DET_K))||{})['d-sem-loc']}catch(e){}
+    return '<li class="sLoc"><details class="det" id="d-sem-loc"'+(ab?' open':'')+'><summary>Localidades con alerta ('+n+')</summary>'
+      +'<ul class="sLocL">'+L.map(([i,ls])=>'<li><b>'+esc(GEO.mun[i][0])+':</b> '+ls.map(l=>'<span class="sLocN"><i data-c="'+NIVELES[l[1]]+'" aria-hidden="true"></i>'+esc(l[0])+'<span class="pSr"> (alerta '+LOC_NIV[l[1]]+')</span></span>').join('<span aria-hidden="true">, </span>')+'</li>').join('')+'</ul>'
+      +'<p class="sLocF">Informe del '+fDia(d.dia)+(d.hora?', '+esc(d.hora)+' h':'')+'. El nivel de cada localidad puede ser distinto del de su municipio: salen de informes distintos.</p></details></li>';
+  }catch(e){console.error(e);return ''}}
 
 /* ---------- mapa interactivo ---------- */
 // Las formas vienen en décimas de unidad (por eso el scale(.1)); la vista se mueve cambiando el viewBox.
@@ -1835,6 +1872,8 @@ function armarMapa(){
     const t=$('t-mapa').getBoundingClientRect().top;if(t<-4||t>8){marcarSalto();verSec($('t-mapa'))}};
   $('mBuscar').addEventListener('change',buscar);
   $('mBuscar').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar()}});
+  $('smn').addEventListener('click',e=>{const b=e.target.closest('[data-ms]');if(!b)return;const i=+b.dataset.ms;if(i<0)return;
+    const bm=document.querySelector('.modo [data-modo="smn"]');if(bm&&MODO!=='smn')bm.click();elegir(i,true);marcarSalto();verSec($('t-mapa'))});
   $('sem').addEventListener('click',e=>{const mm=e.target.closest('[data-m]');if(mm){const i=+mm.dataset.m;elegir(i,true);marcarSalto();verSec($('t-mapa'));return}
     const li=e.target.closest('[data-j]');if(!li)return;const l=LOCS[+li.dataset.j],i=GEO.mun.findIndex(m=>m[0]===(l.mun||l.n));
     if(i>=0){elegir(i,true);marcarSalto();verSec($('t-mapa'))}});
@@ -2312,14 +2351,19 @@ function pintarSMN(){
         +'<p class="smnLinea">Para '+smnDiasTxt(dias)+' · '+(n===T?'toda la provincia':n+' de '+T+' municipios')+'.</p>'
         +'<details class="det" data-ev="'+ev+'"'+(SMN_ABIERTOS.has(String(ev))?' open':'')+'><summary>Ver horarios y municipios</summary>'
         +'<ul>'+f.l.map(g=>{const k=g.mun.length;
-          return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+frTxt(g.a.fr):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
-            +(k===T?'Toda la provincia.':k+' de '+T+' municipios: '+g.mun.map(esc).join(', ')+'.')+'</li>'}).join('')+'</ul>'
+          return '<li data-n="'+g.a.niv+'">'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+frTxt(g.a.fr):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
+            +(k===T?'Toda la provincia.':k+' de '+T+' municipios: '+smnNombres(g.mun,g.a.niv))+'</li>'}).join('')+'</ul>'
         +'<p class="meta">Informe para los días '+rango+'.</p></details></div>'}).join('');
   }
   // Con alertas por tormentas o lluvias, un enlace a "Lluvia hora por hora" para ver a qué hora llega (pedido de Mariano, 23/10/2026).
   el.innerHTML=h+(/data-ev="(41|37)"/.test(h)?'<p class="meta"><a href="#t-anim">Ver a qué hora llega la lluvia, hora por hora ↓</a></p>':'')+smnMeta();
   el.style.cssText='display:flex;flex-direction:column;gap:10px';
 }
+// Municipios de cada día y horario del SMN (13/11/2026, como en "Municipios con alerta oficial"): cada nombre se toca y lleva al mapa,
+// que pasa al botón "Servicio Meteorológico" para que el color coincida con la alerta que se estaba mirando.
+function smnNombres(ms,niv){
+  return ms.map((m,k)=>'<span class="sIt"><button type="button" class="sMun" data-ms="'+GEO.mun.findIndex(x=>x[0]===m)+'">'+esc(m)+'<span class="pSr">, ver en el mapa</span></button>'
+    +(k<ms.length-1?'<span class="sSep" aria-hidden="true">, </span>':'')+'</span>').join(' ')+'.'}
 function smnInfo(i){
   if(!smnVigente())return '';
   const a=smnDe(i);

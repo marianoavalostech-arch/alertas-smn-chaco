@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 ("Municipios con alerta oficial" más corta y municipios del SMN que se tocan)
+
+Pedido de Mariano: la sección ocupaba casi tres pantallas en el celular (una tarjeta por municipio, cada una con "Ver en el mapa"), y lo único que no estaba en otro lado eran las localidades con alerta.
+- Un renglón por nivel (rojo, naranja, amarillo) con borde y fondo del color, la cantidad y los nombres de los municipios (`.sGr`); cada nombre se toca para verlo en el mapa (`.sMun`, mismo `data-m` de antes). Sin los 12 botones "Ver en el mapa". En pantallas de hasta 480 px el nivel va en su propio renglón; los separadores no quedan al comienzo de un renglón (`.sIt`).
+- Debajo, cuántos municipios no tienen alerta y la última lectura, como antes.
+- **Localidades con alerta** en un desplegable cerrado (`#d-sem-loc`, `semLoc`; recordado como los demás y abierto al imprimir), agrupadas por municipio, con un punto del color de cada una (el nivel también se lee con lector de pantalla), la fecha del informe y la aclaración: "El nivel de cada localidad puede ser distinto del de su municipio: salen de informes distintos." Siguen también en la tarjeta del municipio.
+- Con los datos del 13/11: de unos 1.700 px a unos 570 px a 390 px de ancho (con el título y "¿De dónde sale?").
+- **Alertas oficiales del SMN**, igual de uso: en "Ver horarios y municipios", cada municipio se toca (`smnNombres`, `data-ms`, subrayado del color de la alerta) y lleva al mapa con su tarjeta abierta; si el mapa estaba en "Monitoreo del Niño", pasa a "Servicio Meteorológico" (como tocar el botón, queda recordado) para que el color coincida con la alerta que se estaba mirando. La sección no cambia de tamaño.
+- El semáforo de antes (sin el Monitoreo) no cambia. Prueba al día (92 pruebas). Huella nueva del código.
+
 ## 13/11/2026 (portada del celular como botonera)
 
 Pedido de Mariano: "Actualizar" ocupaba un renglón entero del encabezado, "El Chaco hoy" no parecía una botonera y los recuadros parecían etiquetas.
