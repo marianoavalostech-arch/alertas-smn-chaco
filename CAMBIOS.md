@@ -2,6 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (lluvia medida en pluviómetros y cita del Centro de Monitoreo)
+
+Pedido de Mariano: usar las estaciones del tablero del Monitoreo del Niño y citar la fuente (con permiso).
+- **Script de Google**: lee los pluviómetros oficiales, los últimos 7 días (`normPluvio`; dirección en la propiedad `FUENTE_PLUVIOMETROS`). `leerExtras` acepta fuentes con varias direcciones. `diagnosticoDatos` muestra también `oficial`, `puertos`, `localidades` y `pluvio`. **Pegado en script.google.com el 13/11 (SHA-256 igual al del repositorio) y propiedad cargada.**
+- **Tarjeta del municipio**: si el municipio tiene pluviómetro, "Lluvia medida en el pluviómetro de …: N mm en los últimos 7 días (… mm el …)" o "sin lluvia registrada en los últimos 7 días", en lugar de la estimación y de la estación automática. Sin pluviómetro, sigue como antes.
+- **Cita de la fuente**: "Centro de Monitoreo del Gobierno del Chaco", con enlace al tablero, en "¿De dónde sale?" (Municipios con alerta oficial), en "De dónde salen los datos" (alerta por municipio, localidades, estaciones de los ríos, lectura por hora del Paraná y pluviómetros) y al pie de la tarjeta.
+- `herramientas/csp.js`: ya no da error cuando la huella está al día.
+- Pruebas al día (93). Huella nueva del código.
+
 ## 13/11/2026 (tarjeta del municipio más simple)
 
 Pedido de Mariano: quitar "¿A qué hora llueve?" de la tarjeta y revisar el texto de "Seguir leyendo".

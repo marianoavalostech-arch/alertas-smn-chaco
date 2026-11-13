@@ -389,7 +389,7 @@ function serieINA(n, hoy) {
 // y las localidades con alerta. Sus direcciones NO van en este archivo: se guardan en las propiedades del script
 // (FUENTE_OFICIAL, FUENTE_RIOS y FUENTE_LOCALIDADES). Sin esas propiedades, el sitio sigue como antes (color de la costa calculado con el Paraná).
 function urlsPropias() {
-  try { var p = PropertiesService.getScriptProperties(); return { oficial: p.getProperty('FUENTE_OFICIAL'), rios: p.getProperty('FUENTE_RIOS'), loc: p.getProperty('FUENTE_LOCALIDADES') }; }
+  try { var p = PropertiesService.getScriptProperties(); return { oficial: p.getProperty('FUENTE_OFICIAL'), rios: p.getProperty('FUENTE_RIOS'), loc: p.getProperty('FUENTE_LOCALIDADES'), pluvio: p.getProperty('FUENTE_PLUVIOMETROS') }; }
   catch (e) { return {}; }
 }
 function sinTildes(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
@@ -447,6 +447,32 @@ function normLocalidades(j) {
   });
   return { dia: String(r.fecha_reporte || '').slice(0, 10), hora: String(r.hora_referencia || '').slice(0, 5), niv: NIVEL_LOC[sinTildes(r.nivel_general)] || 0, vigente: r.vigente !== false, loc: out };
 }
+// Lluvia medida en pluviómetros oficiales (13/11/2026, decisión de Mariano): un dato por día y por localidad. La dirección va en la
+// propiedad FUENTE_PLUVIOMETROS (sin la fecha). Se pide un día por pedido: los últimos PLUVIO_DIAS días, hoy incluido.
+// La fuente solo trae los lugares donde llovió: la lista de lugares se guarda y crece con cada lectura (previo.lug), así un lugar
+// sin lluvia en la semana figura con 0 mm. La primera vez (sin lista) se piden PLUVIO_SEMBRAR días para armarla.
+// Devuelve { dias: [7 fechas], ult: última fecha con datos en la fuente, lug: [[nombre, lat, lon, [mm de cada día]]] }.
+var PLUVIO_DIAS = 7, PLUVIO_SEMBRAR = 40;
+function diasAtras(hoy, n) { var d = []; for (var i = n - 1; i >= 0; i--) d.push(sumarDias(hoy, -i)); return d; }
+function urlPluvio(base, dia) { return base + (base.indexOf('?') < 0 ? '?' : '&') + 'fecha=' + dia; }
+function normPluvio(js, pedidos, dias, previo) {
+  var lug = {}, orden = [], ult = '';
+  var poner = function (n, la, lo) { var k = sinTildes(n); if (!lug[k]) { lug[k] = { n: n, la: la, lo: lo, mm: {} }; orden.push(k); } return lug[k]; };
+  ((previo && previo.lug) || []).forEach(function (x) { if (Array.isArray(x) && x[0] && isFinite(x[1]) && isFinite(x[2])) poner(String(x[0]), x[1], x[2]); });
+  js.forEach(function (j, i) {
+    if (!j || !Array.isArray(j.features)) throw new Error('sin lugares');
+    var u = j.meta && String(j.meta.ultima_fecha || '');
+    if (/^\d{4}-\d\d-\d\d$/.test(u) && u > ult) ult = u;
+    j.features.forEach(function (f) {
+      var p = f && f.properties, c = f && f.geometry && f.geometry.coordinates, mm = p ? Number(p.mm) : NaN;
+      if (!p || !p.nombre || !Array.isArray(c) || !isFinite(c[0]) || !isFinite(c[1]) || !(mm >= 0 && mm < 1000)) return;
+      var l = poner(String(p.nombre).trim().slice(0, 60), Math.round(c[1] * 1000) / 1000, Math.round(c[0] * 1000) / 1000);
+      if (dias.indexOf(pedidos[i]) >= 0) l.mm[pedidos[i]] = Math.max(l.mm[pedidos[i]] || 0, Math.round(mm * 10) / 10);
+    });
+  });
+  if (!orden.length) throw new Error('sin lugares');
+  return { dias: dias, ult: ult, lug: orden.map(function (k) { var l = lug[k]; return [l.n, l.la, l.lo, dias.map(function (d) { return l.mm[d] || 0; })]; }) };
+}
 // Suma la lectura por hora de Barranqueras a la serie diaria del INA: si es del mismo día o más nueva, pasa a ser la lectura de ese día
 // y su hora (así la página muestra "Medido hoy a las 12 h"). Una lectura de más de 30 horas no se usa.
 function aplicarPuerto(rio, pref, ahora) {
@@ -458,7 +484,7 @@ function aplicarPuerto(rio, pref, ahora) {
   return { obs: obs, act: rio.act, hora: pref.hora, pna: true, t: rio.t };   // (sin la lista de estaciones)
 }
 
-function fuentesExtra(hoy, ahora, urls) {
+function fuentesExtra(hoy, ahora, urls, previo) {
   var json = function (f) { return function (t) { return f(JSON.parse(t)); }; };
   ahora = ahora || new Date();
   urls = urls || urlsPropias();
@@ -466,6 +492,11 @@ function fuentesExtra(hoy, ahora, urls) {
   if (urls.oficial) extra.push({ k: 'oficial', url: urls.oficial, leer: json(normOficial) });
   if (urls.rios) extra.push({ k: 'puertos', url: urls.rios, leer: json(normPuertos) });
   if (urls.loc) extra.push({ k: 'localidades', url: urls.loc, leer: json(normLocalidades) });
+  if (urls.pluvio) {
+    var pp = previo && previo.pluvio, dias = diasAtras(hoy, PLUVIO_DIAS), pedidos = diasAtras(hoy, pp && pp.lug && pp.lug.length >= 20 ? PLUVIO_DIAS : PLUVIO_SEMBRAR);
+    extra.push({ k: 'pluvio', urls: pedidos.map(function (d) { return urlPluvio(urls.pluvio, d); }),
+      leer: function (ts) { return normPluvio(ts.map(function (t) { return JSON.parse(t); }), pedidos, dias, pp); } });
+  }
   return extra.concat([
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
     { k: 'municipios', url: urlLluvia(CENTROS), leer: json(function (j) { return normLluvia(j, CENTROS.length); }) },
@@ -484,11 +515,12 @@ function fuentesExtra(hoy, ahora, urls) {
 // pedir(url) devuelve { codigo, texto }.
 function leerExtras(hoy, ahora, previo, pedir, urls) {
   var out = {}, errores = {};
-  fuentesExtra(hoy, ahora, urls).forEach(function (f) {
+  fuentesExtra(hoy, ahora, urls, previo).forEach(function (f) {
     try {
-      var r = pedir(f.url);
-      if (r.codigo !== 200) throw new Error('HTTP ' + r.codigo);
-      var d = f.leer(r.texto);
+      // Una dirección por fuente, o varias (los pluviómetros: un pedido por día).
+      var rs = (f.urls || [f.url]).map(pedir);
+      rs.forEach(function (r) { if (r.codigo !== 200) throw new Error('HTTP ' + r.codigo); });
+      var d = f.urls ? f.leer(rs.map(function (r) { return r.texto; })) : f.leer(rs[0].texto);
       d.t = ahora.toISOString();
       out[f.k] = d;
     } catch (e) {
@@ -905,9 +937,10 @@ function diagnostico() {
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
   var d = leerExtras(hoy, ahora, {}, pedirUrl);
-  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'yacy', 'oni'].forEach(function (k) {
-    Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + d.errores[k]));
+  ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'yacy', 'oni', 'oficial', 'puertos', 'localidades', 'pluvio'].forEach(function (k) {
+    Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + (d.errores[k] || 'sin dirección en las propiedades')));
   });
+  if (d.pluvio) Logger.log('Pluviómetros: ' + d.pluvio.lug.length + ' lugares; con lluvia en la semana: ' + d.pluvio.lug.filter(function (x) { return x[3].some(function (v) { return v > 0; }); }).map(function (x) { return x[0] + ' ' + x[3].reduce(function (a, b) { return a + b; }, 0) + ' mm'; }).join(', '));
   ['rio', 'paraguay', 'bermejo', 'yacy'].forEach(function (k) { if (d[k]) Logger.log('Última lectura (' + k + '): ' + JSON.stringify(d[k].obs[d[k].obs.length - 1])); });
   if (d.prono) Logger.log('Pronóstico del río (emitido ' + d.prono.emitido + '): ' + JSON.stringify(d.prono.p));
   if (d.pronoPy) Logger.log('Pronóstico del Paraguay (emitido ' + d.pronoPy.emitido + '): Formosa ' + JSON.stringify(d.pronoPy.formosa) + ' | Pilcomayo ' + JSON.stringify(d.pronoPy.pilcomayo));

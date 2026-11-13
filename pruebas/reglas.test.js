@@ -830,6 +830,21 @@ prueba('script: alerta oficial por municipio, lectura por hora de los puertos y 
       { properties: { nombre_reportado: 'X', nivel: 'VERDE' }, geometry: { type: 'Point', coordinates: [-58, -27] } }] })));
   assert.deepStrictEqual(lc, { dia: '2026-11-12', hora: '08:00', niv: 3, vigente: true, loc: [['Isla Soto', 3, -27.837, -58.833, 'río Paraná']] });
   assert.throws(() => gs.normLocalidades({ features: [] }));
+  // Pluviómetros (13/11/2026): la semana por lugar; la lista de lugares se guarda y crece; la primera vez se siembra con 40 días.
+  const dias7 = ['2026-11-07', '2026-11-08', '2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13'];
+  const pt = (n, mm, lo, la) => ({ properties: { nombre: n, mm, fecha: 'x', fuente: 'no se guarda', id: 1 }, geometry: { type: 'Point', coordinates: [lo, la] } });
+  const pv = JSON.parse(JSON.stringify(gs.normPluvio([{ features: [pt('Villa Berthet', 25, -60.41, -27.29), pt('Haumonia', 8, -60.18, -27.51)], meta: { ultima_fecha: '2026-11-12' } },
+    { features: [pt('Haumonia', 2.04, -60.18, -27.51), pt('Mala', -3, -60, -27)] }, { features: [pt('Resistencia', 40, -58.98, -27.45)] }],
+    ['2026-11-12', '2026-11-13', '2026-10-30'], dias7, { lug: [['Charata', -27.2, -61.2, [1, 1, 1, 1, 1, 1, 1]]] })));
+  assert.deepStrictEqual(pv, { dias: dias7, ult: '2026-11-12', lug: [['Charata', -27.2, -61.2, [0, 0, 0, 0, 0, 0, 0]], ['Villa Berthet', -27.29, -60.41, [0, 0, 0, 0, 0, 25, 0]],
+    ['Haumonia', -27.51, -60.18, [0, 0, 0, 0, 0, 8, 2]], ['Resistencia', -27.45, -58.98, [0, 0, 0, 0, 0, 0, 0]]] }, 'lluvia por día; lo de antes de la semana solo suma el lugar; sin la fuente');
+  assert.throws(() => gs.normPluvio([{ error: 'falta parametro fecha' }], ['2026-11-13'], dias7, null));
+  const fp = gs.fuentesExtra('2026-11-13', new Date(), { pluvio: 'https://x/p' }, {}).filter(f => f.k === 'pluvio')[0];
+  assert.ok(fp.urls.length === 40 && fp.urls[39] === 'https://x/p?fecha=2026-11-13' && fp.urls[0] === 'https://x/p?fecha=2026-10-05', 'sin lista de lugares: 40 días');
+  const lug20 = Array.from({ length: 20 }, (v, i) => ['L' + i, -27, -60, [0, 0, 0, 0, 0, 0, 0]]);
+  assert.strictEqual(gs.fuentesExtra('2026-11-13', new Date(), { pluvio: 'https://x/p' }, { pluvio: { lug: lug20 } }).filter(f => f.k === 'pluvio')[0].urls.length, 7, 'con la lista: solo la semana');
+  const lx = gs.leerExtras('2026-11-13', new Date(), {}, u => /fecha=2026-11-12/.test(u) ? { codigo: 200, texto: JSON.stringify({ features: [pt('Quitilipi', 12, -60.22, -26.87)] }) } : /fecha=/.test(u) ? { codigo: 200, texto: '{"features":[]}' } : { codigo: 500, texto: '' }, { pluvio: 'https://x/p' });
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(lx.pluvio.lug)), [['Quitilipi', -26.87, -60.22, [0, 0, 0, 0, 0, 12, 0]]], 'leerExtras pide un día por pedido');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.fuentesExtra('2026-11-12', new Date(), { loc: 'https://x/c' }).slice(0, 1).map(f => f.k))), ['localidades']);
   assert.throws(() => gs.normPuertos({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 66, fecha_hora: '2026-11-12 12:00:00' } }] }));
   const rio = { obs: [['2026-11-11', 6.7], ['2026-11-12', 6.66]], act: 'a', hora: '2026-11-12T03:00:00.000Z', t: 't' }, ahora = new Date('2026-11-12T16:00:00Z');
@@ -861,7 +876,7 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
   assert.deepStrictEqual(col(null), [['rojo', false], ['amarillo', false], ['verde', false], ['verde', false]], 'sin el dato oficial: el cálculo con el Paraná');
   assert.deepStrictEqual(col(ofi, 30), col(ofi), 'con más de 24 horas sigue la última lectura (13/11/2026)');
   assert.ok(S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],0]))})`) && !S(`FORMA.oficial({mun:{a:1}})`) && !S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],5]))})`));
-  assert.ok(codigo.includes("['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].map(k=>cargar(k).then(pintar))"));
+  assert.ok(codigo.includes("['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades','pluvio'].map(k=>cargar(k).then(pintar))"));
   // Localidades con alerta: cada una en su municipio (las islas, en el más cercano); solo con el informe de hoy o de ayer
   const ll = [['Isla del Cerrito', -27.293, -58.618, 'Isla del Cerrito'], ['Puerto Antequeras', -27.443, -58.85, 'Colonia Benítez'], ['Isla Santa Rosa', -27.483, -58.916, 'Barranqueras'],
     ['Puerto Bermejo Nuevo', -26.908, -58.542, 'Puerto Bermejo'], ['Margarita Belén', -27.259, -58.97, 'Margarita Belén'], ['Lejos', -30, -50, null]];
@@ -1714,6 +1729,22 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(html.includes('.vermapa{grid-column:2;justify-self:start;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:40px;') && html.includes('border-radius:999px;border:1.5px solid currentColor;background:var(--card);color:var(--ink);text-decoration:none'), 'con borde, fondo y sin subrayado');
     assert.ok(html.includes('<span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>') && html.includes('href="#t-rio"><span class="vmIco" aria-hidden="true">🌊</span>Ver el río</a>') && html.includes('href="#t-otros"><span class="vmIco" aria-hidden="true">🏞️</span>Ver el río</a>'), 'con ícono, que el lector de pantalla no lee');
   });
+  prueba('tarjeta: lluvia medida en el pluviómetro del municipio (13/11/2026)', () => {
+    const idx = n => S(`GEO.mun.findIndex(m=>m[0]===${JSON.stringify(n)})`);
+    S(`D.pluvio={datos:{dias:['2026-11-07','2026-11-08','2026-11-09','2026-11-10','2026-11-11','2026-11-12','2026-11-13'],ult:'2026-11-12',
+      lug:[['Villa Berthet',-27.29,-60.41,[0,0,0,0,0,25,0]],['Resistencia',-27.45,-58.98,[0,0,0,0,0,0,0]],['Barranqueras',-27.48,-58.93,[0,0,3.4,0,0,0,0]]]},vivo:true,t:new Date()}`);
+    assert.ok(S(`FORMA.pluvio(D.pluvio.datos)`), 'la forma vale');
+    assert.strictEqual(S(`pluvioTxt(${idx('Villa Berthet')})`), '<p><b>Lluvia medida</b> en el pluviómetro de Villa Berthet: 25 mm en los últimos 7 días (25 mm el 12/11).</p>');
+    assert.strictEqual(S(`pluvioTxt(${idx('Resistencia')})`), '<p><b>Lluvia medida</b> en el pluviómetro de Resistencia: sin lluvia registrada en los últimos 7 días.</p>');
+    assert.ok(S(`pluvioTxt(${idx('Barranqueras')})`).includes('3 mm en los últimos 7 días (3 mm el 9/11)'));
+    assert.strictEqual(S(`pluvioTxt(${idx('Taco Pozo')})`), '', 'sin pluviómetro: nada (queda la estimación y la estación)');
+    assert.ok(S(`lluviaTxt(${idx('Resistencia')},{})`).includes('pluviómetro de Resistencia'), 'lo medido reemplaza a la estimación');
+    S(`D.pluvio.t=new Date(Date.now()-50*36e5)`);
+    assert.strictEqual(S(`pluvioDe(${idx('Resistencia')})`), null, 'con más de 2 días sin renovar no se usa');
+    S(`delete D.pluvio`);
+    assert.ok(codigo.includes("+(pluvioDe(i)?'':medidaInfo(i))+fuenteTxt(i,k)+'</div>'"), 'con pluviómetro, sin la estación automática');
+    assert.ok(!/Estudios Básicos|CEDEI/i.test(html), 'sin el nombre de quien carga los datos');
+  });
   prueba('al volver a la app o a la pestaña: más de 6 horas guardada o día nuevo, se abre entera; más de 10 minutos, renueva los datos', () => {
     const c = html.slice(html.indexOf('function alVolver(){'), html.indexOf("addEventListener('pageshow'"));
     assert.ok(c.includes('if(document.hidden){OCULTA=OCULTA||Date.now();return}') && c.includes('(t&&Date.now()-t>6*36e5)||diaAR(new Date())!==DIA_ABIERTA)){location.reload();return}'), 'recarga entera después de 6 horas o al cambiar el día');
@@ -1944,7 +1975,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
     t = S(`porQue(${idx('Barranqueras')},colorDe(${idx('Barranqueras')}),true)`);
     assert.ok(t.includes('<small>SMN</small><span><i data-c="verde"></i>Sin alertas'), 'sin alertas confirmadas: cuadrito del SMN en lugar del renglón');
-    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+fuenteTxt(i,k)+'</div>'") && !codigo.includes('Superficie:'), 'tarjeta más corta: sin el renglón del SMN repetido y sin la superficie (13/11/2026)');
+    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))") && codigo.includes("medidaInfo(i))+fuenteTxt(i,k)+'</div>'") && !codigo.includes('Superficie:'), 'tarjeta más corta: sin el renglón del SMN repetido y sin la superficie (13/11/2026)');
     const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
     assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)
