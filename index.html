@@ -919,28 +919,10 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     </div>
     <div id="mInfo" aria-live="polite"></div>
     <p class="meta">Tocá un municipio para ver su detalle, o un color para resaltar los municipios de ese color.</p>
-    <details class="det" id="d-colores">
+    <!-- 13/11/2026 (Mariano): con el Monitoreo o el SMN el color sale tal cual de la fuente oficial y la frase de los botones ya lo dice;
+         la explicación de los colores queda solo para el cálculo de antes (sin el Monitoreo al día). -->
+    <details class="det vCalc" id="d-colores">
       <summary>¿Qué significa cada color?</summary>
-      <div class="vNino">
-        <ul class="leyLista">
-          <li data-c="verde"><b>Verde:</b> sin alerta en el Monitoreo del Niño.</li>
-          <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla del municipio en el Monitoreo del Niño.</li>
-          <li data-c="naranja"><b>Naranja:</b> alerta naranja del municipio en el Monitoreo del Niño.</li>
-          <li data-c="rojo"><b>Rojo:</b> alerta roja del municipio en el Monitoreo del Niño.</li>
-        </ul>
-        <p class="meta">Es el nivel que informa el Monitoreo del Niño para cada municipio, en general por la crecida del Paraná. Este sitio no lo calcula: lo muestra tal cual. Si lleva más de un día sin renovarse, el mapa vuelve al cálculo con la altura del Paraná, la lluvia y las alertas del SMN. Tocá un río para ver su altura.</p>
-      </div>
-      <div class="vSmn">
-        <ul class="leyLista">
-          <li data-c="verde"><b>Verde:</b> sin alerta del SMN para hoy ni los 2 días siguientes.</li>
-          <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla del SMN.</li>
-          <li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN.</li>
-          <li data-c="rojo"><b>Rojo:</b> alerta roja del SMN.</li>
-          <li data-c="gris"><b>Gris:</b> no se pudo confirmar el informe del SMN.</li>
-        </ul>
-        <p class="meta">Es la alerta más alta del SMN para hoy y los 2 días siguientes. El día, el horario y el fenómeno están en la tarjeta de cada municipio y en «Alertas oficiales del SMN».</p>
-      </div>
-      <div class="vCalc">
         <ul class="leyLista">
           <li data-c="verde"><b>Verde:</b> sin alerta del SMN ni lluvia muy fuerte prevista.</li>
           <li data-c="amarillo"><b>Amarillo:</b> alerta amarilla del SMN o, en la costa, el Paraná alto.</li>
@@ -950,7 +932,6 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
           <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
         </ul>
         <p class="meta">Sin datos recientes del Monitoreo del Niño, el color se calcula como antes y queda el más alto. En la costa sigue la altura del Paraná, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
-      </div>
     </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
   </section>

@@ -419,8 +419,8 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja: alerta naranja del SMN (desde el 12/11/2026) o el Paraná en la costa
   assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja-mapa\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o, en la costa, el Paraná y lo que prevé el INA.</li>'), 'leyenda');
-  // Leyenda por modo (13/11/2026): Monitoreo del Niño, Servicio Meteorológico y el cálculo de antes
-  assert.ok(['amarillo','naranja','rojo'].every(c=>new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del municipio en el Monitoreo del Niño\\.').test(html) && new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del SMN\\.</li>').test(html)), 'la leyenda de cada modo');
+  // Desde el 13/11/2026: con el Monitoreo o el SMN no hay lista de colores (el color es el oficial tal cual); solo la del cálculo de antes
+  assert.ok(!html.includes('del municipio en el Monitoreo del Niño.</li>') && !html.includes('<b>Amarillo:</b> alerta amarilla del SMN.</li>'), 'sin la leyenda repetida de cada modo');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
@@ -546,7 +546,8 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
-  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Es el nivel que informa el Monitoreo del Niño para cada municipio, en general por la crecida del Paraná.'));
+  // Desde el 13/11/2026: "¿Qué significa cada color?" solo con el cálculo de antes (con el Monitoreo o el SMN el color es el oficial tal cual)
+  assert.ok(/<details class="det vCalc" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && !mapa.includes('Es el nivel que informa el Monitoreo del Niño') && mapa.includes('Sin datos recientes del Monitoreo del Niño, el color se calcula como antes'));
   assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
   // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
   const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
@@ -914,7 +915,8 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   // Cada botón dice cuántos municipios tienen alerta con su criterio (13/11/2026: la única marca del otro criterio, sin otro cartel)
   prep('nino', true); const eN = {}, eS = {}; elementos.mEstNino = eN; elementos.mEstSmn = eS; S('pintarModo()'); delete elementos.mEstNino; delete elementos.mEstSmn;
   assert.ok(eN.innerHTML === '<i aria-hidden="true" data-c="rojo"></i>4 con alerta' && eS.innerHTML === '<i aria-hidden="true" data-c="amarillo"></i>1 con alerta', eN.innerHTML + ' / ' + eS.innerHTML);
-  assert.ok(['vNino', 'vSmn', 'vCalc'].every(c => html.includes('class="regIntro ' + c + '"') || html.includes('<div class="' + c + '">')), 'explicaciones de cada modo');
+  // Textos por modo: el borde punteado solo con el SMN o el cálculo de antes; la explicación de los colores, solo con el cálculo de antes (13/11/2026)
+  assert.ok(html.includes('<span class="vSmn vCalc"><i class="punteado"></i>') && html.includes('<details class="det vCalc" id="d-colores">') && html.includes('<p class="regIntro sOfi">') && html.includes('<div class="sCalc">'), 'explicaciones de cada modo');
   assert.ok(html.includes('qué mapa elegiste (Monitoreo del Niño o Servicio Meteorológico)') && fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8').includes('qué mapa elegiste'), 'privacidad');
   S(`MODO='nino';SMN=SMN_VACIO;D.oficial={datos:null};D.rio={datos:null};M.R=[];M.est={};M.todos=''`);
 });
