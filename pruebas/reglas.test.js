@@ -506,7 +506,8 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(/a\[href\^="#t-"\][^\n]*abrirSec/.test(codigo), 'los enlaces del índice abren la sección cerrada');
   // Computadora (19/10): columna fija con nombre, Compartir e índice; franjas de a dos; río al lado de sus datos; tarjetas en 2 filas; secciones cerradas de a dos
   assert.ok(ancho.includes('html:is(:not(.emb),.embPc) .cab{grid-column:1;grid-row:1/span 2;position:sticky'), 'nombre del sitio e índice en la columna fija');
-  assert.ok(ancho.includes('>:is(#smnBanda,#rioBanda){grid-column:auto') && ancho.includes('main>section.plegable.cerrada:not(.solo){grid-column:auto}'), 'franjas y secciones cerradas de a dos');
+  assert.ok(!ancho.includes('>:is(#smnBanda,#rioBanda){grid-column:auto') && ancho.includes('main>section.plegable.cerrada:not(.solo){grid-column:auto}'), 'secciones cerradas de a dos (sin el cartel del SMN, la franja del río va sola)');
+  assert.ok(html.includes('#smnBanda{display:none!important}'), 'el cartel del SMN de arriba no se muestra (13/11/2026)');
   assert.ok(ancho.includes('#rio .rioCuerpo{display:grid') && html.includes('.rioCuerpo,.rioGraf,.rioLado{display:contents}'), 'el río al lado de sus datos; en el celular igual que antes');
   assert.ok(ancho.includes('.hSit{grid-template-columns:repeat(5,minmax(0,1fr))}'), 'tarjetas de "¿Qué está pasando?" en dos filas');
   assert.ok(/function iniciarMarcasLado\(\)\{\s*if\(typeof MutationObserver/.test(codigo) && codigo.includes("i.className='ladoPt'"), 'puntos de color en el índice lateral');

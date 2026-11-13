@@ -384,7 +384,6 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
   html:is(:not(.emb),.embPc) main section :is(p,li):not(.sem>li){max-width:88ch}
   html:is(:not(.emb),.embPc) main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
   html:is(:not(.emb),.embPc) main>*{grid-column:1/-1}
-  html:is(:not(.emb),.embPc) main:has(>#smnBanda:not([hidden])):has(>#rioBanda:not([hidden]))>:is(#smnBanda,#rioBanda){grid-column:auto;align-content:flex-start}
   html:is(:not(.emb),.embPc) main>section.plegable.cerrada:not(.solo){grid-column:auto}
   html:is(:not(.emb),.embPc) .hSit{grid-template-columns:repeat(5,minmax(0,1fr))}
   html:is(:not(.emb),.embPc) .hSit details#h-mochila:not([open]){grid-column:span 2}
@@ -422,6 +421,9 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 @media (max-width:599px){#mInfo .smnChip{flex-wrap:wrap;gap:1px 5px;font-size:.84rem;padding:3px 10px 3px 7px;border-width:1.5px;border-radius:14px;margin:4px 6px 2px 0}#mInfo .smnChip .ico{font-size:1.05em}#mInfo .smnChip .con{white-space:nowrap;font-size:.92em}#mInfo .smnChip small{white-space:nowrap;font-size:.8em;padding-left:0;border-left:0;margin-left:0}}
 #smnBanda,#rioBanda{border:2px solid var(--amarillo);border-left-width:8px;background:var(--card);border-radius:6px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 #smnBanda[hidden],#rioBanda[hidden]{display:none}
+/* Cartel del SMN de arriba: no se muestra desde el 13/11/2026 (decisión de Mariano: la alerta ya está en la portada, el menú lateral, el botón del mapa
+   y su sección). Se sigue armando porque el menú lateral toma de ahí el nivel y el día (marcasLado). */
+#smnBanda{display:none!important}
 #smnBanda.n4,#rioBanda.n4{border-color:var(--naranja)}#smnBanda.n5,#rioBanda.n5{border-color:var(--rojo);background:var(--rojo-bg)}
 #smnBanda b,#rioBanda b{font-size:1.02rem}
 #rioBanda .rbRio{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}#rioBanda .rbRio+.rbRio{border-top:1px solid var(--line);padding-top:8px}
