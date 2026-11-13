@@ -869,7 +869,8 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
     (()=>{const r=locInfo(GEO.mun.findIndex(m=>m[0]==='Colonia Benítez'));D.localidades={datos:null};return r})()`);
   const t1 = locT('2026-11-12');
   assert.ok(t1.includes('Localidades con alerta, por el río Paraná') && t1.indexOf('Puerto Antequeras') < t1.indexOf('>Colonia Benítez') && t1.includes('data-c="rojo"') && t1.includes('informe del 12/11, 08:00 h'), 'la roja primero');
-  assert.strictEqual(locT('2026-11-09'), '', 'informe viejo: nada');
+  assert.ok(locT('2026-11-09').includes('Puerto Antequeras') && locT('2026-11-09').includes('informe del 9/11, 08:00 h'), 'informe viejo: sigue, con su fecha (13/11/2026)');
+  assert.ok(codigo.includes('o.datos.vigente!==false?o.datos:null'), 'si la fuente dice que no está vigente, no se muestra');
   // Más estaciones, hora por hora: en "Otros ríos", en el orden en que baja el agua
   const est = S(`D.puertos={datos:{v:6.64,hora:new Date().toISOString(),est:[['Barranqueras','Paraná',6.64,new Date().toISOString(),2,-1],['Corrientes','Paraná',6.76,new Date().toISOString(),1,-1],['Las Palmas','Paraguay',6.66,new Date().toISOString(),1,0],['Eldorado','Paraná',18.8,new Date().toISOString(),null,-20],['Vieja','Paraná',1,'2026-01-01T00:00:00Z',0,0]]},vivo:true,t:new Date()};(()=>{const r=estacionesHora();D.puertos={datos:null};return r})()`);
   assert.ok(est.includes('Más estaciones, hora por hora') && est.indexOf('Río Paraguay') < est.indexOf('Río Paraná') && est.indexOf('Corrientes') < est.indexOf('Barranqueras') && est.includes(': evacuación') && !est.includes('Eldorado') && !est.includes('Vieja') && est.includes('−1 cm'.replace('−','-')), 'tabla');

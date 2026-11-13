@@ -1931,7 +1931,8 @@ function munDeLL(la,lo){
   let i=GEO.mun.findIndex((m,j)=>anillosDe(j).some(a=>dentroAnillo(la,lo,a)));
   if(i<0){let mejor=0.15;GEO.mun.forEach((m,j)=>anillosDe(j).forEach(a=>a.forEach(p=>{const d=Math.hypot(p[0]-la,(p[1]-lo)*0.89);if(d<mejor){mejor=d;i=j}})))}
   return MUN_LL[k]=i}
-const locDatos=()=>{const o=D.localidades;return o&&o.datos&&o.t&&Date.now()-o.t<24*36e5&&diasEntre(o.datos.dia,hoy)<=1&&o.datos.vigente!==false?o.datos:null};
+// Desde el 13/11/2026 (Mariano), como el nivel del municipio: la última lectura aunque tenga días (lleva la fecha del informe). Solo se deja de mostrar si la fuente dice que el informe no está vigente.
+const locDatos=()=>{const o=D.localidades;return o&&o.datos&&o.t&&o.datos.vigente!==false?o.datos:null};
 function locDe(i){const d=locDatos();return d&&i>=0?d.loc.filter(l=>munDeLL(l[2],l[3])===i).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'es')):[]}
 const LOC_NIV=['','amarilla','naranja','roja'];
 function locInfo(i){
