@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (script: pluviómetros que no llegaban y errores sin direcciones)
+
+Revisión antes de subir: `servidor.json` de las 13:51 no traía `pluvio`, y en `errores` figuraba la dirección interna del pedido que falló.
+- **Pluviómetros**: la primera vez se piden 40 días (uno por pedido). Un solo día que no respondía ("Address unavailable") tiraba los 40. Ahora `leerExtras` usa los días que respondieron (`normPluvio` salta los que faltan) y anota "N de M pedidos sin respuesta". Solo falla si no responde ninguno.
+- **Errores sin direcciones** (`sinDirecciones`): `servidor.json` es público y las direcciones de los datos oficiales no se publican (decisión del 13/11). Los errores cambian cualquier dirección por "(dirección)".
+- Pruebas nuevas para los dos casos (93). Hay que pegar el script en script.google.com (SHA-256 nuevo).
+
 ## 13/11/2026 (portada: tu localidad en dos botones y criterio de las alertas)
 
 Pedidos de Mariano: separar "ver en el mapa" de "cambiar la localidad", y poder cambiar entre Monitoreo del Niño y Servicio Meteorológico desde la portada.

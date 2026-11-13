@@ -845,6 +845,11 @@ prueba('script: alerta oficial por municipio, lectura por hora de los puertos y 
   assert.strictEqual(gs.fuentesExtra('2026-11-13', new Date(), { pluvio: 'https://x/p' }, { pluvio: { lug: lug20 } }).filter(f => f.k === 'pluvio')[0].urls.length, 7, 'con la lista: solo la semana');
   const lx = gs.leerExtras('2026-11-13', new Date(), {}, u => /fecha=2026-11-12/.test(u) ? { codigo: 200, texto: JSON.stringify({ features: [pt('Quitilipi', 12, -60.22, -26.87)] }) } : /fecha=/.test(u) ? { codigo: 200, texto: '{"features":[]}' } : { codigo: 500, texto: '' }, { pluvio: 'https://x/p' });
   assert.deepStrictEqual(JSON.parse(JSON.stringify(lx.pluvio.lug)), [['Quitilipi', -26.87, -60.22, [0, 0, 0, 0, 0, 12, 0]]], 'leerExtras pide un día por pedido');
+  // 13/11/2026: si un día no responde (o tira "Address unavailable"), se usan los demás; el error no lleva la dirección
+  const lx2 = gs.leerExtras('2026-11-13', new Date(), {}, u => { if (/fecha=2026-11-10/.test(u)) throw new Error('Address unavailable: ' + u); return /fecha=2026-11-12/.test(u) ? { codigo: 200, texto: JSON.stringify({ features: [pt('Quitilipi', 12, -60.22, -26.87)] }) } : /fecha=/.test(u) ? { codigo: 200, texto: '{"features":[]}' } : { codigo: 500, texto: '' }; }, { pluvio: 'https://x/p' });
+  assert.ok(lx2.pluvio && lx2.pluvio.lug.length === 1 && /^1 de 40 pedidos sin respuesta$/.test(lx2.errores.pluvio), 'un día que falla no tira todos');
+  const lx3 = gs.leerExtras('2026-11-13', new Date(), {}, u => { throw new Error('Address unavailable: ' + u); }, { oficial: 'https://secreto.example/api?x=1' });
+  assert.ok(!JSON.stringify(lx3.errores).includes('http') && !JSON.stringify(lx3.errores).includes('secreto'), 'los errores no publican direcciones');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.fuentesExtra('2026-11-12', new Date(), { loc: 'https://x/c' }).slice(0, 1).map(f => f.k))), ['localidades']);
   assert.throws(() => gs.normPuertos({ features: [{ properties: { estacion: 'Barranqueras', rio: 'Paraná', altura_m: 66, fecha_hora: '2026-11-12 12:00:00' } }] }));
   const rio = { obs: [['2026-11-11', 6.7], ['2026-11-12', 6.66]], act: 'a', hora: '2026-11-12T03:00:00.000Z', t: 't' }, ahora = new Date('2026-11-12T16:00:00Z');

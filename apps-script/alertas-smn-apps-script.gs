@@ -460,6 +460,7 @@ function normPluvio(js, pedidos, dias, previo) {
   var poner = function (n, la, lo) { var k = sinTildes(n); if (!lug[k]) { lug[k] = { n: n, la: la, lo: lo, mm: {} }; orden.push(k); } return lug[k]; };
   ((previo && previo.lug) || []).forEach(function (x) { if (Array.isArray(x) && x[0] && isFinite(x[1]) && isFinite(x[2])) poner(String(x[0]), x[1], x[2]); });
   js.forEach(function (j, i) {
+    if (j === null) return;   // ese día no respondió (13/11/2026): se usan los demás
     if (!j || !Array.isArray(j.features)) throw new Error('sin lugares');
     var u = j.meta && String(j.meta.ultima_fecha || '');
     if (/^\d{4}-\d\d-\d\d$/.test(u) && u > ult) ult = u;
@@ -495,7 +496,7 @@ function fuentesExtra(hoy, ahora, urls, previo) {
   if (urls.pluvio) {
     var pp = previo && previo.pluvio, dias = diasAtras(hoy, PLUVIO_DIAS), pedidos = diasAtras(hoy, pp && pp.lug && pp.lug.length >= 20 ? PLUVIO_DIAS : PLUVIO_SEMBRAR);
     extra.push({ k: 'pluvio', urls: pedidos.map(function (d) { return urlPluvio(urls.pluvio, d); }),
-      leer: function (ts) { return normPluvio(ts.map(function (t) { return JSON.parse(t); }), pedidos, dias, pp); } });
+      leer: function (ts) { return normPluvio(ts.map(function (t) { return t == null ? null : JSON.parse(t); }), pedidos, dias, pp); } });
   }
   return extra.concat([
     { k: 'lluvia', url: urlLluvia(LOCS), leer: json(function (j) { return normLluvia(j, LOCS.length); }) },
@@ -513,18 +514,30 @@ function fuentesExtra(hoy, ahora, urls, previo) {
 
 // Pide cada fuente por separado. Si una falla, queda la copia anterior (con su hora) y se anota el error.
 // pedir(url) devuelve { codigo, texto }.
+function sinDirecciones(t) { return String(t).replace(/https?:\/\/[^\s"'<>)]+/g, '(dirección)').slice(0, 200); }
 function leerExtras(hoy, ahora, previo, pedir, urls) {
   var out = {}, errores = {};
   fuentesExtra(hoy, ahora, urls, previo).forEach(function (f) {
     try {
-      // Una dirección por fuente, o varias (los pluviómetros: un pedido por día).
-      var rs = (f.urls || [f.url]).map(pedir);
-      rs.forEach(function (r) { if (r.codigo !== 200) throw new Error('HTTP ' + r.codigo); });
-      var d = f.urls ? f.leer(rs.map(function (r) { return r.texto; })) : f.leer(rs[0].texto);
+      // Una dirección por fuente, o varias (los pluviómetros: un pedido por día). Con varias (13/11/2026), si algún día no
+      // responde se usan los demás: antes, uno solo que fallaba ("Address unavailable") tiraba todos.
+      var d;
+      if (f.urls) {
+        var ts = f.urls.map(function (u) { try { var r = pedir(u); return r.codigo === 200 ? r.texto : null; } catch (x) { return null; } });
+        var mal = ts.filter(function (t) { return t === null; }).length;
+        if (mal === ts.length) throw new Error('no respondió ningún pedido (' + mal + ')');
+        d = f.leer(ts);
+        if (mal) errores[f.k] = mal + ' de ' + ts.length + ' pedidos sin respuesta';
+      } else {
+        var r0 = pedir(f.url);
+        if (r0.codigo !== 200) throw new Error('HTTP ' + r0.codigo);
+        d = f.leer(r0.texto);
+      }
       d.t = ahora.toISOString();
       out[f.k] = d;
     } catch (e) {
-      errores[f.k] = String(e.message || e);
+      // Sin direcciones en el error (13/11/2026): servidor.json es público y las direcciones de los datos oficiales no se publican.
+      errores[f.k] = sinDirecciones(String(e.message || e));
       if (previo && previo[f.k]) out[f.k] = previo[f.k];
     }
   });
