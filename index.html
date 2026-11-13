@@ -749,6 +749,40 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}.portada .pT{animation:none}}
 @media print{.portada{display:none!important}}
+/* Portada que se lea como botonera (13/11/2026, pedido de Mariano: "parecen solo etiquetas"): una frase que invita a tocar,
+   una flechita en cada recuadro y un borde de abajo más marcado, como una tecla, que se hunde al tocar. */
+.pHoy .pTit{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;min-width:0}
+.pHoy .pAyuda{font-size:.78rem;font-weight:600;color:var(--muted)}
+.pT{border-color:#e2dcf3;box-shadow:0 3px 0 #e2dcf3,0 6px 14px rgba(80,89,188,.10)}
+.pT::before{content:"";position:absolute;top:9px;right:9px;width:6px;height:6px;border-top:2.2px solid currentColor;border-right:2.2px solid currentColor;transform:rotate(45deg);color:#b9b1d9;border-radius:1px}
+.pT:active{transform:translateY(3px);box-shadow:0 0 0 #e2dcf3,0 2px 6px rgba(80,89,188,.10)}
+.pT.c-amarillo{box-shadow:0 3px 0 #ecd27a,0 6px 14px rgba(217,154,0,.12)}.pT.c-amarillo::before{color:var(--amarillo-txt)}
+.pT.c-naranja{box-shadow:0 3px 0 #f0b98c,0 6px 14px rgba(230,120,30,.12)}.pT.c-naranja::before{color:var(--naranja-txt)}
+.pT.c-rojo{box-shadow:0 3px 0 #eaa79f,0 6px 14px rgba(200,60,50,.12)}.pT.c-rojo::before{color:var(--rojo-txt)}
+.pT.c-amarillo:active,.pT.c-naranja:active,.pT.c-rojo:active{box-shadow:0 2px 6px rgba(80,89,188,.10)}
+@media (hover:hover){.pT:hover{transform:translateY(-1px)}}
+@media (prefers-reduced-motion:reduce){.pT:active{transform:none}}
+/* Íconos con color lleno, como los de las apps del celular, y más sombra (13/11/2026, pedido de Mariano). Mismo tamaño que antes: la portada no crece.
+   El nombre en azul oscuro y el dato en violeta; con color de estado, el ícono en ese color. */
+.pN{color:var(--titulo)}
+.pD{color:var(--acento)}
+.pT{border-color:#ddd5f3;box-shadow:0 3px 0 #ddd5f3,0 8px 18px rgba(80,89,188,.16),0 2px 4px rgba(80,89,188,.08)}
+.pT::before{color:var(--acento);opacity:.75}
+.pIc{background:linear-gradient(160deg,#6a63d6,var(--acento));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(80,89,188,.35)}
+.pAgua .pIc{background:linear-gradient(160deg,#3c9be0,var(--water));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(30,120,200,.3)}
+.pT.c-amarillo .pIc{background:linear-gradient(160deg,#f5cf3a,#d99a00);color:#fff;box-shadow:0 2px 6px rgba(217,154,0,.35)}
+.pT.c-naranja .pIc{background:linear-gradient(160deg,#f39a4a,#d9661a);color:#fff;box-shadow:0 2px 6px rgba(217,102,26,.35)}
+.pT.c-rojo .pIc{background:linear-gradient(160deg,#ec6b5f,#c8392e);color:#fff;box-shadow:0 2px 6px rgba(200,57,46,.35)}
+.pT.c-amarillo{box-shadow:0 3px 0 #ecd27a,0 8px 18px rgba(217,154,0,.18)}.pT.c-naranja{box-shadow:0 3px 0 #f0b98c,0 8px 18px rgba(230,120,30,.18)}.pT.c-rojo{box-shadow:0 3px 0 #eaa79f,0 8px 18px rgba(200,60,50,.18)}
+/* "Actualizar" en el celular (13/11/2026): pasa del encabezado a la hora de los datos, como un botoncito redondo (solo en la app) */
+.pRef{all:unset;box-sizing:border-box;cursor:pointer;flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--fondo-boton,#fff);border:1.5px solid var(--borde-boton);color:var(--acento);box-shadow:var(--sombra-boton)}
+.pRef svg{width:17px;height:17px}
+.pRef:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+.pRef:active{transform:scale(.92)}
+.pRef.gira svg{animation:gira .8s linear infinite}
+@media (prefers-reduced-motion:reduce){.pRef.gira svg{animation:none}}
+.pHoy .pHora{flex-direction:row;align-items:center;gap:8px}
+@media screen and (max-width:599px){html:not(.emb) #btnActualizar{display:none!important}}
 /* Mejoras de la portada (4/11/2026, pedido de Mariano) */
 /* hora de los datos debajo del día */
 .pHoy span{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
@@ -2779,6 +2813,9 @@ function pSem(){
 }
 // Hora de los datos debajo del día (4/11/2026): la de la lluvia, que se renueva cada hora. Con más de 3 horas, en naranja ("sin renovar").
 const F_HM=new Intl.DateTimeFormat('es-AR',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+// ¿Es la app (instalada o de Google Play)? No tiene la barra del navegador para recargar: ahí va "Actualizar".
+function esApp(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||/^android-app:\/\//.test(document.referrer||'')}catch(e){return false}}
+const ICO_ACT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>';
 function pAct(){
   const d=D.lluvia,t=d&&d.datos&&d.t;if(!t||isNaN(t))return '';
   const viejo=Date.now()-t>3*36e5,h=diaAR(t)===hoy?'de las '+F_HM.format(t)+' h':'del '+fFechaHora(t);
@@ -2790,12 +2827,14 @@ function pintarPortada(){
   let fuera=false;try{fuera=pFuera(riesgoRio().c)}catch(e){}
   const l=[pRio,pMapa];if(!fuera)l.reverse();
   const d=new Date(hoy+'T12:00:00Z');
-  el.innerHTML='<p class="pHoy"><b>El Chaco hoy</b><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span></p>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+  const ref=esApp()?'<button class="pRef'+(($('btnActualizar')||{classList:{contains:()=>0}}).classList.contains('gira')?' gira':'')+'" type="button" data-pref aria-label="Actualizar los datos">'+ICO_ACT+'</button>':'';
+  el.innerHTML='<div class="pHoy"><span class="pTit"><b>El Chaco hoy</b><small class="pAyuda">Tocá un recuadro para ver más</small></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
-    el.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;
+    el.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('[data-pref]');if(r){const A=$('btnActualizar');if(A)A.click();return}
+      const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;
       if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}})}
 }
 // Tu localidad (4/11/2026): al tocar su recuadro se abre una ventana con "Ver en el mapa" (lo de antes) y una lista con buscador para cambiarla.
@@ -3443,10 +3482,10 @@ function herramientas(){
   if(L){L.hidden=false;L.setAttribute('aria-pressed',String(raiz.classList.contains('grande')));
     L.addEventListener('click',()=>{const g=!raiz.classList.contains('grande');raiz.classList.toggle('grande',g);L.setAttribute('aria-pressed',String(g));
       try{if(g)localStorage.setItem(LETRA_K,'1');else localStorage.removeItem(LETRA_K)}catch(e){}})}
-  const app=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||desdePlay();
-  if(A&&app){A.hidden=false;
-    A.addEventListener('click',()=>{if(A.classList.contains('gira'))return;A.classList.add('gira');if(av)av.textContent='Actualizando…';
-      ULT=0;renovar();setTimeout(()=>{A.classList.remove('gira');if(av)av.textContent='Datos actualizados.'},1500)})}
+  const gira=g=>{A.classList.toggle('gira',g);document.querySelectorAll('.pRef').forEach(b=>b.classList.toggle('gira',g))};
+  if(A&&esApp()){A.hidden=false;
+    A.addEventListener('click',()=>{if(A.classList.contains('gira'))return;gira(true);if(av)av.textContent='Actualizando…';
+      ULT=0;renovar();setTimeout(()=>{gira(false);if(av)av.textContent='Datos actualizados.'},1500)})}
   cajaCab();
 }
 seguro(herramientas);

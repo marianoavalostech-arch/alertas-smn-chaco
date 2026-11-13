@@ -1936,7 +1936,9 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
   prueba('mejoras de la portada (4/11): hora de los datos, barrita de carga, letra grande, actualizar y tu localidad', () => {
     assert.ok(codigo.includes("const LETRA_K='anc-letra';") && html.includes('html.grande{font-size:112.5%}'), 'letra grande recordada');
     assert.ok(html.includes('si pediste la letra más grande') && fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8').includes('letra más grande'), 'la privacidad lo cuenta');
-    assert.ok(codigo.includes("if(A&&app){A.hidden=false;"), '"Actualizar" solo en la app');
+    assert.ok(codigo.includes("if(A&&esApp()){A.hidden=false;") && codigo.includes("const ref=esApp()?'<button class=\"pRef"), '"Actualizar" solo en la app');
+    assert.ok(html.includes('@media screen and (max-width:599px){html:not(.emb) #btnActualizar{display:none!important}}'), 'en el celular, "Actualizar" va junto a la hora de los datos y no en el encabezado');
+    assert.ok(codigo.includes('<small class="pAyuda">Tocá un recuadro para ver más</small>'), 'la portada invita a tocar');
     assert.ok(codigo.includes("if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
     assert.ok(codigo.includes("const pEspera=()=>LISTO?'Sin datos':pCargando;"), 'barrita mientras carga');
     assert.ok(codigo.includes("'Sin renovar: datos ':'Datos '"), 'hora de los datos, en naranja si está vieja');
