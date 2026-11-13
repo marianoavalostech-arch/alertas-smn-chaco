@@ -277,6 +277,8 @@ footer{font-size:.85rem;color:var(--muted)}
 /* Qué muestra el mapa (13/11/2026, pedido de Mariano): Monitoreo del Niño (de entrada) o Servicio Meteorológico. Cada texto lleva vNino, vSmn o vCalc
    (vCalc: Monitoreo elegido pero sin su dato de menos de 24 h, el cálculo de antes); la clase m-… de <html> dice cuál se ve. */
 .vNino,.vSmn,.vCalc{display:none!important}
+/* "Municipios con alerta oficial" (13/11/2026): siempre el Monitoreo del Niño; sin su dato al día, el semáforo de antes (clase semCalc en la sección). */
+.semCalc .sOfi,section:not(.semCalc) .sCalc{display:none!important}
 html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .modoCaja{margin:2px 0 12px}
 /* Selector del mapa (13/11/2026): dos tarjetitas lado a lado. Cada una dice qué criterio es y, en chico, cuántos municipios tienen alerta con ese
@@ -856,7 +858,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <a href="#t-smn"><span class="ladoIco" aria-hidden="true">⚠️</span><span class="ladoTx">Alertas del SMN<small class="ladoSub"></small></span></a>
       <a href="#t-hacer"><span class="ladoIco" aria-hidden="true">🧭</span><span class="ladoTx">Qué hacer<small class="ladoSub"></small></span></a>
       <a href="#t-tel"><span class="ladoIco" aria-hidden="true">📞</span><span class="ladoTx">Teléfonos<small class="ladoSub"></small></span></a>
-      <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Por localidad<small class="ladoSub"></small></span></a>
+      <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Con alerta oficial<small class="ladoSub"></small></span></a>
       <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
       <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
       <a href="#t-lluvia"><span class="ladoIco" aria-hidden="true">🌧️</span><span class="ladoTx">Lluvias<small class="ladoSub"></small></span></a>
@@ -885,7 +887,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Por localidad</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Con alerta oficial</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
   </nav>
 
   <section aria-labelledby="t-mapa">
@@ -1104,14 +1106,13 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     </details>
   </section>
 
-  <section aria-labelledby="t-sem">
-    <h2 id="t-sem">Riesgo por localidad</h2>
+  <section aria-labelledby="t-sem" id="secSem">
+    <h2 id="t-sem">Municipios con alerta oficial</h2>
     <ul class="sem" id="sem"><li class="gris"><span class="luz">…</span><b>Buscando datos…</b><span class="por">Consultando lluvias y altura de los ríos.</span></li></ul>
     <details>
-      <summary>¿Cómo se decide el color?</summary>
-      <p class="regIntro vNino">Se muestran los municipios con alerta en el <b>Monitoreo del Niño</b>, con el nivel que informa (amarilla, naranja o roja). Este sitio no lo calcula. Para ver las alertas del SMN, elegí «Servicio Meteorológico» arriba del mapa.</p>
-      <p class="regIntro vSmn">Se muestran las 6 ciudades con la alerta más alta del <b>Servicio Meteorológico Nacional</b> para hoy y los 2 días siguientes. Este sitio no la calcula. Para ver las alertas por la crecida, elegí «Monitoreo del Niño» arriba del mapa.</p>
-      <div class="vCalc">
+      <summary>¿De dónde sale?</summary>
+      <p class="regIntro sOfi">Son las alertas del <b>Monitoreo del Niño</b> para cada municipio, en general por la crecida, con el nivel que informa (amarilla, naranja o roja). Este sitio no las calcula. Las alertas del SMN están más arriba, en «Alertas oficiales del SMN».</p>
+      <div class="sCalc">
       <p class="regIntro">Sin datos recientes del Monitoreo del Niño, el color se calcula como antes: depende de las alertas del <b>Servicio Meteorológico Nacional</b>, de la altura del <b>Paraná</b> (en la costa) y de la lluvia muy fuerte.</p>
       <ul class="regCol">
         <li data-c="rojo"><b>Rojo</b><ul>
@@ -1678,38 +1679,29 @@ function pintarSemaforo(){
             fila(riesgoParaguay(),'Zona ribereña del Paraguay','costa e islas de Puerto Bermejo a Isla del Cerrito','<a class="vermapa" href="#t-otros"><span class="vmIco" aria-hidden="true">🏞️</span>Ver el río</a>',' data-a="#t-otros"','paraguay'));
   // Primero lo que no está en verde (rojo, naranja, amarillo, gris); las verdes, juntas en un solo renglón. El naranja sale del Paraná o de una alerta naranja del SMN.
   const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
-  // Con el Monitoreo del Niño o el SMN elegidos (13/11/2026), solo lo de ese criterio (semModo); el mapa usa igual R para la lluvia de las tarjetas.
-  if(modoEf()!=='calc'){$('sem').innerHTML=semModo(fila,LUZ,ORD);colorearMapa(R);return}
-  $('sem').innerHTML=otras.map(f=>f.html).join('')
+  // Desde el 13/11/2026 (decisión de Mariano) la sección es siempre la del Monitoreo del Niño, elija lo que elija el mapa (semOfi).
+  // Sin su dato al día, el semáforo de antes, con un renglón que lo avisa. El mapa usa igual R para la lluvia de las tarjetas.
+  const ofi=!!ofiDatos();try{$('secSem').classList.toggle('semCalc',!ofi)}catch(e){}
+  if(ofi){$('sem').innerHTML=semOfi(fila);colorearMapa(R);return}
+  $('sem').innerHTML='<li class="gris"><span class="luz" aria-hidden="true">?</span><span><b>Sin datos recientes del Monitoreo del Niño</b></span><span class="por">Mientras tanto, el color de 6 ciudades calculado como antes (alertas del SMN, río Paraná y lluvia muy fuerte).</span></li>'
+    +otras.map(f=>f.html).join('')
     +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
       +'<span class="por">'+(otras.length?'':'Sin alerta del SMN ni lluvia muy fuerte prevista, y los ríos lejos del nivel de alerta. ')+'Tocá un nombre para ver el detalle.</span>'
       +'<span class="nombres">'+verdes.map(f=>f.abre.startsWith(' data-j')?'<button type="button"'+f.abre+'>'+f.n+'</button>':'<a href="'+f.abre.slice(9,-1)+'">'+f.n+'</a>').join('')+'</span></li>':'');
   colorearMapa(R);
 }
 
-// Renglones de "Riesgo por localidad" con un solo criterio (13/11/2026, pedido de Mariano: que se vea solo lo relevante).
-// Monitoreo del Niño: los municipios con alerta, del nivel más alto al más bajo, con sus localidades con alerta.
-// Servicio Meteorológico: las 6 ciudades con la alerta del SMN, con el fenómeno, el día y el horario.
-function semModo(fila,LUZ,ORD){
-  const ver=i=>'<button class="vermapa" type="button" data-m="'+i+'"><span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>',
-    q=(c,por)=>({c,et:ETQ[c],por});
-  if(modoEf()==='nino'){
-    const con=GEO.mun.map((m,i)=>i).filter(i=>(ofiNivel(i)||0)>0).sort((a,b)=>ofiNivel(b)-ofiNivel(a)||GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
-    const filas=con.map(i=>{const c=NIVELES[ofiNivel(i)],L=locDe(i);
-      // El nivel ya va al lado del nombre: el renglón suma solo las localidades con alerta, si las hay.
-      return fila(q(c,L.length?'Localidades con alerta: '+L.map(l=>esc(l[0])+' ('+LOC_NIV[l[1]]+')').join(', ')+'.':''),esc(GEO.mun[i][0]),'',ver(i),'').html});
-    const resto=GEO.mun.length-con.length,t=fFechaHora(D.oficial.t);
-    return filas.join('')+'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(con.length?'Sin alerta':'Todo en verde')+'</b></span>'
-      +'<span class="por">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' Consultado el '+t+'.</span></li>';
-  }
-  if(!smnOk())return '<li class="gris"><span class="luz" aria-hidden="true">?</span><span><b>Sin informe del SMN</b></span><span class="por">No se pudo confirmar el informe del SMN de hoy. Mirá <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">las alertas en el SMN</a>.</span></li>';
-  const F=LOCS.map((l,j)=>{const i=MUNI[j],a=smnDe(i).slice().sort((x,y)=>x.dia.localeCompare(y.dia)||y.niv-x.niv),k=colorDe(i);
-    const por=a.length?a.map(x=>smnTxt(x)+(x.x?', con posible '+SMN_X[x.x&3]:'')+', el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('; ')+'.':'';
-    return fila(q(k.c,por),l.n,l.sub,ver(i),' data-j="'+j+'"')});
-  const otras=F.filter(f=>f.c!=='verde').sort((x,y)=>ORD[x.c]-ORD[y.c]),verdes=F.filter(f=>f.c==='verde');
-  return otras.map(f=>f.html).join('')+(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'Sin alerta del SMN':'Todo en verde')+'</b></span>'
-    +'<span class="por">'+(otras.length?'':'Ninguna de las 6 ciudades tiene alerta del SMN para hoy ni los 2 días siguientes. ')+'Tocá un nombre para ver el detalle.</span>'
-    +'<span class="nombres">'+verdes.map(f=>'<button type="button"'+f.abre+'>'+f.n+'</button>').join('')+'</span></li>':'');
+// Renglones de "Municipios con alerta oficial" (13/11/2026): los municipios con alerta en el Monitoreo del Niño, del nivel más alto al más bajo,
+// con sus localidades con alerta. No depende del botón del mapa: las alertas del SMN tienen su propia sección más arriba.
+function semOfi(fila){
+  const ver=i=>'<button class="vermapa" type="button" data-m="'+i+'"><span class="vmIco" aria-hidden="true">📍</span>Ver en el mapa</button>';
+  const con=GEO.mun.map((m,i)=>i).filter(i=>(ofiNivel(i)||0)>0).sort((a,b)=>ofiNivel(b)-ofiNivel(a)||GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
+  const filas=con.map(i=>{const c=NIVELES[ofiNivel(i)],L=locDe(i);
+    // El nivel ya va al lado del nombre: el renglón suma solo las localidades con alerta, si las hay.
+    return fila({c,et:ETQ[c],por:L.length?'Localidades con alerta: '+L.map(l=>esc(l[0])+' ('+LOC_NIV[l[1]]+')').join(', ')+'.':''},esc(GEO.mun[i][0]),'',ver(i),'').html});
+  const resto=GEO.mun.length-con.length,t=fFechaHora(D.oficial.t);
+  return filas.join('')+'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(con.length?'Sin alerta':'Ningún municipio con alerta')+'</b></span>'
+    +'<span class="por">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' Consultado el '+t+'.</span></li>';
 }
 
 /* ---------- mapa interactivo ---------- */
@@ -2786,11 +2778,11 @@ function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&
 function pNino(){
   return pT('#t-nino','nino','El Niño','Datos')}
 function pSem(){
-  // Con el Monitoreo del Niño elegido (13/11/2026): cuántos municipios tienen alerta; con el SMN, las luces de las 6 ciudades con su alerta.
-  const e=LISTO||D.oficial?modoEf():'';
-  if(e==='nino'){const n=[0,0,0,0];GEO.mun.forEach((m,i)=>n[ofiNivel(i)||0]++);const t=n[1]+n[2]+n[3];
-    return pT('#t-sem','sem','Riesgo por localidad',t?t+' con alerta':'Sin alertas',n[3]?'rojo':n[2]?'naranja':n[1]?'amarillo':'')}
-  const R=e==='smn'?LOCS.map((l,j)=>({c:colorDe(MUNI[j]).c})):M.R&&M.R.length?M.R.slice(0,LOCS.length):null;
+  // Desde el 13/11/2026: cuántos municipios tienen alerta en el Monitoreo del Niño, elija lo que elija el mapa.
+  // Sin su dato al día, las luces de las 6 ciudades con el cálculo de antes.
+  if(ofiDatos()){const n=[0,0,0,0];GEO.mun.forEach((m,i)=>n[ofiNivel(i)||0]++);const t=n[1]+n[2]+n[3];
+    return pT('#t-sem','sem','Con alerta oficial',t?t+' de '+GEO.mun.length:'Ninguno',n[3]?'rojo':n[2]?'naranja':n[1]?'amarillo':'')}
+  const R=M.R&&M.R.length?M.R.slice(0,LOCS.length):null;
   const dato=R?'<span class="pLuces">'+R.map((q,j)=>'<i style="background:'+pColor(q.c||'gris')+'" title="'+LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')+'"></i>').join('')+'</span>'
     +'<span class="pSr">'+R.map((q,j)=>LOCS[j].n+': '+(ETQ[q.c]||'Sin datos')).join(', ')+'</span>':pCargando;
   return pT('#t-sem','sem','Riesgo en 6 ciudades',dato);

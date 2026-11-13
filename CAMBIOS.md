@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 ("Municipios con alerta oficial")
+
+Decisión de Mariano: la sección "Riesgo por localidad" pasa a ser la lista del Monitoreo del Niño y deja de depender del botón del mapa (las alertas del SMN ya tienen su sección más arriba, con cuántos municipios y cuáles).
+- Título **"Municipios con alerta oficial"**; en el índice, el menú lateral y la portada, "Con alerta oficial".
+- Siempre los municipios con alerta en el Monitoreo, del nivel más alto al más bajo, con sus localidades con alerta y "Ver en el mapa"; al final, cuántos no tienen y cuándo se consultó (`semOfi`, reemplaza a `semModo`). Ya no muestra las 6 ciudades con el SMN.
+- Sin el dato del Monitoreo de menos de 24 horas: un renglón gris que lo avisa y, debajo, el semáforo de antes de las 6 ciudades con los ríos (clase `semCalc` en `#secSem`). La portada, en ese caso, vuelve a "Riesgo en 6 ciudades".
+- Portada: "Con alerta oficial: 12 de 70" con el color más alto, elija lo que elija el mapa.
+- "¿Cómo se decide el color?" pasa a "¿De dónde sale?", con una frase; la tabla de colores queda solo para el semáforo de antes (`.sOfi`, `.sCalc`).
+- Prueba al día (92 pruebas). Huella nueva del código.
+
 ## 13/11/2026 (mapa: Monitoreo del Niño o Servicio Meteorológico)
 
 Decisión de Mariano: el mapa muestra solo criterios oficiales, sin cálculo propio, y se elige cuál.

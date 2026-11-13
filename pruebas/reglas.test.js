@@ -889,13 +889,17 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   prep('nino', true);
   assert.strictEqual(S('modoEf()'), 'nino');
   assert.deepStrictEqual(cols(), ['naranja', 'naranja', 'verde', 'verde'], 'Monitoreo: solo su nivel (ni la lluvia ni el SMN)');
-  const semN = S('semModo((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}),{},{})');
+  const semN = S('semOfi((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}))');
   assert.ok(semN.indexOf('Barranqueras|Rojo') < semN.indexOf('Colonia Benítez|Naranja') && semN.indexOf('Colonia Benítez') < semN.indexOf('Resistencia|Naranja') && semN.includes('Margarita Belén|Amarillo') && !semN.includes('Charata') && semN.includes('Los otros 66 municipios no tienen alerta en el Monitoreo del Niño.'), semN);
   prep('smn', true);
   assert.strictEqual(S('modoEf()'), 'smn');
   assert.deepStrictEqual(cols(), ['verde', 'verde', 'amarillo', 'verde'], 'SMN: solo su alerta (ni el Monitoreo ni la lluvia)');
-  const semS = S('semModo((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}),{},{rojo:0,naranja:1,amarillo:2,gris:3,verde:4})');
-  assert.ok(semS.startsWith('<li>Charata|Amarillo|Alerta amarilla por tormentas, el viernes 13/11') && semS.includes('Sin alerta del SMN') && !semS.includes('Monitoreo'), semS);
+  // "Municipios con alerta oficial" no depende del botón del mapa: con el SMN elegido, sigue siendo la lista del Monitoreo (13/11/2026)
+  const semS = S('semOfi((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}))');
+  assert.strictEqual(semS, semN, 'la misma lista con el SMN elegido');
+  assert.ok(!codigo.includes('semModo') && codigo.includes("if(ofi){$('sem').innerHTML=semOfi(fila)") && html.includes('<h2 id="t-sem">Municipios con alerta oficial</h2>') && html.includes('<a href="#t-sem">Con alerta oficial</a>'), 'sección y menú');
+  S('pintarPortada()');
+  assert.ok(S("$('portada').innerHTML").includes('Con alerta oficial') && S("$('portada').innerHTML").includes('4 de 70'), 'portada con el SMN elegido: la cuenta del Monitoreo');
   prep('smn', true, false);
   assert.deepStrictEqual(cols(), ['gris', 'gris', 'gris', 'gris'], 'SMN sin informe: gris');
   // Sin el Monitoreo al día (o con más de 24 horas): el cálculo de antes (lluvia, SMN y el Paraná en la costa)
