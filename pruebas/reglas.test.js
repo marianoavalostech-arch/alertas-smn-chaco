@@ -1771,6 +1771,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes("<b>¿Dónde vivís?</b> Elegí tu localidad") && codigo.includes('data-micambia>Elegir mi localidad</button>') && codigo.includes("data-micambia>Cambiar</button>") && codigo.includes("abrirLoc(i,true);"), 'sin localidad guardada, el renglón invita a elegirla; con localidad, "Cambiar" (13/11/2026)');
     assert.ok(codigo.includes("if(g<0)return '<button type=\"button\" class=\"pT pLoc pElegir\" data-ploc=\"'+i+'\" data-pelegir>'") && html.includes('.dLoc.elegir .dLocInicio{display:none}') && codigo.includes("sin?'Elegí tu localidad':'Cambiar tu localidad'"), 'en la portada, "Tu localidad · Elegir" abre directo la lista');
     assert.ok(!/MILOC[^_]/.test(codigo), 'el renglón ya no se esconde en la visita sin localidad');
+    assert.ok(/function abrirLoc\(i,enLista\)/.test(codigo) && !/function abrirLoc\([^)]*\belegir\b/.test(codigo), 'el parámetro de abrirLoc no tapa a elegir(): si no, "Ver … en el mapa" falla (13/11/2026)');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez'), 'la privacidad lo cuenta');
   });

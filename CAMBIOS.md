@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 ("Ver … en el mapa" de tu localidad, arreglado)
+
+Aviso de Mariano: "desapareció el botón que lleva al mapa".
+- **Falla**: desde `a75634c`, el segundo parámetro de `abrirLoc` se llamaba `elegir` y tapaba la función `elegir()`. Al tocar "Ver … en el mapa" en la ventana "Tu localidad" daba error ("elegir is not a function"): la ventana se cerraba y no iba al mapa. Ahora el parámetro se llama `enLista`, y una prueba controla que no vuelva a pasar.
+- **Después de elegir o cambiar la localidad** desde la lista ("Elegir", "Elegir mi localidad", "Cambiar"), la ventana vuelve a abrirse con "Ver … en el mapa" (y los avisos, si corresponde). Antes se cerraba y el botón no aparecía.
+- Probado en la nube con datos reales a 390 y 1366 px: elegir, ver en el mapa, el renglón de la computadora y "Cambiar", sin errores. 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 (portada del celular más baja)
 
 Pedido de Mariano: que las secciones de arriba se ajusten mejor en el celular.

@@ -2889,8 +2889,9 @@ function pintarPortada(){
 }
 // Tu localidad (4/11/2026): al tocar su recuadro se abre una ventana con "Ver en el mapa" (lo de antes) y una lista con buscador para cambiarla.
 // Si el navegador no tiene ventanas (<dialog>), sigue como antes: va al mapa. Devuelve true si la abrió.
-// elegir=true: abre directo en la lista ("Elegí tu localidad" si no hay ninguna guardada; "Cambiar tu localidad" si hay).
-function abrirLoc(i,elegir){
+// enLista=true: abre directo en la lista ("Elegí tu localidad" si no hay ninguna guardada; "Cambiar tu localidad" si hay).
+// Ojo (13/11/2026): el parámetro no puede llamarse "elegir": tapaba la función elegir() y "Ver … en el mapa" fallaba.
+function abrirLoc(i,enLista){
   const dl=$('dLoc');if(!dl||typeof dl.showModal!=='function'||EMB)return false;
   const bus=$('dLocBus'),lista=$('dLocLista'),ver=$('dLocMapa');
   ver.textContent='Ver '+GEO.mun[i][0]+' en el mapa';ver.dataset.i=i;bus.value='';
@@ -2898,9 +2899,9 @@ function abrirLoc(i,elegir){
   // Con el bloque de avisos, la ventana va en dos partes (5/11/2026): primero el mapa y los avisos; "Cambiar por otra localidad"
   // pasa al buscador con la lista a todo lo alto, y "‹" vuelve. Sin avisos, todo junto como antes.
   dl.classList.toggle('conAv',!$('dAv').hidden);dl.classList.remove('buscando');$('dLocTit').textContent='Tu localidad';
-  const sin=miLocGuardada()<0,cur=elegir&&sin?-1:i;dl.classList.toggle('elegir',!!elegir);
-  if(elegir){dl.classList.remove('conAv');$('dLocTit').textContent=sin?'Elegí tu localidad':'Cambiar tu localidad'}
-  dl.querySelector('.dLocEt').textContent=elegir?'Buscala por el nombre o tocala en la lista':'Cambiar por otra localidad';
+  const sin=miLocGuardada()<0,cur=enLista&&sin?-1:i;dl.classList.toggle('elegir',!!enLista);
+  if(enLista){dl.classList.remove('conAv');$('dLocTit').textContent=sin?'Elegí tu localidad':'Cambiar tu localidad'}
+  dl.querySelector('.dLocEt').textContent=enLista?'Buscala por el nombre o tocala en la lista':'Cambiar por otra localidad';
   const orden=GEO.mun.map((m,j)=>j).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es'));
   const pintar=()=>{const q=sinTildes(bus.value),l=orden.filter(j=>!q||sinTildes(GEO.mun[j][0]).includes(q));
     lista.innerHTML=l.length?l.map(j=>'<li><button type="button" data-lj="'+j+'"'+(j===cur?' aria-current="true"':'')+'>'+esc(GEO.mun[j][0])+'</button></li>').join(''):'<li class="nada">No hay ninguna localidad con ese nombre.</li>'};
@@ -2915,7 +2916,10 @@ function abrirLoc(i,elegir){
       if(e.target.closest('[data-dvolver]')){dl.classList.remove('buscando');$('dLocTit').textContent='Tu localidad';$('dLocCambiar').focus();return}
       if(e.target.closest('#dLocMapa')){const j=+$('dLocMapa').dataset.i;dl.close();elegir(j,true);marcarSalto();verSec($('t-mapa'));return}
       const b=e.target.closest('[data-lj]');if(!b)return;const j=+b.dataset.lj;
+      const eraLista=dl.classList.contains('elegir');
       guardarMiLoc(j);seguro(pintarMiLoc);seguro(pintarPortada);if(M.sel>=0)seguro(pintarInfo);dl.close();
+      // recién elegida desde "Elegir" o "Cambiar": la ventana vuelve a abrirse con "Ver … en el mapa" (y los avisos, si hay)
+      if(eraLista&&abrirLoc(j)){$('dLocMapa').focus();return}
       const nb=document.querySelector('#portada [data-ploc]'),mb=document.querySelector('#miLoc [data-miver]');
       if(nb&&nb.offsetParent)nb.focus();else if(mb)mb.focus()});
   }
