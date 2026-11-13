@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (Revisión antes de pasar a producción en Google Play)
+
+Revisión completa de seguridad, lógica y redacción. No aparecieron fallas graves; se ajustaron detalles:
+- **Seguridad, por las dudas**: `esc()` ahora también escapa `>` y `'`. `FORMA.puertos` y `FORMA.localidades` controlan todos los campos (río y nombre como texto, situación 0 a 2 o vacía, cambio en 24 h como número o vacío): un dato con otra forma se descarta en lugar de dibujarse. Probado con el `servidor.json` real (25 estaciones, 13 localidades).
+- **Política de privacidad**: los avisos ya no figuran como "en prueba: solo los ven quienes prueban la app" sino "por ahora se ofrecen solo en la app de Google Play" (vale para la prueba cerrada y para producción).
+- **Redacción**: "Que nadie se bañe ahí"; "un punto cada 10 km, más o menos"; la descripción de la página (la que muestran Google y WhatsApp) dice "alertas oficiales por municipio" en lugar de "riesgo por municipio".
+- Revisado sin cambios: cabeceras de `netlify.toml`, `avisos-sw.js`, los robots, los flujos de GitHub, el script de Google (no cambió: no hay que volver a pegarlo), enlaces con `rel="noopener"`, historial del repositorio sin claves ni direcciones internas. 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 (Lluvia hora por hora: tu localidad y los 70 municipios)
 
 Pedido de Mariano: más información de las localidades y que la elección sea automática, según la localidad elegida como tuya.
