@@ -931,7 +931,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
           <li data-c="gris"><b>Gris:</b> sin datos.</li>
           <li><b>Borde punteado:</b> hay alerta del SMN vigente en ese municipio.</li>
         </ul>
-        <p class="meta">Sin datos recientes del Monitoreo del Niño, el color se calcula como antes y queda el más alto. En la costa sigue la altura del Paraná, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
+        <p class="meta">Sin el Monitoreo del Niño, el color lo calcula este sitio y queda el más alto. En la costa sigue la altura del Paraná, como en los comunicados oficiales por la crecida. Tocá un río para ver su altura.</p>
     </details>
     <div class="fila"><button class="btn" id="mTodos" type="button" hidden>Reintentar</button><span class="meta" id="mEstado"></span></div>
   </section>
@@ -1094,7 +1094,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <summary>¿De dónde sale?</summary>
       <p class="regIntro sOfi">Son las alertas del <b>Monitoreo del Niño</b> para cada municipio, en general por la crecida, con el nivel que informa (amarilla, naranja o roja). Este sitio no las calcula. Las alertas del SMN están más arriba, en «Alertas oficiales del SMN».</p>
       <div class="sCalc">
-      <p class="regIntro">Sin datos recientes del Monitoreo del Niño, el color se calcula como antes: depende de las alertas del <b>Servicio Meteorológico Nacional</b>, de la altura del <b>Paraná</b> (en la costa) y de la lluvia muy fuerte.</p>
+      <p class="regIntro">Sin el Monitoreo del Niño, el color lo calcula este sitio: depende de las alertas del <b>Servicio Meteorológico Nacional</b>, de la altura del <b>Paraná</b> (en la costa) y de la lluvia muy fuerte.</p>
       <ul class="regCol">
         <li data-c="rojo"><b>Rojo</b><ul>
           <li><span class="rcE">SMN</span> Alerta roja.</li>
@@ -1185,7 +1185,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras: la serie diaria, publicada por el Instituto Nacional del Agua (INA), y, desde el 12/11/2026, una lectura por hora. Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
-      <li><b>Alerta oficial por municipio, localidades con alerta y más estaciones de los ríos:</b> fuentes oficiales que se consultan cada hora. Si la alerta oficial lleva más de un día sin renovarse, en la costa el color se calcula con la altura del Paraná. Las localidades y las estaciones son solo informativas.</li>
+      <li><b>Alerta oficial por municipio, localidades con alerta y más estaciones de los ríos:</b> fuentes oficiales que se consultan cada hora. Si no se puede renovar, el mapa sigue con la última lectura y dice su fecha y hora. Las localidades y las estaciones son solo informativas.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m).</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
@@ -1664,7 +1664,7 @@ function pintarSemaforo(){
   // Sin su dato al día, el semáforo de antes, con un renglón que lo avisa. El mapa usa igual R para la lluvia de las tarjetas.
   const ofi=!!ofiDatos();try{$('secSem').classList.toggle('semCalc',!ofi)}catch(e){}
   if(ofi){$('sem').innerHTML=semOfi(fila);colorearMapa(R);return}
-  $('sem').innerHTML='<li class="gris"><span class="luz" aria-hidden="true">?</span><span><b>Sin datos recientes del Monitoreo del Niño</b></span><span class="por">Mientras tanto, el color de 6 ciudades calculado como antes (alertas del SMN, río Paraná y lluvia muy fuerte).</span></li>'
+  $('sem').innerHTML='<li class="gris"><span class="luz" aria-hidden="true">?</span><span><b>No se pudo leer el Monitoreo del Niño</b></span><span class="por">Mientras tanto, el color de 6 ciudades calculado por este sitio (alertas del SMN, río Paraná y lluvia muy fuerte).</span></li>'
     +otras.map(f=>f.html).join('')
     +(verdes.length?'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(otras.length?'En verde':'Todo en verde')+'</b></span>'
       +'<span class="por">'+(otras.length?'':'Sin alerta del SMN ni lluvia muy fuerte prevista, y los ríos lejos del nivel de alerta. ')+'Tocá un nombre para ver el detalle.</span>'
@@ -1682,7 +1682,7 @@ function semOfi(fila){
     return fila({c,et:ETQ[c],por:L.length?'Localidades con alerta: '+L.map(l=>esc(l[0])+' ('+LOC_NIV[l[1]]+')').join(', ')+'.':''},esc(GEO.mun[i][0]),'',ver(i),'').html});
   const resto=GEO.mun.length-con.length,t=fFechaHora(D.oficial.t);
   return filas.join('')+'<li class="verde verdes"><span class="luz" aria-hidden="true">✓</span><span><b>'+(con.length?'Sin alerta':'Ningún municipio con alerta')+'</b></span>'
-    +'<span class="por">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' Consultado el '+t+'.</span></li>';
+    +'<span class="por">'+(con.length?'Los otros '+resto+' municipios no tienen alerta en el Monitoreo del Niño.':'Ningún municipio tiene alerta en el Monitoreo del Niño.')+' Última lectura: '+t+'.</span></li>';
 }
 
 /* ---------- mapa interactivo ---------- */
@@ -1890,12 +1890,12 @@ function pintarModo(){
     if(!ok){el.innerHTML=LISTO?'<i aria-hidden="true"></i>'+sinDato:'';return}
     const n=niv.filter(v=>v>0).length,m=Math.max(0,...niv);
     el.innerHTML='<i aria-hidden="true" data-c="'+NIVELES[m]+'"></i>'+(n?n+' con alerta':'Sin alertas')};
-  try{est('mEstNino',GEO.mun.map((x,i)=>ofiNivel(i)||0),!!ofiDatos(),'Sin datos recientes');
+  try{est('mEstNino',GEO.mun.map((x,i)=>ofiNivel(i)||0),!!ofiDatos(),'Sin datos');
     est('mEstSmn',GEO.mun.map((x,i)=>{const s=pisoSMN(i);return s?s.n:0}),smnOk(),'Sin informe')}catch(err){console.error(err)}
   const n=$('modoNota');if(!n)return;
-  if(e==='nino')n.textContent='Alerta oficial de cada municipio, en general por la crecida. Consultado el '+fFechaHora(D.oficial.t)+'.';
+  if(e==='nino')n.textContent='Alerta oficial de cada municipio, en general por la crecida. Última lectura: '+fFechaHora(D.oficial.t)+'.';
   else if(e==='smn')n.textContent=smnOk()?'Alerta más alta del SMN para hoy y los 2 días siguientes.':'No se pudo confirmar el informe del SMN: los municipios quedan en gris.';
-  else n.textContent=!LISTO&&!D.oficial?'Consultando el Monitoreo del Niño…':'Sin datos recientes del Monitoreo del Niño: el color se calcula como antes, con la altura del Paraná, la lluvia y las alertas del SMN.';
+  else n.textContent=!LISTO&&!D.oficial?'Consultando el Monitoreo del Niño…':'No se pudo leer el Monitoreo del Niño: el color lo calcula este sitio con la altura del Paraná, la lluvia y las alertas del SMN.';
 }
 function iniciarModo(){
   document.querySelectorAll('.modo [data-modo]').forEach(b=>b.addEventListener('click',()=>{
@@ -1910,7 +1910,9 @@ function iniciarModo(){
 }
 // Nivel de alerta oficial de cada municipio (12/11/2026, decisión de Mariano).
 // Lo trae el script de Google cada hora; con más de 24 horas sin renovar no se usa y la costa vuelve al cálculo con el Paraná.
-const ofiDatos=()=>{const o=D.oficial;return o&&o.datos&&o.datos.mun&&o.t&&Date.now()-o.t<24*36e5?o.datos:null};
+// Desde el 13/11/2026 (decisión de Mariano) el último dato del Monitoreo se usa aunque tenga días: se muestra la fecha y hora de la última lectura.
+// El cálculo de antes queda solo si nunca se pudo leer.
+const ofiDatos=()=>{const o=D.oficial;return o&&o.datos&&o.datos.mun&&o.t?o.datos:null};
 function ofiNivel(i){const d=ofiDatos();if(!d||i==null||i<0)return null;const v=d.mun[GEO.mun[i][0]];return typeof v==='number'?v:0}
 // Localidades con alerta (12/11/2026): cada localidad se ubica en su municipio por el lugar (punto dentro del límite del mapa;
 // si cae afuera, por ejemplo en una isla, el municipio más cercano a menos de unos 15 km). Solo con el informe de hoy o de ayer.
@@ -1939,7 +1941,7 @@ function locInfo(i){
   }catch(e){console.error(e);return ''}}
 // Párrafo del detalle cuando el color del municipio sale de la alerta oficial o del Paraná.
 const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>Alerta '+['','amarilla','naranja','roja'][NIVELES.indexOf(k.c)]+' en el Monitoreo del Niño</b>'
-  +(ofiDatos()?' (consultado el '+fFechaHora(D.oficial.t)+')':'')+'. Para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil.</p>'
+  +(ofiDatos()?' (última lectura: '+fFechaHora(D.oficial.t)+')':'')+'. Para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil.</p>'
   :k.piso?'<p><b>'+ETQ[k.c]+' por el río Paraná ('+k.rio.et.toLowerCase()+'), no por la lluvia.</b> '+k.rio.por
   +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')+' Las alertas oficiales por la crecida incluyen zonas de este municipio: para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>En la costa, el color sigue al río Paraná ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por

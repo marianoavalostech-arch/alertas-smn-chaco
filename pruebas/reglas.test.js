@@ -547,7 +547,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
   // Desde el 13/11/2026: "¿Qué significa cada color?" solo con el cálculo de antes (con el Monitoreo o el SMN el color es el oficial tal cual)
-  assert.ok(/<details class="det vCalc" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && !mapa.includes('Es el nivel que informa el Monitoreo del Niño') && mapa.includes('Sin datos recientes del Monitoreo del Niño, el color se calcula como antes'));
+  assert.ok(/<details class="det vCalc" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && !mapa.includes('Es el nivel que informa el Monitoreo del Niño') && mapa.includes('Sin el Monitoreo del Niño, el color lo calcula este sitio'));
   assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
   // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
   const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
@@ -858,7 +858,7 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
   const ofi = { 'Colonia Benítez': 2, 'Basail': 2, 'Puerto Eva Perón': 1, 'Charata': 0 };
   assert.deepStrictEqual(col(ofi), [['naranja', true], ['naranja', true], ['amarillo', true], ['verde', false]], 'como la alerta oficial');
   assert.deepStrictEqual(col(null), [['rojo', false], ['amarillo', false], ['verde', false], ['verde', false]], 'sin el dato oficial: el cálculo con el Paraná');
-  assert.deepStrictEqual(col(ofi, 30), col(null), 'con más de 24 horas tampoco');
+  assert.deepStrictEqual(col(ofi, 30), col(ofi), 'con más de 24 horas sigue la última lectura (13/11/2026)');
   assert.ok(S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],0]))})`) && !S(`FORMA.oficial({mun:{a:1}})`) && !S(`FORMA.oficial({mun:Object.fromEntries(GEO.mun.map(m=>[m[0],5]))})`));
   assert.ok(codigo.includes("['lluvia','rio','yacy','prono','paraguay','bermejo','pronoPy','medida','oficial','puertos','localidades'].map(k=>cargar(k).then(pintar))"));
   // Localidades con alerta: cada una en su municipio (las islas, en el más cercano); solo con el informe de hoy o de ayer
@@ -908,7 +908,8 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   assert.strictEqual(S('modoEf()'), 'calc');
   assert.deepStrictEqual(cols(), ['rojo', 'rojo', 'amarillo', 'verde'], 'cálculo de antes');
   S(`D.oficial={datos:{mun:${JSON.stringify(ofi)}},vivo:true,t:new Date(Date.now()-30*36e5)}`);
-  assert.strictEqual(S('modoEf()'), 'calc', 'con más de 24 horas, también');
+  assert.strictEqual(S('modoEf()'), 'nino', 'con más de 24 horas sigue el Monitoreo, con la fecha de la última lectura (13/11/2026)');
+  assert.ok(S("pintarModo();$('modoNota').textContent").includes('Última lectura: '), 'dice la última lectura');
   // La elección se recuerda; de entrada, el Monitoreo; botones y textos de cada modo
   assert.ok(codigo.includes("const MODO_K='anc-modo-mapa';") && codigo.includes("localStorage.getItem(MODO_K)==='smn'?'smn':'nino'") && codigo.includes('localStorage.setItem(MODO_K,MODO)'));
   assert.ok(html.includes('<html lang="es" class="m-nino">') && /<button type="button" role="radio" data-modo="nino" aria-checked="true">.*?<span class="mNom">Monitoreo del Niño<\/span><span class="mEst" id="mEstNino"><\/span>/.test(html) && /data-modo="smn" aria-checked="false">.*?<span class="mNom">Servicio Meteorológico<\/span><span class="mEst" id="mEstSmn"><\/span>/.test(html));

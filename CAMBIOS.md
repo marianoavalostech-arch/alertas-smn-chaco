@@ -10,6 +10,7 @@ Decisión de Mariano: la sección "Riesgo por localidad" pasa a ser la lista del
 - Sin el dato del Monitoreo de menos de 24 horas: un renglón gris que lo avisa y, debajo, el semáforo de antes de las 6 ciudades con los ríos (clase `semCalc` en `#secSem`). La portada, en ese caso, vuelve a "Riesgo en 6 ciudades".
 - Portada: "Con alerta oficial: 12 de 70" con el color más alto, elija lo que elija el mapa.
 - "¿Cómo se decide el color?" pasa a "¿De dónde sale?", con una frase; la tabla de colores queda solo para el semáforo de antes (`.sOfi`, `.sCalc`).
+- **Monitoreo sin renovar** (decisión de Mariano): el mapa sigue con la última lectura del Monitoreo del Niño aunque tenga más de 24 horas (`ofiDatos` sin tope de tiempo; el script de Google ya guarda el último dato bueno con su hora). Debajo de los botones y al final de la sección: "Última lectura: <fecha y hora>" (antes "Consultado el"). El cálculo de antes queda solo si nunca se pudo leer el Monitoreo, con textos sin "como antes" ("No se pudo leer el Monitoreo del Niño…", "el color lo calcula este sitio"). "De dónde salen los datos" al día.
 - Mapa: "¿Qué significa cada color?" solo aparece con el cálculo de antes (`details.vCalc`). Con el Monitoreo o el SMN el color es el nivel oficial tal cual y la frase debajo de los botones ya lo dice; se sacan las listas de cada modo.
 - Prueba al día (92 pruebas). Huella nueva del código.
 
