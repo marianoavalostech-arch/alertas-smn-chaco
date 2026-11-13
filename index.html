@@ -234,25 +234,7 @@ table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font
 th,td{white-space:nowrap;text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
 th{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
-td.barras{min-width:96px;padding-block:4px}
-td.barras svg{display:block;width:102px;height:28px;margin-left:auto}
 .regla th,.regla td{white-space:normal;text-align:left;vertical-align:top}
-/* gráfico de lluvia día por día, con fechas (20/10/2026) */
-.llLocs{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 10px}
-.llTit{margin:0 0 6px;font-weight:700}
-.llGraf{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));column-gap:3px;font-variant-numeric:tabular-nums}
-.llGrp{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--line);padding-bottom:2px;margin-bottom:4px}
-.llGrp.fut{color:var(--water);border-color:var(--water)}
-.llCol{display:flex;flex-direction:column;align-items:center;min-width:0}
-.llZona{height:120px;width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
-.llV{font-size:.72rem;font-weight:700;color:var(--ink);line-height:1.1;margin-bottom:2px;white-space:nowrap}
-.llB{width:min(100%,26px);min-height:2px;border-radius:4px 4px 0 0;background:var(--gris);opacity:.75}
-.llCol.fut .llB{background:var(--water);opacity:1}
-.llD,.llN{font-size:.7rem;line-height:1.2;color:var(--muted);white-space:nowrap}
-.llD{margin-top:4px;border-top:1px solid var(--line);width:100%;text-align:center;padding-top:3px}
-.llCol.hoy .llD,.llCol.hoy .llN{color:var(--ink);font-weight:800}
-.llN .m{display:none}
-@media (min-width:520px){.llN .m{display:inline}}
 details{font-size:.95rem}
 summary{cursor:pointer;font-weight:700}
 details ul,.fuentes{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
@@ -742,6 +724,8 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 }
 /* todos los recuadros del mismo alto (el del renglón más alto); el título "Ir a…" (antes "El Chaco hoy") va aparte, en su renglón */
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:8px}
+/* sin la sección de Lluvias (13/11/2026) quedan 11 recuadros: el último ocupa el hueco del renglón */
+.portada>.pT:last-child:nth-child(3n){grid-column:span 2}
 .pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
 .pHoy b{position:relative;font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo);padding-bottom:5px}
 .pHoy b::after{content:"";position:absolute;left:0;bottom:0;width:34px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--violeta),#8d58e8,var(--rosa))}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
@@ -927,7 +911,6 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Con alerta oficial<small class="ladoSub"></small></span></a>
       <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
       <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
-      <a href="#t-lluvia"><span class="ladoIco" aria-hidden="true">🌧️</span><span class="ladoTx">Lluvias<small class="ladoSub"></small></span></a>
       <a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<small class="ladoSub"></small></span></a>
       <a href="#t-nino"><span class="ladoIco" aria-hidden="true">🌡️</span><span class="ladoTx">El Niño<small class="ladoSub"></small></span></a>
       <a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<small class="ladoSub"></small></span></a>
@@ -953,7 +936,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Con alerta oficial</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Con alerta oficial</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
   </nav>
 
   <section aria-labelledby="t-mapa">
@@ -1186,15 +1169,10 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <div id="rio"><p class="nodisp">Consultando…</p></div>
   </section>
 
-  <section aria-labelledby="t-otros" class="plegable" data-cerrada data-pista="Altura de los ríos y pronóstico de Formosa y Pilcomayo">
+  <section aria-labelledby="t-otros" class="plegable" data-cerrada data-ancha data-pista="Altura de los ríos y pronóstico de Formosa y Pilcomayo">
     <h2 id="t-otros">Ríos Paraguay y Bermejo</h2>
     <div class="filaRio abajo"><button class="btn volver" type="button" data-volver>↑ Volver al mapa</button></div>
     <div id="otros"><p class="nodisp">Consultando…</p></div>
-  </section>
-
-  <section aria-labelledby="t-lluvia" class="plegable" data-cerrada data-pista="Cuánto llovió y cuánto se espera en 6 localidades">
-    <h2 id="t-lluvia">Lluvias: últimos 7 días y pronóstico a 7 días</h2>
-    <div id="lluvia"><p class="nodisp">Consultando…</p></div>
   </section>
 
   <section aria-labelledby="t-anim" class="plegable" data-cerrada data-pista="Mapa animado de la lluvia, con satélite">
@@ -1254,7 +1232,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color del río en su sección: puede llevarlo a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m). No cambia el color del mapa.</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. La lluvia no da color en el mapa: el color sale del Monitoreo del Niño o de la alerta del SMN. Solo si nunca se pudo leer el Monitoreo, el sitio calcula un rojo por lluvia muy fuerte, con números ajustados con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
+      <li><b>Lluvia prevista</b> (tarjeta de cada municipio y portada del celular): Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. La lluvia no da color en el mapa: el color sale del Monitoreo del Niño o de la alerta del SMN. Solo si nunca se pudo leer el Monitoreo, el sitio calcula un rojo por lluvia muy fuerte, con números ajustados con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
@@ -1642,12 +1620,15 @@ function abrirSec(id,abrir,guardar){
   if(guardar){const d=p.sec.getBoundingClientRect().top-y0;if(Math.abs(d)>2)scrollBy({top:d,behavior:'instant'});deslizar(p.cuerpo,h0)}
 }
 // En computadora las secciones cerradas van de a dos; una que quedaría sola en su fila (la siguiente está abierta o no hay) va a lo ancho.
+// "Ríos Paraguay y Bermejo" (data-ancha) va siempre a lo ancho, debajo del Paraná (13/11/2026, sin la sección de Lluvias): así quedan
+// de a dos "Lluvia por hora" con "El Niño" y "Datos" con "Acerca".
 function acomodarPlegables(){
   const l=[...document.querySelectorAll('main>section.plegable')];let par=false;
   l.forEach((s,i)=>{let solo=false;
     if(!s.classList.contains('cerrada'))par=false;
+    else if(s.hasAttribute('data-ancha')){par=false;solo=true}
     else if(par)par=false;
-    else{const b=l[i+1];if(b&&b.classList.contains('cerrada'))par=true;else solo=true}
+    else{const b=l[i+1];if(b&&b.classList.contains('cerrada')&&!b.hasAttribute('data-ancha'))par=true;else solo=true}
     s.classList.toggle('solo',solo)});
 }
 const alAbrir=(id,f)=>(AL_ABRIR[id]=AL_ABRIR[id]||[]).push(f);
@@ -2667,45 +2648,6 @@ function estacionesHora(){
     +'<p class="estLey"><span class="estSit"><i data-c="rojo"></i>Evacuación</span><span class="estSit"><i data-c="amarillo"></i>Alerta</span><span class="estSit"><i data-c="verde"></i>Normal</span><span class="estSit"><i></i>Sin niveles</span></p>'
     +'<p class="meta">Última lectura de cada estación, con los niveles de alerta y evacuación de cada puerto. Solo informativo: no cambia los colores del mapa.</p></details>';
 }
-// Aviso si la lluvia lleva más de 24 horas sin renovarse (lo normal es una copia nueva por hora). El motivo le llega por correo a quien mantiene el sitio.
-function lluviaAtraso(){
-  const d=D.lluvia;if(!d||!d.datos||Date.now()-d.t<=24*36e5)return '';
-  return '<div class="aviso" role="note"><strong>La lluvia está sin renovar desde el '+fFechaHora(d.t)+'.</strong>Los números de abajo pueden no reflejar lo que pasó desde entonces.</div>';
-}
-// Gráfico grande de una localidad (pedido de Mariano, 20/10/2026): una barra por día con su fecha y los milímetros.
-// Grises: lo que llovió los 7 días anteriores; azules: lo que se espera desde hoy. Los botones eligen la localidad.
-const DSEM=['dom','lun','mar','mié','jue','vie','sáb'];
-let LLU_SEL=0;
-function grafLluvia(i){
-  const d=D.lluvia.datos,ref=resumenLluvia(i).ref,mm=d.mm[i],tope=Math.max(10,...mm),pas=d.dias.filter(x=>x<ref).length;
-  const cols=d.dias.map((dia,j)=>{const v=mm[j],fut=dia>=ref,es=dia===hoy,[,m,n]=dia.split('-');
-    return '<div class="llCol'+(fut?' fut':'')+(es?' hoy':'')+'"><div class="llZona"><span class="llV">'+(v>=0.5?nf(v):'')+'</span><span class="llB" style="height:'+(v>0?Math.max(3,100*v/tope).toFixed(1)+'%':'2px')+'"></span></div>'
-      +'<span class="llD">'+(es?'Hoy':DSEM[new Date(dia+'T12:00:00Z').getUTCDay()])+'</span><span class="llN">'+Number(n)+'<span class="m">/'+Number(m)+'</span></span></div>'}).join('');
-  const txt=LOCS[i].n+', lluvia día por día: '+d.dias.map((dia,j)=>fDia(dia)+' '+nf(mm[j],1)+' mm').join('; ')+'.';
-  return '<p class="llTit">'+LOCS[i].n+': milímetros por día</p><div class="llGraf" role="img" aria-label="'+txt+'">'
-   +(pas?'<span class="llGrp" style="grid-column:1/'+(pas+1)+'">Llovió</span>':'')+(pas<d.dias.length?'<span class="llGrp fut" style="grid-column:'+(pas+1)+'/-1">Se espera</span>':'')+cols+'</div>';
-}
-function pintarGrafLluvia(){
-  const g=$('llGrafCaja');if(!g||!D.lluvia||!D.lluvia.datos)return;
-  if(!(LLU_SEL>=0&&LLU_SEL<LOCS.length))LLU_SEL=0;
-  g.innerHTML=grafLluvia(LLU_SEL);
-  document.querySelectorAll('#llLocs .ley').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.ll===LLU_SEL)));
-}
-function pintarLluvia(){
-  const d=D.lluvia.datos;
-  if(!d){$('lluvia').innerHTML=meta('lluvia','Open-Meteo');return}
-  const caja=$('lluvia');
-  if(!caja.dataset.clic){caja.dataset.clic='1';caja.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ll]');if(!b)return;LLU_SEL=+b.dataset.ll;pintarGrafLluvia()})}
-  const ref=resumenLluvia(0).ref,tope=Math.max(20,...d.mm.flat());
-  const filas=LOCS.map((l,i)=>{const s=resumenLluvia(i);
-    const b=d.dias.map((dia,j)=>{const h=Math.max(1,26*d.mm[i][j]/tope);return '<rect x="'+(j*7+(dia>=ref?4:0))+'" y="'+(28-h)+'" width="5" height="'+h+'" fill="var(--'+(dia>=ref?'water':'gris')+')"><title>'+fDia(dia)+': '+nf(d.mm[i][j],1)+' mm</title></rect>'}).join('');
-    return '<tr><td>'+l.n+'</td><td>'+nf(s.cayo)+' mm</td><td><b>'+nf(s.viene)+' mm</b></td><td class="barras"><svg viewBox="0 0 102 28" aria-hidden="true">'+b+'</svg></td></tr>'}).join('');
-  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
-   +'<div class="llLocs" id="llLocs" role="group" aria-label="Elegir la localidad del gráfico">'+LOCS.map((l,i)=>'<button class="ley" type="button" data-ll="'+i+'" aria-pressed="false">'+l.n+'</button>').join('')+'</div><div id="llGrafCaja"></div>'
-   +'<p class="meta" style="margin-top:10px">Barras grises: del '+fDia(d.dias[0])+' al '+fDia(masDias(ref,-1))+'. Barras azules: pronóstico del '+fDia(ref)+' al '+fDia(d.dias[d.dias.length-1])+'.</p>'
-   +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro. Lo que se espera incluye el día de hoy completo.');
-  pintarGrafLluvia();
-}
 const TRIM=['dic-feb','ene-mar','feb-abr','mar-may','abr-jun','may-jul','jun-ago','jul-sep','ago-oct','sep-nov','oct-dic','nov-ene'];
 const oniOrden=p=>Number(p[0])*12+TRIM.indexOf(p[1]);
 // ONI leído por el script de Google de la tabla de la NOAA. Se usa solo si tiene la forma esperada y no es más viejo que el cargado a mano.
@@ -2841,11 +2783,6 @@ function pLoc(){
   return '<button type="button" class="pT'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'">'+pIco('loc')+'<span class="pN">'+(g>=0?'':'<span class="pSr">Elegí tu localidad. Ahora: </span>')+esc(GEO.mun[i][0])+'</span><span class="pD">'
     +(pFuera(k.c)?'<span class="pSr">'+ETQ[k.c]+': </span>':'')+dato+'</span></button>';
 }
-function pLluvia(){
-  let dato=pEspera();
-  if(D.lluvia&&D.lluvia.datos&&!lluviaVieja()){let b=-1;LOCS.forEach((l,j)=>{const s=resumenLluvia(j);if(s&&s.viene>b)b=s.viene});dato=b<1?'Casi nada':'Hasta\u00a0'+nf(b)+'\u00a0mm'}
-  return pT('#t-lluvia','lluvia','Lluvia prevista',dato);
-}
 function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&r.atraso<4;let c='';try{c=riesgoParaguay().c}catch(e){}
   return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'pAgua')}
 // Sin la palabra de la fuerza (pedido de Mariano, 4/11): solo lleva a los datos.
@@ -2879,7 +2816,7 @@ function pintarPortada(){
   const d=new Date(hoy+'T12:00:00Z');
   const ref=esApp()?'<button class="pRef'+(($('btnActualizar')||{classList:{contains:()=>0}}).classList.contains('gira')?' gira':'')+'" type="button" data-pref aria-label="Actualizar los datos">'+ICO_ACT+'</button>':'';
   el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
-    pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
+    pSem,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
@@ -3037,7 +2974,6 @@ function seguro(f,ks){
 function pintar(){
   seguro(()=>{if(D.rio)pintarRio()},['rio','yacy','prono']);
   seguro(()=>{if(D.paraguay&&D.bermejo)pintarOtros()},['paraguay','bermejo','pronoPy','puertos']);
-  seguro(()=>{if(D.lluvia)pintarLluvia()},['lluvia']);
   seguro(pintarSemaforo,['lluvia','rio','prono','paraguay','municipios','smn']);
   seguro(pintarBanner);
   seguro(pintarRioBanda,['rio','prono','paraguay']);

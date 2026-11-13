@@ -2,6 +2,16 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (sin la sección de Lluvias y sitio reacomodado)
+
+Pedido de Mariano: quitar la sección "Lluvias: últimos 7 días y pronóstico a 7 días" y reacomodar el sitio.
+- Fuera la sección (tabla de las 6 localidades y gráfico día por día), su renglón en el menú lateral y en el índice de arriba ("Lluvias"), y el recuadro "Lluvia prevista" de la portada del celular. Fuera el código y los estilos que solo usaba ella (`pintarLluvia`, `grafLluvia`, `pintarGrafLluvia`, `LLU_SEL`, `lluviaAtraso`, `pLluvia`, `.ll*`, `td.barras`).
+- La lluvia de `lluvia.json` se sigue leyendo: la usan la tarjeta de cada municipio, el recuadro de tu localidad, la hora de los datos de la portada y el cálculo de antes. El cartel de datos viejos de arriba sigue avisando si la lluvia queda sin renovar.
+- Portada del celular: 11 recuadros; el último ("Datos y Acerca") ocupa los dos lugares que quedan en su renglón.
+- Computadora: "Ríos Paraguay y Bermejo" va a lo ancho, debajo del Paraná (`data-ancha`); de a dos, "Lluvia hora por hora" con "El Niño" y "De dónde salen los datos" con "Acerca".
+- "De dónde salen los datos": el renglón "Lluvias" pasa a "Lluvia prevista (tarjeta de cada municipio y portada del celular)".
+- Pruebas al día (92). Huella nueva del código.
+
 ## 13/11/2026 (sección, mapa y localidades dicen lo mismo)
 
 Decisión de Mariano, después de revisar con los datos del 13/11 (la sección y el mapa coinciden: 3 rojo, 3 naranja, 6 amarillo; las 13 localidades caen dentro de su municipio):

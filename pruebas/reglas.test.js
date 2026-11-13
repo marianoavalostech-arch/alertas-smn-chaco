@@ -204,7 +204,7 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.strictEqual(S("hDe(new Date('2026-10-21T08:00:00Z'))"), '5', 'la hora sin cero adelante, como en el resto del sitio');
   const l0 = html.indexOf('id="lado"'), lado = html.slice(l0, html.indexOf('</nav>', l0));
   assert.ok(lado.includes('<a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<') && lado.includes('<a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<'), 'índice lateral');
-  assert.ok(html.includes('<a href="#t-lluvia">Lluvias</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
+  assert.ok(html.includes('<a href="#t-otros">Otros ríos</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
   assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
 });
 
@@ -257,7 +257,7 @@ prueba('renglón del río en el semáforo: cuánto pasó el nivel, en centímetr
 prueba('secciones contraíbles: las principales siempre abiertas, las contraíbles empiezan cerradas, nada se pide con la sección cerrada', () => {
   const sec = id => (new RegExp('<section aria-labelledby="' + id + '"([^>]*)>').exec(html) || [])[1];
   for (const id of ['t-mapa', 't-smn', 't-hacer', 't-sem', 't-rio']) assert.ok(!/plegable/.test(sec(id)), id + ' no se puede cerrar');
-  for (const id of ['t-otros', 't-lluvia', 't-anim', 't-nino', 't-fuentes', 't-acerca']) assert.ok(/class="plegable" data-cerrada data-pista="[^"]{10,80}"$/.test(sec(id)), id + ' empieza cerrada y dice qué tiene');
+  for (const id of ['t-otros', 't-anim', 't-nino', 't-fuentes', 't-acerca']) assert.ok(/class="plegable" data-cerrada (data-ancha )?data-pista="[^"]{10,80}"$/.test(sec(id)), id + ' empieza cerrada y dice qué tiene');
   assert.ok(/\.pleg\[aria-expanded="true"\]>\.tt>small\{display:none\}/.test(html), 'la pista se oculta al abrir');
   assert.ok(codigo.includes("const conSat=k=>abierta('t-anim')&&"), 'sin satélite con la animación cerrada');
   assert.ok(/if\(abierta\('t-nino'\)\)ir\(\);else alAbrir\('t-nino'/.test(codigo), 'el mapa del Pacífico espera a que se abra');
@@ -491,7 +491,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   const i0 = html.indexOf('id="indice"');
   assert.ok(i0 > html.indexOf('id="rioBanda"') && i0 > html.indexOf('id="smnBanda"') && i0 < html.indexOf('id="t-mapa"'), 'debajo de las franjas y arriba del mapa');
   const nav = html.slice(i0, html.indexOf('</nav>', i0)), destinos = [...nav.matchAll(/href="#(t-[a-z]+)"/g)].map(m => m[1]);
-  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-lluvia', 't-anim', 't-nino', 't-fuentes']);
+  assert.deepStrictEqual(destinos, ['t-mapa', 't-smn', 't-hacer', 't-tel', 't-sem', 't-rio', 't-otros', 't-anim', 't-nino', 't-fuentes']);
   for (const d of destinos) assert.ok(html.includes('id="' + d + '"'), 'falta la sección ' + d);
   // Índice lateral (computadora, desde 1100 px): mismos destinos que el de arriba, que en esa pantalla se esconde junto con "↑ Índice";
   // en el celular, en el portal y al imprimir no se ve; el mapa va al lado de su detalle
@@ -520,7 +520,7 @@ prueba('navegación: índice arriba del mapa, botón para volver al índice, Atr
   assert.ok(ancho.includes('height:calc(100vh - 32px)') && html.includes('<span class="ladoProg" aria-hidden="true"><i id="ladoProg"></i></span>') && html.includes('.ladoPie{display:none}'), 'alto completo, avance y pie solo en computadora');
   assert.ok(html.includes('<div id="t-tel">') && html.includes('· <a href="#t-tel">Más teléfonos</a> ·') && html.includes('<div class="ladoFila"><button class="btn" type="button" id="ladoArriba">↑ Arriba</button></div>') && !html.includes('ladoTel'), 'Teléfonos lleva directo a los números');
   assert.ok(codigo.includes("x.tagName!=='H2'?x:"), 'en el índice lateral, Teléfonos se marca desde donde empiezan los números y no tapa a Qué hacer');
-  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 11 && (lado.match(/class="ladoSub"/g) || []).length === 11, 'un ícono y un renglón por destino');
+  assert.ok((lado.match(/class="ladoIco" aria-hidden="true"/g) || []).length === 10 && (lado.match(/class="ladoSub"/g) || []).length === 10, 'un ícono y un renglón por destino');
   assert.ok(/alt\[m\[1\]\]='En '\+m\[2\]/.test(codigo) && codigo.includes("'Alerta '+fem[nS]"), 'el renglón del río dice el color y la altura; el del SMN, la alerta');
   // "↑ Índice": empieza oculto, aparece al bajar; nunca en el portal ni al imprimir
   assert.ok(/<a class="aIndice" id="aIndice" href="#indice" hidden>/.test(html));
@@ -1121,11 +1121,7 @@ prueba('pronóstico del Paraná: con 3 días o más avisa que no incluye lo que 
   S(`hoy=diaAR(new Date())`);
 });
 
-prueba('aviso: lluvia sin renovar por más de 24 horas, en el sitio y por correo', () => {
-  const lluvia = h => S(`D.lluvia={datos:{},vivo:true,t:new Date(Date.now()-${h}*36e5)};lluviaAtraso()`);
-  assert.strictEqual(lluvia(5), ''); assert.strictEqual(lluvia(23), '');
-  assert.ok(lluvia(25).includes('sin renovar desde')); assert.ok(!/robot|clave|GitHub/i.test(lluvia(25)));
-  S(`delete D.lluvia`);
+prueba('aviso: lluvia sin renovar por más de 24 horas, por correo', () => {
   const ahora = new Date('2026-10-08T12:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
   assert.strictEqual(gs.decidirAviso(hace(2), ahora, false), '');
   assert.strictEqual(gs.decidirAviso(hace(25), ahora, false), 'avisar');
@@ -1706,15 +1702,13 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
     assert.ok(yml.includes('node robot/pacifico.js pacifico-anterior salida') && yml.includes('git add pacifico.json pacifico.jpg'), 'el robot corre y guarda los dos archivos');
   });
-  prueba('lluvia: gráfico grande con la fecha y los milímetros de cada día, y botones para elegir la localidad', () => {
-    assert.ok(html.includes("+'<div class=\"llLocs\" id=\"llLocs\" role=\"group\"") && html.includes('<div id="llGrafCaja"></div>'), 'botones de localidad y lugar del gráfico');
-    assert.ok(html.includes('td.barras svg{display:block;width:102px;height:28px;margin-left:auto}'), 'las barritas de la tabla no se agrandan en la computadora');
-    const g = S(`(()=>{const a=D.lluvia,h=hoy;hoy='2026-10-20';D.lluvia={vivo:true,t:new Date(),datos:{dias:['2026-10-18','2026-10-19','2026-10-20','2026-10-21'],mm:LOCS.map((l,i)=>[0,1.4,0,i?3:16.8])}};
-      const r=grafLluvia(0);D.lluvia=a;hoy=h;return r})()`);
-    assert.ok(g.includes('<span class="llD">Hoy</span><span class="llN">20<span class="m">/10</span></span>'), 'hoy marcado con su fecha');
-    assert.ok(g.includes('<span class="llD">mié</span><span class="llN">21<span class="m">/10</span></span>') && g.includes('<span class="llV">17</span>'), 'cada día con su nombre, su fecha y los mm');
-    assert.ok(g.includes('>Llovió</span>') && g.includes('style="grid-column:3/-1">Se espera</span>'), 'lo caído y lo que se espera, separados');
-    assert.ok(g.includes('aria-label="Resistencia, lluvia día por día: 18/10 0,0 mm; 19/10 1,4 mm; 20/10 0,0 mm; 21/10 16,8 mm."'), 'el lector de pantalla lee todos los días');
+  prueba('sin la sección de Lluvias (13/11/2026): ni sección, ni menú, ni recuadro en la portada; Paraguay y Bermejo a lo ancho', () => {
+    assert.ok(!html.includes('t-lluvia') && !html.includes('id="lluvia"') && !/function (pintarLluvia|grafLluvia|pintarGrafLluvia|lluviaAtraso|pLluvia)\(/.test(html), 'no queda nada de la sección');
+    assert.ok(html.includes('.portada>.pT:last-child:nth-child(3n){grid-column:span 2}'), 'en la portada, el último recuadro llena el renglón');
+    assert.ok(/aria-labelledby="t-otros" class="plegable" data-cerrada data-ancha/.test(html), 'Paraguay y Bermejo va sola a lo ancho');
+    const c = html.slice(html.indexOf('function acomodarPlegables'), html.indexOf('const alAbrir'));
+    assert.ok(c.includes("else if(s.hasAttribute('data-ancha')){par=false;solo=true}"), 'la de data-ancha no hace pareja');
+    assert.ok(S("typeof resumenLluvia==='function'&&typeof lluviaVieja==='function'"), 'la lluvia sigue para la tarjeta y la portada');
   });
   prueba('riesgo por localidad: "Ver en el mapa" y "Ver el río" son píldoras como los nombres de "En verde"', () => {
     assert.ok(html.includes('.vermapa{grid-column:2;justify-self:start;margin-top:4px;display:inline-flex;align-items:center;gap:6px;min-height:40px;') && html.includes('border-radius:999px;border:1.5px solid currentColor;background:var(--card);color:var(--ink);text-decoration:none'), 'con borde, fondo y sin subrayado');
@@ -1836,7 +1830,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(/for = "\/iconos\/\*"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml) && /for = "\/icono\.svg"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml), 'los íconos se guardan una semana en el navegador');
   });
   prueba('accesibilidad (24/10): tablas que se recorren con el teclado, etiquetas de alerta que se leen al sol y títulos del semáforo sin huecos', () => {
-    assert.ok(codigo.includes('<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad">') && html.includes('button:focus-visible,.tabla:focus-visible{outline'), 'las tablas anchas se pueden mover con el teclado y se ve el foco');
+    assert.ok(codigo.includes('<div class="tabla" tabindex="0" role="region" aria-label="Más estaciones de los ríos">') && html.includes('button:focus-visible,.tabla:focus-visible{outline'), 'las tablas anchas se pueden mover con el teclado y se ve el foco');
     const lum = h => { const v = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
     const contraste = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     for (const n of ['amarillo', 'naranja', 'rojo']) {
