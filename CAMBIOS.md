@@ -2,6 +2,17 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (tarjeta del municipio más simple)
+
+Pedido de Mariano: quitar "¿A qué hora llueve?" de la tarjeta y revisar el texto de "Seguir leyendo".
+- Fuera el enlace "¿A qué hora llueve? ↓" (`a.aHora`, `data-hora` y su manejo). "Lluvia hora por hora" sigue en el menú y en la portada.
+- "Seguir leyendo" en otro orden: primero lo oficial (con el Monitoreo del Niño elegido, su alerta va arriba de todo), después el SMN con su horario, la lluvia, la lluvia medida y al final de dónde sale el pronóstico.
+- Lluvia: solo lo que cayó ("llovieron 11 mm en los últimos 7 días (estimado)"); sin "se esperan … (… mm en la semana)", que repetía las tarjetas de los días y hablaba de 7 días para adelante.
+- "Sin alerta en el Monitoreo del Niño (consultado el …)" pasa a "(última lectura: …)", como en el resto del sitio.
+- Estación de lluvia: "Es una estación automática: el dato puede tener errores y no cambia el color." (antes "Red Hidrológica Nacional, vía INA: dato sin revisar").
+- Sin la superficie del municipio.
+- Pruebas al día (92). Huella nueva del código.
+
 ## 13/11/2026 (sin la sección de Lluvias y sitio reacomodado)
 
 Pedido de Mariano: quitar la sección "Lluvias: últimos 7 días y pronóstico a 7 días" y reacomodar el sitio.

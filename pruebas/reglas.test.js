@@ -1074,7 +1074,7 @@ prueba('lluvia medida: el detalle del municipio usa la estación más cercana, r
   const cerca = ['Cerca', lat + 0.05, lon, h(2), 2.4, 30, 0], lejos = ['Lejos', lat + 0.3, lon, h(2), 1, 1, 0], vieja = ['Vieja', lat, lon, h(30), 50, 50, 0];
   let t = pon([lejos, cerca, vieja]);
   assert.ok(t.includes('estación Cerca, a 6 km: '), t); assert.ok(t.includes('2,4 mm en 24 horas y 30 mm en 3 días'), t);
-  assert.ok(t.includes('no se usa para el color'));
+  assert.ok(t.includes('no cambia el color'));
   assert.ok(!t.includes('Ojo') && !t.includes('Faltan lecturas'));
   t = pon([['Con avisos', lat, lon, h(1), 25, 25, 3]]);
   assert.ok(t.includes('<b>Ojo:</b> las estaciones vecinas midieron mucho menos') && t.includes('Faltan lecturas de esta estación'), t);
@@ -1825,7 +1825,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     } finally { S("cargarGrilla=__cgOrig;A.pedida=false;AL_ABRIR['t-anim']=__abOrig;VISTA=null;delete A.cercaPortal"); delete sitio.IntersectionObserver; delete elementos['t-anim']; }
     assert.ok(codigo.includes('ponerFijo();revisarQuieto();if(A.cercaPortal)seguro(A.cercaPortal)});'), 'cada aviso del portal revisa si la sección está cerca');
     assert.ok(codigo.includes('cargarTodos();if(A.pedida)cargarGrilla();') && codigo.includes("if(!A.g&&A.pedida)seguro(pintarAnim,['grilla'])"), 'la renovación y el cartel de "no disponible" solo si ya se pidió');
-    assert.ok(codigo.includes("if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}"), 'el enlace "Ver a qué hora llueve" deja la localidad elegida aunque el pronóstico por hora todavía no haya llegado');
+    assert.ok(!html.includes('¿A qué hora llueve?') && !html.includes('data-hora') && !html.includes('.aHora'), 'sin el enlace "¿A qué hora llueve?" en la tarjeta (13/11/2026)');
     const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8');
     assert.ok(/for = "\/iconos\/\*"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml) && /for = "\/icono\.svg"\s+\[headers\.values\]\s+Cache-Control = "public, max-age=604800"/.test(toml), 'los íconos se guardan una semana en el navegador');
   });
@@ -1944,7 +1944,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(S(`porQue(0,{c:'gris'})`), '', 'sin datos, sin cuadritos');
     t = S(`porQue(${idx('Barranqueras')},colorDe(${idx('Barranqueras')}),true)`);
     assert.ok(t.includes('<small>SMN</small><span><i data-c="verde"></i>Sin alertas'), 'sin alertas confirmadas: cuadrito del SMN en lugar del renglón');
-    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+'<p class=\"meta\">Superficie: '"), 'tarjeta más corta: sin el renglón del SMN repetido y la superficie dentro de "Seguir leyendo"');
+    assert.ok(codigo.includes("pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))") && codigo.includes("medidaInfo(i)+fuenteTxt(i,k)+'</div>'") && !codigo.includes('Superficie:'), 'tarjeta más corta: sin el renglón del SMN repetido y sin la superficie (13/11/2026)');
     const inf = {}; elementos.mInfo = inf; S(`M.sel=${idx('Barranqueras')};pintarInfo();M.sel=-1`); delete elementos.mInfo;
     assert.ok(/\btarj\b/.test(inf.className) && inf.innerHTML.includes('<b class="mNom">Barranqueras</b>') && inf.innerHTML.includes('class="mPor"'), 'el detalle es la tarjeta');
     // Los avisos y la lista del filtro de color siguen como antes (sin tarjeta azul)

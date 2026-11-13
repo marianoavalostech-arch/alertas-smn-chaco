@@ -696,8 +696,6 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 #mInfo.tarj .mDet p.meta{font-size:.84rem}
 #mInfo.tarj:has(.mPill) .mDet>p:first-child:has(>.estado:not(.falla)):has(>b){display:none}
 @media (max-width:359px){#mInfo.tarj .dia:first-child{column-gap:8px;padding:8px 10px}#mInfo.tarj .dia:first-child .ico{font-size:2.2rem}#mInfo.tarj .dia:first-child .dT b{font-size:1.15rem}#mInfo.tarj .dia:first-child .dL b{font-size:1.05rem}#mInfo.tarj .dia:not(:first-child){padding:6px 10px;column-gap:6px}#mInfo.tarj .dia:not(:first-child) .ico{font-size:1.35rem}#mInfo.tarj .dia:not(:first-child) :is(.dD,.dT b,.dL b){font-size:.88rem}#mInfo.tarj .dia:not(:first-child) .dL{min-width:0}}
-#mInfo.tarj .aHora{display:flex;width:fit-content;max-width:100%;box-sizing:border-box;align-items:center;min-height:40px;margin-top:8px;text-align:left;padding:0 14px;border-radius:99px;background:#fff;color:var(--titulo);font-weight:800;font-size:.86rem;text-decoration:none}
-#mInfo.tarj .aHora:hover{background:var(--acento-soft)}
 #mInfo .mLocT{margin:2px 0 -2px;font-size:.82rem;font-weight:700;color:#dcdaf7;text-align:left;-webkit-hyphens:manual;hyphens:manual}
 #mInfo .mLocT small{font-weight:500}
 #mInfo .mLocN{margin:0;font-size:.8rem;color:#dcdaf7;text-align:left;-webkit-hyphens:manual;hyphens:manual}
@@ -1867,9 +1865,6 @@ function armarMapa(){
   const soltarFoco=()=>{if(M.rio)verRio(null);else if(M.sel>=0)elegir(-1);else if(M.filtro)filtrar(M.filtro)};
   $('mInfo').addEventListener('click',e=>{const ir=e.target.closest('[data-ir]'),rv=e.target.closest('[data-irrio]');
     if(e.target.closest('[data-mas]')||e.target.closest('.mDet.vista')){e.preventDefault();const h0=$('mDet')?$('mDet').offsetHeight:0;M.detAb=!M.detAb;pintarInfo();deslizar($('mDet'),h0);return}
-    // Municipio que no está en "Lluvia en": queda "Todo el Chaco" (pedido de Mariano, 23/10/2026).
-    // Si el pronóstico por hora todavía no llegó (se pide al abrir la sección), la localidad queda elegida para cuando llegue.
-    const hh=e.target.closest('[data-hora]');if(hh){const l=hh.dataset.hora!==''?+hh.dataset.hora:-1;if(A.g)try{elegirLoc(l,false)}catch(x){}else A.loc=l;return}
     if(e.target.closest('[data-mimia]')&&M.sel>=0){hacerMiLoc(M.sel);const b=$('mInfo').querySelector('.mMia');if(b){b.tabIndex=-1;b.focus({preventScroll:true})}return}
     if(rv)irSec(rv.dataset.irrio);else if(ir)elegir(+ir.dataset.ir,true);else if(e.target.closest('[data-cerrar]'))soltarFoco()});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))soltarFoco()});
@@ -2085,7 +2080,7 @@ function pintarInfo(){
   // Desde el 12/11/2026 (Mariano: la tarjeta quedaba muy larga) el detalle dice la lluvia sola y aparte la alerta del SMN con su horario.
   // Con el Monitoreo del Niño o el SMN elegidos (13/11/2026): el criterio del mapa arriba; la alerta del SMN y la lluvia, como información.
   if(k.modo==='nino'||k.modo==='smn')h='<p><span class="estado">'+(k.modo==='nino'?'Monitoreo del Niño':'Servicio Meteorológico')+'</span><b>'+ETQ[k.c]+'</b></p>'
-    +(k.modo==='nino'&&!k.rio?'<p>Sin alerta en el Monitoreo del Niño (consultado el '+fFechaHora(D.oficial.t)+').</p>':'')
+    +(k.modo==='nino'?(k.rio?rioInfo(k):'<p>Sin alerta en el Monitoreo del Niño (última lectura: '+fFechaHora(D.oficial.t)+').</p>'):'')
     +(k.modo==='smn'?(k.c==='gris'?'<p>No se pudo confirmar el informe del SMN.</p>':k.c==='verde'?'<p>Sin alerta del SMN para hoy ni los 2 días siguientes.</p>':''):'')
     +smnDetTxt(i)+lluviaTxt(i,k);
   else if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Lluvia y alertas del SMN')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
@@ -2099,7 +2094,7 @@ function pintarInfo(){
   el.className=(k.c&&k.c!=='gris'?k.c+' ':'')+'tarj';
   const sinSmn=smnVigente()&&SMN.leidas!==0&&!smnViejo()&&!smnDe(i).length,pq=porQue(i,k,sinSmn);
   el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b class="mNom">'+esc(m[0])+'</b>'+x+'</div>'+pq+locInfo(i)+(pq&&(sinSmn||smnDe(i).length)?'':smnInfo(i))+diasInfo(i,k)
-   +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+rioInfo(k)+fuenteTxt(i,k)+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+'<p class="meta">Superficie: '+nf(m[4])+' km²</p></div>'
+   +'<div class="mDet'+(M.detAb?'':' vista')+'" id="mDet">'+h+(k.modo==='nino'?'':rioInfo(k))+(m[0]==='Puerto Vilelas'?'<p>Puerto Vilelas tiene su propia Sala de Situación: caminos cortados, estaciones de bombeo y avisos para cada barrio, en '+VILELAS+' (Municipalidad de Puerto Vilelas).</p>':'')+medidaInfo(i)+fuenteTxt(i,k)+'</div>'
    +'<button class="mas" type="button" data-mas aria-controls="mDet" aria-expanded="'+!!M.detAb+'">'+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);
   // Si el texto entra entero, no se corta ni lleva botón.
   try{const d=$('mDet'),b=el.querySelector('[data-mas]');if(!M.detAb&&d.clientHeight&&d.scrollHeight<=d.clientHeight+4){d.classList.remove('vista');b.hidden=true}}catch(e){}
@@ -2108,8 +2103,9 @@ function pintarInfo(){
 function lluviaTxt(i,k){
   const g=k.tipo==='seg'||k.tipo==='gran',ll=g?(lluviaVieja()?null:resumenLluvia(k.j)):M.est[i]&&M.est[i].ll;
   if(!ll)return '<p>No hay datos de lluvia al día de este municipio.</p>';
-  return '<p><b>Lluvia'+(k.tipo==='gran'?' (la del Gran Resistencia)':'')+':</b> llovieron '+nf(ll.cayo)+' mm en 7 días y se esperan '
-    +txtViene(ll,!g||ll.ref===hoy?'entre hoy':'entre el '+fDia(ll.ref))+'.'+(k.modo==='calc'&&rojoLejos(ll)&&k.c!=='rojo'?ROJO_LEJOS:'')+'</p>';
+  // Desde el 13/11/2026 (sin la sección de Lluvias): solo lo que llovió; lo que se espera ya está en las tarjetas de los días.
+  return '<p><b>Lluvia'+(k.tipo==='gran'?' en el Gran Resistencia':'')+':</b> '+(ll.cayo<1?'casi no llovió en los últimos 7 días':'llovieron '+nf(ll.cayo)+' mm en los últimos 7 días')+' (estimado).'
+    +(k.modo==='calc'&&rojoLejos(ll)&&k.c!=='rojo'?ROJO_LEJOS:'')+'</p>';
 }
 // Alertas del SMN del municipio con el día y el horario (arriba solo va el cuadrito con el nivel).
 function smnDetTxt(i){
@@ -2191,10 +2187,8 @@ function diasInfo(i,k){
         +'<span class="dL" aria-hidden="true"><small>Lluvia</small><b>'+(v==null?'–':nf(v))+' mm</b></span>'
         +(ad?'<span class="dA" aria-hidden="true">'+nv+'</span>':'')+'</div>');
     }
-    return '<div class="dias" role="list" aria-label="Pronóstico de hoy y los próximos días" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>'
-      +'<p class="meta mHora">'
-      // A "Lluvia hora por hora" (pedido de Mariano, 23/10/2026); en las 6 localidades del semáforo y el Gran Resistencia, ya con la localidad elegida.
-      +'<a class="aHora" href="#t-anim" data-hora="'+(k.tipo==='seg'||k.tipo==='gran'?k.j:'')+'">¿A qué hora llueve? ↓</a></p>';
+    // Sin el enlace a la lluvia por hora desde el 13/11/2026 (pedido de Mariano): "Lluvia hora por hora" sigue en el menú y la portada.
+    return '<div class="dias" role="list" aria-label="Pronóstico de hoy y los próximos días" style="grid-template-columns:repeat('+cel.length+',minmax(0,1fr))">'+cel.join('')+'</div>';
   }catch(e){console.error(e);return ''}
 }
 // Lluvia medida: la estación más cercana al centro del municipio (en las localidades del semáforo, a la ciudad), a menos de MEDIDA_KM,
@@ -2217,7 +2211,7 @@ function medidaInfo(i){
     return '<p><b>Lluvia medida</b> en la estación '+esc(x[0])+', '+(c.km<1?'a menos de 1 km':'a '+nf(c.km)+' km')+(l?' de '+esc(l.n):'')+': '+mmTxt(x[4])+' en 24 horas y '+mmTxt(x[5])+' en 3 días, hasta el '+fFechaHora(new Date(x[3]))+'.</p>'
      +(x[6]&2?'<p><b>Ojo:</b> las estaciones vecinas midieron mucho menos. Puede ser una tormenta muy local o un error de la estación.</p>':'')
      +(x[6]&1?'<p class="meta">Faltan lecturas de esta estación en las últimas 24 horas: puede haber llovido más.</p>':'')
-     +'<p class="meta">Estación automática (Red Hidrológica Nacional, vía INA): dato sin revisar, no se usa para el color.</p>';
+     +'<p class="meta">Es una estación automática: el dato puede tener errores y no cambia el color.</p>';
   }catch(e){console.error(e);return ''}
 }
 
