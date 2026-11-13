@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (elegir tu localidad, a la vista)
+
+Pedido de Mariano: "elegir mi localidad queda escondida".
+- **Computadora y tablet**: el renglón de tu localidad está siempre arriba del mapa. Sin localidad guardada: "📍 ¿Dónde vivís? Elegí tu localidad y la vas a tener a mano cada vez que entres." con el botón "Elegir mi localidad". Con localidad: suma "Cambiar". Antes, sin localidad guardada no había nada a la vista (solo el botón al final de la tarjeta del municipio). Al olvidarla (✕) vuelve la invitación.
+- **Celular**: sin localidad guardada, el recuadro de la portada dice "Tu localidad · Elegir" con borde punteado (antes mostraba "Resistencia" y parecía un dato más).
+- "Elegir", "Elegir mi localidad" y "Cambiar" abren la ventana directo en la lista con buscador ("Elegí tu localidad" o "Cambiar tu localidad"). Al elegir, se actualizan el renglón, la portada y la tarjeta abierta.
+- Fuera `MILOC` (el renglón ya no se esconde en la visita sin localidad). Pruebas al día (93). Huella nueva del código.
+
 ## 13/11/2026 (lluvia medida en pluviómetros y cita del Centro de Monitoreo)
 
 Pedido de Mariano: usar las estaciones del tablero del Monitoreo del Niño y citar la fuente (con permiso).

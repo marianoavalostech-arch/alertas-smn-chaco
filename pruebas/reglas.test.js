@@ -1760,14 +1760,16 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(g, '[-1,"Barranqueras","Barranqueras",-1,-1]', 'guarda el nombre; un nombre raro o el navegador bloqueado no rompen nada');
     const el = codigo.slice(codigo.indexOf('function elegir(i,enf){'), codigo.indexOf('function pintarInfo(){'));
     assert.ok(el && !el.includes('guardarMiLoc'), 'tocar el mapa o buscar un municipio no cambia tu localidad (12/11/2026)');
-    assert.ok(codigo.includes("function hacerMiLoc(i){guardarMiLoc(i);if(miLocGuardada()!==i)return;MILOC=true;seguro(pintarMiLoc);seguro(pintarPortada);pintarInfo()}"), 'se elige a propósito: aparece el renglón y cambia la portada');
+    assert.ok(codigo.includes("function hacerMiLoc(i){guardarMiLoc(i);if(miLocGuardada()!==i)return;seguro(pintarMiLoc);seguro(pintarPortada);pintarInfo()}"), 'se elige a propósito: aparece el renglón y cambia la portada');
     assert.ok(codigo.includes("+(M.detAb?'Leer menos':'Seguir leyendo')+'</button>'+miLocInfo(i);") && codigo.includes("data-mimia>📍 Que sea mi localidad</button>") && codigo.includes("📍 Es tu localidad") && codigo.includes("if(e.target.closest('[data-mimia]')&&M.sel>=0){hacerMiLoc(M.sel);"), 'botón en la tarjeta del municipio');
     assert.ok(codigo.includes("function miLocInfo(i){if(EMB)return '';"), 'no en el portal');
     const sv = S(`(()=>{const a=localStorage.getItem,b=localStorage.setItem;let v=null;localStorage.setItem=(k,x)=>{if(k==='anc-mi-localidad')v=x};localStorage.getItem=k=>k==='anc-mi-localidad'?v:null;
       const r=[];try{elegir(GEO.mun.findIndex(m=>m[0]==='Charata'),true)}catch(e){}r.push(v);v='Barranqueras';r.push(miLocInfo(GEO.mun.findIndex(m=>m[0]==='Barranqueras')).includes('Es tu localidad'),miLocInfo(GEO.mun.findIndex(m=>m[0]==='Charata')).includes('data-mimia'));
       localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
     assert.strictEqual(sv, '[null,true,true]', 'elegir no guarda; la tarjeta dice si es la tuya');
-    assert.ok(codigo.includes('if(MILOC===null)MILOC=i>=0;'), 'si al abrir no había localidad guardada, el renglón no aparece en esa visita');
+    assert.ok(codigo.includes("<b>¿Dónde vivís?</b> Elegí tu localidad") && codigo.includes('data-micambia>Elegir mi localidad</button>') && codigo.includes("data-micambia>Cambiar</button>") && codigo.includes("abrirLoc(i,true);"), 'sin localidad guardada, el renglón invita a elegirla; con localidad, "Cambiar" (13/11/2026)');
+    assert.ok(codigo.includes("if(g<0)return '<button type=\"button\" class=\"pT pElegir\" data-ploc=\"'+i+'\" data-pelegir>'") && html.includes('.dLoc.elegir .dLocInicio{display:none}') && codigo.includes("sin?'Elegí tu localidad':'Cambiar tu localidad'"), 'en la portada, "Tu localidad · Elegir" abre directo la lista');
+    assert.ok(!/MILOC[^_]/.test(codigo), 'el renglón ya no se esconde en la visita sin localidad');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez'), 'la privacidad lo cuenta');
   });
@@ -1988,7 +1990,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes("if(A&&esApp()){A.hidden=false;") && codigo.includes("const ref=esApp()?'<button class=\"pRef"), '"Actualizar" solo en la app');
     assert.ok(html.includes('@media screen and (max-width:599px){html:not(.emb) #btnActualizar{display:none!important}}'), 'en el celular, "Actualizar" va junto a la hora de los datos y no en el encabezado');
     assert.ok(codigo.includes('<span class="pTit"><b>Ir a…</b></span>') && html.includes('hidden>↑ Ir a…</a>'), 'la portada se titula "Ir a…" y el botón de la esquina lo repite');
-    assert.ok(codigo.includes("if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
+    assert.ok(codigo.includes("if(!abrirLoc(i,b.hasAttribute('data-pelegir'))){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
     assert.ok(codigo.includes("const pEspera=()=>LISTO?'Sin datos':pCargando;"), 'barrita mientras carga');
     assert.ok(codigo.includes("'Sin renovar: datos ':'Datos '"), 'hora de los datos, en naranja si está vieja');
   });
