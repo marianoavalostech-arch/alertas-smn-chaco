@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (Lluvia hora por hora: tu localidad y los 70 municipios)
+
+Pedido de Mariano: más información de las localidades y que la elección sea automática, según la localidad elegida como tuya.
+- **Elección automática**: "Lluvia en" muestra tu localidad (`autoLoc()` = `miLocGuardada()`); sin localidad, "Todo el Chaco". Si se elige otra a mano (lista o puntos del mapa, `A.aMano`), queda esa en la visita. Al elegir otra localidad como tuya, la sección pasa a mostrarla.
+- **Los 70 municipios** en la lista, por nombre (antes 6 ciudades). `A.loc` es el número del municipio (`lugA(i)`: el punto de la ciudad si está entre las 6 del mapa; si no, el centro del municipio). Si no es una de las 6, el mapa lo marca con su punto y su nombre (`#aMarca`).
+- **Más información**: la frase de la localidad suma cuánto llueve en total de acá a mañana a la noche ("En total, unos 21 mm…"). Con "Todo el Chaco", en cuántos municipios se espera lluvia y dónde y cuándo lo más fuerte (`resumenChaco`).
+- Probado en la nube con datos reales (390 px): con Barranqueras, sin localidad, cambiando tu localidad desde la portada y eligiendo a mano. Sin errores. 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 (tu localidad abre su tarjeta)
 
 Pedido de Mariano: al tocar el recuadro de tu localidad en la portada del celular, ver la tarjeta de la localidad y no el mapa.

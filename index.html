@@ -1243,7 +1243,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     </div>
     <details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>
       <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
-      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios; al elegir una localidad, la lluvia prevista en esa localidad. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora).</p>
+      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios; al elegir una localidad, la lluvia prevista en esa localidad. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora), lo más fuerte y cuánto suma. Se puede elegir cualquiera de los 70 municipios. Si elegiste tu localidad, aparece sola.</p>
       <p class="meta">Tocá o arrastrá sobre las barritas para ver esa hora en el mapa; también se pueden tocar las ciudades del mapa.</p>
     </details>
     </div>
@@ -2432,7 +2432,8 @@ function cargarSMN(){
 // con localidad, "Cambiar" abre la misma lista. En el celular, el recuadro "Tu localidad · Elegir" de la portada hace lo mismo.
 const MILOC_K='anc-mi-localidad';
 function miLocGuardada(){try{const n=localStorage.getItem(MILOC_K);return n?GEO.mun.findIndex(m=>m[0]===n):-1}catch(e){return -1}}
-function guardarMiLoc(i){try{localStorage.setItem(MILOC_K,GEO.mun[i][0])}catch(e){}}
+// Al elegir otra localidad como tuya, "Lluvia hora por hora" pasa a mostrarla (aunque antes se haya elegido otra a mano).
+function guardarMiLoc(i){try{localStorage.setItem(MILOC_K,GEO.mun[i][0])}catch(e){}try{A.aMano=false;locAuto()}catch(e){}}
 function hacerMiLoc(i){guardarMiLoc(i);if(miLocGuardada()!==i)return;seguro(pintarMiLoc);seguro(pintarPortada);pintarInfo()}
 // Renglón de la tarjeta: si es tu localidad, lo dice; si no, botón para que lo sea (no en el portal: ahí no hay renglón ni portada).
 function miLocInfo(i){if(EMB)return '';const g=miLocGuardada();
@@ -3229,7 +3230,7 @@ function armarAnim(){
    +'<g transform="scale(.1)" fill="none" stroke-linejoin="round"><path d="'+GEO.prov+'" stroke="var(--card)" stroke-width="5" vector-effect="non-scaling-stroke"/>'
    +'<path d="'+GEO.prov+'" stroke="var(--ink)" stroke-width="1.6" vector-effect="non-scaling-stroke"/>'
    +'<path d="'+RIOS.bermejo+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="'+RIOS.paraguay+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="'+RIOS.parana+'" stroke="var(--water)" stroke-width="2.5" vector-effect="non-scaling-stroke"/></g>'
-   +'<g id="aTorm"></g><g>'+LOCS.map((l,i)=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a,i)).join('')+OTRAS.map(l=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a)).join('')+'</g></svg>';
+   +'<g id="aTorm"></g><g>'+LOCS.map((l,i)=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a,locDeLOCS(i))).join('')+OTRAS.map(l=>pto(l.n,l.lat,l.lon,l.dx,l.dy,l.a)).join('')+'</g><g id="aMarca"></g></svg>';
   A.armado=true;
 }
 function etqDia(dia){const d=Math.round((new Date(dia+'T12:00:00Z')-new Date(hoy+'T12:00:00Z'))/864e5);return d===0?'Hoy':d===-1?'Ayer':d===1?'Mañana':fDia(dia)}
@@ -3267,8 +3268,15 @@ function vecinos(g,lat,lon){
 // (en el centro de cada uno), en décimas de mm. Así se ve de un vistazo cuándo viene lo fuerte, sin mover la barra a ciegas.
 // Barritas: sin localidad elegida ("Todo el Chaco"), la lluvia más fuerte de cada hora en alguno de los 70 municipios;
 // con una localidad elegida (pedido de Mariano, 21/10/2026), la lluvia de esa localidad, la misma de su frase.
+// Lluvia hora por hora para los 70 municipios (13/11/2026, pedido de Mariano: más localidades y elección automática).
+// A.loc es el número del municipio (GEO.mun). El punto es el de la ciudad si está entre las 6 del mapa; si no, el centro del municipio.
+function lugA(i){const m=GEO.mun[i];if(!m)return null;const l=LOCS.find(x=>(x.mun||x.n)===m[0]);return l?{n:m[0],lat:l.lat,lon:l.lon}:{n:m[0],lat:m[2],lon:m[3]}}
+const locDeLOCS=j=>GEO.mun.findIndex(m=>m[0]===(LOCS[j].mun||LOCS[j].n));
+// Elección automática (pedido de Mariano): tu localidad; si no hay, todo el Chaco. Si la persona elige otra a mano, queda la suya en esa visita.
+function autoLoc(){return miLocGuardada()}
+function locAuto(){if(A.g&&A.armado&&!A.aMano){const i=autoLoc();if(i!==A.loc)elegirLoc(i,false)}}
 function tiraValores(g,loc=A.loc){
-  const l=loc>=0&&LOCS[loc];
+  const l=loc>=0&&lugA(loc);
   return Array.from({length:g.n},(_,k)=>l?Math.max(0,enLugar(g,'p',l.lat,l.lon,k)):Math.max(0,...GEO.mun.map(m=>enLugar(g,'p',m[2],m[3],k))));
 }
 const mmHora=v=>v<10?'menos de 1 mm':v<15?'cerca de 1 mm':'unos '+Math.round(v/10)+' mm';
@@ -3337,9 +3345,17 @@ function cuandoDia(d,ks){
   if(z-a+1===ks.length)return quien+' de '+hNum(a)+' a '+(fin===24?'24':fin)+' h';
   return quien+', a ratos entre las '+hNum(a)+' h y '+fTxt;
 }
+function hastaDe(g){const ult=diaAR(horaDe(g.n-1)),hasta=etqDia(ult).toLowerCase();return hasta==='hoy'||hasta==='mañana'?hasta+' a la noche':'el '+fDia(ult)+' a la noche'}
+// Sin localidad elegida (13/11/2026): en cuántos municipios se espera lluvia y dónde y cuándo lo más fuerte.
+function resumenChaco(g,desde){
+  let n=0,pv=0,pk=-1,pi=-1;
+  GEO.mun.forEach((m,i)=>{let llueve=false;for(let k=Math.max(0,desde);k<g.n;k++){const v=enLugar(g,'p',m[2],m[3],k);if(v>=LLUEVE)llueve=true;if(v>pv){pv=v;pk=k;pi=i}}if(llueve)n++});
+  if(!n)return 'En el Chaco no se espera lluvia de acá a '+hastaDe(g)+'.';
+  return 'Se espera lluvia en '+n+' de los '+GEO.mun.length+' municipios de acá a '+hastaDe(g)+'.'
+    +(pv>=10?' Lo más fuerte: '+mmHora(pv)+' en una hora en '+GEO.mun[pi][0]+', '+horaTxt(pk,'')+'.':' Lluvia débil.')+' Elegí una localidad para ver la suya.';
+}
 function resumenLoc(g,i,desde){
-  const l=LOCS[i],hs=horasLoc(g,l,desde),ult=diaAR(horaDe(g.n-1)),hasta=etqDia(ult).toLowerCase();
-  const hastaTxt=hasta==='hoy'||hasta==='mañana'?hasta+' a la noche':'el '+fDia(ult)+' a la noche';
+  const l=lugA(i),hs=horasLoc(g,l,desde),hastaTxt=hastaDe(g);
   if(!hs.length)return {txt:'En '+l.n+' no se espera lluvia de acá a '+hastaTxt+'.',pico:-1};
   const dias=new Map();for(const [k] of hs){const d=diaAR(horaDe(k));if(!dias.has(d))dias.set(d,[]);dias.get(d).push(k)}
   const partes=[...dias].map(([d,ks])=>cuandoDia(d,ks));
@@ -3347,7 +3363,8 @@ function resumenLoc(g,i,desde){
   const torm=g.torm.some(x=>ks.has(x[0])&&cerca.has(x[1]));
   const y=partes.length>1?partes.slice(0,-1).join(', ')+' y '+partes[partes.length-1]:partes[0];
   const fuerte=pv<10?'':' Lo más fuerte: '+mmHora(pv)+' en una hora, '+(dias.size>1?horaTxt(pk,''):'a las '+hNum(pk)+' h')+'.';
-  return {txt:'En '+l.n+' se espera lluvia'+(pv<10?' débil':'')+' '+y+'.'+fuerte+(torm?' Con tormentas previstas en la zona.':''),pico:pk};
+  const tot=hs.reduce((a,x)=>a+x[1],0),totTxt=tot>=10?' En total, unos '+nf(Math.round(tot/10))+' mm de acá a '+hastaTxt+'.':'';
+  return {txt:'En '+l.n+' se espera lluvia'+(pv<10?' débil':'')+' '+y+'.'+fuerte+totTxt+(torm?' Con tormentas previstas en la zona.':''),pico:pk};
 }
 function horaTxt(k,dia0){
   const t=horaDe(k),d=diaAR(t);
@@ -3358,8 +3375,11 @@ function elegirLoc(i,mover){
   A.loc=A.loc===i&&mover?-1:i;
   $('aLoc').value=String(A.loc);
   document.querySelectorAll('#anim .aSel').forEach(c=>{c.toggleAttribute('hidden',Number(c.parentNode.dataset.loc)!==A.loc)});
+  // si el municipio elegido no es una de las 6 ciudades del mapa, se marca con su punto y su nombre
+  const mk=$('aMarca'),lm=A.loc>=0&&!document.querySelector('#anim [data-loc="'+A.loc+'"]')&&lugA(A.loc);
+  if(mk)mk.innerHTML=lm?'<circle class="aSel" cx="'+PX(lm.lon)+'" cy="'+PY(lm.lat)+'" r="10"/><circle cx="'+PX(lm.lon)+'" cy="'+PY(lm.lat)+'" r="4.5" fill="var(--ink)" stroke="var(--card)" stroke-width="2"/><text x="'+(PX(lm.lon)+8)+'" y="'+(PY(lm.lat)+5)+'" class="aCiudad">'+esc(lm.n)+'</text>':'';
   seguro(pintarTira);
-  if(A.loc<0){$('aLocTxt').textContent='';return}
+  if(A.loc<0){$('aLocTxt').textContent=resumenChaco(g,kAhora());return}
   const r=resumenLoc(g,A.loc,kAhora());$('aLocTxt').textContent=r.txt;
   if(mover&&r.pico>=0){parar();mostrar(r.pico)}
 }
@@ -3378,10 +3398,12 @@ function pintarAnim(){
   $('aHora').max=g.n-1;
   $('aDias').innerHTML=dias.map(d=>'<button class="ley" type="button" data-d="'+d+'" aria-pressed="false" aria-label="'+etqDia(d)+' '+fDia(d)+'">'+etqDia(d)+'</button>').join('');
   $('animMeta').textContent='Última actualización: '+fFechaHora(new Date(A.t))+'. Fuente: Open-Meteo (lluvia, nubosidad y tormentas previstas) y NASA, satélite GOES-East (nubes de las horas pasadas).';
-  if(!$('aLoc').firstChild)$('aLoc').innerHTML='<option value="-1">Todo el Chaco</option>'+LOCS.map((l,i)=>'<option value="'+i+'">'+esc(l.n)+'</option>').join('');
+  if(!$('aLoc').firstChild)$('aLoc').innerHTML='<option value="-1">Todo el Chaco</option>'
+    +GEO.mun.map((m,i)=>i).sort((a,b)=>GEO.mun[a][0].localeCompare(GEO.mun[b][0],'es')).map(i=>'<option value="'+i+'">'+esc(GEO.mun[i][0])+'</option>').join('');
   seguro(pintarTira);
   mostrar(nuevo||A.k<0?kAhora():A.k);
-  if(A.loc>=0)elegirLoc(A.loc,false);
+  if(!A.aMano)A.loc=autoLoc();
+  elegirLoc(A.loc,false);
 }
 // Con la sección cerrada, el mapa animado se dibuja cuando el teléfono queda libre (24/10/2026): pintar la lluvia y las nubes
 // lleva un rato en los celulares lentos y trababa la página justo cuando llegaban los demás datos. Abierta, se dibuja enseguida;
@@ -3423,12 +3445,12 @@ function iniciarAnim(){
   $('aSat').addEventListener('change',()=>{if(A.g)mostrar(A.k)});
   $('aTira').addEventListener('click',e=>{const sv=e.target.closest('svg');if(!sv||!A.g)return;const r=sv.getBoundingClientRect();
     if(!r.width)return;parar();mostrar((A.k0||0)+Math.floor((e.clientX-r.left)/r.width*(A.nv||A.g.n)))});
-  $('aLoc').addEventListener('change',e=>elegirLoc(Number(e.target.value),true));
-  $('anim').addEventListener('click',e=>{const q=e.target.closest('[data-loc]');if(q)elegirLoc(Number(q.dataset.loc),true)});
+  $('aLoc').addEventListener('change',e=>{A.aMano=true;elegirLoc(Number(e.target.value),true)});
+  $('anim').addEventListener('click',e=>{const q=e.target.closest('[data-loc]');if(q){A.aMano=true;elegirLoc(Number(q.dataset.loc),true)}});
   $('aDias').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b||!A.g)return;parar();
     const d=b.dataset.d;mostrar(d===diaAR(new Date())?kAhora():Array.from({length:A.g.n},(_,k)=>k).find(k=>diaAR(horaDe(k))===d))});
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(A.g){A.nube.clear();pintarAnim()}});
-  alAbrir('t-anim',ab=>{if(!ab)parar();else if(ANIM_ESPERA)pintarAnimYa();else if(A.g&&A.k>=0)mostrar(A.k)});
+  alAbrir('t-anim',ab=>{if(!ab)parar();else if(ANIM_ESPERA)pintarAnimYa();else if(A.g&&A.k>=0){mostrar(A.k);seguro(locAuto)}});
 }
 
 seguro(iniciarPlegables);seguro(iniciarDesplegables);

@@ -167,15 +167,18 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   const tira = JSON.parse(S('JSON.stringify(tiraValores(A.g))'));
   assert.strictEqual(tira.length, 72);
   assert.ok(tira[58] >= 100 && tira[0] === 0, 'la barrita de mañana 10 h es la más alta; ayer, sin lluvia');
-  const r = JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,38))'));
-  assert.strictEqual(r.txt, 'En Resistencia se espera lluvia mañana, a ratos entre las 9 h y las 13 h. Lo más fuerte: unos 12 mm en una hora, a las 10 h. Con tormentas previstas en la zona.');
+  // desde el 13/11/2026 la localidad es el número del municipio (los 70), no de las 6 ciudades
+  const IR = S("GEO.mun.findIndex(m=>m[0]==='Resistencia')"), IC = S("GEO.mun.findIndex(m=>m[0]==='Charata')");
+  const r = JSON.parse(S('JSON.stringify(resumenLoc(A.g,' + IR + ',38))'));
+  assert.strictEqual(r.txt, 'En Resistencia se espera lluvia mañana, a ratos entre las 9 h y las 13 h. Lo más fuerte: unos 12 mm en una hora, a las 10 h. En total, unos 19 mm de acá a mañana a la noche. Con tormentas previstas en la zona.');
   assert.strictEqual(r.pico, 58, 'al elegir la localidad, el mapa va a la hora más fuerte');
-  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,62))')).txt, 'En Resistencia no se espera lluvia de acá a mañana a la noche.');
-  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,4,38))')).txt, 'En Charata no se espera lluvia de acá a mañana a la noche.', 'lejos de la lluvia');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,' + IR + ',62))')).txt, 'En Resistencia no se espera lluvia de acá a mañana a la noche.');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,' + IC + ',38))')).txt, 'En Charata no se espera lluvia de acá a mañana a la noche.', 'lejos de la lluvia');
   // Barritas de la localidad elegida (21/10): Resistencia, con su lluvia; Charata, sin lluvia; "Todo el Chaco" (-1), lo más fuerte de la provincia
-  const tR = JSON.parse(S('JSON.stringify(tiraValores(A.g,0))')), tC = JSON.parse(S('JSON.stringify(tiraValores(A.g,4))')), tT = JSON.parse(S('JSON.stringify(tiraValores(A.g,-1))'));
+  const tR = JSON.parse(S('JSON.stringify(tiraValores(A.g,' + IR + '))')), tC = JSON.parse(S('JSON.stringify(tiraValores(A.g,' + IC + '))')), tT = JSON.parse(S('JSON.stringify(tiraValores(A.g,-1))'));
   assert.ok(tR[58] >= 100 && tR[0] === 0 && tC.every(v => v === 0) && tT[58] === tira[58], 'las barritas siguen a la localidad elegida');
-  assert.ok(html.includes('<div id="aLocs"><label for="aLoc">Lluvia en</label><select id="aLoc"></select></div>') && html.includes(`'<option value="-1">Todo el Chaco</option>'+LOCS.map(`), 'lista desplegable "Lluvia en", con "Todo el Chaco" primero (21/10)');
+  assert.ok(html.includes('<div id="aLocs"><label for="aLoc">Lluvia en</label><select id="aLoc"></select></div>') && html.includes(`'<option value="-1">Todo el Chaco</option>'
+    +GEO.mun.map((m,i)=>i).sort(`), 'lista desplegable "Lluvia en", con "Todo el Chaco" primero (21/10)');
   const pa = html.indexOf('<div class="aPanel">'), lo = html.indexOf('<div id="aLocs">'), ba = html.indexOf('<div class="aBarra">');
   assert.ok(pa > 0 && pa < lo && lo < ba, 'la lista va adentro del reproductor, justo arriba de las barritas');
   // Las barritas muestran un solo día (21/10): 24 horas, el día de la hora elegida; el control de la hora va de la primera a la última hora de ese día
@@ -183,8 +186,12 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   assert.deepStrictEqual(JSON.parse(S("JSON.stringify(ventanaDia(A.g,'2026-10-20'))")), [24, 47], 'hoy: de la 24 a la 47');
   const eL = html.slice(html.indexOf('function elegirLoc('), html.indexOf('function parar('));
   assert.ok(eL.indexOf('seguro(pintarTira)') > 0 && eL.indexOf('seguro(pintarTira)') < eL.indexOf("if(A.loc<0)"), 'al cambiar de localidad (también a "Todo el Chaco") se redibujan las barritas');
+  // todo el Chaco (13/11/2026): en cuántos municipios llueve y dónde lo más fuerte
+  assert.ok(/^Se espera lluvia en \d+ de los 70 municipios de acá a mañana a la noche\. Lo más fuerte: unos 12 mm en una hora en .+, mañana a las 10 h\. Elegí una localidad para ver la suya\.$/.test(S('resumenChaco(A.g,38)')), 'frase de todo el Chaco');
+  assert.strictEqual(S('resumenChaco(A.g,62)'), 'En el Chaco no se espera lluvia de acá a mañana a la noche.');
+  assert.ok(html.includes('function autoLoc(){return miLocGuardada()}') && html.includes("$('aLoc').addEventListener('change',e=>{A.aMano=true;"), 'elección automática: tu localidad, salvo que se elija otra a mano (13/11/2026)');
   S('A.g.p.forEach(x=>{x[57]=0;x[60]=0;x[58]=Math.min(x[58],6)})');
-  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,0,38))')).txt, 'En Resistencia se espera lluvia débil mañana a las 10 h. Con tormentas previstas en la zona.');
+  assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,' + IR + ',38))')).txt, 'En Resistencia se espera lluvia débil mañana a las 10 h. Con tormentas previstas en la zona.');
   S('A.g=null');
   // El texto largo va en un desplegable; a la vista queda una línea
   assert.ok(html.includes('<details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>\n      <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico,'));
