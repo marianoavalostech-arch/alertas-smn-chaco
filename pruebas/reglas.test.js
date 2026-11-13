@@ -1719,7 +1719,8 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
   });
   prueba('sin la sección de Lluvias (13/11/2026): ni sección, ni menú, ni recuadro en la portada; Paraguay y Bermejo a lo ancho', () => {
     assert.ok(!html.includes('t-lluvia') && !html.includes('id="lluvia"') && !/function (pintarLluvia|grafLluvia|pintarGrafLluvia|lluviaAtraso|pLluvia)\(/.test(html), 'no queda nada de la sección');
-    assert.ok(html.includes('.portada>.pT:last-child:nth-child(3n){grid-column:span 2}'), 'en la portada, el último recuadro llena el renglón');
+    assert.ok(html.includes('.portada>.pT:last-child:nth-child(3n){grid-column:1/-1}') && html.includes('.portada>.pT:last-child:nth-child(3n+1){grid-column:span 2}'), 'en la portada, el último recuadro llena el renglón');
+    assert.ok(html.includes("+[pLoc,...l,pSmn,") && html.includes('.portada>.pT.pLoc{grid-column:1/-1;') && html.includes("verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'") && html.includes('<b class="pLocNom">¿Dónde vivís?</b>'), 'tu localidad va primero, a lo ancho, con el nivel en palabras (13/11/2026)');
     assert.ok(/aria-labelledby="t-otros" class="plegable" data-cerrada data-ancha/.test(html), 'Paraguay y Bermejo va sola a lo ancho');
     const c = html.slice(html.indexOf('function acomodarPlegables'), html.indexOf('const alAbrir'));
     assert.ok(c.includes("else if(s.hasAttribute('data-ancha')){par=false;solo=true}"), 'la de data-ancha no hace pareja');
@@ -1768,7 +1769,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       localStorage.getItem=a;localStorage.setItem=b;return JSON.stringify(r)})()`);
     assert.strictEqual(sv, '[null,true,true]', 'elegir no guarda; la tarjeta dice si es la tuya');
     assert.ok(codigo.includes("<b>¿Dónde vivís?</b> Elegí tu localidad") && codigo.includes('data-micambia>Elegir mi localidad</button>') && codigo.includes("data-micambia>Cambiar</button>") && codigo.includes("abrirLoc(i,true);"), 'sin localidad guardada, el renglón invita a elegirla; con localidad, "Cambiar" (13/11/2026)');
-    assert.ok(codigo.includes("if(g<0)return '<button type=\"button\" class=\"pT pElegir\" data-ploc=\"'+i+'\" data-pelegir>'") && html.includes('.dLoc.elegir .dLocInicio{display:none}') && codigo.includes("sin?'Elegí tu localidad':'Cambiar tu localidad'"), 'en la portada, "Tu localidad · Elegir" abre directo la lista');
+    assert.ok(codigo.includes("if(g<0)return '<button type=\"button\" class=\"pT pLoc pElegir\" data-ploc=\"'+i+'\" data-pelegir>'") && html.includes('.dLoc.elegir .dLocInicio{display:none}') && codigo.includes("sin?'Elegí tu localidad':'Cambiar tu localidad'"), 'en la portada, "Tu localidad · Elegir" abre directo la lista');
     assert.ok(!/MILOC[^_]/.test(codigo), 'el renglón ya no se esconde en la visita sin localidad');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez'), 'la privacidad lo cuenta');

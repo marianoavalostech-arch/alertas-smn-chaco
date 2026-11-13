@@ -725,8 +725,18 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 }
 /* todos los recuadros del mismo alto (el del renglón más alto); el título "Ir a…" (antes "El Chaco hoy") va aparte, en su renglón */
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:8px}
-/* sin la sección de Lluvias (13/11/2026) quedan 11 recuadros: el último ocupa el hueco del renglón */
-.portada>.pT:last-child:nth-child(3n){grid-column:span 2}
+/* el último recuadro ocupa el hueco de su renglón (tu localidad va primero y a lo ancho desde el 13/11/2026: los demás empiezan en el hijo 3) */
+.portada>.pT:last-child:nth-child(3n){grid-column:1/-1}
+.portada>.pT:last-child:nth-child(3n+1){grid-column:span 2}
+/* tu localidad, a lo ancho y primero (13/11/2026): ícono, nombre grande y, a la derecha, el nivel en palabras y la lluvia de hoy */
+.portada>.pT.pLoc{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 30px 10px 12px;text-align:left}
+.pLoc .pIc{width:38px;height:38px;border-radius:12px}.pLoc .pIc svg{width:22px;height:22px}
+.pLocTx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+.pLocNom{font-family:var(--font-tit);font-size:1.15rem;font-weight:700;line-height:1.15;color:var(--titulo);overflow-wrap:anywhere}
+.pLocDer{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
+.pLoc .pD{margin-top:0}
+.pLocNiv{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:800;color:var(--ink)}
+.pLocNiv i{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 .pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
 .pHoy b{position:relative;font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo);padding-bottom:5px}
 .pHoy b::after{content:"";position:absolute;left:0;bottom:0;width:34px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--violeta),#8d58e8,var(--rosa))}.pHoy span{font-size:.8rem;font-weight:700;color:var(--muted)}
@@ -2809,8 +2819,10 @@ function pSmn(){
 // Sin localidad guardada (13/11/2026): el recuadro dice "Tu localidad · Elegir" con borde punteado y abre la lista para elegirla
 // (antes mostraba Resistencia y no se notaba que se podía elegir).
 function pLoc(){
+  const PLOC_NIV={verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'};
   const g=miLocGuardada(),i=g>=0?g:GEO.mun.findIndex(m=>m[0]==='Resistencia');if(i<0)return '';
-  if(g<0)return '<button type="button" class="pT pElegir" data-ploc="'+i+'" data-pelegir>'+pIco('loc')+'<span class="pN">Tu localidad</span><span class="pD">Elegir</span></button>';
+  // A lo ancho y primero (13/11/2026, pedido de Mariano: que se vea más): nombre grande, nivel de alerta en palabras y la lluvia de hoy.
+  if(g<0)return '<button type="button" class="pT pLoc pElegir" data-ploc="'+i+'" data-pelegir>'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad</span><b class="pLocNom">¿Dónde vivís?</b></span><span class="pLocDer"><span class="pD">Elegir</span></span></button>';
   let k={},dato=pEspera();
   try{k=colorDe(i);let src,r;
     if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){src=D.lluvia.datos;r=k.j}
@@ -2818,8 +2830,9 @@ function pLoc(){
     const a=src&&src.dias?src.dias.indexOf(hoy):-1,mm=src&&src.mm&&src.mm[r];
     if(a>=0&&mm&&mm[a]!=null){const v=Math.round(Number(mm[a])),cd=src.cod&&src.cod[r]&&src.cod[r][a]!=null?Number(src.cod[r][a]):null;
       dato='<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+'<span class="pSr"> hoy</span>'}}catch(e){}
-  return '<button type="button" class="pT'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'">'+pIco('loc')+'<span class="pN">'+esc(GEO.mun[i][0])+'</span><span class="pD">'
-    +(pFuera(k.c)?'<span class="pSr">'+ETQ[k.c]+': </span>':'')+dato+'</span></button>';
+  const niv=k.c&&k.c!=='gris'?'<span class="pLocNiv"><i style="background:var(--'+cMapa(k.c)+')"></i>'+(PLOC_NIV[k.c]||ETQ[k.c])+'</span>':'';
+  return '<button type="button" class="pT pLoc'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'">'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad</span><b class="pLocNom">'+esc(GEO.mun[i][0])+'</b></span>'
+    +'<span class="pLocDer">'+niv+'<span class="pD">'+dato+'</span></span></button>';
 }
 function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&r.atraso<4;let c='';try{c=riesgoParaguay().c}catch(e){}
   return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'pAgua')}
@@ -2853,7 +2866,7 @@ function pintarPortada(){
   const l=[pRio,pMapa];if(!fuera)l.reverse();
   const d=new Date(hoy+'T12:00:00Z');
   const ref=esApp()?'<button class="pRef'+(($('btnActualizar')||{classList:{contains:()=>0}}).classList.contains('gira')?' gira':'')+'" type="button" data-pref aria-label="Actualizar los datos">'+ICO_ACT+'</button>':'';
-  el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+  el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[pLoc,...l,pSmn,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir

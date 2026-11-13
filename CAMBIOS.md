@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (tu localidad primera y a lo ancho en el celular)
+
+Pedido de Mariano: que en el celular la localidad elegida se vea más.
+- En la portada, el recuadro de tu localidad va primero y ocupa todo el ancho (`.pLoc`): ícono más grande, "Tu localidad", el nombre en grande y, a la derecha, el nivel en palabras con un punto de color ("Sin alerta", "Alerta amarilla", "Alerta naranja", "Alerta roja"; sigue el botón elegido del mapa) y la lluvia de hoy. Con alerta, el recuadro toma su color como antes.
+- Sin localidad: "Tu localidad · ¿Dónde vivís? · Elegir", con borde punteado.
+- Los otros 10 recuadros van de a 3; el último ("Datos y Acerca") ocupa el renglón entero.
+- Pruebas al día (93). Huella nueva del código.
+
 ## 13/11/2026 ("Acerca de este sitio" y política de privacidad al día)
 
 Pedido de Mariano: revisar "Acerca de" con los cambios nuevos y redactar bien la privacidad.
