@@ -1938,13 +1938,13 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(html.includes('si pediste la letra más grande') && fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8').includes('letra más grande'), 'la privacidad lo cuenta');
     assert.ok(codigo.includes("if(A&&esApp()){A.hidden=false;") && codigo.includes("const ref=esApp()?'<button class=\"pRef"), '"Actualizar" solo en la app');
     assert.ok(html.includes('@media screen and (max-width:599px){html:not(.emb) #btnActualizar{display:none!important}}'), 'en el celular, "Actualizar" va junto a la hora de los datos y no en el encabezado');
-    assert.ok(codigo.includes('<small class="pAyuda">Tocá un recuadro para ver más</small>'), 'la portada invita a tocar');
+    assert.ok(codigo.includes('<span class="pTit"><b>Ir a…</b></span>') && html.includes('hidden>↑ Ir a…</a>'), 'la portada se titula "Ir a…" y el botón de la esquina lo repite');
     assert.ok(codigo.includes("if(!abrirLoc(i)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
     assert.ok(codigo.includes("const pEspera=()=>LISTO?'Sin datos':pCargando;"), 'barrita mientras carga');
     assert.ok(codigo.includes("'Sin renovar: datos ':'Datos '"), 'hora de los datos, en naranja si está vieja');
   });
   prueba('portada del celular (4/11): un recuadro chico por sección, solo en el celular y fuera del portal', () => {
-    assert.ok(html.includes('<nav class="portada" id="portada" aria-label="El Chaco hoy: un recuadro por sección"></nav>\n\n  <div class="miLoc"'), 'arriba de "Tu localidad" y del índice');
+    assert.ok(html.includes('<nav class="portada" id="portada" aria-label="Ir a: un recuadro por sección"></nav>\n\n  <div class="miLoc"'), 'arriba de "Tu localidad" y del índice');
     assert.ok(html.includes('.portada{display:none}') && /@media screen and \(max-width:599px\)\{\n  html:not\(\.emb\) \.portada\{display:grid\}\n  html:not\(\.emb\) #rioBanda,html:not\(\.emb\) #indice,html:not\(\.emb\) #miLoc\{display:none!important\}/.test(html), 'solo en menos de 600 px y fuera del portal, en lugar de la franja del río, "Tu localidad" y el índice');
     assert.ok(html.includes('.portada{grid-template-columns:repeat(3,minmax(0,1fr))'), 'tres por renglón, para que entre en una pantalla');
     assert.ok(html.includes('@media print{.portada{display:none!important}}'), 'nunca al imprimir');

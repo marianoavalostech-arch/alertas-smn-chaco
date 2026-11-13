@@ -712,7 +712,7 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
   html:not(.emb) .aviso .avMas{display:none}
   html:not(.emb) .aviso[data-corto]{font-size:.84rem;padding:7px 12px}
 }
-/* todos los recuadros del mismo alto (el del renglón más alto); el título "El Chaco hoy" va aparte, en su renglón */
+/* todos los recuadros del mismo alto (el del renglón más alto); el título "Ir a…" (antes "El Chaco hoy") va aparte, en su renglón */
 .portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:8px}
 .pHoy{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:2px 4px 0}
 .pHoy b{position:relative;font-family:var(--font-tit);font-size:1.15rem;color:var(--titulo);padding-bottom:5px}
@@ -749,10 +749,9 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}.portada .pT{animation:none}}
 @media print{.portada{display:none!important}}
-/* Portada que se lea como botonera (13/11/2026, pedido de Mariano: "parecen solo etiquetas"): una frase que invita a tocar,
-   una flechita en cada recuadro y un borde de abajo más marcado, como una tecla, que se hunde al tocar. */
+/* Portada que se lea como botonera (13/11/2026, pedido de Mariano: "parecen solo etiquetas"): título "Ir a…" (en lugar de "El Chaco hoy",
+   sin frase aclaratoria; el botón de la esquina dice "↑ Ir a…"), una flechita en cada recuadro y un borde de abajo más marcado, como una tecla, que se hunde al tocar. */
 .pHoy .pTit{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;min-width:0}
-.pHoy .pAyuda{font-size:.78rem;font-weight:600;color:var(--muted)}
 .pT{border-color:#e2dcf3;box-shadow:0 3px 0 #e2dcf3,0 6px 14px rgba(80,89,188,.10)}
 .pT::before{content:"";position:absolute;top:9px;right:9px;width:6px;height:6px;border-top:2.2px solid currentColor;border-right:2.2px solid currentColor;transform:rotate(45deg);color:#b9b1d9;border-radius:1px}
 .pT:active{transform:translateY(3px);box-shadow:0 0 0 #e2dcf3,0 2px 6px rgba(80,89,188,.10)}
@@ -920,7 +919,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 
   <div class="captura" id="bannerCaptura" hidden></div>
 
-  <nav class="portada" id="portada" aria-label="El Chaco hoy: un recuadro por sección"></nav>
+  <nav class="portada" id="portada" aria-label="Ir a: un recuadro por sección"></nav>
 
   <div class="miLoc" id="miLoc" role="region" aria-label="Tu localidad" hidden></div>
 
@@ -1249,7 +1248,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   </main>
 
   <footer>Los horarios están en hora de Argentina.</footer>
-  <a class="aIndice" id="aIndice" href="#indice" hidden>↑ Índice</a>
+  <a class="aIndice" id="aIndice" href="#indice" hidden>↑ Ir a…</a>
 </div>
 
   <dialog class="dLoc" id="dLoc" aria-labelledby="dLocTit">
@@ -2828,7 +2827,7 @@ function pintarPortada(){
   const l=[pRio,pMapa];if(!fuera)l.reverse();
   const d=new Date(hoy+'T12:00:00Z');
   const ref=esApp()?'<button class="pRef'+(($('btnActualizar')||{classList:{contains:()=>0}}).classList.contains('gira')?' gira':'')+'" type="button" data-pref aria-label="Actualizar los datos">'+ICO_ACT+'</button>':'';
-  el.innerHTML='<div class="pHoy"><span class="pTit"><b>El Chaco hoy</b><small class="pAyuda">Tocá un recuadro para ver más</small></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+  el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[...l,pSmn,pLoc,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,pLluvia,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir

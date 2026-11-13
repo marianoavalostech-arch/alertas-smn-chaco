@@ -6,8 +6,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 Pedido de Mariano: "Actualizar" ocupaba un renglón entero del encabezado, "El Chaco hoy" no parecía una botonera y los recuadros parecían etiquetas.
 - "Actualizar" (solo en la app) pasa, en el celular, a un botoncito redondo junto a "Datos de las … h" (`.pRef`, gira mientras actualiza); en la tablet sigue en el encabezado. El encabezado queda con Compartir y Letra en un renglón. Función nueva `esApp()`.
-- Debajo de "El Chaco hoy": "Tocá un recuadro para ver más".
-- Recuadros: flechita arriba a la derecha, borde de abajo tipo tecla que se hunde al tocar, más sombra, nombre en azul oscuro y dato en violeta, ícono en un cuadradito de color lleno (violeta; celeste en los ríos; amarillo, naranja o rojo con alerta). Mismo tamaño: la portada crece solo el renglón de la frase (unos 14 px).
+- El título de la portada pasa de "El Chaco hoy" a **"Ir a…"** (pedido de Mariano: así no hace falta aclarar que se toca); el botón de la esquina pasa de "↑ Índice" a **"↑ Ir a…"**, igual que el título al que lleva.
+- Recuadros: flechita arriba a la derecha, borde de abajo tipo tecla que se hunde al tocar, más sombra, nombre en azul oscuro y dato en violeta, ícono en un cuadradito de color lleno (violeta; celeste en los ríos; amarillo, naranja o rojo con alerta). Mismo tamaño: la portada no crece.
 - Prueba al día. Huella nueva del código.
 
 ## 13/11/2026 ("Municipios con alerta oficial")
