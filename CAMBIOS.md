@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (portada: tu localidad en dos botones y criterio de las alertas)
+
+Pedidos de Mariano: separar "ver en el mapa" de "cambiar la localidad", y poder cambiar entre Monitoreo del Niño y Servicio Meteorológico desde la portada.
+- **Tu localidad, en dos botones** (celular, con localidad guardada; `.pLocFila`): el recuadro grande lleva directo a la localidad en el mapa (`data-pver`); al lado, "Cambiar" (`data-pcambiar`, ícono de flechas) abre la lista. Si se pueden pedir avisos, abre la ventana completa (avisos y "Elegir otra localidad"). Sin localidad guardada sigue "¿Dónde vivís? · Elegir". El nombre usa todo el ancho y debajo van el nivel y la lluvia de hoy. Después de elegir desde la lista, en el celular la ventana se cierra (el recuadro ya lleva al mapa); en la computadora vuelve a abrirse con "Ver … en el mapa".
+- **Criterio de las alertas en la portada** (`pModo`, `.pModo`, `data-pmodo`): debajo de tu localidad, "Monitoreo del Niño | Serv. Meteorológico", como los botones del mapa pero más bajo. Toca el botón del mapa (misma lógica; se recuerda en `anc-modo-mapa`) y cambia el nivel de tu localidad, el recuadro del Mapa y el mapa. No aparece si nunca se pudo leer el Monitoreo (cálculo de antes).
+- El último recuadro que llena su renglón se cuenta solo entre los recuadros de sección (`a.pT:last-of-type:nth-of-type(3n+1)` a lo ancho, `3n+2` de a dos).
+- Probado en la nube con datos reales a 390 y 320 px (letra grande, "Presidencia Roque Sáenz Peña") y sin localidad; con avisos de prueba, "Cambiar" abre la ventana completa. Sin errores. 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 ("Ver … en el mapa" de tu localidad, arreglado)
 
 Aviso de Mariano: "desapareció el botón que lleva al mapa".

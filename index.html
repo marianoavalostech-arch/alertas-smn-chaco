@@ -731,14 +731,26 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
    y los recuadros a lo ancho (tu localidad y "Datos y Acerca") quedaban con mucho blanco. Ahora los de a 3 siguen parejos con un alto
    mínimo que alcanza para un nombre en 2 renglones ("Con alerta oficial"), y los de a lo ancho toman solo el alto que necesitan. */
 .portada>.pT{min-height:calc(54px + 2.82rem)}
-.portada>.pT.pLoc,.portada>.pT:last-child:nth-child(3n){min-height:0}
-.portada>.pT:last-child:nth-child(3n):not(.pLoc){flex-direction:row;align-items:center;gap:10px;padding:10px 30px 10px 12px;text-align:left}
-.portada>.pT:last-child:nth-child(3n):not(.pLoc) .pD{margin:0 0 0 auto}
-/* el último recuadro ocupa el hueco de su renglón (tu localidad va primero y a lo ancho desde el 13/11/2026: los demás empiezan en el hijo 3) */
-.portada>.pT:last-child:nth-child(3n){grid-column:1/-1}
-.portada>.pT:last-child:nth-child(3n+1){grid-column:span 2}
+.portada>.pT.pLoc,.portada>a.pT:last-of-type:nth-of-type(3n+1){min-height:0}
+.portada>a.pT:last-of-type:nth-of-type(3n+1){flex-direction:row;align-items:center;gap:10px;padding:10px 30px 10px 12px;text-align:left}
+.portada>a.pT:last-of-type:nth-of-type(3n+1) .pD{margin:0 0 0 auto}
+/* el último recuadro ocupa el hueco de su renglón. Se cuentan solo los recuadros de sección (<a>): tu localidad y el botón de criterio son otros elementos (13/11/2026) */
+.portada>a.pT:last-of-type:nth-of-type(3n+1){grid-column:1/-1}
+.portada>a.pT:last-of-type:nth-of-type(3n+2){grid-column:span 2}
 /* tu localidad, a lo ancho y primero (13/11/2026): ícono, nombre grande y, a la derecha, el nivel en palabras y la lluvia de hoy */
-.portada>.pT.pLoc{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 30px 10px 12px;text-align:left}
+.portada>.pT.pLoc,.pLocFila>.pT.pLoc{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 30px 10px 12px;text-align:left}
+/* tu localidad en dos botones (13/11/2026): el grande va al mapa; "Cambiar", angosto, al lado */
+.pLocFila{grid-column:1/-1;display:flex;gap:8px;min-width:0}
+/* criterio de las alertas en la portada (13/11/2026): como los botones del mapa, más bajo */
+.pModo{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;border:1.5px solid var(--borde-boton);border-radius:14px;background:var(--card)}
+.pModo button{font:inherit;font-size:.82rem;font-weight:800;min-height:40px;padding:4px 8px;border:0;border-radius:11px;background:transparent;color:var(--acento);cursor:pointer;line-height:1.15}
+.pModo button[aria-checked="true"]{background:var(--degrade);color:#fff;box-shadow:0 2px 8px rgba(80,89,188,.28)}
+.pModo button:focus-visible{outline:3px solid var(--acento);outline-offset:2px}
+.pLocFila>.pT.pLoc{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;row-gap:3px;align-items:center}
+.pLocFila .pLoc .pIc{grid-row:1/span 2}
+.pLocFila .pLocDer{grid-column:2;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;column-gap:12px;row-gap:2px;text-align:left}
+.pLocFila>.pT.pCambiar{flex:none;width:76px;justify-content:center;padding:8px 4px 9px}
+.pCambiar .pN{font-size:.76rem}
 .pLoc .pIc{width:38px;height:38px;border-radius:12px}.pLoc .pIc svg{width:22px;height:22px}
 .pLocTx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
 .pLocNom{font-family:var(--font-tit);font-size:1.15rem;font-weight:700;line-height:1.15;color:var(--titulo);overflow-wrap:anywhere}
@@ -2785,7 +2797,7 @@ function pintarBanner(){
 // La primera versión, con gráficos y textos, quedaba muy larga: la idea es llegar rápido a cada sección, el detalle está en la sección.
 // La muestra el CSS solo en pantallas de menos de 600 px y fuera del portal; ahí no se ven la franja del río, "Tu localidad" ni el índice "Ir a:".
 // Usa los mismos datos y funciones que las secciones (no calcula nada propio). El Paraná va primero si salió del verde; si no, el mapa.
-const PIC={
+const PIC={camb:'<path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 20 4-4-4-4"/><path d="M21 16H7"/>',
  rio:'<path d="M2 8c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0M2 14c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0M2 20c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/>',
  mapa:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/>',
  smn:'<path d="M12 3 2 20h20L12 3zM12 10v4M12 17h.01"/>',
@@ -2830,6 +2842,13 @@ function pSmn(){
 // Tu localidad guardada: la lluvia de hoy con la misma fuente que las tarjetas del detalle (diasInfo). Tocarla abre la ventana "Tu localidad".
 // Sin localidad guardada (13/11/2026): el recuadro dice "Tu localidad · Elegir" con borde punteado y abre la lista para elegirla
 // (antes mostraba Resistencia y no se notaba que se podía elegir).
+// Criterio de las alertas en la portada (13/11/2026, pedido de Mariano): los mismos dos botones del mapa, en chico.
+// Cambia el nivel de tu localidad, el recuadro del Mapa y el mapa mismo (hace clic en el botón del mapa: misma lógica y lo recuerda).
+function pModo(){
+  if(!LISTO||modoEf()==='calc')return '';
+  const b=(m,t,c)=>'<button type="button" role="radio" data-pmodo="'+m+'" aria-checked="'+(MODO===m)+'">'+t+(c?'<span class="pSr">'+c+'</span>':'')+'</button>';
+  return '<div class="pModo" role="radiogroup" aria-label="Alertas según">'+b('nino','Monitoreo del Niño')+b('smn','Serv. Meteorológico',' (Servicio Meteorológico Nacional)')+'</div>';
+}
 function pLoc(){
   const PLOC_NIV={verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'};
   const g=miLocGuardada(),i=g>=0?g:GEO.mun.findIndex(m=>m[0]==='Resistencia');if(i<0)return '';
@@ -2843,8 +2862,11 @@ function pLoc(){
     if(a>=0&&mm&&mm[a]!=null){const v=Math.round(Number(mm[a])),cd=src.cod&&src.cod[r]&&src.cod[r][a]!=null?Number(src.cod[r][a]):null;
       dato='<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+'<span class="pSr"> hoy</span>'}}catch(e){}
   const niv=k.c&&k.c!=='gris'?'<span class="pLocNiv"><i style="background:var(--'+cMapa(k.c)+')"></i>'+(PLOC_NIV[k.c]||ETQ[k.c])+'</span>':'';
-  return '<button type="button" class="pT pLoc'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'">'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad</span><b class="pLocNom">'+esc(GEO.mun[i][0])+'</b></span>'
-    +'<span class="pLocDer">'+niv+'<span class="pD">'+dato+'</span></span></button>';
+  // Dos botones (13/11/2026, pedido de Mariano): el recuadro grande lleva a tu localidad en el mapa; "Cambiar", al lado, abre la lista
+  // (o la ventana con los avisos y "Elegir otra localidad", si se pueden pedir avisos).
+  return '<div class="pLocFila"><button type="button" class="pT pLoc'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'" data-pver>'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad<span class="pSr">: ver en el mapa</span></span><b class="pLocNom">'+esc(GEO.mun[i][0])+'</b></span>'
+    +'<span class="pLocDer">'+niv+'<span class="pD">'+dato+'</span></span></button>'
+    +'<button type="button" class="pT pCambiar" data-ploc="'+i+'" data-pcambiar>'+pIco('camb')+'<span class="pN">Cambiar<span class="pSr"> tu localidad</span></span></button></div>';
 }
 function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&r.atraso<4;let c='';try{c=riesgoParaguay().c}catch(e){}
   return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'pAgua')}
@@ -2878,19 +2900,26 @@ function pintarPortada(){
   const l=[pRio,pMapa];if(!fuera)l.reverse();
   const d=new Date(hoy+'T12:00:00Z');
   const ref=esApp()?'<button class="pRef'+(($('btnActualizar')||{classList:{contains:()=>0}}).classList.contains('gira')?' gira':'')+'" type="button" data-pref aria-label="Actualizar los datos">'+ICO_ACT+'</button>':'';
-  el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[pLoc,...l,pSmn,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
+  el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[pLoc,pModo,...l,pSmn,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
   if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
     el.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('[data-pref]');if(r){const A=$('btnActualizar');if(A)A.click();return}
+      const pm=e.target.closest&&e.target.closest('[data-pmodo]');
+      if(pm){const m=pm.dataset.pmodo,bm=document.querySelector('.modo [data-modo="'+m+'"]');if(bm&&MODO!==m)bm.click();
+        const f=el.querySelector('[data-pmodo="'+m+'"]');if(f)f.focus();return}
       const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;
-      if(!abrirLoc(i,b.hasAttribute('data-pelegir'))){elegir(i,true);marcarSalto();verSec($('t-mapa'))}})}
+      if(b.hasAttribute('data-pver')){elegir(i,true);marcarSalto();verSec($('t-mapa'));return}   // tu localidad → directo al mapa
+      // "Cambiar": con avisos, la ventana completa (avisos y "Elegir otra localidad"); sin avisos, directo a la lista
+      const lista=b.hasAttribute('data-pelegir')||(b.hasAttribute('data-pcambiar')&&!avPuede());
+      if(!abrirLoc(i,lista)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}})}
 }
 // Tu localidad (4/11/2026): al tocar su recuadro se abre una ventana con "Ver en el mapa" (lo de antes) y una lista con buscador para cambiarla.
 // Si el navegador no tiene ventanas (<dialog>), sigue como antes: va al mapa. Devuelve true si la abrió.
 // enLista=true: abre directo en la lista ("Elegí tu localidad" si no hay ninguna guardada; "Cambiar tu localidad" si hay).
 // Ojo (13/11/2026): el parámetro no puede llamarse "elegir": tapaba la función elegir() y "Ver … en el mapa" fallaba.
+function nbVis(){const nb=document.querySelector('#portada [data-ploc]');return !!(nb&&nb.offsetParent)}
 function abrirLoc(i,enLista){
   const dl=$('dLoc');if(!dl||typeof dl.showModal!=='function'||EMB)return false;
   const bus=$('dLocBus'),lista=$('dLocLista'),ver=$('dLocMapa');
@@ -2918,10 +2947,12 @@ function abrirLoc(i,enLista){
       const b=e.target.closest('[data-lj]');if(!b)return;const j=+b.dataset.lj;
       const eraLista=dl.classList.contains('elegir');
       guardarMiLoc(j);seguro(pintarMiLoc);seguro(pintarPortada);if(M.sel>=0)seguro(pintarInfo);dl.close();
-      // recién elegida desde "Elegir" o "Cambiar": la ventana vuelve a abrirse con "Ver … en el mapa" (y los avisos, si hay)
-      if(eraLista&&abrirLoc(j)){$('dLocMapa').focus();return}
+      // recién elegida desde la lista: en la computadora, la ventana vuelve a abrirse con "Ver … en el mapa" (y los avisos, si hay);
+      // en el celular no hace falta: el recuadro de la portada ya lleva al mapa y "Cambiar" está al lado.
+      const enPortada=nbVis();
+      if(eraLista&&!enPortada&&abrirLoc(j)){$('dLocMapa').focus();return}
       const nb=document.querySelector('#portada [data-ploc]'),mb=document.querySelector('#miLoc [data-miver]');
-      if(nb&&nb.offsetParent)nb.focus();else if(mb)mb.focus()});
+      if(enPortada)nb.focus();else if(mb)mb.focus()});
   }
   dl._pintar=pintar;dl.showModal();
   // Abre siempre desde arriba (título y ✕ a la vista). La lista se corre sola hasta la localidad elegida, sin mover la ventana

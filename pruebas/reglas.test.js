@@ -1719,9 +1719,10 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
   });
   prueba('sin la sección de Lluvias (13/11/2026): ni sección, ni menú, ni recuadro en la portada; Paraguay y Bermejo a lo ancho', () => {
     assert.ok(!html.includes('t-lluvia') && !html.includes('id="lluvia"') && !/function (pintarLluvia|grafLluvia|pintarGrafLluvia|lluviaAtraso|pLluvia)\(/.test(html), 'no queda nada de la sección');
-    assert.ok(html.includes('.portada>.pT:last-child:nth-child(3n){grid-column:1/-1}') && html.includes('.portada>.pT:last-child:nth-child(3n+1){grid-column:span 2}'), 'en la portada, el último recuadro llena el renglón');
-    assert.ok(html.includes("+[pLoc,...l,pSmn,") && html.includes('.portada>.pT.pLoc{grid-column:1/-1;') && html.includes("verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'") && html.includes('<b class="pLocNom">¿Dónde vivís?</b>'), 'tu localidad va primero, a lo ancho, con el nivel en palabras (13/11/2026)');
+    assert.ok(html.includes('.portada>a.pT:last-of-type:nth-of-type(3n+1){grid-column:1/-1}') && html.includes('.portada>a.pT:last-of-type:nth-of-type(3n+2){grid-column:span 2}'), 'en la portada, el último recuadro llena el renglón');
+    assert.ok(html.includes("+[pLoc,pModo,...l,pSmn,") && html.includes('.portada>.pT.pLoc,.pLocFila>.pT.pLoc{grid-column:1/-1;') && html.includes("verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'") && html.includes('<b class="pLocNom">¿Dónde vivís?</b>'), 'tu localidad va primero, a lo ancho, con el nivel en palabras (13/11/2026)');
     assert.ok(/aria-labelledby="t-otros" class="plegable" data-cerrada data-ancha/.test(html), 'Paraguay y Bermejo va sola a lo ancho');
+    assert.ok(html.includes("if(!LISTO||modoEf()==='calc')return '';") && html.includes('data-pmodo="') && html.includes("bm=document.querySelector('.modo [data-modo=\"'+m+'\"]');if(bm&&MODO!==m)bm.click();"), 'portada: botón Monitoreo / Servicio Meteorológico que usa el del mapa (13/11/2026)');
     const c = html.slice(html.indexOf('function acomodarPlegables'), html.indexOf('const alAbrir'));
     assert.ok(c.includes("else if(s.hasAttribute('data-ancha')){par=false;solo=true}"), 'la de data-ancha no hace pareja');
     assert.ok(S("typeof resumenLluvia==='function'&&typeof lluviaVieja==='function'"), 'la lluvia sigue para la tarjeta y la portada');
@@ -1771,6 +1772,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes("<b>¿Dónde vivís?</b> Elegí tu localidad") && codigo.includes('data-micambia>Elegir mi localidad</button>') && codigo.includes("data-micambia>Cambiar</button>") && codigo.includes("abrirLoc(i,true);"), 'sin localidad guardada, el renglón invita a elegirla; con localidad, "Cambiar" (13/11/2026)');
     assert.ok(codigo.includes("if(g<0)return '<button type=\"button\" class=\"pT pLoc pElegir\" data-ploc=\"'+i+'\" data-pelegir>'") && html.includes('.dLoc.elegir .dLocInicio{display:none}') && codigo.includes("sin?'Elegí tu localidad':'Cambiar tu localidad'"), 'en la portada, "Tu localidad · Elegir" abre directo la lista');
     assert.ok(!/MILOC[^_]/.test(codigo), 'el renglón ya no se esconde en la visita sin localidad');
+    assert.ok(codigo.includes("data-pver>") && codigo.includes("data-pcambiar>") && codigo.includes("if(b.hasAttribute('data-pver')){elegir(i,true);marcarSalto();verSec($('t-mapa'));return}") && html.includes('.pLocFila{grid-column:1/-1;display:flex'), 'en el celular, tu localidad en dos botones: el grande va al mapa y "Cambiar" abre la lista (13/11/2026)');
     assert.ok(/function abrirLoc\(i,enLista\)/.test(codigo) && !/function abrirLoc\([^)]*\belegir\b/.test(codigo), 'el parámetro de abrirLoc no tapa a elegir(): si no, "Ver … en el mapa" falla (13/11/2026)');
     assert.ok(codigo.includes("elegir(i,true);marcarSalto();verSec($('t-mapa'))}") && codigo.includes("localStorage.removeItem(MILOC_K)"), 'Ver en el mapa y Olvidar');
     assert.ok(html.includes('si elegiste una localidad como tuya, cuál, para mostrártela arriba la próxima vez'), 'la privacidad lo cuenta');
@@ -1994,7 +1996,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(codigo.includes("if(A&&esApp()){A.hidden=false;") && codigo.includes("const ref=esApp()?'<button class=\"pRef"), '"Actualizar" solo en la app');
     assert.ok(html.includes('@media screen and (max-width:599px){html:not(.emb) #btnActualizar{display:none!important}}'), 'en el celular, "Actualizar" va junto a la hora de los datos y no en el encabezado');
     assert.ok(codigo.includes('<span class="pTit"><b>Ir a…</b></span>') && html.includes('hidden>↑ Ir a…</a>'), 'la portada se titula "Ir a…" y el botón de la esquina lo repite');
-    assert.ok(codigo.includes("if(!abrirLoc(i,b.hasAttribute('data-pelegir'))){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
+    assert.ok(codigo.includes("if(!abrirLoc(i,lista)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}"), 'sin ventanas, la localidad va al mapa como antes');
     assert.ok(codigo.includes("const pEspera=()=>LISTO?'Sin datos':pCargando;"), 'barrita mientras carga');
     assert.ok(codigo.includes("'Sin renovar: datos ':'Datos '"), 'hora de los datos, en naranja si está vieja');
   });
