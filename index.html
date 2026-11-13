@@ -162,6 +162,9 @@ main{display:flex;flex-direction:column;gap:16px;min-width:0}
 main section p,main section li{text-align:justify;-webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:7 3 3}
 /* sin justificar: los renglones cortos de "Ahora en el Chaco" y el del correo (una dirección larga deja huecos) */
 .hHoy p,.hHoy li,p:has(#correo){text-align:left}
+/* tampoco en columnas angostas (13/11/2026): renglones de las listas, municipios del SMN y consejos de "Qué hacer" */
+.sem li,.sem li span,#smn li,.hSit li,.hSit p,#anim p{text-align:left}
+h2[id^="t-"]{scroll-margin-top:14px}
 section{background:var(--card);border:1px solid #e2dcef;border-radius:20px;box-shadow:var(--sombra);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 /* secciones contraíbles: el título es un botón; el contenido va en .cuerpo */
 .pleg{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;font:inherit;color:inherit}
@@ -920,7 +923,6 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <span class="vSmn vCalc"><i class="punteado"></i>Borde punteado: alerta del SMN</span>
     </div>
     <div id="mInfo" aria-live="polite"></div>
-    <p class="meta">Tocá un municipio para ver su detalle, o un color para resaltar los municipios de ese color.</p>
     <!-- 13/11/2026 (Mariano): con el Monitoreo o el SMN el color sale tal cual de la fuente oficial y la frase de los botones ya lo dice;
          la explicación de los colores queda solo para el cálculo de antes (sin el Monitoreo al día). -->
     <details class="det vCalc" id="d-colores">
@@ -1187,18 +1189,18 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     <h2 id="t-fuentes">De dónde salen los datos</h2>
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras: la serie diaria, publicada por el Instituto Nacional del Agua (INA), y, desde el 12/11/2026, una lectura por hora. Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
-      <li><b>Alerta oficial por municipio, localidades con alerta y más estaciones de los ríos:</b> fuentes oficiales que se consultan cada hora. Si no se puede renovar, el mapa sigue con la última lectura y dice su fecha y hora. Las localidades y las estaciones son solo informativas.</li>
+      <li><b>Alerta oficial por municipio (Monitoreo del Niño), localidades con alerta y más estaciones de los ríos:</b> fuentes oficiales que se consultan cada hora. Si no se puede renovar, el mapa sigue con la última lectura y dice su fecha y hora. Las localidades y las estaciones son solo informativas.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
-      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color de la zona ribereña del Paraná: puede llevarla a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m).</li>
+      <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color del río en su sección: puede llevarlo a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m). No cambia el color del mapa.</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
-      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. Los números del rojo por lluvia se ajustaron con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo. El amarillo no sale de la lluvia: lo da la alerta del SMN.</li>
+      <li><b>Lluvias:</b> Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. La lluvia no da color en el mapa: el color sale del Monitoreo del Niño o de la alerta del SMN. Solo si nunca se pudo leer el Monitoreo, el sitio calcula un rojo por lluvia muy fuerte, con números ajustados con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
       <li><b>Lluvia medida:</b> estaciones automáticas de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
       <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso. Una copia se guarda en GitHub y se renueva cada 7 días: por eso la imagen puede tener hasta una semana y unos días.</li>
-      <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>. La estimación de lluvia del resto de los municipios sale de Open-Meteo.</li>
+      <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>.</li>
       <li><b>Alertas oficiales:</b> Sistema de Alerta Temprana del Servicio Meteorológico Nacional (SMN). Se leen del canal oficial de alertas del SMN (formato CAP) y se renuevan cada hora. Se muestran las de hoy y los 2 días siguientes, igual que el mapa del SMN. Cuando una alerta dice "con posible granizo" o "ráfagas", es porque el SMN los nombra en el texto de esa alerta para toda la zona: no es un aviso de granizo en curso. Un municipio figura en una alerta si la zona alertada cubre su centro o algún punto de su interior (se revisa un punto cada unos 10 km); si la zona apenas roza el borde, puede no figurar. Si esa consulta falla, se muestra el último informe guardado, con su fecha. No se incluyen los avisos a muy corto plazo del SMN (tormentas en curso).</li>
-      <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color.</li>
+      <li><b>Cuando una fuente no responde:</b> se muestran los datos de la última consulta que funcionó en este dispositivo, con su fecha y hora. Si son viejos, no se usan para el color, salvo el Monitoreo del Niño, que sigue con su última lectura y la muestra.</li>
     </ul>
   </section>
 
@@ -2018,7 +2020,7 @@ function pintarInfo(){
     el.innerHTML='<div class="fila" style="justify-content:space-between;flex-wrap:nowrap"><b style="font-size:1.08rem;color:var(--water)">'+esc(n)+'</b>'+x.replace('Quitar el filtro de color','Quitar la selección')+'</div>'
      +'<p>La altura, el pronóstico y los niveles de alerta del '+esc(n.replace('Río','río'))+' están más abajo. Si querías ver un municipio, tocalo un poco más adentro del mapa.</p>'
      +'<button class="btn irRio" type="button" data-irrio="'+M.rio.ir+'">Ver el '+esc(n.replace('Río','río'))+' ↓</button>';return}
-  if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle.</span>';return}
+  if(i<0){el.className='';el.innerHTML='<span class="nodisp">Tocá un municipio del mapa, o buscalo por nombre, para ver su detalle. Con los botones de colores, resaltás los municipios de ese color.</span>';return}
   const m=GEO.mun[i],k=colorDe(i);let h;
   // Desde el 12/11/2026 (Mariano: la tarjeta quedaba muy larga) el detalle dice la lluvia sola y aparte la alerta del SMN con su horario.
   // Con el Monitoreo del Niño o el SMN elegidos (13/11/2026): el criterio del mapa arriba; la alerta del SMN y la lluvia, como información.
@@ -2026,7 +2028,7 @@ function pintarInfo(){
     +(k.modo==='nino'&&!k.rio?'<p>Sin alerta en el Monitoreo del Niño (consultado el '+fFechaHora(D.oficial.t)+').</p>':'')
     +(k.modo==='smn'?(k.c==='gris'?'<p>No se pudo confirmar el informe del SMN.</p>':k.c==='verde'?'<p>Sin alerta del SMN para hoy ni los 2 días siguientes.</p>':''):'')
     +smnDetTxt(i)+lluviaTxt(i,k);
-  else if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Localidad del semáforo')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
+  else if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Lluvia y alertas del SMN')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='est')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='smn')h='<p><span class="estado">Alerta del SMN</span><b>'+ETQ[k.c]+'</b></p><p>No hay datos de lluvia de este municipio ahora. '+pisoTxt(k.smn)+'</p>';
@@ -2052,7 +2054,7 @@ function lluviaTxt(i,k){
 // Alertas del SMN del municipio con el día y el horario (arriba solo va el cuadrito con el nivel).
 function smnDetTxt(i){
   const a=smnDe(i).slice().sort((x,y)=>x.dia.localeCompare(y.dia)||y.niv-x.niv);if(!a.length)return '';
-  return '<p><b>SMN:</b> '+a.map(x=>smnTxt(x)+(x.x?', con posible '+SMN_X[x.x&3]:'')+', el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('; ')+'.</p>';
+  return '<p><b>SMN:</b> '+a.map(x=>smnTxt(x)+(x.x?', con posible '+SMN_X[x.x&3]:'')+', el '+fDiaLargo(x.dia)+(x.fr.length?' ('+frTxt(x.fr)+')':'')).join('; ')+'.</p>';
 }
 // De dónde salen el pronóstico y las alertas (antes iba a la vista, debajo de los días).
 function fuenteTxt(i,k){
@@ -2165,6 +2167,8 @@ const SMN_EV={41:'tormentas',37:'lluvias',42:'nevadas',39:'viento',47:'viento zo
 const SMN_ICO={41:'⛈️',37:'🌧️',42:'❄️',39:'💨',47:'💨',101:'🌡️',102:'🥶',103:'🌫️',104:'🌫️',105:'🌫️'};
 const SMN_NIV={3:['amarillo','amarilla'],4:['naranja','naranja'],5:['rojo','roja']};
 const SMN_FR=['madrugada','mañana','tarde','noche'];
+// Franjas en palabras (13/11/2026): "de madrugada, a la mañana y a la tarde" (antes "mañana, tarde", que se confundía con el día siguiente).
+const frTxt=fr=>{const t=fr.map(f=>({madrugada:'de madrugada',mañana:'a la mañana',tarde:'a la tarde',noche:'a la noche'})[f]||f);return t.length>1?t.slice(0,-1).join(', ')+' y '+t[t.length-1]:t.join('')};
 const SMN_COL={amarillo:'var(--amarillo)',naranja:'var(--naranja)',rojo:'var(--rojo)'};
 // Dirección del script de Google que publica las alertas al día. Vacía = solo informe guardado.
 const SMN_URL='https://script.google.com/macros/s/AKfycbwCmRXbp0zTNVfDDLMmRGwaKpsTPN0ZrAzUQ9a-HjT4rg6o7bVcRDrd_lILB8ON6-dT/exec';
@@ -2275,7 +2279,7 @@ function pintarSMN(){
         +'<p class="smnLinea">Para '+smnDiasTxt(dias)+' · '+(n===T?'toda la provincia':n+' de '+T+' municipios')+'.</p>'
         +'<details class="det" data-ev="'+ev+'"'+(SMN_ABIERTOS.has(String(ev))?' open':'')+'><summary>Ver horarios y municipios</summary>'
         +'<ul>'+f.l.map(g=>{const k=g.mun.length;
-          return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+g.a.fr.join(', '):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
+          return '<li>'+smnPunto(g.a)+'<b>'+fDiaLargo(g.a.dia)+(g.a.fr.length?', '+frTxt(g.a.fr):'')+':</b> alerta '+(SMN_NIV[g.a.niv]||['','nivel '+g.a.niv])[1]+(g.a.x?', con posible '+SMN_X[g.a.x&3]:'')+'. '
             +(k===T?'Toda la provincia.':k+' de '+T+' municipios: '+g.mun.map(esc).join(', ')+'.')+'</li>'}).join('')+'</ul>'
         +'<p class="meta">Informe para los días '+rango+'.</p></details></div>'}).join('');
   }
@@ -2287,7 +2291,7 @@ function smnInfo(i){
   if(!smnVigente())return '';
   const a=smnDe(i);
   if(!a.length&&SMN.leidas===0)return '<p style="margin-bottom:8px"><span class="estado">SMN</span>No se pudo confirmar si hay alertas oficiales: <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">consultá el SMN</a>.</p>';
-  return '<p style="margin-bottom:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnChip(x)+'el '+fDiaLargo(x.dia)+(x.fr.length?' ('+x.fr.join(', ')+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
+  return '<p style="margin-bottom:8px"><span class="estado">SMN</span>'+(a.length?a.map(x=>smnChip(x)+'el '+fDiaLargo(x.dia)+(x.fr.length?' ('+frTxt(x.fr)+')':'')).join('. ')+'.':'Sin alertas oficiales en el informe del '+fFechaHora(new Date(SMN.emitido))+'.')+'</p>';
 }
 function cargarSMN(){
   SRV_P.then(j=>{
@@ -2452,12 +2456,12 @@ function pintarRio(){
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
    +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA y su rango</span>':'')+'</div>'
-   +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico o pasá el mouse para ver la altura de cada día.</p></div><div class="rioLado">'
+   +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico para ver la altura de cada día.</p></div><div class="rioLado">'
    +RIO_LEER()+(pf.length?RIO_PRONO():'')+lineaYacy()
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
-   +meta('rio',D.rio.datos.pna?'Prefectura Naval Argentina (lectura por hora; serie diaria vía INA)':'Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
+   +meta('rio',D.rio.datos.pna?'Prefectura Naval Argentina (lectura por hora; la de cada día, publicada por el INA)':'Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
-     :pn&&pn.fut?meta('prono','INA, pronóstico de altura para Puerto Barranqueras','Pronóstico emitido el '+fDia(pn.emitido)+'; el INA lo renueva martes y viernes.')
+     :pn&&pn.fut?'<p class="meta">Pronóstico: INA, para Puerto Barranqueras, emitido el '+fDia(pn.emitido)+'; lo renueva martes y viernes.</p>'
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
 
   $('rio').style.cssText='display:flex;flex-direction:column;gap:12px';
@@ -2508,7 +2512,7 @@ function bloqueOtro(k){
   if(!r)return '<div class="otroRio">'+t+meta(k,'el INA')+'</div>';
   const ob=D[k].datos.obs,pk=r.pico;
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
-  const nota=k==='paraguay'?'<p class="meta">El color del renglón del Paraguay sale solo de la última lectura en Puerto Bermejo: el INA no publica pronóstico para ese puerto. Vale para la costa y las islas, de Puerto Bermejo a Isla del Cerrito.</p>':'';
+  const nota=k==='paraguay'?'<p class="meta">El color del Paraguay sale solo de la última lectura en Puerto Bermejo: el INA no publica pronóstico para ese puerto. Vale para la costa y las islas, de Puerto Bermejo a Isla del Cerrito.</p>':'';
   const sit=!N?'El INA no publica niveles de alerta para esta estación: sirve para ver si el río crece o baja.'
     :rioSit(r.h,N);
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+').</p>':'';
@@ -2612,7 +2616,7 @@ function pintarLluvia(){
   const filas=LOCS.map((l,i)=>{const s=resumenLluvia(i);
     const b=d.dias.map((dia,j)=>{const h=Math.max(1,26*d.mm[i][j]/tope);return '<rect x="'+(j*7+(dia>=ref?4:0))+'" y="'+(28-h)+'" width="5" height="'+h+'" fill="var(--'+(dia>=ref?'water':'gris')+')"><title>'+fDia(dia)+': '+nf(d.mm[i][j],1)+' mm</title></rect>'}).join('');
     return '<tr><td>'+l.n+'</td><td>'+nf(s.cayo)+' mm</td><td><b>'+nf(s.viene)+' mm</b></td><td class="barras"><svg viewBox="0 0 102 28" aria-hidden="true">'+b+'</svg></td></tr>'}).join('');
-  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Día por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
+  $('lluvia').innerHTML=lluviaAtraso()+'<div class="tabla" tabindex="0" role="region" aria-label="Lluvia por localidad"><table><thead><tr><th>Localidad</th><th>Llovió</th><th>Se espera</th><th>Por día</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
    +'<div class="llLocs" id="llLocs" role="group" aria-label="Elegir la localidad del gráfico">'+LOCS.map((l,i)=>'<button class="ley" type="button" data-ll="'+i+'" aria-pressed="false">'+l.n+'</button>').join('')+'</div><div id="llGrafCaja"></div>'
    +'<p class="meta" style="margin-top:10px">Barras grises: del '+fDia(d.dias[0])+' al '+fDia(masDias(ref,-1))+'. Barras azules: pronóstico del '+fDia(ref)+' al '+fDia(d.dias[d.dias.length-1])+'.</p>'
    +meta('lluvia','Open-Meteo','Lo caído es una estimación por modelo, no una medición con pluviómetro. Lo que se espera incluye el día de hoy completo.');
@@ -2755,8 +2759,8 @@ function pLoc(){
 }
 function pLluvia(){
   let dato=pEspera();
-  if(D.lluvia&&D.lluvia.datos&&!lluviaVieja()){let b=-1;LOCS.forEach((l,j)=>{const s=resumenLluvia(j);if(s&&s.viene>b)b=s.viene});dato=b<1?'Casi nada':nf(b)+'\u00a0mm'}
-  return pT('#t-lluvia','lluvia','Lluvias, 7 días',dato);
+  if(D.lluvia&&D.lluvia.datos&&!lluviaVieja()){let b=-1;LOCS.forEach((l,j)=>{const s=resumenLluvia(j);if(s&&s.viene>b)b=s.viene});dato=b<1?'Casi nada':'Hasta\u00a0'+nf(b)+'\u00a0mm'}
+  return pT('#t-lluvia','lluvia','Lluvia prevista',dato);
 }
 function pOtros(){const o=OTROS.paraguay,r=resumenRio('paraguay',o.nivel),ok=r&&r.atraso<4;let c='';try{c=riesgoParaguay().c}catch(e){}
   return pT('#t-otros','rio','Paraguay y Bermejo',ok?nf(r.h,2)+'\u00a0m'+pFlecha(r.d3):pEspera(),c,'pAgua')}

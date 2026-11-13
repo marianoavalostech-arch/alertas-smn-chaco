@@ -412,7 +412,7 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   assert.ok(inf.innerHTML.includes('<b>Naranja</b>') && !inf.innerHTML.includes('<b>Verde</b>'), 'el color grande es el del mapa: ' + inf.innerHTML.slice(0, 300));
   assert.ok(inf.innerHTML.includes('No hay datos de lluvia al día') && !inf.innerHTML.includes('semáforo está en') && inf.innerHTML.includes('Naranja por el río Paraná'), inf.innerHTML.slice(0, 400));
   col('verde', [['2026-10-17', 4.0]], null, '2026-10-17'); const inf2 = {}; elementos.mInfo = inf2; S(`M.sel=${R};pintarInfo();M.sel=-1`); delete elementos.mInfo;
-  assert.ok(inf2.innerHTML.includes('Localidad del semáforo') && inf2.innerHTML.includes('<b>Verde</b>'), 'sin el río, como siempre: ' + inf2.innerHTML.slice(0, 200));
+  assert.ok(inf2.innerHTML.includes('Lluvia y alertas del SMN') && inf2.innerHTML.includes('<b>Verde</b>'), 'sin el río, como siempre: ' + inf2.innerHTML.slice(0, 200));
   // Río sobre la alerta, pero el pronóstico no pasa la evacuación: sigue amarillo
   assert.strictEqual(col('verde', obs17, { emitido: '2026-10-16T03:00:00.000Z', p: [['2026-10-20', 6.0, 6.3, 6.45]] }, '2026-10-17')[0][0], 'amarillo');
   // Sin datos de lluvia todavía, el río igual pinta la costa
