@@ -2862,9 +2862,9 @@ function pLoc(){
     if(a>=0&&mm&&mm[a]!=null){const v=Math.round(Number(mm[a])),cd=src.cod&&src.cod[r]&&src.cod[r][a]!=null?Number(src.cod[r][a]):null;
       dato='<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+'<span class="pSr"> hoy</span>'}}catch(e){}
   const niv=k.c&&k.c!=='gris'?'<span class="pLocNiv"><i style="background:var(--'+cMapa(k.c)+')"></i>'+(PLOC_NIV[k.c]||ETQ[k.c])+'</span>':'';
-  // Dos botones (13/11/2026, pedido de Mariano): el recuadro grande lleva a tu localidad en el mapa; "Cambiar", al lado, abre la lista
+  // Dos botones (13/11/2026, pedido de Mariano): el recuadro grande lleva a la tarjeta de tu localidad; "Cambiar", al lado, abre la lista
   // (o la ventana con los avisos y "Elegir otra localidad", si se pueden pedir avisos).
-  return '<div class="pLocFila"><button type="button" class="pT pLoc'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'" data-pver>'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad<span class="pSr">: ver en el mapa</span></span><b class="pLocNom">'+esc(GEO.mun[i][0])+'</b></span>'
+  return '<div class="pLocFila"><button type="button" class="pT pLoc'+(pFuera(k.c)?' c-'+k.c:'')+'" data-ploc="'+i+'" data-pver>'+pIco('loc')+'<span class="pLocTx"><span class="pN">Tu localidad<span class="pSr">: ver su tarjeta</span></span><b class="pLocNom">'+esc(GEO.mun[i][0])+'</b></span>'
     +'<span class="pLocDer">'+niv+'<span class="pD">'+dato+'</span></span></button>'
     +'<button type="button" class="pT pCambiar" data-ploc="'+i+'" data-pcambiar>'+pIco('camb')+'<span class="pN">Cambiar<span class="pSr"> tu localidad</span></span></button></div>';
 }
@@ -2910,7 +2910,8 @@ function pintarPortada(){
       if(pm){const m=pm.dataset.pmodo,bm=document.querySelector('.modo [data-modo="'+m+'"]');if(bm&&MODO!==m)bm.click();
         const f=el.querySelector('[data-pmodo="'+m+'"]');if(f)f.focus();return}
       const b=e.target.closest&&e.target.closest('[data-ploc]');if(!b)return;const i=+b.dataset.ploc;
-      if(b.hasAttribute('data-pver')){elegir(i,true);marcarSalto();verSec($('t-mapa'));return}   // tu localidad → directo al mapa
+      // tu localidad → directo a su tarjeta (13/11/2026, pedido de Mariano: la tarjeta, no el mapa), como al tocar un aviso
+      if(b.hasAttribute('data-pver')){elegir(i,true);marcarSalto();verSec($('mInfo')||$('t-mapa'));return}
       // "Cambiar": con avisos, la ventana completa (avisos y "Elegir otra localidad"); sin avisos, directo a la lista
       const lista=b.hasAttribute('data-pelegir')||(b.hasAttribute('data-pcambiar')&&!avPuede());
       if(!abrirLoc(i,lista)){elegir(i,true);marcarSalto();verSec($('t-mapa'))}})}

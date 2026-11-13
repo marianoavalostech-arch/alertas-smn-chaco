@@ -2,6 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (tu localidad abre su tarjeta)
+
+Pedido de Mariano: al tocar el recuadro de tu localidad en la portada del celular, ver la tarjeta de la localidad y no el mapa.
+- El recuadro grande (`data-pver`) elige la localidad y baja a su tarjeta (`verSec($('mInfo')||$('t-mapa'))`), como al tocar un aviso. "Cambiar" sigue igual.
+- Probado en la nube con datos reales (390 px): la tarjeta queda arriba de todo, entera. 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 (script: pluviómetros que no llegaban y errores sin direcciones)
 
 Revisión antes de subir: `servidor.json` de las 13:51 no traía `pluvio`, y en `errores` figuraba la dirección interna del pedido que falló.
