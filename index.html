@@ -722,9 +722,18 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
   /* el cartel de arriba queda en una frase: los teléfonos y las alertas del SMN ya están en la portada */
   html:not(.emb) .aviso .avMas{display:none}
   html:not(.emb) .aviso[data-corto]{font-size:.84rem;padding:7px 12px}
+  /* menos espacio entre los bloques en el celular (13/11/2026; el encabezado ya era compacto desde el 24/10): la portada entra mejor en la primera pantalla */
+  html:not(.emb) .wrap{gap:12px;padding-top:12px}
 }
 /* todos los recuadros del mismo alto (el del renglón más alto); el título "Ir a…" (antes "El Chaco hoy") va aparte, en su renglón */
-.portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:8px}
+.portada{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:auto;gap:8px}
+/* 13/11/2026 (Mariano: que se ajusten mejor en el celular): antes todos los renglones tomaban el alto del más alto (grid-auto-rows:1fr),
+   y los recuadros a lo ancho (tu localidad y "Datos y Acerca") quedaban con mucho blanco. Ahora los de a 3 siguen parejos con un alto
+   mínimo que alcanza para un nombre en 2 renglones ("Con alerta oficial"), y los de a lo ancho toman solo el alto que necesitan. */
+.portada>.pT{min-height:calc(54px + 2.82rem)}
+.portada>.pT.pLoc,.portada>.pT:last-child:nth-child(3n){min-height:0}
+.portada>.pT:last-child:nth-child(3n):not(.pLoc){flex-direction:row;align-items:center;gap:10px;padding:10px 30px 10px 12px;text-align:left}
+.portada>.pT:last-child:nth-child(3n):not(.pLoc) .pD{margin:0 0 0 auto}
 /* el último recuadro ocupa el hueco de su renglón (tu localidad va primero y a lo ancho desde el 13/11/2026: los demás empiezan en el hijo 3) */
 .portada>.pT:last-child:nth-child(3n){grid-column:1/-1}
 .portada>.pT:last-child:nth-child(3n+1){grid-column:span 2}
@@ -733,6 +742,9 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .pLoc .pIc{width:38px;height:38px;border-radius:12px}.pLoc .pIc svg{width:22px;height:22px}
 .pLocTx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
 .pLocNom{font-family:var(--font-tit);font-size:1.15rem;font-weight:700;line-height:1.15;color:var(--titulo);overflow-wrap:anywhere}
+/* nombres largos en pantallas angostas (13/11/2026): letra un poco menor y corte con guion, no en cualquier letra ("Presidenc/ia") */
+.pLocNom{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
+@media (max-width:359px){.pLocNom{font-size:1rem}}
 .pLocDer{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right}
 .pLoc .pD{margin-top:0}
 .pLocNiv{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:800;color:var(--ink)}

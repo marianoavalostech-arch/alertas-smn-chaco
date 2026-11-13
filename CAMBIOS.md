@@ -2,6 +2,14 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (portada del celular más baja)
+
+Pedido de Mariano: que las secciones de arriba se ajusten mejor en el celular.
+- Los renglones de la portada ya no toman todos el alto del más alto (`grid-auto-rows:1fr` → `auto`). Los recuadros de a 3 siguen parejos con un alto mínimo que alcanza para un nombre en 2 renglones; "Tu localidad" y "Datos y Acerca" (a lo ancho) toman solo lo que necesitan. "Datos y Acerca" queda en un renglón: ícono, nombre y "Fuentes" a la derecha.
+- Menos espacio entre los bloques en el celular (`.wrap`, 12 px).
+- Nombre largo de tu localidad en pantallas angostas: letra un poco menor y corte con guion ("Presiden-cia"), no en cualquier letra.
+- Resultado a 390 px: la portada termina en 726 px (antes 829); entra entera en la primera pantalla de un celular común. Computadora sin cambios. 93 pruebas; misma huella.
+
 ## 13/11/2026 (tu localidad primera y a lo ancho en el celular)
 
 Pedido de Mariano: que en el celular la localidad elegida se vea más.
