@@ -291,9 +291,9 @@ prueba('umbrales de lluvia', () => {
   assert.ok(S('ROJO_LEJOS').includes('más de 3 días') && S('ROJO_LEJOS').includes('no cambia el color') && html.includes('Solo cuentan hoy y los 2 días siguientes.'));
   // Textos: el amarillo sale del SMN, no de la lluvia
   assert.ok(!/<td><b>Amarillo<\/b><\/td>/.test(html), 'la tabla no tiene fila de amarillo');
-  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN o alerta oficial amarilla.'));
-  assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.'));
-  assert.ok(html.includes('La lluvia, sola, solo da rojo si es muy fuerte.'));
+  assert.ok(html.includes('<b>Amarillo:</b> alerta amarilla del SMN o, en la costa, el Paraná alto.'));
+  assert.ok(html.includes('<b>Naranja:</b> alerta naranja del SMN o, en la costa, el Paraná y lo que prevé el INA.'));
+  assert.ok(html.includes('de la altura del <b>Paraná</b> (en la costa) y de la lluvia muy fuerte.'));
   const t = S(`txtViene({cayo:2,viene:72.1,max:30.4,maxDia:'2026-11-17',viene3:8,max3:7.3,maxDia3:'2026-11-14'},'entre hoy')`);
   assert.ok(t.includes('entre hoy y los 2 días siguientes') && t.includes('en la semana') && !t.includes('un solo día'), t);
   assert.ok(S(`txtViene({cayo:0,viene:60,max:50,maxDia:'2026-11-13',viene3:60,max3:50,maxDia3:'2026-11-13'},'entre hoy')`).includes('en un solo día'));
@@ -418,8 +418,9 @@ prueba('mapa: la costa del Paraná toma el color más alto entre la lluvia y el 
   // Sin datos de lluvia todavía, el río igual pinta la costa
   assert.deepStrictEqual(col(null, obs13, pr13).slice(0, 3).map(x => x[0] + x[1]), ['naranjario', 'naranjario', 'naranjario']);
   // Leyenda con el naranja: alerta naranja del SMN (desde el 12/11/2026) o el Paraná en la costa
-  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja-mapa\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o alerta oficial naranja.</li>'), 'leyenda');
-  assert.ok(['amarillo','naranja','rojo'].every(c=>new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del SMN o alerta oficial').test(html)), 'la leyenda nombra la alerta oficial en amarillo, naranja y rojo (12/11/2026)');
+  assert.ok(/data-c="naranja"[^<]*<i style="background:var\(--naranja-mapa\)[^>]*><\/i>Naranja<\/button>/.test(html) && html.includes('<li data-c="naranja"><b>Naranja:</b> alerta naranja del SMN o, en la costa, el Paraná y lo que prevé el INA.</li>'), 'leyenda');
+  // Leyenda por modo (13/11/2026): Monitoreo del Niño, Servicio Meteorológico y el cálculo de antes
+  assert.ok(['amarillo','naranja','rojo'].every(c=>new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del municipio en el Monitoreo del Niño\\.').test(html) && new RegExp('<li data-c="'+c+'"><b>[^<]*</b> alerta [a-z]+ del SMN\\.</li>').test(html)), 'la leyenda de cada modo');
   assert.ok(!html.includes('cuando el pronóstico del INA prevé pasar el nivel de evacuación. No es'), 'el naranja ya no dice solo lo del pronóstico');
   assert.ok(!html.includes('Es la única forma de que el mapa muestre rojo por el río') && !html.includes('nunca a rojo'), 'sin los textos de antes del 17/10');
   assert.strictEqual(S('ETQ.naranja'), 'Naranja');
@@ -545,7 +546,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
-  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Las alertas oficiales por municipio son, en general, por la crecida del Paraná.'));
+  assert.ok(/<details class="det" id="d-colores">\s*<summary>¿Qué significa cada color\?<\/summary>/.test(mapa) && mapa.includes('Es el nivel que informa el Monitoreo del Niño para cada municipio, en general por la crecida del Paraná.'));
   assert.ok(mapa.indexOf('id="mapa"') < mapa.indexOf('d-colores') && mapa.indexOf('id="mInfo"') < mapa.indexOf('d-colores') && mapa.indexOf('d-colores') < mapa.indexOf('id="mEstado"'), 'el mapa, el detalle y la fecha quedan a la vista');
   // Qué hacer: "Ahora en el Chaco", teléfonos y tarjetas a la vista; colores del SMN y fuentes en "Más información"
   const hacer = html.slice(html.indexOf('id="t-hacer"'), html.indexOf('id="t-sem"')), mas = hacer.indexOf('id="d-hacer-mas"');
@@ -871,7 +872,47 @@ prueba('mapa: con la alerta oficial al día, ese nivel reemplaza al cálculo con
   // Más estaciones, hora por hora: en "Otros ríos", en el orden en que baja el agua
   const est = S(`D.puertos={datos:{v:6.64,hora:new Date().toISOString(),est:[['Barranqueras','Paraná',6.64,new Date().toISOString(),2,-1],['Corrientes','Paraná',6.76,new Date().toISOString(),1,-1],['Las Palmas','Paraguay',6.66,new Date().toISOString(),1,0],['Eldorado','Paraná',18.8,new Date().toISOString(),null,-20],['Vieja','Paraná',1,'2026-01-01T00:00:00Z',0,0]]},vivo:true,t:new Date()};(()=>{const r=estacionesHora();D.puertos={datos:null};return r})()`);
   assert.ok(est.includes('Más estaciones, hora por hora') && est.indexOf('Río Paraguay') < est.indexOf('Río Paraná') && est.indexOf('Corrientes') < est.indexOf('Barranqueras') && est.includes(': evacuación') && !est.includes('Eldorado') && !est.includes('Vieja') && est.includes('−1 cm'.replace('−','-')), 'tabla');
-  assert.ok(codigo.includes("'<p><b>'+ETQ[k.c]+' por la alerta oficial</b>'"), 'explica la alerta oficial');
+  assert.ok(codigo.includes("'<p><b>Alerta '+['','amarilla','naranja','roja'][NIVELES.indexOf(k.c)]+' en el Monitoreo del Niño</b>'"), 'explica la alerta del Monitoreo del Niño');
+});
+
+prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo criterios oficiales; sin el Monitoreo al día, el cálculo de antes (13/11/2026)', () => {
+  const idx = n => S(`GEO.mun.findIndex(m=>m[0]==='${n}')`);
+  const CB = idx('Colonia Benítez'), RE = idx('Resistencia'), CH = idx('Charata'), TP = idx('Taco Pozo');
+  const ofi = Object.fromEntries(S('GEO.mun.map(m=>m[0])').map(n => [n, 0])); Object.assign(ofi, { 'Colonia Benítez': 2, 'Resistencia': 2, 'Barranqueras': 3, 'Margarita Belén': 1 });
+  // Charata con alerta amarilla del SMN para hoy; Resistencia con lluvia "roja" de Open-Meteo (no cuenta en ninguno de los dos modos)
+  const prep = (modo, conOfi, conSmn = true) => S(`hoy='2026-11-13';LISTO=true;horaAR=()=>5;MODO='${modo}';
+    SMN=${conSmn ? `{emitido:'2026-11-13T03:00:00Z',capturado:new Date().toISOString(),fechas:['2026-11-13','2026-11-14','2026-11-15'],areas:GEO.mun.map((m,i)=>i),alertas:{${CH}:[['2026-11-13',41,3,3,0,0]]}}` : 'SMN_VACIO'};
+    D.rio={datos:{obs:[['2026-11-13',6.61]]},vivo:true,t:new Date()};D.prono={datos:null};
+    M.R=LOCS.map((l,j)=>({c:j===0?'rojo':'verde',et:'x',por:'x'}));M.est=Object.fromEntries(GEO.mun.map((m,i)=>[i,{c:'verde',ll:{cayo:0,viene:0,max:0}}]));M.tEst=Date.now();M.todos='listo';
+    D.oficial=${conOfi ? `{datos:{mun:${JSON.stringify(ofi)}},vivo:true,t:new Date()}` : '{datos:null}'};''`);
+  const cols = () => JSON.parse(S(`JSON.stringify([${CB},${RE},${CH},${TP}].map(i=>colorDe(i).c))`));
+  prep('nino', true);
+  assert.strictEqual(S('modoEf()'), 'nino');
+  assert.deepStrictEqual(cols(), ['naranja', 'naranja', 'verde', 'verde'], 'Monitoreo: solo su nivel (ni la lluvia ni el SMN)');
+  const semN = S('semModo((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}),{},{})');
+  assert.ok(semN.indexOf('Barranqueras|Rojo') < semN.indexOf('Colonia Benítez|Naranja') && semN.indexOf('Colonia Benítez') < semN.indexOf('Resistencia|Naranja') && semN.includes('Margarita Belén|Amarillo') && !semN.includes('Charata') && semN.includes('Los otros 66 municipios no tienen alerta en el Monitoreo del Niño.'), semN);
+  prep('smn', true);
+  assert.strictEqual(S('modoEf()'), 'smn');
+  assert.deepStrictEqual(cols(), ['verde', 'verde', 'amarillo', 'verde'], 'SMN: solo su alerta (ni el Monitoreo ni la lluvia)');
+  const semS = S('semModo((q,tit,sub,ver,abre)=>({c:q.c,html:"<li>"+tit+"|"+q.et+"|"+q.por+"</li>"}),{},{rojo:0,naranja:1,amarillo:2,gris:3,verde:4})');
+  assert.ok(semS.startsWith('<li>Charata|Amarillo|Alerta amarilla por tormentas, el viernes 13/11') && semS.includes('Sin alerta del SMN') && !semS.includes('Monitoreo'), semS);
+  prep('smn', true, false);
+  assert.deepStrictEqual(cols(), ['gris', 'gris', 'gris', 'gris'], 'SMN sin informe: gris');
+  // Sin el Monitoreo al día (o con más de 24 horas): el cálculo de antes (lluvia, SMN y el Paraná en la costa)
+  prep('nino', false);
+  assert.strictEqual(S('modoEf()'), 'calc');
+  assert.deepStrictEqual(cols(), ['rojo', 'rojo', 'amarillo', 'verde'], 'cálculo de antes');
+  S(`D.oficial={datos:{mun:${JSON.stringify(ofi)}},vivo:true,t:new Date(Date.now()-30*36e5)}`);
+  assert.strictEqual(S('modoEf()'), 'calc', 'con más de 24 horas, también');
+  // La elección se recuerda; de entrada, el Monitoreo; botones y textos de cada modo
+  assert.ok(codigo.includes("const MODO_K='anc-modo-mapa';") && codigo.includes("localStorage.getItem(MODO_K)==='smn'?'smn':'nino'") && codigo.includes('localStorage.setItem(MODO_K,MODO)'));
+  assert.ok(html.includes('<html lang="es" class="m-nino">') && /<button type="button" role="radio" data-modo="nino" aria-checked="true">.*?<span class="mNom">Monitoreo del Niño<\/span><span class="mEst" id="mEstNino"><\/span>/.test(html) && /data-modo="smn" aria-checked="false">.*?<span class="mNom">Servicio Meteorológico<\/span><span class="mEst" id="mEstSmn"><\/span>/.test(html));
+  // Cada botón dice cuántos municipios tienen alerta con su criterio (13/11/2026: la única marca del otro criterio, sin otro cartel)
+  prep('nino', true); const eN = {}, eS = {}; elementos.mEstNino = eN; elementos.mEstSmn = eS; S('pintarModo()'); delete elementos.mEstNino; delete elementos.mEstSmn;
+  assert.ok(eN.innerHTML === '<i aria-hidden="true" data-c="rojo"></i>4 con alerta' && eS.innerHTML === '<i aria-hidden="true" data-c="amarillo"></i>1 con alerta', eN.innerHTML + ' / ' + eS.innerHTML);
+  assert.ok(['vNino', 'vSmn', 'vCalc'].every(c => html.includes('class="regIntro ' + c + '"') || html.includes('<div class="' + c + '">')), 'explicaciones de cada modo');
+  assert.ok(html.includes('qué mapa elegiste (Monitoreo del Niño o Servicio Meteorológico)') && fs.readFileSync(path.join(raiz, 'privacidad.html'), 'utf8').includes('qué mapa elegiste'), 'privacidad');
+  S(`MODO='nino';SMN=SMN_VACIO;D.oficial={datos:null};D.rio={datos:null};M.R=[];M.est={};M.todos=''`);
 });
 
 prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo demás se renueva', () => {

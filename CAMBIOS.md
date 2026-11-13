@@ -2,6 +2,18 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 (mapa: Monitoreo del Niño o Servicio Meteorológico)
+
+Decisión de Mariano: el mapa muestra solo criterios oficiales, sin cálculo propio, y se elige cuál.
+- Arriba del mapa, dos botones: **Monitoreo del Niño** (de entrada) y **Servicio Meteorológico** (`.modo`, `MODO`, `iniciarModo`, `pintarModo`). La elección queda guardada en el dispositivo (`anc-modo-mapa`).
+- Cada botón es una tarjetita con su ícono (en la computadora) y, en chico, cuántos municipios tienen alerta con ese criterio, con un punto del color más alto (`mEstNino`, `mEstSmn`): con el Monitoreo elegido se ve igual que hay alerta del SMN, sin sumar otro cartel. En el celular van centrados, sin ícono, del mismo alto. Frase de abajo más corta.
+- Monitoreo del Niño: cada municipio toma el nivel de alerta que informa el Monitoreo (`ofiNivel`); ni la lluvia ni el SMN cambian el color. Servicio Meteorológico: la alerta más alta del SMN para hoy y los 2 días siguientes (`pisoSMN`); sin informe confirmado, gris. La lluvia de Open-Meteo ya no da color en ninguno de los dos.
+- Si el dato del Monitoreo lleva más de 24 horas sin renovarse, vuelve el cálculo de antes (`colorCalc`: lluvia, SMN y, en la costa, el Paraná) con un aviso debajo de los botones.
+- "Riesgo por localidad" según el modo (`semModo`): con el Monitoreo, los municipios con alerta (del nivel más alto al más bajo, con sus localidades con alerta) y cuántos no tienen; con el SMN, las 6 ciudades con el fenómeno, el día y el horario.
+- Tarjeta del municipio: arriba el criterio del mapa y después el otro (sin el cuadrito de la lluvia); "Seguir leyendo" con el criterio, la alerta del SMN y la lluvia como información. Portada: "Riesgo por localidad" con cuántos municipios tienen alerta en el Monitoreo; con el SMN, las luces de las 6 ciudades. Los puntos de las 6 ciudades toman el color de su municipio. El borde punteado del SMN no va con el Monitoreo.
+- Textos por modo (clases `vNino`, `vSmn`, `vCalc` y `m-…` en `<html>`): "¿Qué significa cada color?" y "¿Cómo se decide el color?". Debajo del mapa: "Lluvia de cada municipio: Open-Meteo" (antes "Fuente: Open-Meteo", que se leía como la fuente del color).
+- Privacidad (frase y `privacidad.html`) al día. Prueba nueva de los dos modos (92 pruebas). Huella nueva del código. Los avisos al celular no cambian (solo alertas del SMN).
+
 ## 12/11/2026 (tarjeta del municipio más corta)
 
 Pedido de Mariano: la tarjeta quedaba muy larga (Resistencia, con alerta del SMN y alerta oficial). En el celular baja de unos 780 a unos 550 px.
