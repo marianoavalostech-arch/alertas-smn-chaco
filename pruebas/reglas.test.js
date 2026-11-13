@@ -189,6 +189,9 @@ prueba('lluvia hora por hora: colores nuevos, nubes tenues, tira de barritas y �
   // todo el Chaco (13/11/2026): en cuántos municipios llueve y dónde lo más fuerte
   assert.ok(/^Se espera lluvia en \d+ de los 70 municipios de acá a mañana a la noche\. Lo más fuerte: unos 12 mm en una hora en .+, mañana a las 10 h\. Elegí una localidad para ver la suya\.$/.test(S('resumenChaco(A.g,38)')), 'frase de todo el Chaco');
   assert.strictEqual(S('resumenChaco(A.g,62)'), 'En el Chaco no se espera lluvia de acá a mañana a la noche.');
+  // la barra va a la primera hora con lluvia de acá en adelante (13/11/2026)
+  { const fn = html.slice(html.indexOf('function irPrimera(){'), html.indexOf('function tiraValores('));
+    assert.ok(fn.includes('if(v[ka]>=LLUEVE)return;') && fn.includes('for(let k=ka+1;k<g.n;k++)if(v[k]>=LLUEVE){parar();mostrar(k);return}') && html.includes('if(nuevo&&!A.aMano)irPrimera();'), 'al abrir, la barra salta a la primera hora con lluvia'); }
   assert.ok(html.includes('function autoLoc(){return miLocGuardada()}') && html.includes("$('aLoc').addEventListener('change',e=>{A.aMano=true;"), 'elección automática: tu localidad, salvo que se elija otra a mano (13/11/2026)');
   S('A.g.p.forEach(x=>{x[57]=0;x[60]=0;x[58]=Math.min(x[58],6)})');
   assert.strictEqual(JSON.parse(S('JSON.stringify(resumenLoc(A.g,' + IR + ',38))')).txt, 'En Resistencia se espera lluvia débil mañana a las 10 h. Con tormentas previstas en la zona.');

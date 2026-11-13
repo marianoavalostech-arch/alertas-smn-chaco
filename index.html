@@ -3274,7 +3274,14 @@ function lugA(i){const m=GEO.mun[i];if(!m)return null;const l=LOCS.find(x=>(x.mu
 const locDeLOCS=j=>GEO.mun.findIndex(m=>m[0]===(LOCS[j].mun||LOCS[j].n));
 // Elección automática (pedido de Mariano): tu localidad; si no hay, todo el Chaco. Si la persona elige otra a mano, queda la suya en esa visita.
 function autoLoc(){return miLocGuardada()}
-function locAuto(){if(A.g&&A.armado&&!A.aMano){const i=autoLoc();if(i!==A.loc)elegirLoc(i,false)}}
+function locAuto(){if(A.g&&A.armado&&!A.aMano){const i=autoLoc();if(i!==A.loc){elegirLoc(i,false);irPrimera()}}}
+// Si ahora no llueve en la localidad elegida (o en ningún municipio, con "Todo el Chaco"), la barra salta a la primera hora con lluvia
+// prevista de acá en adelante (13/11/2026, pedido de Mariano). Si ya llueve o no se espera nada, queda en "ahora".
+function irPrimera(){
+  const g=A.g;if(!g)return;const ka=kAhora(),v=tiraValores(g);
+  if(v[ka]>=LLUEVE)return;
+  for(let k=ka+1;k<g.n;k++)if(v[k]>=LLUEVE){parar();mostrar(k);return}
+}
 function tiraValores(g,loc=A.loc){
   const l=loc>=0&&lugA(loc);
   return Array.from({length:g.n},(_,k)=>l?Math.max(0,enLugar(g,'p',l.lat,l.lon,k)):Math.max(0,...GEO.mun.map(m=>enLugar(g,'p',m[2],m[3],k))));
@@ -3404,6 +3411,7 @@ function pintarAnim(){
   mostrar(nuevo||A.k<0?kAhora():A.k);
   if(!A.aMano)A.loc=autoLoc();
   elegirLoc(A.loc,false);
+  if(nuevo&&!A.aMano)irPrimera();
 }
 // Con la sección cerrada, el mapa animado se dibuja cuando el teléfono queda libre (24/10/2026): pintar la lluvia y las nubes
 // lleva un rato en los celulares lentos y trababa la página justo cuando llegaban los demás datos. Abierta, se dibuja enseguida;
