@@ -1782,10 +1782,12 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(pv.includes('<title>Política de privacidad · Ríos y Clima del Chaco</title>') && pv.includes('<h1>Política de privacidad</h1>'), 'se llama "Política de privacidad" (lo pide Google Play)');
     assert.ok(!/<script/i.test(pv) && !/\son[a-z]+=["']/i.test(pv) && !pv.includes('javascript:'), 'sin código: no hace falta y la regla del navegador (CSP) no lo dejaría correr');
     assert.ok(!pv.includes('marianoavalos.tech@') && pv.includes('marianoavalos&#46;tech&#64;gmail&#46;com'), 'el correo no está escrito tal cual (para los robots que buscan direcciones)');
-    for (const t of ['No es un servicio oficial', 'no representa al Gobierno del Chaco', 'La app no pide ubicación', 'Solo pide permiso para mostrar avisos, y solo si los pedís', 'No usa cookies', 'GoatCounter', 'Borrar datos', 'menores de 13 años', 'HTTPS', 'Última actualización'])
+    for (const t of ['No es un servicio oficial', 'no representa al Gobierno del Chaco', 'La app no pide ubicación', 'Solo pide permiso para mostrar avisos, y solo si los pedís', 'No usa cookies', 'GoatCounter', 'Borrar datos', 'menores de 13 años', 'HTTPS', 'Última actualización', 'Ley 25.326', 'Agencia de Acceso a la Información Pública', 'El responsable del sitio y de la app es Mariano Avalos', 'se usan solo para responderte'])
       assert.ok(pv.includes(t), 'falta en la política: ' + t);
     for (const f of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(pv.includes('url(fuentes/' + f + ')'), 'la misma letra que el sitio');
     assert.ok(html.includes('<a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>') && html.indexOf('href="privacidad.html"') > html.indexOf('id="t-acerca"'), 'se abre desde "Acerca de este sitio": Play pide que esté también dentro de la app');
+    const acerca = html.slice(html.indexOf('id="t-acerca"'), html.indexOf('</section>', html.indexOf('id="t-acerca"')));
+    assert.ok(acerca.includes('Centro de Monitoreo</a> del Gobierno del Chaco') && acerca.includes('No es un sitio oficial.') && acerca.includes('no reemplaza al SMN ni a Defensa Civil'), '"Acerca" nombra las fuentes de hoy y dice que no es oficial (13/11/2026)');
   });
   prueba('Google Play: la app se reconoce, no ofrece instalar y cuenta aparte ("/desde-play"); la visita se cuenta al terminar de cargar', () => {
     const pedidos = [], antes = sitio.location, antesAdd = sitio.addEventListener, ev = {};

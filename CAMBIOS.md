@@ -2,6 +2,13 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 13/11/2026 ("Acerca de este sitio" y política de privacidad al día)
+
+Pedido de Mariano: revisar "Acerca de" con los cambios nuevos y redactar bien la privacidad.
+- **"Acerca de este sitio"**: dice qué es en una frase y nombra las fuentes de hoy (primero el Centro de Monitoreo del Gobierno del Chaco, con enlace; también Prefectura y Yacyretá, que faltaban). "No es un sitio oficial" con su propio renglón: iniciativa ciudadana, sin fines comerciales, no reemplaza al SMN ni a Defensa Civil. La privacidad pasa de un párrafo largo a tres puntos (cookies y contador, lo que se guarda en el dispositivo, a qué se conecta) y suma la mochila, que faltaba.
+- **`privacidad.html`** (fecha nueva): secciones nuevas "Si escribís" (el correo o el usuario de GitHub, solo para responder), "Tus derechos" (Ley 25.326: saber, corregir y borrar; plazos de la ley; reclamo ante la Agencia de Acceso a la Información Pública) y "Responsable y contacto". Suma los desplegables y la marca de prueba de los avisos entre lo que se guarda, que los avisos están en prueba, que los servidores de los servicios pueden estar fuera de la Argentina y que dentro del portal la página que rodea al sitio es del Gobierno. "Chicos y chicas" pasa a "Menores de edad"; la ✕ de "Tu localidad" está en su renglón, arriba del mapa.
+- Pruebas al día (93). El código de la página no cambia (misma huella).
+
 ## 13/11/2026 (elegir tu localidad, a la vista)
 
 Pedido de Mariano: "elegir mi localidad queda escondida".
