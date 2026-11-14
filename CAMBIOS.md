@@ -2,6 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin subir (en la carpeta)
+
+- **Pie de la tarjeta del municipio en una sola frase** (pedido de Mariano): queda "Pronóstico de Open-Meteo." (y ", para el centro del municipio" cuando corresponde). Salieron las frases de dónde sale el color y las alertas —ya lo dicen los cuadritos de arriba— y la del Centro de Monitoreo, que está en "De dónde salen los datos". Con el cálculo de respaldo se mantiene "El cálculo no mira ríos ni arroyos".
+- **Control de los pluviómetros** (14/11): comparados los 70 contra la lluvia estimada del 8 al 13/11. Un solo caso dudoso (Puerto Tirol: 0 mm medidos con 16,6 mm estimados); ningún día sin cargar. Se decidió **no** agregar aviso por ahora y volver a controlar después de la próxima tormenta grande.
+
 ## 14/11/2026 (Carga más directa y nombres parejos)
 
 Pedido de Mariano: que el sitio se lea más rápido y que cada sección se llame siempre igual.

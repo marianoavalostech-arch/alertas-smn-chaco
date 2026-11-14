@@ -2196,9 +2196,10 @@ function smnDetTxt(i){
 // De dónde salen el pronóstico y las alertas (antes iba a la vista, debajo de los días).
 function fuenteTxt(i,k){
   if(!DIAS_FTE)return '';
-  return '<p class="meta">'+DIAS_FTE+(k.tipo==='est'?', para el centro del municipio':'')+(k.modo==='nino'?'. El color del mapa es el del Monitoreo del Niño; las alertas de cada día, del SMN.':k.modo==='smn'?'. El color del mapa es la alerta más alta del SMN para hoy y los 2 días siguientes.':'. Las alertas son del SMN.')
-    +(k.modo==='calc'&&k.tipo==='est'&&!(RIBI[i]||RIPI[i])?' El cálculo no mira ríos ni arroyos.':'')
-    +(k.modo==='nino'||pluvioDe(i)?' '+(k.modo==='nino'?'El Monitoreo del Niño'+(pluvioDe(i)?' y la lluvia medida son':' es'):'La lluvia medida es')+' del Centro de Monitoreo del Gobierno del Chaco.':'')+'</p>';
+  // 14/11/2026 (Mariano): el pie queda en una sola frase. De dónde sale el color y las alertas ya lo dicen los cuadritos de arriba,
+  // y las fuentes están en "De dónde salen los datos"; lo único que hay que aclarar acá es que los días son un modelo, no un dato oficial.
+  return '<p class="meta">'+DIAS_FTE+(k.tipo==='est'?', para el centro del municipio':'')+'.'
+    +(k.modo==='calc'&&k.tipo==='est'&&!(RIBI[i]||RIPI[i])?' El cálculo no mira ríos ni arroyos.':'')+'</p>';
 }
 // De dónde sale el color del municipio (4/11/2026, pedido de Mariano: que se vea sin leer): el color del mapa y, en cuadritos, la lluvia
 // (su semáforo o su estimación), la alerta del SMN cuando sube el color y, en los municipios de la costa, el Paraná con el techo de cada uno.
