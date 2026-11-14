@@ -2,6 +2,18 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## 14/11/2026 (Carga más directa y nombres parejos)
+
+Pedido de Mariano: que el sitio se lea más rápido y que cada sección se llame siempre igual.
+- **Las letras se piden desde el arranque** (`<link rel="preload">` de Manrope y Kanit): antes llegaban a los 0,6 s y el texto cambiaba de letra a mitad de la carga.
+- **La botonera del celular aparece entera, sin animación de entrada**: fuera la regla de `pEntra`, los 12 `animation-delay` escalonados (hasta 420 ms de espera), el `@keyframes`, el `setTimeout` de `pQuieta` y la regla de "menos movimiento" que quedaba sin uso. Antes el último recuadro terminaba de entrar a los 0,84 s.
+- **Nombres parejos**: en el menú y en el índice, "Otros ríos" pasa a ser "Paraguay y Bermejo" (como en la botonera y en el título de la sección); el título "Lluvia hora por hora: ayer, hoy y mañana" pasa a "Lluvia por hora: ayer, hoy y mañana", igual que el menú, la botonera y el índice.
+- **Textos**: "Lluvia prevista" ya no dice "y portada del celular" (la portada no la muestra desde el 13/11); en "¿Qué muestra este mapa?" se unió la frase repetida de "al elegir una localidad".
+- **Los textos hablan de la fuente elegida, no de cálculos nuestros** (pedido de Mariano): "De dónde salen los datos" abre con una frase que dice que el color sale tal cual del Monitoreo del Niño o de las alertas del SMN, según cuál esté elegida arriba del mapa; en "Lluvia prevista" se sacó la explicación del rojo calculado por lluvia (sigue explicada en el bloque que aparece solo cuando nunca se pudo leer el Monitoreo). En la tarjeta del municipio, con el SMN elegido ahora dice "El color del mapa es la alerta más alta del SMN para hoy y los 2 días siguientes" (antes solo "Las alertas son del SMN"). Probado en la nube con datos reales en los dos modos.
+- **El río se nombra en los municipios de la costa** (pedido de Mariano): con el Monitoreo del Niño o el SMN elegidos, la tarjeta de los 11 municipios de la costa (`RIBERA` y `RIBERA_PISO`) suma un renglón con la altura del Paraná cuando no está en verde, aunque el color del mapa venga de otra fuente (`rioCosta`). Lleva la aclaración de cada municipio y, en Resistencia, que dentro de las defensas (9,50 m) el agua queda afuera. Antes la altura del río solo aparecía si el color salía del río. **Con alerta oficial vigente el renglón se muestra igual aunque el río haya vuelto por debajo del nivel de alerta**, y en ese caso agrega: "Aunque el río baje, la alerta oficial sigue vigente: no vuelvas a tu casa hasta que lo indiquen los organismos oficiales" (un río que baja no quiere decir que se pueda volver a la casa). Probado en la nube en los dos modos: Resistencia, Barranqueras y Basail lo muestran; Fontana, que no es costa, no.
+- Medición de la carga: 117 KB de página comprimida, 194 KB la primera visita con letras e ícono; primer dibujo a los 0,37 s y página usable a los 0,45 s en computadora.
+- 93 pruebas. Huella nueva del código.
+
 ## 13/11/2026 (Limpieza antes de producción)
 
 Pedido de Mariano: sacar todo lo que no hace falta.

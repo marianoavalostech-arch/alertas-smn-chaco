@@ -1,5 +1,5 @@
 <!doctype html><html lang="es" class="m-nino"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ríos y Clima del Chaco</title><meta name="description" content="Alertas, lluvias y ríos del Chaco: alertas oficiales del SMN, lluvia, altura de los ríos Paraná, Paraguay y Bermejo y alertas oficiales por municipio."><meta property="og:type" content="website"><meta property="og:locale" content="es_AR"><meta property="og:title" content="Ríos y Clima del Chaco"><meta property="og:description" content="Alertas oficiales del SMN, lluvias, altura de los ríos Paraná, Paraguay y Bermejo y alertas oficiales por municipio del Chaco."><meta property="og:url" content="https://panel-alertas-chaco.netlify.app/"><meta property="og:image" content="https://panel-alertas-chaco.netlify.app/compartir.png?v=7"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#f7f5fa">
-<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin><meta name="color-scheme" content="only light"><link rel="icon" href="icono.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="iconos/icono-apple-180.png"><meta name="apple-mobile-web-app-title" content="Ríos y Clima"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
+<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin><link rel="preload" href="fuentes/manrope-wght.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="fuentes/kanit-700.woff2" as="font" type="font/woff2" crossorigin><meta name="color-scheme" content="only light"><link rel="icon" href="icono.svg" type="image/svg+xml"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="iconos/icono-apple-180.png"><meta name="apple-mobile-web-app-title" content="Ríos y Clima"><style>body{margin:0}[hidden]{display:none!important}/* lluvia hora por hora */
 #anim{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--land)}
 #anim svg{touch-action:pan-y}
 #anim .aCiudad{fill:var(--ink);font-weight:700;font-size:17px;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
@@ -770,9 +770,9 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .pT:active .pIc{transform:scale(1.12)}
 @media (hover:hover){.pT:hover{transform:translateY(-2px);border-color:#d8d1ef;box-shadow:0 2px 4px rgba(80,89,188,.08),0 10px 24px rgba(80,89,188,.14)}}
 /* al abrir, los recuadros entran uno detrás de otro (solo la primera vez: después la portada queda quieta) */
-@keyframes pEntra{from{opacity:0;transform:translateY(10px) scale(.97)}}
-.portada:not(.pQuieta) .pT{animation:pEntra .42s cubic-bezier(.2,.8,.3,1) backwards}
-.portada .pT:nth-child(3){animation-delay:35ms}.portada .pT:nth-child(4){animation-delay:70ms}.portada .pT:nth-child(5){animation-delay:105ms}.portada .pT:nth-child(6){animation-delay:140ms}.portada .pT:nth-child(7){animation-delay:175ms}.portada .pT:nth-child(8){animation-delay:210ms}.portada .pT:nth-child(9){animation-delay:245ms}.portada .pT:nth-child(10){animation-delay:280ms}.portada .pT:nth-child(11){animation-delay:315ms}.portada .pT:nth-child(12){animation-delay:350ms}.portada .pT:nth-child(13){animation-delay:385ms}.portada .pT:nth-child(14){animation-delay:420ms}
+
+
+
 
 /* ícono en un cuadradito de color suave: violeta; agua en celeste; con color de estado, el del estado */
 .pIc{flex:none;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:#efecfc;color:var(--acento);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(80,89,188,.1);transition:transform .2s cubic-bezier(.3,.7,.4,1.6)}
@@ -793,7 +793,7 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .pTelT .pD{color:#1f6b42}
 .pT.pTelT::after{background:radial-gradient(circle at 50% 45%,rgba(44,138,87,.22),rgba(44,138,87,0) 65%)}
 .pSr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}.portada .pT{animation:none}}
+@media (prefers-reduced-motion:reduce){.pT,.pIc,.pT::after{transition:none}.pT:active,.pT:hover,.pT:active .pIc{transform:none}}
 @media print{.portada{display:none!important}}
 /* Portada que se lea como botonera (13/11/2026, pedido de Mariano: "parecen solo etiquetas"): título "Ir a…" (en lugar de "El Chaco hoy",
    sin frase aclaratoria; el botón de la esquina dice "↑ Ir a…"), una flechita en cada recuadro y un borde de abajo más marcado, como una tecla, que se hunde al tocar. */
@@ -945,7 +945,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
       <a href="#t-tel"><span class="ladoIco" aria-hidden="true">📞</span><span class="ladoTx">Teléfonos<small class="ladoSub"></small></span></a>
       <a href="#t-sem"><span class="ladoIco" aria-hidden="true">📍</span><span class="ladoTx">Con alerta oficial<small class="ladoSub"></small></span></a>
       <a href="#t-rio"><span class="ladoIco" aria-hidden="true">🌊</span><span class="ladoTx">Río Paraná<small class="ladoSub"></small></span></a>
-      <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Otros ríos<small class="ladoSub"></small></span></a>
+      <a href="#t-otros"><span class="ladoIco" aria-hidden="true">🏞️</span><span class="ladoTx">Paraguay y Bermejo<small class="ladoSub"></small></span></a>
       <a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<small class="ladoSub"></small></span></a>
       <a href="#t-nino"><span class="ladoIco" aria-hidden="true">🌡️</span><span class="ladoTx">El Niño<small class="ladoSub"></small></span></a>
       <a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<small class="ladoSub"></small></span></a>
@@ -970,7 +970,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 
   <nav class="indice" id="indice" aria-label="Índice de la página">
     <span class="indTit">Ir a:</span>
-    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Con alerta oficial</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Otros ríos</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
+    <a href="#t-mapa">Mapa</a><a href="#t-smn">Alertas del SMN</a><a href="#t-hacer">Qué hacer</a><a href="#t-tel">Teléfonos</a><a href="#t-sem">Con alerta oficial</a><a href="#t-rio">Río Paraná</a><a href="#t-otros">Paraguay y Bermejo</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>
   </nav>
 
   <section aria-labelledby="t-mapa">
@@ -1210,7 +1210,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   </section>
 
   <section aria-labelledby="t-anim" class="plegable" data-cerrada data-pista="Mapa animado de la lluvia, con satélite">
-    <h2 id="t-anim">Lluvia hora por hora: ayer, hoy y mañana</h2>
+    <h2 id="t-anim">Lluvia por hora: ayer, hoy y mañana</h2>
     <div class="animCuerpo">
     <div class="animMapa">
     <p id="aEtq" aria-live="polite"></p>
@@ -1239,7 +1239,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
     </div>
     <details class="det" id="d-anim"><summary>¿Qué muestra este mapa?</summary>
       <p class="meta">No es un radar: la lluvia es una estimación del modelo de pronóstico, también en las horas que ya pasaron, y no una medición. En las horas pasadas las nubes son la imagen real del satélite; en las que vienen, la nubosidad prevista, en gris suave. Los puntos amarillos son tormentas que prevé el modelo, no rayos.</p>
-      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios; al elegir una localidad, la lluvia prevista en esa localidad. Al elegir una localidad, la frase dice en qué horas, de acá a mañana a la noche, el modelo prevé lluvia ahí (desde lluvia débil, unas décimas de milímetro en la hora), lo más fuerte y cuánto suma. Se puede elegir cualquiera de los 70 municipios. Si elegiste tu localidad, aparece sola.</p>
+      <p class="meta">Las barritas muestran, para cada hora, la lluvia más fuerte prevista en alguno de los 70 municipios. Si elegís una localidad, muestran la lluvia prevista ahí, y la frase cuenta en qué horas, de acá a mañana a la noche, el modelo prevé lluvia (desde lluvia débil, unas décimas de milímetro en la hora), cuál es la hora más fuerte y cuánto suma. Se puede elegir cualquiera de los 70 municipios; si elegiste tu localidad, aparece sola.</p>
       <p class="meta">Tocá o arrastrá sobre las barritas para ver esa hora en el mapa; también se pueden tocar las ciudades del mapa.</p>
     </details>
     </div>
@@ -1260,16 +1260,17 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
 
   <section aria-labelledby="t-fuentes" class="plegable" data-cerrada data-pista="Organismos y servicios de donde vienen los datos">
     <h2 id="t-fuentes">De dónde salen los datos</h2>
+    <p class="meta">El color del mapa sale tal cual de la fuente que elijas arriba del mapa: el <b>Monitoreo del Niño</b> del Gobierno del Chaco o las alertas del <b>Servicio Meteorológico Nacional</b>. Este sitio no calcula colores propios: muestra lo que informa esa fuente, y cambia según cuál esté elegida.</p>
     <ul class="fuentes">
       <li><b>Altura del Paraná:</b> lecturas de Prefectura Naval Argentina en Puerto Barranqueras: la serie diaria, publicada por el Instituto Nacional del Agua (INA), y, desde el 12/11/2026, una lectura por hora, del <a href="https://sit.chaco.gob.ar/monitoreo_nino/dashboard" target="_blank" rel="noopener">Centro de Monitoreo</a> del Gobierno del Chaco. Los niveles de alerta (6,00 m) y evacuación (6,50 m) son los que figuran en el reporte diario del INA. El dato de las defensas (hasta 9,50 m) sale de un estudio de la Universidad Nacional del Nordeste.</li>
       <li><b>Alerta oficial por municipio (Monitoreo del Niño), localidades con alerta y más estaciones de los ríos:</b> <a href="https://sit.chaco.gob.ar/monitoreo_nino/dashboard" target="_blank" rel="noopener">Centro de Monitoreo</a> del Gobierno del Chaco (tablero del Monitoreo del Niño), que se consulta cada hora. Si no se puede renovar, el mapa sigue con la última lectura y dice su fecha y hora. Las localidades y las estaciones son solo informativas.</li>
       <li><b>Altura del Paraguay y del Bermejo:</b> también del INA. El Paraguay se mide en Puerto Bermejo (Prefectura, una lectura por día; alerta 6,50 m y evacuación 7,00 m, según el INA). El Bermejo se mide en El Colorado (estación automática, varias lecturas por día; se muestra la última de cada día). Para el Bermejo el INA no publica niveles de alerta, así que solo se muestra si crece o baja, sin color.</li>
       <li><b>Pronóstico del Paraná:</b> Instituto Nacional del Agua (INA), pronóstico de altura para Puerto Barranqueras: un valor más probable y un rango (mínimo y máximo) para cada fecha. El INA lo renueva los martes y los viernes. Si el último tiene más de 7 días, no se usa. Cuenta para el color del río en su sección: puede llevarlo a amarillo o a naranja, y a rojo si el río ya pasó el nivel de alerta (6,00 m). No cambia el color del mapa.</li>
       <li><b>Pronóstico del Paraguay:</b> INA, pronóstico de altura día por día, a unos 8 días, para Puerto Formosa (alerta 7,80 m, evacuación 8,30 m) y Puerto Pilcomayo (alerta 5,35 m, evacuación 6,00 m), con un valor más probable y un rango. Esos puertos están río arriba de Puerto Bermejo; para Puerto Bermejo y para el Bermejo el INA no publica pronóstico. Se muestra como información y no cambia el color. Si el último tiene más de 7 días, no se usa.</li>
-      <li><b>Lluvia prevista</b> (tarjeta de cada municipio y portada del celular): Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. La lluvia no da color en el mapa: el color sale del Monitoreo del Niño o de la alerta del SMN. Solo si nunca se pudo leer el Monitoreo, el sitio calcula un rojo por lluvia muy fuerte, con números ajustados con la lluvia diaria de 1991 a 2026 del archivo histórico de Open-Meteo.</li>
+      <li><b>Lluvia prevista</b> (en la tarjeta de cada municipio): Open-Meteo. Estimación por modelo, no medición con pluviómetro. Se actualiza una vez por hora. La lluvia no da color en el mapa: el color sale de la fuente elegida, el Monitoreo del Niño o el SMN.</li>
       <li><b>Lluvia medida en pluviómetros:</b> registros oficiales de la provincia publicados por el <a href="https://sit.chaco.gob.ar/monitoreo_nino/dashboard" target="_blank" rel="noopener">Centro de Monitoreo</a> del Gobierno del Chaco, un dato por día y por localidad, que se consultan cada hora. En el detalle de cada municipio se muestra el pluviómetro de la localidad del mismo nombre o el más cercano a su centro, con lo que llovió en los últimos 7 días. Solo informativo: no cambia el color del mapa.</li>
       <li><b>Lluvia medida en estaciones automáticas</b> (para los municipios sin pluviómetro): de la red SAT de la Red Hidrológica Nacional (Secretaría de Recursos Hídricos), publicadas por el INA. En el detalle de cada municipio se muestra la estación más cercana a su centro, a menos de 50 km, que haya informado en las últimas 24 horas: lo caído en 24 horas y en 3 días hasta su última lectura. Son datos automáticos sin revisar, pueden tener errores, y no se usan para el color. Hay controles: no se usa una estación que marcó 0 en 3 días mientras al menos dos vecinas midieron 10 mm o más (suele ser un pluviómetro trabado), y se avisa si le faltan lecturas o si midió mucho más que todas sus vecinas. No hay estaciones públicas con datos en la ciudad de Resistencia ni en Sáenz Peña.</li>
-      <li><b>Lluvia hora por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
+      <li><b>Lluvia por hora:</b> Open-Meteo, en una grilla de puntos cada medio grado (unos 50 km) sobre el Chaco y unos 100 km alrededor. Se renueva cada 3 horas. Las nubes de las horas pasadas son imágenes del satélite GOES-East (NOAA), publicadas por la NASA (GIBS).</li>
       <li><b>Agua que suelta Yacyretá:</b> caudal que informa la Entidad Binacional Yacyretá, publicado por el INA (una lectura por día; el INA puede corregir la de los últimos días). Lo normal de cada mes es la mediana de sus lecturas diarias de 2011 a 2025. Que esa agua tarde unos 3 días en llegar a Barranqueras sale de comparar, desde 2010, los cambios de la descarga con los del río en Corrientes y en Barranqueras. Es solo informativo: no cambia ningún color.</li>
       <li><b>El Niño:</b> índice ONI de la NOAA (Estados Unidos). El mapa del Pacífico es la temperatura del mar comparada con lo normal (GHRSST MUR, de la NASA), publicada por la NASA (GIBS); sale con 1 o 2 días de atraso. Una copia se guarda en GitHub y se renueva cada 7 días: por eso la imagen puede tener hasta una semana y unos días.</li>
       <li><b>Mapa:</b> límites de la provincia y de sus 70 municipios del Instituto Geográfico Nacional (IGN), capa oficial de municipios, con una precisión de unos 100 metros. El límite entre El Espinillo y Villa Río Bermejito, que esa capa no separa, es de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>.</li>
@@ -2053,6 +2054,25 @@ const rioInfo=k=>!k.rio?'':k.rio.ofi?'<p><b>Alerta '+['','amarilla','naranja','r
   +' '+RIBERA_PISO[k.piso].x+(k.piso==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')+' Las alertas oficiales por la crecida incluyen zonas de este municipio: para caminos cortados y evacuaciones, seguí los avisos del Gobierno, del municipio y de Defensa Civil. <a href="#t-rio">Ver el río</a></p>'
   :'<p><b>En la costa, el color sigue al río Paraná ('+k.rio.et.toLowerCase()+').</b> '+k.rio.por
   +(k.rio.c==='naranja'?' El naranja sale de lo que prevé el INA, no de una alerta del SMN.':k.rio.pr?' El rojo sale de la altura de hoy y de lo que prevé el INA, no de una alerta del SMN.':'')+' Vale para la costa y las islas fuera de las defensas, que protegen la ciudad hasta unos 9,50 m. Seguí los avisos oficiales. <a href="#t-rio">Ver el río</a></p>';
+// Costa del Paraná (14/11/2026, pedido de Mariano): con el Monitoreo del Niño o el SMN elegidos, los municipios de la costa
+// igual nombran el río cuando el Paraná no está en verde, aunque el color del mapa venga de otra fuente. Con el cálculo de
+// antes no hace falta: ahí el río ya es parte del color y lo explica rioInfo.
+const rioCosta=(i,k)=>{
+  const n=GEO.mun[i][0];
+  if(!(RIBERA.includes(n)||RIBERA_PISO[n]))return '';
+  if(k&&k.rio&&!k.rio.ofi)return '';
+  const r=riesgoRio();
+  if(!r||r.c==='gris')return '';
+  // Con alerta oficial vigente el renglón se muestra igual aunque el río haya vuelto al verde (14/11/2026, pedido de Mariano):
+  // el río que baja no quiere decir que se pueda volver a la casa; eso lo dicen los organismos oficiales.
+  const ofi=ofiNivel(i)>=1;
+  if(r.c==='verde'&&!ofi)return '';
+  return '<p><b>Río Paraná: '+(r.c==='verde'?'por debajo del nivel de alerta':'en '+r.et.toLowerCase())+'.</b> '+r.por
+    +(RIBERA_PISO[n]?' '+RIBERA_PISO[n].x:'')
+    +(n==='Resistencia'?' Dentro de las defensas (hasta unos 9,50 m) el agua del río queda afuera.':'')
+    +(ofi&&(r.c==='verde'||r.c==='amarillo')?' Aunque el río baje, la alerta oficial sigue vigente: no vuelvas a tu casa hasta que lo indiquen los organismos oficiales.':'')
+    +' <a href="#t-rio">Ver el río</a></p>';
+};
 function sobre(e){
   const o=e&&e.target.closest?e.target:null,t=o&&o.closest('[data-m]'),rio=o&&o.closest('[data-rio]'),tip=$('mTip');
   if(!t&&!rio){M.hov.setAttribute('d','');tip.hidden=true;return}
@@ -2129,7 +2149,7 @@ function pintarInfo(){
   if(k.modo==='nino'||k.modo==='smn')h='<p><span class="estado">'+(k.modo==='nino'?'Monitoreo del Niño':'Servicio Meteorológico')+'</span><b>'+ETQ[k.c]+'</b></p>'
     +(k.modo==='nino'?(k.rio?rioInfo(k):'<p>Sin alerta en el Monitoreo del Niño (última lectura: '+fFechaHora(D.oficial.t)+').</p>'):'')
     +(k.modo==='smn'?(k.c==='gris'?'<p>No se pudo confirmar el informe del SMN.</p>':k.c==='verde'?'<p>Sin alerta del SMN para hoy ni los 2 días siguientes.</p>':''):'')
-    +smnDetTxt(i)+lluviaTxt(i,k);
+    +rioCosta(i,k)+smnDetTxt(i)+lluviaTxt(i,k);
   else if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Lluvia y alertas del SMN')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='est')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Estimación por lluvia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
@@ -2176,7 +2196,7 @@ function smnDetTxt(i){
 // De dónde salen el pronóstico y las alertas (antes iba a la vista, debajo de los días).
 function fuenteTxt(i,k){
   if(!DIAS_FTE)return '';
-  return '<p class="meta">'+DIAS_FTE+(k.tipo==='est'?', para el centro del municipio':'')+(k.modo==='nino'?'. El color del mapa es el del Monitoreo del Niño; las alertas de cada día, del SMN.':'. Las alertas son del SMN.')
+  return '<p class="meta">'+DIAS_FTE+(k.tipo==='est'?', para el centro del municipio':'')+(k.modo==='nino'?'. El color del mapa es el del Monitoreo del Niño; las alertas de cada día, del SMN.':k.modo==='smn'?'. El color del mapa es la alerta más alta del SMN para hoy y los 2 días siguientes.':'. Las alertas son del SMN.')
     +(k.modo==='calc'&&k.tipo==='est'&&!(RIBI[i]||RIPI[i])?' El cálculo no mira ríos ni arroyos.':'')
     +(k.modo==='nino'||pluvioDe(i)?' '+(k.modo==='nino'?'El Monitoreo del Niño'+(pluvioDe(i)?' y la lluvia medida son':' es'):'La lluvia medida es')+' del Centro de Monitoreo del Gobierno del Chaco.':'')+'</p>';
 }
@@ -2887,7 +2907,6 @@ function pintarPortada(){
   el.innerHTML='<div class="pHoy"><span class="pTit"><b>Ir a…</b></span><span class="pHora"><span>'+mayus(F_SEM.format(d))+' '+fDia(hoy)+uno(pAct)+'</span>'+ref+'</span></div>'+[pLoc,pModo,...l,pSmn,()=>pT('#t-hacer','hacer','Qué hacer','Consejos'),()=>pT('#t-tel','tel','Teléfonos','911 · 107',0,'pTelT'),
     pSem,()=>pT('#t-anim','hora','Lluvia por hora','48 horas'),pOtros,pNino,
     ()=>pT('#t-fuentes','datos','Datos y Acerca','Fuentes')].map(uno).join('');
-  if(!el.dataset.quieta){el.dataset.quieta='1';setTimeout(()=>el.classList.add('pQuieta'),1500)}   // los recuadros entran solo al abrir
   if(!el.dataset.clic){el.dataset.clic='1';
     el.addEventListener('click',e=>{const r=e.target.closest&&e.target.closest('[data-pref]');if(r){const A=$('btnActualizar');if(A)A.click();return}
       const pm=e.target.closest&&e.target.closest('[data-pmodo]');
@@ -3631,7 +3650,7 @@ function indiceLateral(){
   addEventListener('resize',()=>{if(!pend){pend=true;requestAnimationFrame(ver)}});ver();
 }
 seguro(indiceLateral);
-// Índice lateral: un punto de color al lado de "Alertas del SMN", "Río Paraná" y "Otros ríos" (Paraguay) cuando salen del verde.
+// Índice lateral: un punto de color al lado de "Alertas del SMN", "Río Paraná" y "Paraguay y Bermejo" cuando salen del verde.
 const LADO_COL={3:'amarillo',4:'naranja',5:'rojo'};
 function marcasLado(){
   const nav=$('lado'),r=$('rioBanda');if(!nav||!r)return;

@@ -214,7 +214,7 @@ prueba('lluvia hora por hora integrada (20/10): mapa primero, las barritas son e
   assert.strictEqual(S("hDe(new Date('2026-10-21T08:00:00Z'))"), '5', 'la hora sin cero adelante, como en el resto del sitio');
   const l0 = html.indexOf('id="lado"'), lado = html.slice(l0, html.indexOf('</nav>', l0));
   assert.ok(lado.includes('<a href="#t-anim"><span class="ladoIco" aria-hidden="true">🕒</span><span class="ladoTx">Lluvia por hora<') && lado.includes('<a href="#t-fuentes"><span class="ladoIco" aria-hidden="true">ℹ️</span><span class="ladoTx">Datos y Acerca<'), 'índice lateral');
-  assert.ok(html.includes('<a href="#t-otros">Otros ríos</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
+  assert.ok(html.includes('<a href="#t-otros">Paraguay y Bermejo</a><a href="#t-anim">Lluvia por hora</a><a href="#t-nino">El Niño</a><a href="#t-fuentes">Datos y Acerca</a>'), 'índice de arriba');
   assert.ok(html.includes('@media (max-height:740px){.lado .ladoIco{width:26px;height:26px;font-size:.85rem}.lado a{padding-block:2px}'), 'menú un poco más apretado en notebooks, para que entren los 11 renglones');
 });
 
