@@ -2568,8 +2568,9 @@ function pintarRio(){
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
   RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]])};
   const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros. Solo lecturas medidas.">'+g
-   +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')+(verDef?ref(NIVEL.defensa,'titulo'):'')
+   // el relleno va primero y las líneas de alerta, evacuación y defensas encima, para que no queden tapadas donde el río las pasó (17/11/2026)
    +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
+   +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')+(verDef?ref(NIVEL.defensa,'titulo'):'')
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
    +'<text x="'+(x(o[n][0])+8)+'" y="'+(y(o[n][1])+4)+'" style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'

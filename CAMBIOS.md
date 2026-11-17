@@ -4,6 +4,7 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## Sin subir (en la carpeta)
 
+- **Líneas de alerta y evacuación a la vista en el gráfico del Paraná** (17/11, pedido de Mariano): el relleno celeste del río se dibujaba encima y las tapaba donde el río las había pasado (todo octubre y noviembre). Ahora van encima del relleno y debajo de la línea del río.
 - **"¿Cómo se calculan estos números?"** (17/11, pedido de Mariano): el desplegable de debajo de las tarjetas del INA cambia de título (antes "¿Cómo calcula el INA la altura de los próximos días?") para que se entienda que explica la tarjeta, y queda más corto. Ya no dice "muestra el del INA tal cual": si un día ya se midió, usa la lectura real.
 
 ## 17/11/2026 (Pronóstico del Paraná y gráfico solo con lo medido)
