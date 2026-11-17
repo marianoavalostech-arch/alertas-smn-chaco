@@ -2,7 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin subir (en la carpeta)
+## Sin publicar (solo documentación, `[skip netlify]`)
+
+- **README al día con las fuentes nuevas** (17/11, pedido de Mariano): el Centro de Monitoreo del Gobierno del Chaco (Monitoreo del Niño) figura en la presentación, el esquema, el script, el formato de los datos, las fuentes, la instalación (propiedades `FUENTE_…`), "Si algo falla" y las limitaciones. Corregido lo que quedó viejo: el gráfico del Paraná ya no dibuja el pronóstico, las reglas de la lluvia y la costa son el cálculo de antes (el mapa usa solo criterios oficiales desde el 13/11), el Monitoreo ya no suma lluvia ni SMN, sin sección de Lluvias (cinco secciones plegables), portada sin animación y con "Con alerta oficial", sin franja del SMN, pie de la tarjeta con solo Open-Meteo, pluviómetros en la tarjeta, estado de Google Play e implementación web Versión 8.
+
+## 17/11/2026, noche (Río que baja con alerta oficial y cuadrito del río)
+
 
 - **Cuadrito del río en la tarjeta del municipio** (17/11, pedido de Mariano: que el río se vea sin abrir "Seguir leyendo"): con el Monitoreo del Niño elegido, los municipios de la costa (`RIBERA` y `RIBERA_PISO`) **con alerta oficial** suman un tercer cuadrito, "Río Paraná", con la altura de la última lectura y el punto del color del río (`rioCuadro`). Sin alerta oficial, fuera de la costa o con el SMN elegido, no va. La frase completa (`rioCosta`) sigue dentro de "Seguir leyendo". Prueba nueva dentro de la del mapa. Huella nueva del código.
 - **Río que baja con alerta oficial en la costa** (17/11, pedido de Mariano): en la sección del Paraná, debajo de "Está bajando", va "La alerta oficial sigue vigente en N municipios de la costa. Aunque el río baje, no vuelvas a tu casa hasta que lo indiquen los organismos oficiales." Sale solo si el río baja o está debajo de la alerta y el Monitoreo del Niño tiene alerta en algún municipio de la costa (`RIBERA` y `RIBERA_PISO`, los mismos de la tarjeta). Así, quien mira solo el río no lee la bajada como permiso para volver. Prueba nueva dentro de la del río. Huella nueva del código.
