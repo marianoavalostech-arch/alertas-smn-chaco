@@ -1482,12 +1482,12 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.strictEqual(sit(6.2), 'Está 20 cm arriba del nivel de alerta (6,00 m). Le faltan 30 cm para el de evacuación (6,50 m).');
     assert.strictEqual(sit(5.4), 'Le faltan 60 cm para el nivel de alerta (6,00 m) y 1,10 m para el de evacuación (6,50 m).');
     assert.strictEqual(sit(7.6), 'Está 1,10 m arriba del nivel de evacuación (6,50 m).');
-    // dos desplegables cerrados: cómo leer los números y cómo calcula el INA la altura de los próximos días
+    // dos desplegables cerrados: cómo leer los números y cómo se calculan los del INA
     const leer = S('RIO_LEER()'), prono = S('RIO_PRONO()');
     assert.ok(leer.startsWith('<details class="det" id="d-rio-numeros"><summary>¿Cómo leer estos números?</summary>'));
     for (const t of ['regla del puerto de Barranqueras', 'Alerta (6,00 m)', 'Evacuación (6,50 m)', 'unos 9,50 m']) assert.ok(leer.includes(t), t);
-    assert.ok(prono.startsWith('<details class="det" id="d-rio-prono"><summary>¿Cómo calcula el INA la altura de los próximos días?</summary>'));
-    for (const t of ['lo que suelta Yacyretá', 'unos 3 días', 'deja pasar el agua que le llega', 'Iguazú', 'río Paraguay', 'lluvia prevista', 'altura más probable', 'el rango', 'martes y los viernes', 'no calcula nada propio']) assert.ok(prono.includes(t), t);
+    assert.ok(prono.startsWith('<details class="det" id="d-rio-prono"><summary>¿Cómo se calculan estos números?</summary>'));
+    for (const t of ['lo que suelta Yacyretá', 'unos 3 días', 'Iguazú', 'río Paraguay', 'lluvia prevista', 'altura más probable', 'el rango', 'martes y los viernes', 'no calcula nada propio', 'usa la lectura real']) assert.ok(prono.includes(t), t);
     assert.ok(!/alerta naranja/.test(leer + prono), 'el río nunca dice "alerta naranja"');
   });
 

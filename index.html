@@ -2632,10 +2632,10 @@ const RIO_LEER=()=>det('d-rio-numeros','¿Cómo leer estos números?',
   '<p><b>La altura</b> es lo que marca la regla del puerto de Barranqueras, no lo hondo del río.</p>'
   +'<p><b>Alerta ('+nf(NIVEL.alerta,2)+' m):</b> estar atentos en la costa y las islas. <b>Evacuación ('+nf(NIVEL.evac,2)+' m):</b> en las zonas más bajas puede hacer falta salir de la casa; seguí lo que digan Defensa Civil y tu municipio.</p>'
   +'<p><b>Las defensas</b> protegen la ciudad hasta unos '+nf(NIVEL.defensa,2)+' m. No protegen las islas ni la costa de afuera.</p>');
-const RIO_PRONO=()=>det('d-rio-prono','¿Cómo calcula el INA la altura de los próximos días?',
-  '<p>El INA (Instituto Nacional del Agua) sigue el agua que ya viene bajando por los ríos. Uno de los datos principales es lo que suelta Yacyretá, que deja pasar el agua que le llega: tarda unos 3 días en llegar a Barranqueras. También suma lo que traen el Iguazú y el río Paraguay, y la lluvia prevista para la semana.</p>'
-  +'<p>Cada fecha prevista tiene la altura más probable y, debajo, el rango: el río puede quedar en cualquier altura de ese rango. Cuanto más lejos la fecha, más puede cambiar.</p>'
-  +'<p>El INA lo renueva los martes y los viernes. Este sitio no calcula nada propio: muestra el del INA tal cual.</p>');
+const RIO_PRONO=()=>det('d-rio-prono','¿Cómo se calculan estos números?',   // 17/11/2026 (Mariano): título atado a la tarjeta y texto más corto
+  '<p>El INA (Instituto Nacional del Agua) sigue el agua que ya viene por los ríos: lo que suelta Yacyretá, que llega a Barranqueras en unos 3 días, y lo que traen el Iguazú y el río Paraguay. También suma la lluvia prevista.</p>'
+  +'<p>El número grande es la altura más probable; debajo, el rango en el que puede quedar el río. Cuanto más lejos la fecha, más puede cambiar.</p>'
+  +'<p>El INA lo renueva los martes y los viernes. Este sitio no calcula nada propio: si un día ya se midió, usa la lectura real.</p>');
 
 // Paraguay y Bermejo: altura, tendencia, cambios y un gráfico chico de 30 días (con los niveles oficiales si los hay).
 function bloqueOtro(k){
