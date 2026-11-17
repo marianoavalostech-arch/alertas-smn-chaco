@@ -2547,6 +2547,10 @@ function pintarRio(){
   const pk=r.pico;
   const tend=r.d3==null?'No hay lecturas suficientes para saber si sube o baja.':r.d3>0.05?'Está creciendo: subió '+nf(r.d3*100)+' cm en 3 días.':r.d3<-0.05?'Está bajando: bajó '+nf(-r.d3*100)+' cm en 3 días.':'Está estable: casi no cambió en 3 días.';
   const sit=rioSit(r.h,NIVEL);
+  // Río que baja con alerta oficial vigente en la costa (17/11/2026, pedido de Mariano): la misma frase de la tarjeta (rioCosta),
+  // para que quien mira solo el río no lea "está bajando" como permiso para volver. Cuenta los municipios de RIBERA y RIBERA_PISO.
+  const costaOfi=ofiDatos()?GEO.mun.filter((m,i)=>(RIBERA.includes(m[0])||RIBERA_PISO[m[0]])&&ofiNivel(i)>=1).length:0;
+  const sigue=costaOfi&&((r.d3!=null&&r.d3<-0.05)||r.h<NIVEL.alerta)?'<p class="rioSigue"><b>La alerta oficial sigue vigente en '+(costaOfi===1?'un municipio':costaOfi+' municipios')+' de la costa.</b> Aunque el río baje, no vuelvas a tu casa hasta que lo indiquen los organismos oficiales.</p>':'';
   const viejo=r.atraso>=2?'<p><b>Atención:</b> la última lectura es de hace '+r.atraso+' días ('+fDia(r.dia)+'). El río puede haber cambiado desde entonces.</p>':'';
   const cm=v=>v==null?'sin dato':(v>0.004?'+':v<-0.004?'−':'')+nf(Math.abs(v*100))+' cm';
   // sin "En 3 días" (ya lo dice la frase de arriba) y el máximo solo si no es la lectura de hoy
@@ -2577,7 +2581,7 @@ function pintarRio(){
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   // Pronóstico en tarjetas (4/11/2026): una por fecha prevista, con la altura más probable y el rango. Los avisos (evacuación o "puede llegar") quedan como estaban.
   const pTarj=pn&&pn.fut?'<div class="prevINA"><p class="pTit">Lo que prevé el INA</p><div class="pCards" role="list">'+pn.fut.slice(0,3).map(q=>'<div role="listitem"><span class="pD">'+mayus(fDiaLargo(q[0]))+'</span><span class="pA">'+nf(q[2],2)+' m</span>'+(q[3]>q[1]?'<span class="pR">entre '+nf(q[1],2)+' y '+nf(q[3],2)+'</span>':'')+'</div>').join('')+'</div>':'';
-  $('rio').innerHTML='<div class="rioRegla">'+reglaRio(r.h,NIVEL)+'<div class="rgTxt"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span>'+lecturaCorta(D.rio.datos,r)+'<p class="rgSit">'+sit.replace(/ m\)/g,'\u00a0m)')+'</p><p><b>'+tend+'</b></p></div></div>'
+  $('rio').innerHTML='<div class="rioRegla">'+reglaRio(r.h,NIVEL)+'<div class="rgTxt"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span>'+lecturaCorta(D.rio.datos,r)+'<p class="rgSit">'+sit.replace(/ m\)/g,'\u00a0m)')+'</p><p><b>'+tend+'</b></p></div></div>'+sigue
    +'<p class="meta">Las marcas valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
    +(!pn||!pn.fut?'':(c=>(c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.</div>'
      :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.</div>':'')

@@ -337,6 +337,16 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(gr.includes('prevé pasar el nivel de evacuación') && gr.includes('Lo que prevé el INA') && gr.includes('>7,40 m<') && gr.includes('entre 7,20 y 7,60'), 'con aviso, las tarjetas también van');
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]]);
   assert.ok(!gr.includes('Lo que prevé el INA') && !gr.includes('d-rio-prono'), 'sin pronóstico, ni tarjetas ni explicación');
+  // 17/11/2026: con el río bajando y alerta oficial vigente en la costa, la sección del río lo dice (como la tarjeta del municipio)
+  S(`D.oficial={datos:{mun:{'Barranqueras':3,'Resistencia':2,'Basail':2}},vivo:true,t:new Date()}`);
+  gr = graf([['2027-03-07', 6.56], ['2027-03-10', 6.23]]);
+  assert.ok(gr.includes('La alerta oficial sigue vigente en 3 municipios de la costa.') && gr.includes('no vuelvas a tu casa hasta que lo indiquen los organismos oficiales'), 'río que baja con alerta oficial en la costa');
+  gr = graf([['2027-03-07', 6.0], ['2027-03-10', 6.23]]);
+  assert.ok(!gr.includes('rioSigue'), 'si el río crece y está sobre la alerta, no hace falta');
+  S(`D.oficial={datos:{mun:{'Charata':2}},vivo:true,t:new Date()}`);
+  gr = graf([['2027-03-07', 6.56], ['2027-03-10', 6.23]]);
+  assert.ok(!gr.includes('rioSigue'), 'sin alerta en la costa, no se muestra');
+  S(`D.oficial={datos:null}`);
   // 17/11/2026: el río medido hoy (6,23 m) reemplaza a lo previsto para hoy (6,31 m, hasta 6,70 m). El texto no puede decir que sube
   // ni que "puede llegar a evacuación" mientras el gráfico baja: solo cuentan las fechas posteriores a la última lectura.
   const hoy17 = pr([['2027-03-06', 6.61, 6.61, 6.61], ['2027-03-10', 6, 6.31, 6.7], ['2027-03-17', 5.4, 5.68, 6.2]]);

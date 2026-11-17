@@ -4,6 +4,10 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## Sin subir (en la carpeta)
 
+- **Río que baja con alerta oficial en la costa** (17/11, pedido de Mariano): en la sección del Paraná, debajo de "Está bajando", va "La alerta oficial sigue vigente en N municipios de la costa. Aunque el río baje, no vuelvas a tu casa hasta que lo indiquen los organismos oficiales." Sale solo si el río baja o está debajo de la alerta y el Monitoreo del Niño tiene alerta en algún municipio de la costa (`RIBERA` y `RIBERA_PISO`, los mismos de la tarjeta). Así, quien mira solo el río no lee la bajada como permiso para volver. Prueba nueva dentro de la del río. Huella nueva del código.
+
+## 17/11/2026, tarde (Explicación del INA y líneas del gráfico)
+
 - **Líneas de alerta y evacuación a la vista en el gráfico del Paraná** (17/11, pedido de Mariano): el relleno celeste del río se dibujaba encima y las tapaba donde el río las había pasado (todo octubre y noviembre). Ahora van encima del relleno y debajo de la línea del río.
 - **"¿Cómo se calculan estos números?"** (17/11, pedido de Mariano): el desplegable de debajo de las tarjetas del INA cambia de título (antes "¿Cómo calcula el INA la altura de los próximos días?") para que se entienda que explica la tarjeta, y queda más corto. Ya no dice "muestra el del INA tal cual": si un día ya se midió, usa la lectura real.
 
