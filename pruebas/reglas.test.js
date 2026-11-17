@@ -147,7 +147,7 @@ prueba('Hidroalerta Vilelas: enlace en el detalle de Puerto Vilelas y debajo del
   const v = S('VILELAS');
   assert.ok(v.includes('href="https://hidrometro.concejovilelas.com/#publica"') && v.includes('rel="noopener"'));
   assert.ok(/m\[0\]==='Puerto Vilelas'\?'<p>[^']*'\+VILELAS/.test(codigo), 'falta en el detalle del municipio');
-  assert.ok(/\+RIO_LEER\(\)\+\(pf\.length\?RIO_PRONO\(\):''\)\+lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
+  assert.ok(/\+RIO_LEER\(\)\+lineaYacy\(\)\n\s*\+'<p class="meta">[^']*'\+VILELAS/.test(codigo), 'falta debajo del río');
   assert.ok(!/fetch\([^)]*concejovilelas/.test(codigo), 'la página no le pide datos');
 });
 
@@ -326,17 +326,17 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(gr.includes('class="defMarca"') && gr.includes('Defensas de la ciudad: unos 9,50 m') && !gr.includes('var(--titulo)" stroke-width'), 'lejos: solo la marca');
   gr = graf([['2027-03-07', 7.9], ['2027-03-10', 8.1]]);
   assert.ok(!gr.includes('class="defMarca"') && gr.includes('stroke="var(--titulo)"') && gr.includes('no protegen las islas ni la costa de afuera'), 'cerca: línea y leyenda');
-  // Cada fecha prevista lleva su altura más probable y su rango (como el 19/10/2026: 7,23 m entre 7,00 y 7,80; 6,37 m entre 5,80 y 6,60)
+  // 17/11/2026 (Mariano): el gráfico muestra solo lo medido; el pronóstico del INA va en tarjetas, con aviso o sin él.
   const pr = (f) => ({ emitido: '2027-03-08T03:00:00.000Z', p: f });
+  const svg = h => h.slice(h.indexOf('<svg'), h.indexOf('</svg>'));
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-08', 6.5, 6.5, 6.5], ['2027-03-12', 7, 7.23, 7.8], ['2027-03-17', 5.8, 6.37, 6.6]]));
-  assert.ok(/class="rioPrev"[^>]*>7,23 m</.test(gr) && /class="rioRango"[^>]*>7,00 a 7,80</.test(gr) && /class="rioPrev"[^>]*>6,37 m</.test(gr) && /class="rioRango"[^>]*>5,80 a 6,60</.test(gr), 'cada fecha con su altura y su rango');
-  assert.ok(gr.includes('Previsto por el INA y su rango') && gr.includes('id="d-rio-prono"'), 'leyenda y explicación del pronóstico');
-  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 7, 7.1, 7.3], ['2027-03-17', 7.2, 7.4, 7.6]]));
-  assert.strictEqual((gr.match(/class="rioPrev"/g) || []).length, 2); assert.ok(gr.includes('>7,40 m<') && gr.includes('>7,20 a 7,60<'));
-  gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]], pr([['2027-03-12', 6.5, 6.6, 6.7], ['2027-03-17', 6, 6.2, 6.4]]));
-  assert.ok(gr.includes('>6,60 m<') && gr.includes('>6,20 m<'), 'también cuando el pronóstico baja');
+  assert.ok(!svg(gr).includes('7,23') && !svg(gr).includes('rioPrev') && !svg(gr).includes('stroke-dasharray="2 4"') && !gr.includes('Previsto por el INA y su rango'), 'el gráfico no dibuja el pronóstico');
+  assert.ok(gr.includes('Lo que prevé el INA') && gr.includes('>7,23 m<') && gr.includes('entre 7,00 y 7,80') && gr.includes('>6,37 m<') && gr.includes('entre 5,80 y 6,60'), 'cada fecha en su tarjeta, con su altura y su rango');
+  assert.ok(gr.includes('id="d-rio-prono"'), 'explicación del pronóstico junto a las tarjetas');
+  gr = graf([['2027-03-08', 6], ['2027-03-10', 6.1]], pr([['2027-03-12', 7, 7.1, 7.3], ['2027-03-17', 7.2, 7.4, 7.6]]));
+  assert.ok(gr.includes('prevé pasar el nivel de evacuación') && gr.includes('Lo que prevé el INA') && gr.includes('>7,40 m<') && gr.includes('entre 7,20 y 7,60'), 'con aviso, las tarjetas también van');
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]]);
-  assert.ok(!gr.includes('rioPrev') && !gr.includes('d-rio-prono'), 'sin pronóstico, ni números previstos ni explicación');
+  assert.ok(!gr.includes('Lo que prevé el INA') && !gr.includes('d-rio-prono'), 'sin pronóstico, ni tarjetas ni explicación');
   // 17/11/2026: el río medido hoy (6,23 m) reemplaza a lo previsto para hoy (6,31 m, hasta 6,70 m). El texto no puede decir que sube
   // ni que "puede llegar a evacuación" mientras el gráfico baja: solo cuentan las fechas posteriores a la última lectura.
   const hoy17 = pr([['2027-03-06', 6.61, 6.61, 6.61], ['2027-03-10', 6, 6.31, 6.7], ['2027-03-17', 5.4, 5.68, 6.2]]);

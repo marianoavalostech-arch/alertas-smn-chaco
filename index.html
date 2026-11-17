@@ -2510,7 +2510,7 @@ function leerRio(e){
   const m=sv.querySelector('#rioMarca');m.setAttribute('visibility','visible');
   m.querySelector('line').setAttribute('x1',p[0]);m.querySelector('line').setAttribute('x2',p[0]);
   m.querySelector('circle').setAttribute('cx',p[0]);m.querySelector('circle').setAttribute('cy',p[1]);
-  $('rioLee').innerHTML=(p[4]?'<b>Previsto por el INA para el '+fDia(p[2])+': '+nf(p[3],2)+' m</b> (entre '+nf(p[4][1],2)+' y '+nf(p[4][3],2)+' m)':'<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>')+', a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
+  $('rioLee').innerHTML='<b>'+fDia(p[2])+': '+nf(p[3],2)+' m</b>'+', a '+nf(Math.abs(NIVEL.alerta-p[3]),2)+' m '+(p[3]<NIVEL.alerta?'por debajo':'por encima')+' del nivel de alerta.';
 }
 ['pointermove','pointerdown'].forEach(t=>$('rio').addEventListener(t,leerRio));
 // Dónde está el río respecto de sus niveles, en centímetros (en metros desde 1 m): más fácil de entender que dos alturas.
@@ -2554,54 +2554,43 @@ function pintarRio(){
     .map(a=>'<div><dt>'+a[0]+'</dt><dd>'+a[1]+'</dd></div>').join('')+'</dl>';
   // gráfico: cada lectura va en su fecha real, así un día sin dato se ve como un hueco y no corre a los demás
   const W=340,H=170,L=30,T=10,B=22,vals=o.map(p=>p[1]),n=o.length-1,d0=o[0][0],span=Math.max(1,diasEntre(d0,o[n][0]));
-  // pronóstico del INA: se dibujan las fechas posteriores a la última lectura, a la derecha de la línea
-  const pn=resumenProno(),pf=pn&&pn.fut?pn.fut.filter(q=>q[0]>o[n][0]):[];
-  const Rt=pf.length?62:46;   // con pronóstico, más lugar a la derecha para la altura prevista y su rango
-  const spanX=span+(pf.length?diasEntre(o[n][0],pf[pf.length-1][0]):0);
+  // 17/11/2026 (Mariano): el gráfico muestra solo lo medido. El pronóstico del INA va en las tarjetas "Lo que prevé el INA", con aviso o sin él.
+  const pn=resumenProno(),Rt=46;
   // Defensas de la ciudad: con el río o el pronóstico desde 8 m entran en el gráfico como línea; antes, solo una marca arriba (no aplastan la escala).
-  const verDef=Math.max(...vals,...pf.map(q=>q[3]))>=8;
-  const lo=Math.floor(Math.min(...vals,...pf.map(q=>q[1]))-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4,...pf.map(q=>q[3]+0.4),verDef?NIVEL.defensa+0.3:0);
-  const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/spanX,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
+  const verDef=Math.max(...vals)>=8;
+  const lo=Math.floor(Math.min(...vals)-0.5),hi=Math.max(NIVEL.evac+0.4,Math.max(...vals)+0.4,verDef?NIVEL.defensa+0.3:0);
+  const x=dia=>L+(W-L-Rt)*diasEntre(d0,dia)/span,y=v=>T+(H-T-B)*(hi-v)/(hi-lo);
   let g='';for(let m=Math.ceil(lo);m<=hi;m++)g+=(m===NIVEL.alerta||m===NIVEL.evac?'':'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(m)+'" y2="'+y(m)+'" stroke="var(--line)" stroke-width="1"/>')+'<text x="'+(L-5)+'" y="'+(y(m)+4)+'" text-anchor="end">'+m+' m</text>';
   // marcas de fecha cada 7 días, contando hacia atrás desde la última lectura
   const paso=span<=45?7:span<=120?21:61;let ejes='';for(let k=0;k*paso<=span;k++){const dia=masDias(o[n][0],-k*paso),fin=k===0,ini=span-k*paso<paso/2;if(ini&&k>0&&span-k*paso>0)continue;
     ejes+='<line x1="'+x(dia)+'" x2="'+x(dia)+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(dia)+'" y="'+(H-5)+'" text-anchor="'+(fin?'end':ini?'start':'middle')+'">'+fDia(dia)+'</text>'}
-  pf.forEach(q=>{if(diasEntre(o[n][0],q[0])>=3)ejes+='<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(lo)+'" y2="'+(y(lo)+4)+'" stroke="var(--line)" stroke-width="1"/><text x="'+x(q[0])+'" y="'+(H-5)+'" text-anchor="middle">'+fDia(q[0])+'</text>'});
   const ref=(v,c)=>'<line x1="'+L+'" x2="'+(W-Rt)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--'+c+')" stroke-width="1.5" stroke-dasharray="5 4"/>';
-  const prono=!pf.length?'':'<polyline points="'+[[o[n][0],o[n][1]]].concat(pf.map(q=>[q[0],q[2]])).map(q=>x(q[0]).toFixed(1)+','+y(q[1]).toFixed(1)).join(' ')+'" fill="none" stroke="var(--water)" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round"/>'
-    +pf.map(q=>'<line x1="'+x(q[0])+'" x2="'+x(q[0])+'" y1="'+y(q[3])+'" y2="'+y(q[1])+'" stroke="var(--water)" stroke-width="5" stroke-linecap="round" opacity=".35"/><circle cx="'+x(q[0])+'" cy="'+y(q[2])+'" r="3.2" fill="var(--card)" stroke="var(--water)" stroke-width="2"/>').join('')
-    // Cada fecha prevista lleva escrita su altura más probable y, debajo, su rango (19/10, pedido de Mariano).
-    // El último punto, a su derecha; los de antes, arriba a la derecha, para no pisar la línea que baja o sube hacia el siguiente.
-    +pf.map((q,k)=>{const ult=k===pf.length-1,dy=ult?1:q[2]>=(pf[k+1]||q)[2]?-13:15;
-      return '<text class="rioPrev" x="'+(x(q[0])+7)+'" y="'+(y(q[2])+dy)+'" style="fill:var(--water);font-weight:700;font-size:11px">'+nf(q[2],2)+' m</text>'
-        +'<text class="rioRango" x="'+(x(q[0])+7)+'" y="'+(y(q[2])+dy+11)+'" style="fill:var(--water);font-size:9.5px">'+nf(q[1],2)+' a '+nf(q[3],2)+'</text>'}).join('');
   const linea=o.map(p=>x(p[0]).toFixed(1)+','+y(p[1]).toFixed(1)).join(' ');
-  RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]]).concat(pf.map(q=>[x(q[0]),y(q[2]),q[0],q[2],q]))};
-  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros.'+(pf.length?' Pronóstico del INA: '+pf.map(q=>nf(q[2],2)+' metros para el '+fDia(q[0])).join(', ')+'.':'')+'">'+g
+  RIOG={W,pts:o.map(p=>[x(p[0]),y(p[1]),p[0],p[1]])};
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Altura del río del '+fDia(d0)+' al '+fDia(o[n][0])+', comparada con los niveles de alerta y evacuación. Última lectura: '+nf(r.h,2)+' metros. Solo lecturas medidas.">'+g
    +ref(NIVEL.alerta,'amarillo')+ref(NIVEL.evac,'rojo')+(verDef?ref(NIVEL.defensa,'titulo'):'')
-   +prono
    +'<polygon points="'+L+','+y(lo)+' '+linea+' '+x(o[n][0])+','+y(lo)+'" fill="var(--water-soft)"/>'
    +'<polyline points="'+linea+'" fill="none" stroke="var(--water)" stroke-width="2.5" stroke-linejoin="round"/>'
    +'<circle cx="'+x(o[n][0])+'"  cy="'+y(o[n][1])+'" r="4.5" fill="var(--water)" stroke="var(--card)" stroke-width="2"/>'
-   +'<text x="'+(x(o[n][0])+(pf.length?-6:8))+'" y="'+(y(o[n][1])+(pf.length?-8:4))+'"'+(pf.length?' text-anchor="end"':'')+' style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
+   +'<text x="'+(x(o[n][0])+8)+'" y="'+(y(o[n][1])+4)+'" style="fill:var(--water);font-weight:800;font-size:11px">'+nf(o[n][1],2)+' m</text>'
    +ejes+'<g id="rioMarca" visibility="hidden"><line y1="'+T+'" y2="'+y(lo)+'" stroke="var(--muted)" stroke-width="1"/><circle r="4" fill="var(--card)" stroke="var(--water)" stroke-width="2"/></g></svg>';
   // Pronóstico en tarjetas (4/11/2026): una por fecha prevista, con la altura más probable y el rango. Los avisos (evacuación o "puede llegar") quedan como estaban.
-  const pTarj=pf.length?'<div class="prevINA"><p class="pTit">Lo que prevé el INA</p><div class="pCards" role="list">'+pf.slice(0,3).map(q=>'<div role="listitem"><span class="pD">'+mayus(fDiaLargo(q[0]))+'</span><span class="pA">'+nf(q[2],2)+' m</span>'+(q[3]>q[1]?'<span class="pR">entre '+nf(q[1],2)+' y '+nf(q[3],2)+'</span>':'')+'</div>').join('')+'</div>':'';
+  const pTarj=pn&&pn.fut?'<div class="prevINA"><p class="pTit">Lo que prevé el INA</p><div class="pCards" role="list">'+pn.fut.slice(0,3).map(q=>'<div role="listitem"><span class="pD">'+mayus(fDiaLargo(q[0]))+'</span><span class="pA">'+nf(q[2],2)+' m</span>'+(q[3]>q[1]?'<span class="pR">entre '+nf(q[1],2)+' y '+nf(q[3],2)+'</span>':'')+'</div>').join('')+'</div>':'';
   $('rio').innerHTML='<div class="rioRegla">'+reglaRio(r.h,NIVEL)+'<div class="rgTxt"><span class="grande">'+nf(r.h,2)+' <small>metros</small></span>'+lecturaCorta(D.rio.datos,r)+'<p class="rgSit">'+sit.replace(/ m\)/g,'\u00a0m)')+'</p><p><b>'+tend+'</b></p></div></div>'
    +'<p class="meta">Las marcas valen para la zona ribereña fuera de las defensas; la ciudad está protegida hasta unos 9,50 m.</p>'
-   +(!pn||!pn.fut?'':(c=>c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>'+pronoTxt(pn)+' El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.'+pronoAtraso(pn)+'</div>'
-     :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>'+pronoTxt(pn)+' El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.'+pronoAtraso(pn)+'</div>'
-     :pTarj?pTarj+(x=>x?'<p class="meta">'+x+'</p>':'')(((r.h>=NIVEL.evac?'':'Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)).trim())+'</div>'
-     :'<p><b>Pronóstico oficial:</b> '+pronoTxt(pn)+(r.h>=NIVEL.evac?'':' Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)+'</p>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
+   +(!pn||!pn.fut?'':(c=>(c==='evac'?'<div class="aviso naranja" role="note"><strong>El pronóstico del INA prevé pasar el nivel de evacuación</strong>El valor más probable llega a '+nf(pn.cen[2],2)+' m hacia el '+fDia(pn.cen[0])+'; el nivel de evacuación es '+nf(NIVEL.evac,2)+' m.</div>'
+     :c==='puede'?'<div class="aviso" role="note"><strong>El pronóstico del INA puede llegar al nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación':'alerta')+'</strong>El valor más alto del rango llega a '+nf(pn.mx[3],2)+' m hacia el '+fDia(pn.mx[0])+'; el nivel de '+(pn.mx[3]>=NIVEL.evac?'evacuación es '+nf(NIVEL.evac,2):'alerta es '+nf(NIVEL.alerta,2))+' m.</div>':'')
+     // las tarjetas van siempre, con aviso o sin él (17/11/2026), y al lado la explicación de cómo calcula el INA
+     +pTarj+(x=>x?'<p class="meta">'+x+'</p>':'')(((c||r.h>=NIVEL.evac?'':'Ni el valor más alto del rango llega al nivel de '+(r.h>=NIVEL.alerta?'evacuación':'alerta')+'.')+pronoAtraso(pn)).trim())+RIO_PRONO()+'</div>')(casoProno(pn,r.atraso>=4?-Infinity:r.h)))
    +viejo
    +stats+'<div class="rioCuerpo"><div class="rioGraf">'+(verDef?'':'<p class="defMarca">↑ Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m, más arriba de lo que muestra el gráfico. No protegen las islas ni la costa de afuera.</p>')+svg
    +'<div class="leyRio"><span><i style="border-color:var(--rojo)"></i>Evacuación: '+nf(NIVEL.evac,2)+' m</span><span><i style="border-color:var(--amarillo)"></i>Alerta: '+nf(NIVEL.alerta,2)+' m</span>'
    +(verDef?'<span class="def"><i style="border-color:var(--titulo)"></i>Defensas de la ciudad: unos '+nf(NIVEL.defensa,2)+' m (no protegen las islas ni la costa de afuera)</span>':'')
-   +(pf.length?'<span><i style="border-color:var(--water);border-top-style:dotted"></i>Previsto por el INA y su rango</span>':'')+'</div>'
+   +'</div>'
    +'<p class="meta" id="rioLee" aria-live="polite">Tocá el gráfico para ver la altura de cada día.</p></div><div class="rioLado">'
-   +RIO_LEER()+(pf.length?RIO_PRONO():'')+lineaYacy()
+   +RIO_LEER()+lineaYacy()
    +'<p class="meta">En Puerto Vilelas, la Sala de Situación municipal informa caminos cortados, estaciones de bombeo y avisos por barrio: '+VILELAS+'.</p>'
-   +meta('rio',D.rio.datos.pna?'Prefectura Naval Argentina (lectura por hora; la de cada día, publicada por el INA)':'Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
+   +meta('rio',D.rio.datos.pna?'Prefectura Naval Argentina (la lectura por hora, vía el Centro de Monitoreo del Gobierno del Chaco; la de cada día, publicada por el INA)':'Prefectura Naval Argentina, vía INA',lecturaTxt(D.rio.datos))
    +(!D.prono?'':!D.prono.datos?meta('prono','el pronóstico del INA para Barranqueras')
      :pn&&pn.fut?'<p class="meta">Pronóstico: INA, para Puerto Barranqueras, emitido el '+fDia(pn.emitido)+'; lo renueva martes y viernes.</p>'
      :'<p class="meta">El último pronóstico del INA'+(pn?' es del '+fDia(pn.emitido)+': tiene más de 7 días y no se usa.':' no trae fechas próximas: no se usa.')+'</p>')+'</div></div>';
