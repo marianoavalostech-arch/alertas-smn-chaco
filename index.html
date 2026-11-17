@@ -2208,6 +2208,12 @@ function fuenteTxt(i,k){
 // (su semáforo o su estimación), la alerta del SMN cuando sube el color y, en los municipios de la costa, el Paraná con el techo de cada uno.
 // Son los mismos datos que usa colorDe; el texto completo sigue en "Seguir leyendo". Sin alertas del SMN confirmadas (sinSmn), va un cuadrito
 // "SMN: Sin alertas" en lugar del renglón del SMN (4/11/2026, Mariano: la tarjeta quedaba muy larga).
+// Cuadrito del río (17/11/2026, pedido de Mariano): con el Monitoreo del Niño elegido, en los municipios de la costa con alerta oficial,
+// la altura del Paraná se ve sin abrir "Seguir leyendo", con el color del río. La frase completa (rioCosta) sigue en el detalle.
+const rioCuadro=(i,of)=>{
+  const n=GEO.mun[i][0];if(!(of>=1)||!(RIBERA.includes(n)||RIBERA_PISO[n]))return null;
+  const r=resumenRio(),q=riesgoRio();if(!r||r.atraso>=4||!q||q.c==='gris')return null;
+  return ['Río Paraná',q.c,nf(r.h,2)+' m']};
 function porQue(i,k,sinSmn){
   try{
     if(!k.c||k.c==='gris')return '';
@@ -2216,7 +2222,7 @@ function porQue(i,k,sinSmn){
       lista=ch=>'<ul class="mPor" aria-label="De dónde sale el color">'+ch.map(x=>'<li><small>'+x[0]+'</small><span><i data-c="'+x[1]+'"></i>'+(x[2]||ETQ[x[1]]||ETQ.gris)+'</span></li>').join('')+'</ul>';
     // Con el Monitoreo del Niño o el SMN elegidos (13/11/2026): primero el criterio del mapa y después el otro, sin el cuadrito de la lluvia (no es oficial).
     if(k.modo==='nino'||k.modo==='smn'){const of=ofiNivel(i),cN=of!=null?['Monitoreo del Niño',NIVELES[of],of?'Alerta '+LOC_NIV[of]:'Sin alerta']:null,cS=chS(pisoSMN(i));
-      return pill+lista((k.modo==='nino'?[cN,cS]:[cS,cN]).filter(Boolean))}
+      return pill+lista((k.modo==='nino'?[cN,cS,rioCuadro(i,of)]:[cS,cN]).filter(Boolean))}
     // En las 6 localidades del semáforo, su color ya trae el piso del SMN: el cuadrito "Lluvia" muestra solo lo de la lluvia (12/11/2026).
     const b=colorBase(i),s=pisoSMN(i),ll=(b.tipo==='seg'||b.tipo==='gran')&&!lluviaVieja()?resumenLluvia(b.j):null,
       cl=b.tipo==='seg'||b.tipo==='gran'?(ll?(nivelLluvia(ll)?'rojo':'verde'):'gris'):b.c,ch=[['Lluvia',cl&&cl!=='gris'?cl:'gris']];

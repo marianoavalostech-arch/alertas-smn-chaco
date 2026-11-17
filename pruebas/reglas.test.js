@@ -942,6 +942,10 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   prep('nino', true);
   assert.strictEqual(S('modoEf()'), 'nino');
   assert.deepStrictEqual(cols(), ['naranja', 'naranja', 'verde', 'verde'], 'Monitoreo: solo su nivel (ni la lluvia ni el SMN)');
+  // Cuadrito del río (17/11/2026): con el Monitoreo elegido, en la costa con alerta oficial, la altura del Paraná a la vista
+  const pqM = n => S(`porQue(${idx(n)},colorDe(${idx(n)}))`), cR = '<small>Río Paraná</small><span><i data-c="rojo"></i>6,61 m</span>';
+  assert.ok(pqM('Barranqueras').includes(cR) && pqM('Resistencia').includes(cR) && pqM('Barranqueras').indexOf('Monitoreo del Niño') < pqM('Barranqueras').indexOf('Río Paraná'), pqM('Barranqueras'));
+  assert.ok(!pqM('Charata').includes('Río Paraná') && !pqM('Puerto Vilelas').includes('Río Paraná'), 'fuera de la costa o sin alerta oficial, no va');
   // Agrupada por color (13/11/2026): un renglón por nivel, del más alto al más bajo, con los nombres que se tocan (data-m) y sin "Ver en el mapa"
   const semN = S('semOfi()');
   const gr = c => (semN.match(new RegExp('<li class="sGr" data-c="' + c + '">.*?</li>')) || [''])[0];
@@ -962,6 +966,7 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   prep('smn', true);
   assert.strictEqual(S('modoEf()'), 'smn');
   assert.deepStrictEqual(cols(), ['verde', 'verde', 'amarillo', 'verde'], 'SMN: solo su alerta (ni el Monitoreo ni la lluvia)');
+  assert.ok(!S(`porQue(${RE},colorDe(${RE}))`).includes('Río Paraná'), 'con el SMN elegido, sin cuadrito del río');
   // "Municipios con alerta oficial" no depende del botón del mapa: con el SMN elegido, sigue siendo la lista del Monitoreo (13/11/2026)
   const semS = S('semOfi()');
   assert.strictEqual(semS, semN, 'la misma lista con el SMN elegido');
