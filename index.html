@@ -1579,7 +1579,10 @@ function resumenProno(){
   const d=D.prono&&D.prono.datos;if(!d)return null;
   const emitido=diaAR(new Date(d.emitido));
   if(diasEntre(emitido,hoy)>7)return {emitido,viejo:true};
-  const fut=d.p.filter(r=>r[0]>=hoy);
+  // Las fechas que ya tienen lectura del río no cuentan (17/11/2026): lo medido reemplaza a lo previsto, igual que en el gráfico.
+  // Antes, con el río medido en 6,23 m, la previsión de ese mismo día (6,31 m, hasta 6,70 m) hacía decir que "puede llegar a evacuación" mientras el gráfico bajaba.
+  const ob=D.rio&&D.rio.datos&&D.rio.datos.obs,ult=ob&&ob.length?ob[ob.length-1][0]:'';
+  const fut=d.p.filter(r=>r[0]>=hoy&&r[0]>ult);
   if(!fut.length)return null;
   let mx=fut[0],cen=fut[0];fut.forEach(r=>{if(r[3]>mx[3])mx=r;if(r[2]>cen[2])cen=r});
   // alerta: el valor más alto del rango llega a 6,00 m (amarillo). evac: el valor más probable llega a 6,50 m (naranja).

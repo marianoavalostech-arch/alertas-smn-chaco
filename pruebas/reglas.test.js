@@ -337,6 +337,14 @@ prueba('río: colores según altura, tendencia y pronóstico del INA', () => {
   assert.ok(gr.includes('>6,60 m<') && gr.includes('>6,20 m<'), 'también cuando el pronóstico baja');
   gr = graf([['2027-03-08', 6.5], ['2027-03-10', 6.8]]);
   assert.ok(!gr.includes('rioPrev') && !gr.includes('d-rio-prono'), 'sin pronóstico, ni números previstos ni explicación');
+  // 17/11/2026: el río medido hoy (6,23 m) reemplaza a lo previsto para hoy (6,31 m, hasta 6,70 m). El texto no puede decir que sube
+  // ni que "puede llegar a evacuación" mientras el gráfico baja: solo cuentan las fechas posteriores a la última lectura.
+  const hoy17 = pr([['2027-03-06', 6.61, 6.61, 6.61], ['2027-03-10', 6, 6.31, 6.7], ['2027-03-17', 5.4, 5.68, 6.2]]);
+  gr = graf([['2027-03-09', 6.37], ['2027-03-10', 6.23]], hoy17);
+  assert.ok(!gr.includes('puede llegar') && !gr.includes('6,31') && !gr.includes('6,70') && gr.includes('5,68 m'), 'lo previsto para un día ya medido no se usa');
+  assert.strictEqual(S(`casoProno(resumenProno(),6.23)`), '');
+  gr = graf([['2027-03-08', 6.37], ['2027-03-09', 6.23]], hoy17);   // sin lectura de hoy, lo previsto para hoy sigue valiendo
+  assert.ok(gr.includes('6,31 m'), 'sin lectura del día, el pronóstico de ese día se muestra');
   // Sin pronóstico
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 4.0], ['2027-03-10', 4.0]]).c, 'verde');
   assert.strictEqual(rio('2027-03-10', [['2027-03-07', 5.5], ['2027-03-10', 5.7]]).c, 'amarillo');   // cerca y creciendo

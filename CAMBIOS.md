@@ -4,6 +4,7 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## Sin subir (en la carpeta)
 
+- **Pronóstico del Paraná: lo medido reemplaza a lo previsto** (17/11, aviso de Mariano: el gráfico bajaba y el texto decía que subía). `resumenProno` ya no usa las fechas que tienen lectura del río, igual que el gráfico. Con el río medido hoy en 6,23 m, la previsión del 13/11 para hoy (6,31 m, hasta 6,70 m) hacía aparecer "El pronóstico del INA puede llegar al nivel de evacuación" y, en la franja de arriba, "el INA llega hasta 6,70 m hacia el 17/11". Ahora quedan solo las fechas que vienen (24/11: 5,68 m, entre 5,40 y 6,20). Si todavía no hay lectura del día, lo previsto para ese día sigue valiendo. Vale para el texto, las tarjetas, la franja, "Ahora en el Chaco" y el renglón del río. Prueba nueva dentro de la del río. Huella nueva del código.
 - **Pie de la tarjeta del municipio en una sola frase** (pedido de Mariano): queda "Pronóstico de Open-Meteo." (y ", para el centro del municipio" cuando corresponde). Salieron las frases de dónde sale el color y las alertas —ya lo dicen los cuadritos de arriba— y la del Centro de Monitoreo, que está en "De dónde salen los datos". Con el cálculo de respaldo se mantiene "El cálculo no mira ríos ni arroyos".
 - **Control de los pluviómetros** (14/11): comparados los 70 contra la lluvia estimada del 8 al 13/11. Un solo caso dudoso (Puerto Tirol: 0 mm medidos con 16,6 mm estimados); ningún día sin cargar. Se decidió **no** agregar aviso por ahora y volver a controlar después de la próxima tormenta grande.
 
