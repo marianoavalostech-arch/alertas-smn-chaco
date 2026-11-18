@@ -124,6 +124,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible,.tabla:focus-visible{
 .aviso.naranja{border-left-color:var(--naranja);background:var(--naranja-bg)}
 /* defensas de la ciudad en el gráfico del Paraná: marca arriba del gráfico mientras el río está lejos */
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
+.copiaAviso{margin-bottom:10px}.copiaAviso .btn{margin-left:4px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
 /* cartel informativo en una línea (19/10/2026) */
 .aviso[data-corto]{font-size:.9rem;padding:8px 12px;line-height:1.5}.aviso[data-corto] a{white-space:nowrap}
@@ -956,6 +957,8 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   </header>
 
   <main>
+  <div class="aviso naranja copiaAviso" id="copiaAviso" role="status" hidden></div>
+
   <div class="aviso info" role="note" data-corto>
     <b>Sitio informativo:</b> no reemplaza las alertas del SMN ni los avisos oficiales.<span class="avMas"> Emergencias: <a href="tel:911"><b>911</b></a> · <a href="#t-tel">Más teléfonos</a> · <a href="https://www.smn.gob.ar/alertas" target="_blank" rel="noopener">Alertas oficiales del SMN</a></span>
   </div>
@@ -3497,6 +3500,25 @@ function alVolver(){
 }
 document.addEventListener('visibilitychange',alVolver);
 addEventListener('pageshow',e=>{if(e.persisted){OCULTA=OCULTA||ULT;alVolver()}});
+
+// Copia guardada (18/11/2026): el teléfono guarda una copia de la página (copia-sw.js). Siempre se pide primero a internet;
+// si al abrir no se puede conectar (o no contesta en 8 segundos), se ve esa copia con esta franja arriba: la hora de la copia
+// y "Probar de nuevo". Los datos se piden igual y, si no llegan, quedan los últimos guardados con su hora. Nunca dentro del portal.
+function copiaSitio(){
+  if(EMB||location.protocol!=='https:'||typeof navigator==='undefined'||!('serviceWorker' in navigator))return;
+  navigator.serviceWorker.register('/copia-sw.js',{scope:'/'}).catch(()=>{});
+}
+function avisoCopia(){
+  const g=document.body&&document.body.dataset?document.body.dataset.copia:'',el=$('copiaAviso');
+  if(!g||!el)return;
+  const d=new Date(g),cu=isNaN(d)?'':diaAR(d)===diaAR(new Date())?' (de hoy a las '+F_HM.format(d)+' h)':' (del '+fFechaHora(d)+')';
+  el.innerHTML='<b>Sin conexión con el sitio.</b> Estás viendo la copia guardada en este teléfono'+cu+'. Cada dato dice de qué hora es. <button class="btn" type="button" id="copiaOtra">Probar de nuevo</button>';
+  el.hidden=false;
+  $('copiaOtra').addEventListener('click',()=>location.reload());
+  addEventListener('online',()=>location.reload(),{once:true});
+}
+seguro(avisoCopia);
+if(document.readyState==='complete')seguro(copiaSitio);else addEventListener('load',()=>seguro(copiaSitio),{once:true});
 
 // Correo de contacto: se arma al cargar para que los robots que buscan direcciones no lo lean del HTML.
 function armarCorreo(){

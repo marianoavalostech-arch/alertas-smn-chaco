@@ -44,9 +44,9 @@ prueba('instalar app: archivo de instalación, íconos y botón solo cuando el n
   assert.ok(toml.includes("manifest-src 'self'"), 'la regla del navegador tiene que dejar leer el archivo de instalación');
   assert.ok(html.includes('@media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}'), 'Instalar app y Compartir no se ven en la computadora');
   assert.ok(/\.emb \.instalar\{display:none!important\}/.test(html) && /@media print\{\.instalar\{display:none!important\}\}/.test(html), 'nunca en el portal ni al imprimir');
-  // no guarda el sitio en el celular: abre siempre la página publicada. El único service worker es el de los avisos (5/11/2026),
-  // con alcance propio que no cubre ninguna página, sin "fetch" y sin guardar nada.
-  assert.ok(!/caches\./.test(codigo) && (codigo.match(/serviceWorker\.register\(/g) || []).length === 1 && codigo.includes("navigator.serviceWorker.register('/avisos-sw.js',{scope:'/avisos-sw/'})"), 'no guarda el sitio en el celular: abre siempre la página publicada');
+  // Dos service workers: el de los avisos (5/11/2026), con alcance propio que no cubre ninguna página, sin "fetch" y sin guardar nada,
+  // y la copia guardada (18/11/2026), que pide siempre primero a internet (ver su prueba). La página no guarda nada por su cuenta.
+  assert.ok(!/caches\./.test(codigo) && (codigo.match(/serviceWorker\.register\(/g) || []).length === 2 && codigo.includes("navigator.serviceWorker.register('/avisos-sw.js',{scope:'/avisos-sw/'})") && codigo.includes("navigator.serviceWorker.register('/copia-sw.js',{scope:'/'})"), 'solo los dos service workers conocidos');
   const sw = fs.readFileSync(path.join(raiz, 'avisos-sw.js'), 'utf8');
   assert.ok(!/addEventListener\(\s*'fetch'|onfetch|caches\.|importScripts|fetch\(/.test(sw), 'el service worker de avisos no intercepta pedidos, no guarda nada ni carga código de afuera');
   // armado: sin ofrecimiento del navegador no se ve nada; con el ofrecimiento aparece el botón y al tocarlo pide instalar
@@ -2116,5 +2116,61 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     // la página: ?loc= queda como tu localidad y se muestra en el mapa
     assert.ok(codigo.includes("const q=/[?&]loc=(\\d{1,2})(&|$)/.exec(location.search||'');if(!q||EMB)return;") && codigo.includes("guardarMiLoc(i);contador('aviso-tocado',true);"));
   });
+
+  // Copia guardada (18/11/2026): primero internet; la copia solo si falla, tarda más de 8 s o el servidor da error.
+  {
+    const O = 'https://panel-alertas-chaco.netlify.app', HTML = '<!doctype html><html><head></head><body><p>sitio</p></body></html>';
+    const almacen = {}, ev = {}, pedidos = [];
+    const caja = n => (almacen[n] = almacen[n] || new Map());
+    const caches = { open: async n => { const m = caja(n); return { put: async (k, r) => { m.set(k, r) }, match: async k => { const r = m.get(k); return r ? r.clone() : undefined } } },
+      keys: async () => Object.keys(almacen), delete: async n => delete almacen[n] };
+    let modo = 'bien';
+    const basica = r => { Object.defineProperty(r, 'type', { value: 'basic' }); return r; };
+    const fetchSim = async (q) => { const u = typeof q === 'string' ? q : q.url; pedidos.push(u);
+      if (modo === 'falla') throw new TypeError('Failed to fetch');
+      if (modo === 'cuelga') return new Promise(() => {});
+      if (modo === '503') return basica(new Response('caído', { status: 503, headers: { 'content-type': 'text/html' } }));
+      return basica(new Response(u.endsWith('.woff2') ? 'letra' : HTML.replace('sitio', 'sitio ' + modo), { headers: { 'content-type': u.endsWith('.woff2') ? 'font/woff2' : 'text/html; charset=UTF-8', 'content-security-policy': "script-src 'self'", 'content-length': '99' } })); };
+    const self = { location: { origin: O }, addEventListener: (t, f) => { ev[t] = f }, skipWaiting() {}, clients: { claim: async () => {} } };
+    vm.runInNewContext(fs.readFileSync(path.join(raiz, 'copia-sw.js'), 'utf8'), { self, caches, fetch: fetchSim, Response, Headers, URL, Promise, String, Date,
+      setTimeout: (f, ms, a) => setTimeout(f, ms === 8000 ? 5 : ms, a), clearTimeout });
+    almacen['rios-copia-0'] = new Map();
+    let esp = []; const evento = (url, extra) => { let rta = null; const e = Object.assign({ request: Object.assign({ url: O + url, method: 'GET', mode: 'navigate' }, extra), respondWith: p => { rta = p }, waitUntil: p => esp.push(p) }, {}); ev.fetch(e); return rta; };
+    ev.install({ waitUntil: p => esp.push(p) }); await Promise.all(esp); esp = [];
+    ev.activate({ waitUntil: p => esp.push(p) }); await Promise.all(esp); esp = [];
+    const instalado = [...caja('rios-copia-1').keys()].sort(), viejaBorrada = !almacen['rios-copia-0'];
+    modo = 'nueva'; const r1 = await evento('/?loc=3'); const t1 = await r1.text(); await Promise.all(esp); esp = [];
+    modo = 'falla'; const r2 = await evento('/?loc=3'); const t2 = await r2.text();
+    modo = 'cuelga'; const r3 = await evento('/'); const t3 = await r3.text();
+    modo = '503'; const t4 = await (await evento('/')).text();
+    modo = 'falla'; let sinCopia = 'no falló'; try { await evento('/privacidad') } catch (x) { sinCopia = 'falló' }
+    const afuera = evento('', { url: 'https://raw.githubusercontent.com/x/datos/servidor.json', mode: 'cors' }), post = evento('/', { method: 'POST' });
+    const otro = evento('/robot/lluvia.js', { mode: 'no-cors' });
+    prueba('copia guardada: primero internet; sin conexión, la copia marcada con su hora; nunca lo de afuera', () => {
+      assert.deepStrictEqual(instalado, ['/', '/fuentes/kanit-700.woff2', '/fuentes/manrope-wght.woff2', '/icono.svg', '/manifest.webmanifest']);
+      assert.ok(viejaBorrada, 'al activarse borra copias de versiones anteriores');
+      assert.ok(t1.includes('sitio nueva') && !t1.includes('data-copia'), 'con conexión, la página de internet tal cual');
+      assert.ok(/<body data-copia="\d{4}-\d\d-\d\dT[\d:.]+Z"><p>sitio nueva/.test(t2), 'sin conexión, la última copia, marcada con la hora en que se guardó');
+      assert.strictEqual(r2.headers.get('content-security-policy'), "script-src 'self'", 'la copia conserva la regla del navegador');
+      assert.ok(!r2.headers.has('content-length'), 'sin el tamaño viejo');
+      assert.ok(t3.includes('data-copia') && t4.includes('data-copia'), 'también si internet no contesta (8 s) o el servidor da error');
+      assert.strictEqual(sinCopia, 'falló', 'sin copia de esa página: el aviso de siempre del navegador');
+      assert.ok(afuera === null && post === null && otro === null, 'no toca datos, otros sitios, envíos ni archivos que no son de la página');
+      const sw = fs.readFileSync(path.join(raiz, 'copia-sw.js'), 'utf8');
+      assert.ok(!/importScripts|eval\(|new Function/.test(sw), 'no carga código de afuera');
+      const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8'), csp = /Content-Security-Policy = "([^"]+)"/.exec(toml)[1];
+      assert.ok(/connect-src 'self' /.test(csp), 'el service worker cumple la regla del navegador: necesita pedir al propio sitio');
+      assert.ok(/for = "\/copia-sw\.js"\n  \[headers\.values\]\n    Cache-Control = "no-cache"/.test(toml), 'la copia guardada no se guarda vieja');
+    });
+    prueba('copia guardada: la página muestra la franja con la hora y "Probar de nuevo"', () => {
+      const el = { hidden: true }, otra = { addEventListener() {} };
+      Object.assign(elementos, { copiaAviso: el, copiaOtra: otra });
+      S('avisoCopia()'); assert.ok(el.hidden, 'sin copia, no se ve');
+      sitio.document.body = { dataset: { copia: '2026-11-17T14:40:00.000Z' } };
+      try { S('avisoCopia()') } finally { delete sitio.document.body; delete elementos.copiaAviso; delete elementos.copiaOtra }
+      assert.ok(!el.hidden && el.innerHTML.startsWith('<b>Sin conexión con el sitio.</b> Estás viendo la copia guardada en este teléfono (del 17/11') && /11:40 h\)\. Cada dato dice de qué hora es\./.test(el.innerHTML) && el.innerHTML.includes('id="copiaOtra">Probar de nuevo'));
+      assert.ok(codigo.includes("if(EMB||location.protocol!=='https:'"), 'nunca dentro del portal');
+    });
+  }
   console.log('\n' + ok + ' pruebas bien.');
 })();
