@@ -1,7 +1,7 @@
 {
   "name": "Ríos y Clima del Chaco",
   "short_name": "Ríos y Clima",
-  "description": "Alertas, lluvias y ríos del Chaco. Sitio informativo: no reemplaza las alertas oficiales.",
+  "description": "Alertas, lluvias y ríos del Chaco. Sitio informativo: muestra las alertas oficiales del Centro de Monitoreo y del SMN.",
   "lang": "es-AR",
   "dir": "ltr",
   "id": "/",
