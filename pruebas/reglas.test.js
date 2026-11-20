@@ -991,7 +991,7 @@ prueba('mapa: Monitoreo del Niño (de entrada) o Servicio Meteorológico, solo c
   assert.ok(S("pintarModo();$('modoNota').textContent").includes('Última lectura: '), 'dice la última lectura');
   // La elección se recuerda; de entrada, el Monitoreo; botones y textos de cada modo
   assert.ok(codigo.includes("const MODO_K='anc-modo-mapa';") && codigo.includes("localStorage.getItem(MODO_K)==='smn'?'smn':'nino'") && codigo.includes('localStorage.setItem(MODO_K,MODO)'));
-  assert.ok(html.includes('<html lang="es" class="m-nino">') && /<button type="button" role="radio" data-modo="nino" aria-checked="true">.*?<span class="mNom">Monitoreo del Niño<\/span><span class="mEst" id="mEstNino"><\/span>/.test(html) && /data-modo="smn" aria-checked="false">.*?<span class="mNom">Servicio Meteorológico<\/span><span class="mEst" id="mEstSmn"><\/span>/.test(html));
+  assert.ok(html.includes('<html lang="es" class="m-nino">') && /<button type="button" role="radio" data-modo="nino" aria-checked="true">.*?<span class="mNom">Centro de Monitoreo del Niño<\/span><span class="mEst" id="mEstNino"><\/span>/.test(html) && /data-modo="smn" aria-checked="false">.*?<span class="mNom">Servicio Meteorológico<\/span><span class="mEst" id="mEstSmn"><\/span>/.test(html));
   // Cada botón dice cuántos municipios tienen alerta con su criterio (13/11/2026: la única marca del otro criterio, sin otro cartel)
   prep('nino', true); const eN = {}, eS = {}; elementos.mEstNino = eN; elementos.mEstSmn = eS; S('pintarModo()'); delete elementos.mEstNino; delete elementos.mEstSmn;
   assert.ok(eN.innerHTML === '<i aria-hidden="true" data-c="rojo"></i>4 con alerta' && eS.innerHTML === '<i aria-hidden="true" data-c="amarillo"></i>1 con alerta', eN.innerHTML + ' / ' + eS.innerHTML);

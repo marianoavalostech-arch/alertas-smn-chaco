@@ -4,6 +4,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## Sin publicar (botones del encabezado en el celular)
 
+- **Botón del mapa: "Centro de Monitoreo del Niño"** (20/11, pedido de Mariano). Antes decía "Monitoreo del Niño". Cambia en el botón de arriba del mapa y en el par de botones de la portada del celular (`pModo`). Huella nueva del código.
+
 - **Compartir y Letra al lado del logo del Comité** (20/11, pedido de Mariano: ocupaban mucha altura). En el celular (menos de 600 px, fuera del portal) el encabezado pasa a una grilla: el logo a la izquierda y los botones a la derecha, chicos, con el dibujo arriba y el nombre abajo (48 px de alto, 44 px o más para tocar). El encabezado baja de unos 200 a 150 px. Si aparece "Instalar app" o se abre algo de la caja (opciones de Compartir, pasos de iPhone), se acomoda solo (`:has`). En menos de 360 px, logo de 36 px. Probado a 320, 360 y 390 px, con letra grande, con "Instalar app" y con Compartir abierto. En la tablet y la computadora no cambia nada.
 
 ## Publicado el 20/11 (textos de "sitio informativo" y logo del Comité: `93fcac2` y `ea783b6`)
