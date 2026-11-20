@@ -2,8 +2,9 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar (textos de "sitio informativo")
+## Sin publicar (textos de "sitio informativo" y logo del Comité)
 
+- **Logo del Comité de Emergencia en el encabezado** (20/11, pedido del Comité, con sus archivos oficiales): isotipo y "Comité de Emergencia" en rosado debajo del subtítulo, en el sitio y en la app (`.cab .comite`, `iconos/comite-emergencia.png`, 243 × 96 px, 10 KB, fondo transparente, 44 px de alto en pantalla). No se muestra dentro del portal (su banner ya lo tiene) ni en pantallas de menos de 620 px de alto en la computadora. Originales en `privado/comite/`.
 - **Cartel de arriba y "Acerca de este sitio"** (20/11, pedido de Mariano: el Centro de Monitoreo usa y recomienda el sitio). El cartel pasa de "no reemplaza las alertas del SMN ni los avisos oficiales" a "Sitio informativo: muestra las alertas oficiales del Centro de Monitoreo y del SMN." (en la computadora y el portal siguen el 911, "Más teléfonos" y el enlace al SMN). En "Acerca", "No es un sitio oficial…" pasa a "De quién es: es una iniciativa ciudadana, sin fines comerciales. Muestra las alertas oficiales tal como las publican el Centro de Monitoreo y el SMN, sin cambiarlas. En una emergencia, seguí lo que indiquen Defensa Civil y el 911." Política de privacidad (al 20/11): "No es un servicio oficial: no representa al Gobierno del Chaco…" pasa a "Muestra las alertas oficiales del Centro de Monitoreo del Gobierno del Chaco y del SMN tal como se publican…" (el responsable sigue nombrado al principio y en "Responsable y contacto") Descripción del manifiesto: "Sitio informativo: muestra las alertas oficiales del Centro de Monitoreo y del SMN." La ficha de Google Play no cambia (1.2.0 en revisión).
 
 ## Sin publicar (copia guardada para cuando no se puede conectar)

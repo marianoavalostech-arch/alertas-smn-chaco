@@ -126,6 +126,9 @@ a:focus-visible,summary:focus-visible,button:focus-visible,.tabla:focus-visible{
 .defMarca{border-top:1.5px dashed var(--titulo);color:var(--titulo);font-size:.85rem;line-height:1.3;padding-top:4px;margin:10px 0 2px}
 .copiaAviso{margin-bottom:10px}.copiaAviso .btn{margin-left:4px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
+/* logo del Comité de Emergencia en el encabezado (20/11/2026, pedido del Comité); en el portal no, porque su banner ya lo muestra */
+.cab .comite{margin-top:14px}.cab .comite img{display:block;height:44px;width:auto}html.emb .cab .comite{display:none}
+@media (max-height:620px){html:not(.emb) .cab .comite{display:none}}
 /* cartel informativo en una línea (19/10/2026) */
 .aviso[data-corto]{font-size:.9rem;padding:8px 12px;line-height:1.5}.aviso[data-corto] a{white-space:nowrap}
 /* desplegables de las secciones de arriba: lo principal a la vista, el detalle al tocar */
@@ -913,6 +916,7 @@ html.grande{font-size:112.5%}html.grande body{font-size:18px}
   <header class="cab">
     <h1>Ríos y Clima del Chaco</h1>
     <p>Alertas, lluvias y ríos del Chaco</p>
+    <div class="comite"><img src="iconos/comite-emergencia.png" alt="Comité de Emergencia" width="243" height="96"></div>
     <div class="instalar" id="instalar" hidden>
       <button class="btn btnInst" id="btnInstalar" type="button" hidden><img src="icono.svg" alt="" width="28" height="28">Instalar app</button>
       <button class="btn btnInst btnComp" id="btnCompartir" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Compartir</button>

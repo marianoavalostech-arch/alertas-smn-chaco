@@ -572,6 +572,9 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   assert.ok(av, 'cartel corto');
   assert.ok(av[1].includes('<b>Sitio informativo:</b> muestra las alertas oficiales del Centro de Monitoreo y del SMN.') && av[1].includes('href="tel:911"') && av[1].includes('href="#t-tel"') && av[1].includes('href="https://www.smn.gob.ar/alertas"'));
   assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="rioBanda"'))), 'el cartel no se esconde');
+  // Logo del Comité de Emergencia en el encabezado, fuera del portal (20/11/2026)
+  const cab = html.slice(html.indexOf('<header class="cab">'), html.indexOf('</header>'));
+  assert.ok(cab.includes('<img src="iconos/comite-emergencia.png" alt="Comité de Emergencia"') && html.includes('html.emb .cab .comite{display:none}') && fs.existsSync(path.join(__dirname, '..', 'iconos', 'comite-emergencia.png')), 'logo del Comité en el encabezado');
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
