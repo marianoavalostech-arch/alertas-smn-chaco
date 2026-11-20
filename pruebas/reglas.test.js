@@ -576,6 +576,7 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   const cab = html.slice(html.indexOf('<header class="cab">'), html.indexOf('</header>'));
   assert.ok(cab.includes('<img src="iconos/comite-emergencia.png" alt="Comité de Emergencia"') && !html.includes('html.emb .cab .comite{display:none}') && fs.existsSync(path.join(__dirname, '..', 'iconos', 'comite-emergencia.png')), 'logo del Comité en el encabezado');
   assert.ok(html.includes("const dirSitio=()=>PORTAL+'/rios-y-clima/';") && html.includes("const PORTAL='https://gobiernoabierto.chaco.gob.ar';"), 'Compartir pasa la dirección del portal de Gobierno Abierto');
+  assert.ok(html.includes("if(EMB&&matchMedia('(hover:hover) and (pointer:fine)').matches)return;") && html.includes('.emb .instalar>:not(#btnCompartir,#compOpc){display:none!important}') && html.includes('@media screen and (hover:hover) and (pointer:fine){.emb .instalar{display:none!important}}'), 'Compartir dentro del portal: solo en celulares y tablets');
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);

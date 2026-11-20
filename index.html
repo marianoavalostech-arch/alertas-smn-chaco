@@ -639,7 +639,10 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 .cab .instIos li{margin:4px 0}
 .cab .instIos li[hidden]{display:none}
 .cab .instIos .instIosNota{font-size:.85rem}
-.emb .instalar{display:none!important}
+/* Dentro del portal (20/11/2026, pedido de Mariano): en celulares y tablets se ve solo "Compartir"; en la computadora, nada. */
+.emb .instalar>:not(#btnCompartir,#compOpc){display:none!important}
+.emb .cab>.instalar:not([hidden]){display:inline-flex;vertical-align:middle;margin:10px 8px 0 0}.emb .cab>.instalar:has(#compOpc:not([hidden])){display:flex}.emb .cab>.embInst{display:inline-block;vertical-align:middle}
+@media screen and (hover:hover) and (pointer:fine){.emb .instalar{display:none!important}}
 @media print{.instalar{display:none!important}}
 /* Instalar app y Compartir solo en celulares y tablets (pedido de Mariano, 20/10/2026): en la computadora (mouse) no se ven. */
 @media screen and (hover:hover) and (pointer:fine){html:not(.emb) #instalar,html:not(.emb) #instalar[hidden]{display:none!important}}
@@ -3616,13 +3619,15 @@ seguro(instalarApp);
 // Compartir: un botón para pasar la dirección del sitio por WhatsApp, Facebook, mensajes, etc. No manda nada solo: elige la persona.
 // En el celular abre el menú de compartir del teléfono (que ya trae WhatsApp). En la computadora muestra
 // "Enviar por WhatsApp" y "Copiar enlace". Se ve también en la app instalada (no tiene barra de dirección);
-// no se ve dentro del portal ni al imprimir. El contador anota solo cuántas veces se toca (evento "compartir").
+// desde el 20/11/2026 también dentro del portal, en celulares y tablets (el marco del portal permite web-share y clipboard-write); no al imprimir. El contador anota solo cuántas veces se toca (evento "compartir").
 const COMP_TIT='Ríos y Clima del Chaco',COMP_TEXTO='Ríos y Clima del Chaco: alertas del SMN, lluvia y altura de los ríos.';
 // Desde el 20/11/2026 (pedido de Mariano) se comparte la página del sitio dentro del portal de Gobierno Abierto.
 const dirSitio=()=>PORTAL+'/rios-y-clima/';
 function compartirSitio(){
   const btn=$('btnCompartir'),opc=$('compOpc'),wa=$('compWa'),cop=$('compCopiar'),aviso=$('compAviso');
-  if(!btn||!opc||!wa||!cop||!aviso||EMB)return;
+  if(!btn||!opc||!wa||!cop||!aviso)return;
+  // Dentro del portal (20/11/2026): solo en celulares y tablets; en la computadora no se muestra (como fuera del portal).
+  if(EMB&&matchMedia('(hover:hover) and (pointer:fine)').matches)return;
   const nav=typeof navigator!=='undefined'?navigator:{},url=dirSitio();
   wa.href='https://wa.me/?text='+encodeURIComponent(COMP_TEXTO+' '+url);
   // El menú del teléfono solo en pantallas táctiles: en la computadora, el de Windows o Mac casi no trae WhatsApp.
