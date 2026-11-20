@@ -614,6 +614,19 @@ html.m-nino .vNino,html.m-smn .vSmn,html.m-calc .vCalc{display:revert!important}
 /* Hasta que corre el código, el lugar del botón Compartir queda reservado (invisible): así la página no salta cuando aparece. */
 @media screen{html:not(.emb) #instalar[hidden]{display:flex!important;visibility:hidden}html:not(.emb) #instalar[hidden] #btnCompartir,html:not(.emb) #instalar[hidden] #btnLetra{display:inline-flex!important}}
 .btnInst{display:inline-flex;align-items:center;gap:8px;padding:5px 16px 5px 6px}
+/* Celular (20/11/2026, pedido de Mariano): Compartir y Letra en el mismo renglón que el logo del Comité, como botones chicos con el dibujo arriba y
+   el nombre abajo. Si se abre algo de la caja (opciones de Compartir, pasos de iPhone, aviso de instalar), la caja vuelve a ocupar todo el ancho. */
+@media screen and (max-width:599px){
+  html:not(.emb) .cab{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
+  html:not(.emb) .cab>*{grid-column:1/-1}
+  html:not(.emb) .cab>.comite{grid-column:1;margin-top:10px}
+  html:not(.emb) .cab>.instalar{grid-column:2;justify-content:flex-end;margin-top:10px;gap:6px}
+  html:not(.emb) .cab:has(#compOpc:not([hidden]),#instIos:not([hidden]),#instAviso:not([hidden]))>.instalar{grid-column:1/-1;justify-content:flex-start}
+  html:not(.emb) .cab .btnHerr,html:not(.emb) .cab .btnComp{flex-direction:column;justify-content:center;gap:2px;min-width:60px;min-height:48px;padding:4px 8px;border-radius:14px;font-size:.76rem;line-height:1.1}
+  html:not(.emb) .cab .btnComp svg,html:not(.emb) .cab .btnHerr svg{width:18px;height:18px}
+  html:not(.emb) .cab #btnLetra{padding:4px 8px}html:not(.emb) .cab #btnLetra .aMas{font-size:.82rem}
+}
+@media screen and (max-width:359px){html:not(.emb) .cab .comite img{height:36px}html:not(.emb) .cab .btnHerr,html:not(.emb) .cab .btnComp{min-width:52px;padding:4px 6px}html:not(.emb) .cab #btnLetra{padding:4px 6px}}
 .btnInst img{width:28px;height:28px;border-radius:8px;display:block}
 .btnComp{padding:5px 16px 5px 12px}
 .btnComp svg{width:22px;height:22px;display:block;flex:none}
