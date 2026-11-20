@@ -574,7 +574,8 @@ prueba('secciones de arriba compactas: lo principal a la vista y el detalle desp
   assert.ok(!/<details[^>]*>[^]*?Sitio informativo/.test(html.slice(0, html.indexOf('id="rioBanda"'))), 'el cartel no se esconde');
   // Logo del Comité de Emergencia en el encabezado, fuera del portal (20/11/2026)
   const cab = html.slice(html.indexOf('<header class="cab">'), html.indexOf('</header>'));
-  assert.ok(cab.includes('<img src="iconos/comite-emergencia.png" alt="Comité de Emergencia"') && html.includes('html.emb .cab .comite{display:none}') && fs.existsSync(path.join(__dirname, '..', 'iconos', 'comite-emergencia.png')), 'logo del Comité en el encabezado');
+  assert.ok(cab.includes('<img src="iconos/comite-emergencia.png" alt="Comité de Emergencia"') && !html.includes('html.emb .cab .comite{display:none}') && fs.existsSync(path.join(__dirname, '..', 'iconos', 'comite-emergencia.png')), 'logo del Comité en el encabezado');
+  assert.ok(html.includes("const dirSitio=()=>PORTAL+'/rios-y-clima/';") && html.includes("const PORTAL='https://gobiernoabierto.chaco.gob.ar';"), 'Compartir pasa la dirección del portal de Gobierno Abierto');
   // Mapa: leyenda corta con los mismos botones; las explicaciones en "¿Qué significa cada color?"
   const mapa = html.slice(html.indexOf('id="t-mapa"'), html.indexOf('id="t-smn"'));
   for (const c of ['verde', 'amarillo', 'naranja', 'rojo', 'gris']) assert.ok(mapa.includes('<button class="ley" type="button" data-c="' + c + '"'), 'botón ' + c);
@@ -1709,15 +1710,15 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       sitio.navigator = { clipboard: { writeText: async t => { copiado = t } } };
       S('compartirSitio()');
       assert.ok(!btn.hidden && !caja.hidden, 'el botón se ve');
-      assert.ok(wa.href.startsWith('https://wa.me/?text=') && decodeURIComponent(wa.href.split('text=')[1]).endsWith(' https://panel-alertas-chaco.netlify.app/'), 'WhatsApp con la frase y la dirección');
+      assert.ok(wa.href.startsWith('https://wa.me/?text=') && decodeURIComponent(wa.href.split('text=')[1]).endsWith(' https://gobiernoabierto.chaco.gob.ar/rios-y-clima/'), 'WhatsApp con la frase y la dirección');
       await ev.click(); assert.ok(!opc.hidden && atr['aria-expanded'] === 'true', 'aparecen las opciones');
-      await evCop.click(); assert.strictEqual(copiado, 'https://panel-alertas-chaco.netlify.app/'); assert.ok(aviso.textContent.startsWith('Enlace copiado'));
+      await evCop.click(); assert.strictEqual(copiado, 'https://gobiernoabierto.chaco.gob.ar/rios-y-clima/'); assert.ok(aviso.textContent.startsWith('Enlace copiado'));
       await ev.click(); assert.ok(opc.hidden && aviso.textContent === '', 'se cierran');
       // celular: abre el menú de compartir del teléfono y no muestra las opciones
       let compartido = null; opc.hidden = true;
       sitio.navigator = { share: async d => { compartido = d } }; sitio.matchMedia = q => ({ matches: /coarse/.test(q) });
       S('compartirSitio()'); await ev.click();
-      assert.ok(compartido && compartido.url === 'https://panel-alertas-chaco.netlify.app/' && compartido.title === 'Ríos y Clima del Chaco', 'menú del teléfono con la dirección');
+      assert.ok(compartido && compartido.url === 'https://gobiernoabierto.chaco.gob.ar/rios-y-clima/' && compartido.title === 'Ríos y Clima del Chaco', 'menú del teléfono con la dirección');
       assert.ok(opc.hidden, 'sin opciones extra');
       // si la persona cierra el menú del teléfono, no pasa nada más
       sitio.navigator = { share: async () => { const e = new Error('cancelado'); e.name = 'AbortError'; throw e } };

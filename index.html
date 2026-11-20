@@ -127,7 +127,7 @@ a:focus-visible,summary:focus-visible,button:focus-visible,.tabla:focus-visible{
 .copiaAviso{margin-bottom:10px}.copiaAviso .btn{margin-left:4px}
 .aviso.info{border-left-color:var(--acento);background:var(--acento-soft);color:var(--ink)}
 /* logo del Comité de Emergencia en el encabezado (20/11/2026, pedido del Comité); en el portal no, porque su banner ya lo muestra */
-.cab .comite{margin-top:14px}.cab .comite img{display:block;height:44px;width:auto}html.emb .cab .comite{display:none}
+.cab .comite{margin-top:14px}.cab .comite img{display:block;height:44px;width:auto}
 @media (max-height:620px){html:not(.emb) .cab .comite{display:none}}
 /* cartel informativo en una línea (19/10/2026) */
 .aviso[data-corto]{font-size:.9rem;padding:8px 12px;line-height:1.5}.aviso[data-corto] a{white-space:nowrap}
@@ -3618,7 +3618,8 @@ seguro(instalarApp);
 // "Enviar por WhatsApp" y "Copiar enlace". Se ve también en la app instalada (no tiene barra de dirección);
 // no se ve dentro del portal ni al imprimir. El contador anota solo cuántas veces se toca (evento "compartir").
 const COMP_TIT='Ríos y Clima del Chaco',COMP_TEXTO='Ríos y Clima del Chaco: alertas del SMN, lluvia y altura de los ríos.';
-const dirSitio=()=>location.protocol==='https:'?location.origin+'/':'https://panel-alertas-chaco.netlify.app/';
+// Desde el 20/11/2026 (pedido de Mariano) se comparte la página del sitio dentro del portal de Gobierno Abierto.
+const dirSitio=()=>PORTAL+'/rios-y-clima/';
 function compartirSitio(){
   const btn=$('btnCompartir'),opc=$('compOpc'),wa=$('compWa'),cop=$('compCopiar'),aviso=$('compAviso');
   if(!btn||!opc||!wa||!cop||!aviso||EMB)return;
