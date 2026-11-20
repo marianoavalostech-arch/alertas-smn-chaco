@@ -1831,7 +1831,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     for (const f of ['kanit-700.woff2', 'manrope-wght.woff2']) assert.ok(pv.includes('url(fuentes/' + f + ')'), 'la misma letra que el sitio');
     assert.ok(html.includes('<a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>') && html.indexOf('href="privacidad.html"') > html.indexOf('id="t-acerca"'), 'se abre desde "Acerca de este sitio": Play pide que esté también dentro de la app');
     const acerca = html.slice(html.indexOf('id="t-acerca"'), html.indexOf('</section>', html.indexOf('id="t-acerca"')));
-    assert.ok(acerca.includes('Centro de Monitoreo</a> del Gobierno del Chaco') && acerca.includes('<b>De quién es:</b> es una iniciativa ciudadana') && acerca.includes('tal como las publican el Centro de Monitoreo y el SMN, sin cambiarlas') && acerca.includes('seguí lo que indiquen Defensa Civil y el 911') && !acerca.includes('No es un sitio oficial'), '"Acerca" nombra las fuentes de hoy y dice que no es oficial (13/11/2026)');
+    assert.ok(acerca.includes('Centro de Monitoreo</a> del Gobierno del Chaco') && !acerca.includes('De quién es') && acerca.includes('<b>Hecho por</b> Mariano Avalos.') && !acerca.includes('No es un sitio oficial'), '"Acerca" nombra las fuentes de hoy y solo dice quién lo hizo (20/11/2026)');
   });
   prueba('Google Play: la app se reconoce, no ofrece instalar y cuenta aparte ("/desde-play"); la visita se cuenta al terminar de cargar', () => {
     const pedidos = [], antes = sitio.location, antesAdd = sitio.addEventListener, ev = {};

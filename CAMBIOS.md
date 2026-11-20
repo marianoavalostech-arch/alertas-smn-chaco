@@ -4,6 +4,8 @@ Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
 ## Sin publicar (botones del encabezado en el celular)
 
+- **"Acerca de este sitio": sin "De quién es"** (20/11, pedido de Mariano). Se saca el párrafo "De quién es: es una iniciativa ciudadana…"; queda solo "Hecho por Mariano Avalos."
+
 - **Botón del mapa: "Centro de Monitoreo del Niño"** (20/11, pedido de Mariano). Antes decía "Monitoreo del Niño". Cambia en el botón de arriba del mapa y en el par de botones de la portada del celular (`pModo`). Huella nueva del código.
 - **Logo del Comité también dentro del portal** (20/11, pedido de Mariano): se saca la regla que lo escondía en Gobierno Abierto. Probado a 390 y 1280 px con `?embebido=1`.
 - **Compartir pasa la dirección del portal** (20/11, pedido de Mariano): https://gobiernoabierto.chaco.gob.ar/rios-y-clima/ en lugar de la de Netlify, en el menú del teléfono, WhatsApp y "Copiar enlace" (`dirSitio`). La vista previa en WhatsApp y redes pasa a ser la de esa página del portal. Pruebas de Compartir actualizadas; prueba nueva. Huella nueva del código.
