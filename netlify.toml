@@ -77,3 +77,17 @@
   for = "/firebase/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# Límite de pedidos (21/11/2026, plan gratuito: si se acaban los créditos, el sitio se pausa hasta el mes siguiente).
+# Si una misma conexión pide más de 120 veces en un minuto, Netlify le contesta 429 ("demasiados pedidos") hasta que pase el minuto.
+# Una visita nueva hace unos 10 pedidos y una repetida unos 3: entran unas 12 visitas nuevas por minuto desde la misma conexión.
+# Es generoso a propósito: las compañías de celular hacen salir a muchos clientes por la misma conexión.
+# Frena a alguien que carga el sitio miles de veces desde una sola máquina; no frena un ataque desde muchas a la vez.
+# A quien frene por error, copia-sw.js le muestra la copia guardada (toma el 429 como una caída). El plan gratuito permite 2 reglas.
+[[redirects]]
+  from = "/*"
+  to = "/:splat"
+  [redirects.rate_limit]
+    window_limit = 120
+    window_size = 60
+    aggregate_by = ["ip", "domain"]

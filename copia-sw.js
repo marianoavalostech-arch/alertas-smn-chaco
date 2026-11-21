@@ -49,7 +49,7 @@ async function pagina(e, u) {
   let r = null;
   try { r = await Promise.race([red, tarde]); } catch (x) { r = null; }
   clearTimeout(t);
-  if (r && r.status < 500) return r;
+  if (r && r.status < 500 && r.status !== 429) return r;   // 429: el límite de pedidos de Netlify (netlify.toml); se muestra la copia
   const copia = await copiaDe(clave);
   if (copia) return copia;
   return r || red;                                          // sin copia: lo de siempre (esperar o el aviso del navegador)

@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Publicado el 21/11 (límite de pedidos)
+
+- **Límite de pedidos por conexión** (21/11, pedido de Mariano; plan gratuito de Netlify: si se acaban los créditos, el sitio se pausa). Regla en `netlify.toml` (`[redirects.rate_limit]`, la de la documentación de Netlify para todo el sitio): más de 120 pedidos en un minuto desde la misma conexión → 429 hasta que pase el minuto. Generosa porque las compañías de celular sacan a muchos clientes por la misma conexión. Frena a quien carga el sitio miles de veces desde una máquina; no a un ataque desde muchas. Netlify no dice si los pedidos frenados gastan créditos. `copia-sw.js` toma el 429 como una caída y muestra la copia guardada. **Hay que comprobarlo en el sitio real después de publicar** (pedir la página más de 120 veces en un minuto y ver el 429). 105 pruebas.
+
 ## Sin publicar (fuentes sin renovar, `[skip netlify]`)
 
 - **Correo si una fuente lleva más de 48 horas sin responder** (21/11, pedido de Mariano, después de ver que el nivel oficial por municipio no se renovaba desde el 20/11 a la mañana: la fuente del Centro de Monitoreo da error también desde el navegador). `viejas` en `robot/revisar.js` mira la hora de la última lectura buena (`t`) de cada fuente, no la fecha del informe (no avisa los fines de semana). Anota en `revision.viejas` y, si aparece una fuente nueva en la lista, la corrida de "Lluvia" termina con error y GitHub manda el correo. Una vez por fuente mientras siga caída, y **solo de lunes a viernes desde las 11** (lo que se cumple el fin de semana avisa el lunes a las 11). No toca la página ni el script. 104 pruebas.

@@ -1750,6 +1750,14 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       assert.ok(fs.readFileSync(path.join(raiz, 'robot', 'servidor.js'), 'utf8').includes("'vieja=si"));
     });
   }
+  prueba('límite de pedidos: una regla en netlify.toml, generosa y por conexión', () => {
+    const toml = fs.readFileSync(path.join(raiz, 'netlify.toml'), 'utf8').replace(/\r/g, '');
+    const m = /\[\[redirects\]\]\n  from = "\/\*"\n  to = "\/:splat"\n  \[redirects\.rate_limit\]\n    window_limit = (\d+)\n    window_size = (\d+)\n    aggregate_by = \["ip", "domain"\]/.exec(toml);
+    assert.ok(m, 'la regla está y cuenta por conexión (no por dominio solo: eso es de Enterprise)');
+    assert.ok(+m[1] >= 100 && +m[2] === 60, 'al menos 100 pedidos por minuto: muchos clientes de celular salen por la misma conexión');
+    assert.ok((toml.match(/\[redirects\.rate_limit\]/g) || []).length <= 2, 'el plan gratuito permite 2 reglas');
+    assert.ok(!fs.existsSync(path.join(raiz, '_redirects')), 'los límites no se pueden poner en _redirects');
+  });
   prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
     for (const f of ['lluvia.yml', 'pruebas.yml']) {
       const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');
@@ -2293,6 +2301,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       if (modo === 'falla') throw new TypeError('Failed to fetch');
       if (modo === 'cuelga') return new Promise(() => {});
       if (modo === '503') return basica(new Response('caído', { status: 503, headers: { 'content-type': 'text/html' } }));
+      if (modo === '429') return basica(new Response('demasiados pedidos', { status: 429, headers: { 'content-type': 'text/html' } }));
       return basica(new Response(u.endsWith('.woff2') ? 'letra' : HTML.replace('sitio', 'sitio ' + modo), { headers: { 'content-type': u.endsWith('.woff2') ? 'font/woff2' : 'text/html; charset=UTF-8', 'content-security-policy': "script-src 'self'", 'content-length': '99' } })); };
     const self = { location: { origin: O }, addEventListener: (t, f) => { ev[t] = f }, skipWaiting() {}, clients: { claim: async () => {} } };
     vm.runInNewContext(fs.readFileSync(path.join(raiz, 'copia-sw.js'), 'utf8'), { self, caches, fetch: fetchSim, Response, Headers, URL, Promise, String, Date,
@@ -2306,6 +2315,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     modo = 'falla'; const r2 = await evento('/?loc=3'); const t2 = await r2.text();
     modo = 'cuelga'; const r3 = await evento('/'); const t3 = await r3.text();
     modo = '503'; const t4 = await (await evento('/')).text();
+    modo = '429'; const t429 = await (await evento('/')).text();
     modo = 'falla'; let sinCopia = 'no falló'; try { await evento('/privacidad') } catch (x) { sinCopia = 'falló' }
     const afuera = evento('', { url: 'https://raw.githubusercontent.com/x/datos/servidor.json', mode: 'cors' }), post = evento('/', { method: 'POST' });
     const otro = evento('/robot/lluvia.js', { mode: 'no-cors' });
@@ -2317,6 +2327,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       assert.strictEqual(r2.headers.get('content-security-policy'), "script-src 'self'", 'la copia conserva la regla del navegador');
       assert.ok(!r2.headers.has('content-length'), 'sin el tamaño viejo');
       assert.ok(t3.includes('data-copia') && t4.includes('data-copia'), 'también si internet no contesta (8 s) o el servidor da error');
+      assert.ok(t429.includes('data-copia'), 'y si el límite de pedidos de Netlify frena a esta conexión (429)');
       assert.strictEqual(sinCopia, 'falló', 'sin copia de esa página: el aviso de siempre del navegador');
       assert.ok(afuera === null && post === null && otro === null, 'no toca datos, otros sitios, envíos ni archivos que no son de la página');
       const sw = fs.readFileSync(path.join(raiz, 'copia-sw.js'), 'utf8');
