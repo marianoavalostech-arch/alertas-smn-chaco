@@ -1723,6 +1723,33 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
       assert.strictEqual(p5, 4, 'una anotación de antes (sin huella) confirma una vez');
     });
   }
+  // Fuentes sin renovar hace más de 48 horas (21/11/2026): un correo cuando aparece una nueva en la lista.
+  {
+    const ahora = Date.parse('2026-11-23T12:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
+    const copia = (hOficial, extra) => ({ robot: { t: hace(0) }, datos: Object.assign({ oficial: { t: hace(hOficial), mun: {} }, rio: { t: hace(0.2), obs: [] },
+      localidades: { t: hace(0.2), dia: '2026-11-20', loc: [] }, lluvia: { t: hace(200) }, errores: { oficial: 'Address unavailable: (dirección)' } }, extra || {}) });
+    prueba('fuentes sin renovar: avisa pasadas 48 horas sin una lectura buena, una sola vez', () => {
+      assert.strictEqual(rv.VIEJA_H, 48); assert.strictEqual(rv.HORA_AVISO, 11);   // 23/11/2026 12:00 UTC = lunes 9 h en Argentina
+      const lunes11 = Date.parse('2026-11-23T14:00:00Z');
+      assert.ok(!rv.habil(ahora) && rv.habil(lunes11) && !rv.habil(Date.parse('2026-11-22T15:00:00Z')) && rv.habil(Date.parse('2026-11-27T22:00:00Z')), 'lunes a viernes desde las 11');
+      assert.deepStrictEqual(rv.viejas(copia(51), lunes11 - 2 * 36e5).claves, [], 'antes de las 11 todavía no (aunque pasen las 48 horas)');
+      assert.deepStrictEqual(rv.viejas(copia(80), Date.parse('2026-11-22T15:00:00Z')).claves, [], 'el domingo no');
+      assert.deepStrictEqual(rv.viejas(copia(45), lunes11).claves, [], '47 horas: todavía no');
+      const v = rv.viejas(copia(47), lunes11);   // 49 horas a las 11
+      assert.deepStrictEqual(rv.viejas(copia(60), ahora, { revision: { viejas: v } }).claves, ['vieja:oficial'], 'fuera de horario, la que ya estaba sigue (no vuelve a avisar al otro día)');
+      assert.deepStrictEqual(rv.viejas(copia(1), ahora, { revision: { viejas: v } }).claves, [], 'si se arregló, sale de la lista');
+      assert.deepStrictEqual(v.claves, ['vieja:oficial'], 'la lluvia prevista no cuenta (la trae el robot de la lluvia)');
+      assert.ok(v.detalle[0].includes('49 h') && v.detalle[0].includes('Address unavailable') && !/https?:/.test(v.detalle[0]));
+      assert.deepStrictEqual(rv.viejas(copia(1), lunes11).claves, [], 'el informe de las localidades es del viernes, pero se leyó bien: no avisa los fines de semana');
+      const a1 = copia(49); a1.revision = { viejas: v };
+      const b1 = copia(50); b1.revision = { viejas: rv.viejas(b1, lunes11 + 36e5, a1) };
+      assert.deepStrictEqual(rv.nuevas(b1, a1, 'viejas'), [], 'la hora siguiente no vuelve a avisar');
+      assert.deepStrictEqual(rv.nuevas(a1, { revision: { viejas: { claves: [] } } }, 'viejas'), ['vieja:oficial']);
+      const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
+      assert.ok(yml.includes("if: steps.copia.outputs.vieja == 'si'") && yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.vieja'));
+      assert.ok(fs.readFileSync(path.join(raiz, 'robot', 'servidor.js'), 'utf8').includes("'vieja=si"));
+    });
+  }
   prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
     for (const f of ['lluvia.yml', 'pruebas.yml']) {
       const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');

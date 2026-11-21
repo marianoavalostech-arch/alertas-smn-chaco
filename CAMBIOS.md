@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (fuentes sin renovar, `[skip netlify]`)
+
+- **Correo si una fuente lleva más de 48 horas sin responder** (21/11, pedido de Mariano, después de ver que el nivel oficial por municipio no se renovaba desde el 20/11 a la mañana: la fuente del Centro de Monitoreo da error también desde el navegador). `viejas` en `robot/revisar.js` mira la hora de la última lectura buena (`t`) de cada fuente, no la fecha del informe (no avisa los fines de semana). Anota en `revision.viejas` y, si aparece una fuente nueva en la lista, la corrida de "Lluvia" termina con error y GitHub manda el correo. Una vez por fuente mientras siga caída, y **solo de lunes a viernes desde las 11** (lo que se cumple el fin de semana avisa el lunes a las 11). No toca la página ni el script. 104 pruebas.
+
 ## Sin publicar (avisos para todos los celulares)
 
 - **Avisos para todos los celulares** (21/11, decisión de Mariano; los avisos reales le siguen llegando después de la copia guardada del 18/11, así que los dos *service workers* conviven). `AVISOS_TODOS=true`: el botón «Avisarme» se ve en cualquier celular (app de Play, navegador y sitio agregado a inicio; en iPhone, solo agregado a inicio, iOS 16.4 o más), sin el enlace `?avisos=1`. Nunca en la computadora ni en el portal. Privacidad actualizada (dónde se ofrecen).

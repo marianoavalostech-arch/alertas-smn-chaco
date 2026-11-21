@@ -5,7 +5,7 @@
 // Si el script no responde, responde algo roto o una copia más vieja que la anterior, queda la anterior.
 // Uso: node robot/servidor.js anterior.json servidor.json
 const fs = require('fs'), path = require('path');
-const { revisar, comparar, nuevas } = require('./revisar.js');   // saca los valores imposibles y mira los cambios bruscos antes de guardar
+const { revisar, comparar, viejas, nuevas } = require('./revisar.js');   // saca los valores imposibles y mira los cambios bruscos antes de guardar
 
 // La dirección del script sale de la página, para no tenerla escrita en dos lugares.
 function urlScript() {
@@ -60,7 +60,8 @@ async function armarCopia(anterior, url, pausa) {
   if (prev && hora(j) <= hora(prev)) return { salida: prev, bien: true, motivo: 'sin novedades' };
   const limpia = revisar(j);
   limpia.revision.cambios = comparar(limpia, prev);
-  return { salida: limpia, bien: true, motivo: 'copia renovada', nuevas: nuevas(limpia, prev), bruscos: nuevas(limpia, prev, 'cambios') };
+  limpia.revision.viejas = viejas(limpia, Date.now(), prev);
+  return { salida: limpia, bien: true, motivo: 'copia renovada', nuevas: nuevas(limpia, prev), bruscos: nuevas(limpia, prev, 'cambios'), sinRenovar: nuevas(limpia, prev, 'viejas') };
 }
 
 module.exports = { urlScript, hora, vale, armarCopia, atrasada, AVISO_H };
@@ -80,6 +81,11 @@ if (require.main === module) (async () => {
   if (r.bruscos && r.bruscos.length) {
     console.log('Atención: cambios bruscos para mirar (pueden ser reales o un error de la fuente): ' + r.salida.revision.cambios.detalle.join('; ') + '.');
     if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'brusco=si\n');
+  }
+  // Fuentes sin renovar hace más de 48 horas: si aparece una nueva en la lista, también llega el correo de GitHub.
+  if (r.sinRenovar && r.sinRenovar.length) {
+    console.log('Atención: fuentes sin una lectura buena hace más de 48 horas: ' + r.salida.revision.viejas.detalle.join('; ') + '. La página muestra la última lectura con su fecha.');
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'vieja=si\n');
   }
   if (atrasada(r.salida, new Date())) {
     console.log('Atención: la copia del script de Google tiene más de ' + AVISO_H + ' horas. Puede estar detenido: mirar en script.google.com sus Ejecuciones y Activadores.');

@@ -159,11 +159,36 @@ function comparar(nueva, anterior) {
   return { claves: [...new Set(out.map(o => o.clave))].sort(), detalle: out.map(o => o.detalle).slice(0, 50) };
 }
 
-// Claves que no estaban en la copia anterior: solo por esas se avisa (campo: 'claves' para lo sacado, 'cambios' para lo brusco).
+// Fuentes sin renovar (21/11/2026): si una fuente lleva más de VIEJA_H horas sin una lectura buena, se avisa por correo.
+// Se mira "t" de cada dato, que el script pone cuando la lee bien (si falla, queda la copia anterior con su "t" viejo).
+// No se mira la fecha del informe: la APA y el Centro de Monitoreo no publican los fines de semana y avisaría cada lunes.
+// La lluvia prevista no se mira acá: la trae el robot de la lluvia (lluvia.json); en el script siempre falla por Open-Meteo.
+const VIEJA_H = 48;
+// El correo sale solo de lunes a viernes desde las 11 (hora de Argentina, decisión de Mariano del 21/11): sirve para avisar
+// al Centro de Monitoreo o a la APA, y eso solo se puede en días hábiles. Fuera de ese horario no se suman fuentes nuevas a la
+// lista (las que ya estaban siguen, así no vuelve a avisar), y a las 11 del siguiente día hábil aparecen y sale el correo.
+const HORA_AVISO = 11;
+function habil(ahora) { const a = new Date(ahora - 3 * 36e5); const d = a.getUTCDay(); return d >= 1 && d <= 5 && a.getUTCHours() >= HORA_AVISO; }
+const NOMBRES = { oficial: 'nivel oficial por municipio (Centro de Monitoreo)', localidades: 'localidades con alerta (APA)', puertos: 'ríos hora por hora (APA)',
+  pluvio: 'pluviómetros (Centro de Monitoreo)', rio: 'Paraná (INA)', paraguay: 'Paraguay (INA)', bermejo: 'Bermejo (INA)', prono: 'pronóstico del Paraná (INA)',
+  pronoPy: 'pronóstico del Paraguay (INA)', medida: 'lluvia medida en estaciones (INA)', yacy: 'Yacyretá (INA)' };
+function viejas(copia, ahora = Date.now(), anterior = null, horas = VIEJA_H) {
+  const d = (copia && copia.datos) || {}, err = d.errores || {}, out = [];
+  const antes = new Set((anterior && anterior.revision && anterior.revision.viejas && anterior.revision.viejas.claves) || []), enHorario = habil(ahora);
+  for (const k of Object.keys(NOMBRES)) {
+    const t = d[k] && Date.parse(d[k].t);
+    if (!t || isNaN(t)) continue;   // nunca se leyó: no hay con qué comparar
+    const h = (ahora - t) / 36e5;
+    if (h > horas && (enHorario || antes.has('vieja:' + k))) out.push({ clave: 'vieja:' + k, detalle: NOMBRES[k] + ': ' + Math.floor(h) + ' h sin una lectura buena' + (err[k] ? ' (' + String(err[k]).slice(0, 80) + ')' : '') });
+  }
+  return { claves: out.map(o => o.clave).sort(), detalle: out.map(o => o.detalle) };
+}
+
+// Claves que no estaban en la copia anterior: solo por esas se avisa (campo: 'claves' para lo sacado, 'cambios' para lo brusco, 'viejas' para lo sin renovar).
 function nuevas(copia, anterior, campo = 'claves') {
-  const lista = (j) => { const r = j && j.revision; return (r && (campo === 'claves' ? r.claves : r.cambios && r.cambios.claves)) || []; };
+  const lista = (j) => { const r = j && j.revision; return (r && (campo === 'claves' ? r.claves : r[campo] && r[campo].claves)) || []; };
   const antes = new Set(lista(anterior));
   return lista(copia).filter(c => !antes.has(c));
 }
 
-module.exports = { revisar, comparar, nuevas, R, B };
+module.exports = { revisar, comparar, viejas, nuevas, habil, R, B, VIEJA_H, HORA_AVISO };

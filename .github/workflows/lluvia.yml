@@ -75,6 +75,11 @@ jobs:
         run: |
           echo "::error::Cambio brusco en los datos (muchos municipios que cambian de nivel juntos, un río que sube o baja mucho de golpe o una lluvia muy fuerte). Puede ser real o un error de la fuente: el sitio lo muestra igual. El detalle está en el paso Copiar el resultado del script de Google."
           exit 1
+      - name: Avisar si una fuente lleva más de 48 horas sin responder
+        if: steps.copia.outputs.vieja == 'si'
+        run: |
+          echo "::error::Una fuente lleva más de 48 horas sin una lectura buena. El sitio muestra la última lectura con su fecha. El detalle está en el paso Copiar el resultado del script de Google; si es del Centro de Monitoreo o de la APA, avisarles."
+          exit 1
       - name: Marcar la corrida si Open-Meteo no respondió
         if: steps.consulta.outcome == 'failure'
         run: exit 1
