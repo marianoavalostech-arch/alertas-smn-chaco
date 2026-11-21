@@ -70,6 +70,11 @@ jobs:
         run: |
           echo "::error::Una fuente mandó datos imposibles (por ejemplo, un río a 45 m). Se sacaron de la copia y la página muestra lo último bueno. El detalle está en el paso Copiar el resultado del script de Google."
           exit 1
+      - name: Avisar si hubo un cambio brusco en los datos
+        if: steps.copia.outputs.brusco == 'si'
+        run: |
+          echo "::error::Cambio brusco en los datos (muchos municipios que cambian de nivel juntos, un río que sube o baja mucho de golpe o una lluvia muy fuerte). Puede ser real o un error de la fuente: el sitio lo muestra igual. El detalle está en el paso Copiar el resultado del script de Google."
+          exit 1
       - name: Marcar la corrida si Open-Meteo no respondió
         if: steps.consulta.outcome == 'failure'
         run: exit 1

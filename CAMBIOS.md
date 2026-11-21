@@ -2,7 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar (datos imposibles, `[skip netlify]`)
+## Sin publicar (cambios bruscos, `[skip netlify]`)
+
+- **Aviso por cambio brusco** (21/11, pedido de Mariano). `comparar` en `robot/revisar.js` mira la copia nueva contra la anterior: 10 o más municipios que cambian de nivel oficial juntos (o 3 que saltan 2 niveles), el Paraná o el Paraguay con 50 cm o más de un día al otro, el Paraná por hora con 30 cm o más en 6 h, 200 mm o más en un día en un pluviómetro o una estación. No saca nada (puede ser real): anota en `revision.cambios` y, si es nuevo, la corrida de "Lluvia" termina con error y GitHub manda el correo ("Avisar si hubo un cambio brusco en los datos"). Una vez por cambio. No toca la página ni el script de Google. 102 pruebas.
+
+## Subido el 21/11, la página sale con la próxima publicación (datos imposibles, `c3d902a`, `[skip netlify]`)
 
 - **Control de datos imposibles** (21/11, pedido de Mariano). Nuevo `robot/revisar.js`: antes de guardar `servidor.json`, el robot saca los valores que no pueden ser (ríos fuera de -2 a 15 m o con un pico de más de 1 m en un día en el Paraná y el Paraguay, estaciones fuera de -5 a 60 m, lluvia de un día fuera de 0 a 500 mm, localidades fuera del Chaco, pronósticos del INA imposibles, fechas y renglones raros del SMN) y los anota en `revision`. Si el problema es nuevo, la corrida de "Lluvia" termina con error después de guardar y GitHub manda un correo ("Avisar si una fuente mandó datos imposibles"); no repite cada hora. En la página, `FORMA` suma los mismos rangos y `smnVale` exige fechas AAAA-MM-DD y alertas solo con números (hallazgo 3 de la revisión del 12/10): lo que no pasa se descarta y queda lo último bueno. Los datos reales del 21/11 pasan todos sin cambios. Huella nueva del código. 99 pruebas. El robot empieza a revisar apenas se sube a `main`; la parte de la página sale con la próxima publicación.
 

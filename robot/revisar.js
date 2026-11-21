@@ -108,10 +108,62 @@ function revisar(copia) {
   return j;
 }
 
-// Claves que no estaban en la copia anterior: solo por esas se avisa.
-function nuevas(copia, anterior) {
-  const antes = new Set((anterior && anterior.revision && anterior.revision.claves) || []);
-  return ((copia && copia.revision && copia.revision.claves) || []).filter(c => !antes.has(c));
+// Cambios bruscos (21/11/2026): datos posibles pero raros, que pueden ser un error o una fuente alterada.
+// No se sacan (pueden ser reales): solo se avisa por correo para que alguien los mire.
+// Se compara con la copia anterior; la clave lleva la fecha o la lectura, así cada cambio avisa una sola vez.
+const B = {
+  municipios: 10,    // municipios que cambian de nivel oficial de una lectura a la siguiente
+  saltos: 3,         // municipios que saltan 2 niveles o más de una vez
+  rioDia: 0.5,       // Paraná o Paraguay: 50 cm o más de un día al otro (más de 1 m ya se saca)
+  rioHora: 0.3,      // Paraná por hora: 30 cm o más en 6 horas o menos
+  mm: 200            // lluvia de un día en un pluviómetro o en 24 h en una estación
+};
+function comparar(nueva, anterior) {
+  const d = (nueva && nueva.datos) || {}, a = (anterior && anterior.datos) || {}, out = [];
+  const avisar = (clave, detalle) => out.push({ clave: 'brusco:' + clave, detalle });
+
+  // Nivel oficial por municipio: muchos cambios juntos o saltos grandes.
+  const on = d.oficial, oa = a.oficial;
+  if (on && oa && on.mun && oa.mun && on.t !== oa.t) {
+    const cambian = Object.keys(on.mun).filter(m => m in oa.mun && on.mun[m] !== oa.mun[m]);
+    const saltan = cambian.filter(m => Math.abs(on.mun[m] - oa.mun[m]) >= 2);
+    if (cambian.length >= B.municipios || saltan.length >= B.saltos)
+      avisar('oficial:' + on.t, 'el nivel oficial cambió en ' + cambian.length + ' municipios a la vez (' + saltan.length + ' saltaron 2 niveles o más): ' +
+        cambian.slice(0, 8).map(m => m + ' ' + oa.mun[m] + '→' + on.mun[m]).join(', ') + (cambian.length > 8 ? '…' : ''));
+  }
+
+  // Ríos día por día: el último día contra el anterior.
+  for (const k of ['rio', 'paraguay']) {
+    const o = d[k] && d[k].obs; if (!Array.isArray(o) || o.length < 2) continue;
+    const [f1, v1] = o[o.length - 2], [f2, v2] = o[o.length - 1];
+    if (Date.parse(f2) - Date.parse(f1) <= 864e5 && Math.abs(v2 - v1) >= B.rioDia)
+      avisar(k + ':' + f2, (k === 'rio' ? 'el Paraná' : 'el Paraguay') + ' cambió ' + Math.round(Math.abs(v2 - v1) * 100) + ' cm de un día al otro (' + v1 + ' → ' + v2 + ' m, ' + f2 + ')');
+  }
+
+  // Paraná hora por hora en Barranqueras, contra la lectura de la copia anterior.
+  const pn = d.puertos, pa = a.puertos;
+  if (pn && pa && typeof pn.v === 'number' && typeof pa.v === 'number' && pn.hora && pa.hora && pn.hora !== pa.hora) {
+    const h = (Date.parse(pn.hora) - Date.parse(pa.hora)) / 36e5;
+    if (h > 0 && h <= 6 && Math.abs(pn.v - pa.v) >= B.rioHora)
+      avisar('puertos:' + pn.hora, 'el Paraná por hora cambió ' + Math.round(Math.abs(pn.v - pa.v) * 100) + ' cm en ' + Math.round(h) + ' h (' + pa.v + ' → ' + pn.v + ' m)');
+  }
+
+  // Lluvia muy fuerte en un pluviómetro o en una estación.
+  if (d.pluvio && Array.isArray(d.pluvio.lug)) for (const x of d.pluvio.lug) x[3].forEach((v, i) => {
+    if (v >= B.mm) avisar('pluvio:' + x[0] + ':' + d.pluvio.dias[i], 'el pluviómetro de ' + x[0] + ' marca ' + v + ' mm el ' + d.pluvio.dias[i]);
+  });
+  if (d.medida && Array.isArray(d.medida.e)) for (const x of d.medida.e) {
+    if (x[4] >= B.mm) avisar('medida:' + x[0] + ':' + String(x[3]).slice(0, 10), 'la estación ' + x[0] + ' marca ' + x[4] + ' mm en 24 h');
+  }
+
+  return { claves: [...new Set(out.map(o => o.clave))].sort(), detalle: out.map(o => o.detalle).slice(0, 50) };
 }
 
-module.exports = { revisar, nuevas, R };
+// Claves que no estaban en la copia anterior: solo por esas se avisa (campo: 'claves' para lo sacado, 'cambios' para lo brusco).
+function nuevas(copia, anterior, campo = 'claves') {
+  const lista = (j) => { const r = j && j.revision; return (r && (campo === 'claves' ? r.claves : r.cambios && r.cambios.claves)) || []; };
+  const antes = new Set(lista(anterior));
+  return lista(copia).filter(c => !antes.has(c));
+}
+
+module.exports = { revisar, comparar, nuevas, R, B };

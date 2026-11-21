@@ -5,7 +5,7 @@
 // Si el script no responde, responde algo roto o una copia más vieja que la anterior, queda la anterior.
 // Uso: node robot/servidor.js anterior.json servidor.json
 const fs = require('fs'), path = require('path');
-const { revisar, nuevas } = require('./revisar.js');   // saca los valores imposibles antes de guardar
+const { revisar, comparar, nuevas } = require('./revisar.js');   // saca los valores imposibles y mira los cambios bruscos antes de guardar
 
 // La dirección del script sale de la página, para no tenerla escrita en dos lugares.
 function urlScript() {
@@ -59,7 +59,8 @@ async function armarCopia(anterior, url, pausa) {
   if (!vale(j)) return { salida: prev, bien: false, motivo: 'respuesta sin la forma esperada' };
   if (prev && hora(j) <= hora(prev)) return { salida: prev, bien: true, motivo: 'sin novedades' };
   const limpia = revisar(j);
-  return { salida: limpia, bien: true, motivo: 'copia renovada', nuevas: nuevas(limpia, prev) };
+  limpia.revision.cambios = comparar(limpia, prev);
+  return { salida: limpia, bien: true, motivo: 'copia renovada', nuevas: nuevas(limpia, prev), bruscos: nuevas(limpia, prev, 'cambios') };
 }
 
 module.exports = { urlScript, hora, vale, armarCopia, atrasada, AVISO_H };
@@ -74,6 +75,11 @@ if (require.main === module) (async () => {
   if (r.nuevas && r.nuevas.length) {
     console.log('Atención: se sacaron datos imposibles de la copia: ' + r.salida.revision.detalle.join('; ') + '. La página muestra lo último bueno.');
     if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'raro=si\n');
+  }
+  // Cambios bruscos: la copia se guarda igual (pueden ser reales); si hay uno nuevo, también llega el correo de GitHub.
+  if (r.bruscos && r.bruscos.length) {
+    console.log('Atención: cambios bruscos para mirar (pueden ser reales o un error de la fuente): ' + r.salida.revision.cambios.detalle.join('; ') + '.');
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'brusco=si\n');
   }
   if (atrasada(r.salida, new Date())) {
     console.log('Atención: la copia del script de Google tiene más de ' + AVISO_H + ' horas. Puede estar detenido: mirar en script.google.com sus Ejecuciones y Activadores.');

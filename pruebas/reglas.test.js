@@ -1648,6 +1648,40 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(!S(`smnVale(${JSON.stringify(Object.assign({}, smn, { fechas: ['<img>'] }))})`), 'fechas raras');
     assert.ok(!S(`smnVale(${JSON.stringify(Object.assign({}, smn, { alertas: { 0: [['2026-11-21', '<b>x</b>', 3]] } }))})`), 'renglones con texto');
   });
+  // Cambios bruscos (21/11/2026): no se sacan, solo se avisa una vez.
+  const EST = [['Barranqueras', 'Paraná', 5.7, '2026-11-21T12:00:00Z', null, 0]];
+  const conOficial = (t, niv, extra) => { const j = sana(); j.datos.oficial = { t, mun: {} };
+    for (let i = 0; i < 70; i++) j.datos.oficial.mun['M' + i] = typeof niv === 'function' ? niv(i) : niv;
+    Object.assign(j.datos, extra || {}); return rv.revisar(j); };
+  prueba('cambios bruscos: con cambios normales no avisa', () => {
+    const a = conOficial('2026-11-21T08:00:00Z', 0, { puertos: { v: 5.71, hora: '2026-11-21T12:00:00Z', est: EST } });
+    const b = conOficial('2026-11-21T14:00:00Z', i => i < 5 ? 1 : 0, { puertos: { v: 5.69, hora: '2026-11-21T15:00:00Z', est: EST } });
+    assert.deepStrictEqual(rv.comparar(b, a).claves, [], '5 municipios suben un nivel y el río baja 2 cm');
+    assert.deepStrictEqual(rv.comparar(a, null).claves, [], 'sin copia anterior no compara');
+    assert.deepStrictEqual(rv.comparar(a, a).claves, [], 'la misma lectura no cuenta');
+  });
+  prueba('cambios bruscos: muchos municipios juntos, saltos grandes, río de golpe y lluvia muy fuerte', () => {
+    const a = conOficial('2026-11-21T08:00:00Z', 0, { puertos: { v: 5.71, hora: '2026-11-21T12:00:00Z', est: EST } });
+    const todos = conOficial('2026-11-21T14:00:00Z', 3);
+    assert.ok(rv.comparar(todos, a).detalle[0].includes('70 municipios'), 'los 70 a nivel 3 de golpe');
+    assert.deepStrictEqual(rv.comparar(conOficial('2026-11-21T14:00:00Z', i => i < 3 ? 2 : 0), a).claves, ['brusco:oficial:2026-11-21T14:00:00Z'], '3 saltan de 0 a 2');
+    const j = sana(); j.datos.rio.obs.push(['2026-11-22', 6.4]); j.datos.puertos = { v: 6.1, hora: '2026-11-21T14:00:00Z', est: EST };
+    j.datos.pluvio.lug[1][3][6] = 260;
+    const c = rv.comparar(rv.revisar(j), a);
+    assert.deepStrictEqual(c.claves, ['brusco:pluvio:Charadai:2026-11-21', 'brusco:puertos:2026-11-21T14:00:00Z', 'brusco:rio:2026-11-22']);
+    assert.ok(c.detalle.some(t => t.includes('65 cm de un día al otro')) && c.detalle.some(t => t.includes('39 cm en 2 h')));
+    assert.strictEqual(rv.revisar(j).datos.rio.obs.length, 5, 'no se saca: puede ser real');
+  });
+  const ofA = conOficial('2026-11-21T08:00:00Z', 0), ofB = Object.assign(conOficial('2026-11-21T14:00:00Z', 3), { robot: { t: '2026-11-21T14:00:00Z' } });
+  delete ofB.revision;
+  const b1 = await correr(ofA, ofB), b2 = await correr(b1.salida, Object.assign(JSON.parse(JSON.stringify(ofB)), { robot: { t: '2026-11-21T15:00:00Z' } }));
+  prueba('cambios bruscos: el robot guarda la copia igual y avisa una sola vez', () => {
+    assert.ok(b1.bien); assert.strictEqual(b1.salida.datos.oficial.mun.M0, 3, 'el dato queda: puede ser real');
+    assert.deepStrictEqual(b1.bruscos, ['brusco:oficial:2026-11-21T14:00:00Z']); assert.deepStrictEqual(b1.nuevas, []);
+    assert.deepStrictEqual(b2.bruscos, [], 'la hora siguiente, con la misma lectura, no vuelve a avisar');
+    const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
+    assert.ok(yml.includes("if: steps.copia.outputs.brusco == 'si'") && yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.brusco'));
+  });
   prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
     for (const f of ['lluvia.yml', 'pruebas.yml']) {
       const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');
