@@ -1388,28 +1388,30 @@ const PUERTOS_PY={formosa:{lugar:'Puerto Formosa',alerta:7.8,evac:8.3},pilcomayo
 // Lluvia medida en estaciones automáticas (red SAT de la Red Hidrológica Nacional, vía INA). La arma el script de Google; la página no la pide al INA.
 const MEDIDA_KM=50,MEDIDA_H=24;   // estación más cercana a menos de 50 km, con una lectura de las últimas 24 horas
 // Forma esperada de cada dato, venga del servidor o de lo guardado en el dispositivo.
-const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(v=>typeof v==='number'));
+// Rangos posibles (21/11/2026, los mismos que robot/revisar.js): un número fuera de rango descarta el dato y queda lo último bueno.
+const entre=(v,a,b)=>typeof v==='number'&&isFinite(v)&&v>=a&&v<=b,alto=v=>entre(v,-2,15),mmOk=v=>entre(v,0,500);
+const filas=(d,n)=>Array.isArray(d.dias)&&d.dias.length>0&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.mm)&&d.mm.length===n&&d.mm.every(x=>Array.isArray(x)&&x.length===d.dias.length&&x.every(mmOk));
 const esFecha=v=>v==null||!isNaN(new Date(v));
 const FORMA={
  lluvia:d=>filas(d,LOCS.length),
  municipios:d=>filas(d,GEO.mun.length),
- rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&isFinite(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
+ rio:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&alto(p[1]))&&esFecha(d.hora)&&esFecha(d.act),
  paraguay:d=>FORMA.rio(d),
  bermejo:d=>FORMA.rio(d),
  // Nivel de alerta oficial por municipio (12/11/2026): { mun: { nombre: 0 a 3 } }.
  oficial:d=>!!d.mun&&typeof d.mun==='object'&&Object.keys(d.mun).length>=60&&Object.values(d.mun).every(v=>[0,1,2,3].includes(v)),
  // Estaciones de los ríos hora por hora y localidades con alerta (12/11/2026).
- puertos:d=>Array.isArray(d.est)&&d.est.every(x=>Array.isArray(x)&&x.length===6&&typeof x[0]==='string'&&typeof x[1]==='string'&&typeof x[2]==='number'&&isFinite(x[2])&&!isNaN(new Date(x[3]))&&(x[4]==null||[0,1,2].includes(x[4]))&&(x[5]==null||(typeof x[5]==='number'&&isFinite(x[5])))),
+ puertos:d=>Array.isArray(d.est)&&d.est.every(x=>Array.isArray(x)&&x.length===6&&typeof x[0]==='string'&&typeof x[1]==='string'&&entre(x[2],-5,60)&&!isNaN(new Date(x[3]))&&(x[4]==null||[0,1,2].includes(x[4]))&&(x[5]==null||(typeof x[5]==='number'&&isFinite(x[5])))),
  // Pluviómetros oficiales (13/11/2026): los últimos 7 días y, por lugar, [nombre, lat, lon, [mm de cada día]].
  pluvio:d=>Array.isArray(d.dias)&&d.dias.length===7&&d.dias.every(x=>/^\d{4}-\d\d-\d\d$/.test(x))&&Array.isArray(d.lug)&&d.lug.length>0
-   &&d.lug.every(x=>Array.isArray(x)&&x.length===4&&typeof x[0]==='string'&&isFinite(x[1])&&isFinite(x[2])&&Array.isArray(x[3])&&x[3].length===7&&x[3].every(v=>typeof v==='number'&&v>=0)),
- localidades:d=>/^\d{4}-\d\d-\d\d$/.test(d.dia)&&Array.isArray(d.loc)&&d.loc.every(x=>Array.isArray(x)&&x.length===5&&typeof x[0]==='string'&&[1,2,3].includes(x[1])&&isFinite(x[2])&&isFinite(x[3])&&typeof x[4]==='string'),
+   &&d.lug.every(x=>Array.isArray(x)&&x.length===4&&typeof x[0]==='string'&&isFinite(x[1])&&isFinite(x[2])&&Array.isArray(x[3])&&x[3].length===7&&x[3].every(mmOk)),
+ localidades:d=>/^\d{4}-\d\d-\d\d$/.test(d.dia)&&Array.isArray(d.loc)&&d.loc.every(x=>Array.isArray(x)&&x.length===5&&typeof x[0]==='string'&&[1,2,3].includes(x[1])&&entre(x[2],-28.5,-23.9)&&entre(x[3],-63.6,-58.1)&&typeof x[4]==='string'),
  yacy:d=>Array.isArray(d.obs)&&d.obs.length>0&&d.obs.every(p=>Array.isArray(p)&&/^\d{4}-\d\d-\d\d$/.test(p[0])&&typeof p[1]==='number'&&p[1]>0&&p[1]<1e5)&&esFecha(d.hora),
- prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>typeof v==='number'&&isFinite(v))),
+ prono:d=>!!d.emitido&&!isNaN(new Date(d.emitido))&&Array.isArray(d.p)&&d.p.length>0&&d.p.every(r=>Array.isArray(r)&&r.length===4&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(alto)),
  pronoPy:d=>{const ks=Object.keys(PUERTOS_PY).filter(k=>d[k]!=null);return ks.length>0&&ks.every(k=>FORMA.prono({emitido:d.emitido,p:d[k]}))},
  // Lluvia medida: [nombre, lat, lon, última lectura, mm en 24 h, mm en 3 días, avisos (1 faltan lecturas, 2 mucho más que las vecinas)].
  medida:d=>!isNaN(new Date(d.t))&&Array.isArray(d.e)&&d.e.length>0&&d.e.every(x=>Array.isArray(x)&&x.length===7&&typeof x[0]==='string'
-   &&[1,2,4,5].every(j=>typeof x[j]==='number'&&isFinite(x[j]))&&x[4]>=0&&x[5]>=0&&!isNaN(new Date(x[3]))&&[0,1,2,3].includes(x[6]))
+   &&[1,2,4,5].every(j=>typeof x[j]==='number'&&isFinite(x[j]))&&mmOk(x[4])&&entre(x[5],0,800)&&!isNaN(new Date(x[3]))&&[0,1,2,3].includes(x[6]))
 };
 // Última consulta buena de cada fuente, guardada en este dispositivo. Reemplaza a la captura fija que traía la página.
 const MEM={
@@ -2341,7 +2343,9 @@ const SMN_COL={amarillo:'var(--amarillo)',naranja:'var(--naranja)',rojo:'var(--r
 // Dirección del script de Google que publica las alertas al día. Vacía = solo informe guardado.
 const SMN_URL='https://script.google.com/macros/s/AKfycbwCmRXbp0zTNVfDDLMmRGwaKpsTPN0ZrAzUQ9a-HjT4rg6o7bVcRDrd_lILB8ON6-dT/exec';
 const SMN_VACIO={emitido:null,capturado:null,fechas:[],areas:[],alertas:{}};
-const smnVale=j=>!!j&&Array.isArray(j.areas)&&j.areas.length===GEO.mun.length&&!!j.alertas&&Array.isArray(j.fechas)&&j.fechas.length>0&&!isNaN(new Date(j.capturado))&&!isNaN(new Date(j.emitido));
+// Fechas AAAA-MM-DD y renglones de alertas solo con números (21/11/2026): nada del dato llega a la página como texto.
+const smnFila=r=>Array.isArray(r)&&/^\d{4}-\d\d-\d\d$/.test(r[0])&&r.slice(1).every(v=>v==null||(typeof v==='number'&&isFinite(v)));
+const smnVale=j=>!!j&&Array.isArray(j.areas)&&j.areas.length===GEO.mun.length&&!!j.alertas&&typeof j.alertas==='object'&&Object.values(j.alertas).every(f=>Array.isArray(f)&&f.every(smnFila))&&Array.isArray(j.fechas)&&j.fechas.length>0&&j.fechas.every(f=>/^\d{4}-\d\d-\d\d$/.test(f))&&!isNaN(new Date(j.capturado))&&!isNaN(new Date(j.emitido));
 let SMN=(g=>g&&smnVale(g.datos)?g.datos:SMN_VACIO)(MEM.leer('smn')),SMN_VIVO=false,SMN_LISTO=false;
 const F_HORA=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',hourCycle:'h23'});let horaAR=()=>Number(F_HORA.format(new Date()));
 const F_SEM=new Intl.DateTimeFormat('es-AR',{weekday:'long',timeZone:'UTC'}),fDiaLargo=s=>F_SEM.format(new Date(s+'T12:00:00Z'))+' '+fDia(s);

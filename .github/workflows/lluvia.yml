@@ -65,6 +65,11 @@ jobs:
         run: |
           echo "::error::La copia del script de Google tiene más de 6 horas: puede estar detenido. Mirar en script.google.com sus Ejecuciones y Activadores."
           exit 1
+      - name: Avisar si una fuente mandó datos imposibles
+        if: steps.copia.outputs.raro == 'si'
+        run: |
+          echo "::error::Una fuente mandó datos imposibles (por ejemplo, un río a 45 m). Se sacaron de la copia y la página muestra lo último bueno. El detalle está en el paso Copiar el resultado del script de Google."
+          exit 1
       - name: Marcar la corrida si Open-Meteo no respondió
         if: steps.consulta.outcome == 'failure'
         run: exit 1

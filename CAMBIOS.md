@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (datos imposibles, `[skip netlify]`)
+
+- **Control de datos imposibles** (21/11, pedido de Mariano). Nuevo `robot/revisar.js`: antes de guardar `servidor.json`, el robot saca los valores que no pueden ser (ríos fuera de -2 a 15 m o con un pico de más de 1 m en un día en el Paraná y el Paraguay, estaciones fuera de -5 a 60 m, lluvia de un día fuera de 0 a 500 mm, localidades fuera del Chaco, pronósticos del INA imposibles, fechas y renglones raros del SMN) y los anota en `revision`. Si el problema es nuevo, la corrida de "Lluvia" termina con error después de guardar y GitHub manda un correo ("Avisar si una fuente mandó datos imposibles"); no repite cada hora. En la página, `FORMA` suma los mismos rangos y `smnVale` exige fechas AAAA-MM-DD y alertas solo con números (hallazgo 3 de la revisión del 12/10): lo que no pasa se descarta y queda lo último bueno. Los datos reales del 21/11 pasan todos sin cambios. Huella nueva del código. 99 pruebas. El robot empieza a revisar apenas se sube a `main`; la parte de la página sale con la próxima publicación.
+
 ## Sin publicar (botones del encabezado en el celular)
 
 - **"Acerca de este sitio": sin "De quién es"** (20/11, pedido de Mariano). Se saca el párrafo "De quién es: es una iniciativa ciudadana…"; queda solo "Hecho por Mariano Avalos."

@@ -1588,6 +1588,66 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(/id: copia\n/.test(yml) && yml.includes("if: steps.copia.outputs.atrasada == 'si'"), 'la tarea lee el aviso del robot y termina con error');
     assert.ok(yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.atrasada'), 'primero guarda la copia, después avisa');
   });
+  // Valores imposibles (21/11/2026): el robot los saca antes de guardar y la página los rechaza si igual llegan.
+  const rv = require('../robot/revisar.js');
+  const sana = () => ({ robot: { t: '2026-11-21T12:00:00Z' }, capturado: '2026-11-21T12:00:00Z', fechas: ['2026-11-21', '2026-11-22'], areas: [0], alertas: { 0: [['2026-11-22', 41, 3, 0, 0, 0, 1]] },
+    datos: { rio: { obs: [['2026-11-18', 5.9], ['2026-11-19', 5.85], ['2026-11-20', 5.8], ['2026-11-21', 5.75]] },
+      bermejo: { obs: [['2026-11-20', 2.4], ['2026-11-21', 3.9]] },
+      puertos: { v: 5.71, est: [['Iguazú', 'Iguazú', 20.3, '2026-11-21T15:00:00Z', 0, -20], ['Colorado', 'Bermejo', 2.72, '2026-11-21T12:00:00Z', null, -2]] },
+      pluvio: { dias: ['2026-11-15', '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21'], lug: [['Basail', -27.888, -59.281, [0, 8, 0, 37, 0, 0, 0]], ['Charadai', -27.655, -59.862, [0, 0, 4, 11, 0, 0, 0]]] },
+      localidades: { dia: '2026-11-20', loc: [['Isla del Cerrito', 3, -27.293, -58.618, 'río Paraná']] },
+      prono: { emitido: '2026-11-20T03:00:00Z', p: [['2026-11-24', 5.3, 5.61, 6.1]] } } });
+  prueba('datos imposibles: con datos sanos el robot no cambia nada', () => {
+    const x = rv.revisar(sana());
+    assert.deepStrictEqual(x.datos, sana().datos, 'el Bermejo puede subir 1,5 m en un día');
+    assert.deepStrictEqual(x.revision.claves, []);
+  });
+  prueba('datos imposibles: el robot saca solo lo que no puede ser y anota qué', () => {
+    const j = sana(), d = j.datos;
+    d.rio.obs[1][1] = 45;                         // fuera de rango
+    d.rio.obs.push(['2026-11-22', 7.2]);          // salto de 1,45 m en el último día
+    d.puertos.est[1][2] = 999; d.puertos.v = -50;
+    d.pluvio.lug[0][3][2] = 9999;
+    d.localidades.loc.push(['Otra parte', 3, 40, 2, 'río']);
+    d.prono.p[0] = ['2026-11-24', 6.1, 5.61, 5.3];  // mínimo mayor que el máximo
+    j.alertas[1] = [['<b>', 41, 3]]; j.fechas.push('mañana');
+    const x = rv.revisar(j), e = x.datos;
+    assert.deepStrictEqual(e.rio.obs.map(p => p[0]), ['2026-11-18', '2026-11-20', '2026-11-21']);
+    assert.deepStrictEqual(e.puertos.est.map(p => p[0]), ['Iguazú']); assert.strictEqual(e.puertos.v, undefined);
+    assert.deepStrictEqual(e.pluvio.lug.map(p => p[0]), ['Charadai']);
+    assert.strictEqual(e.localidades.loc.length, 1);
+    assert.strictEqual(e.prono, undefined, 'el pronóstico se saca entero: la página usa el último bueno');
+    assert.deepStrictEqual(x.alertas[1], []); assert.deepStrictEqual(x.fechas, ['2026-11-21', '2026-11-22']);
+    assert.deepStrictEqual(x.revision.claves, ['localidades:Otra parte', 'pluvio:Basail', 'prono', 'puertos:Colorado', 'puertos:v', 'rio:2026-11-19', 'rio:2026-11-22', 'smn:1', 'smn:fechas']);
+    assert.ok(x.revision.detalle.some(t => t.includes('45')), 'el detalle dice el valor');
+    for (const k of ['rio', 'puertos', 'pluvio', 'localidades']) assert.ok(S(`FORMA.${k}(${JSON.stringify(e[k])})`), 'la página acepta lo que deja el robot: ' + k);
+    assert.ok(S(`copiaVale(${JSON.stringify(x)})`));
+  });
+  prueba('datos imposibles: avisa por correo solo cuando el problema es nuevo', () => {
+    const malo = sana(); malo.datos.pluvio.lug[0][3][2] = 9999;
+    const a = rv.revisar(malo), b = rv.revisar(malo);
+    assert.deepStrictEqual(rv.nuevas(a, null), ['pluvio:Basail']);
+    assert.deepStrictEqual(rv.nuevas(b, a), [], 'la hora siguiente, con el mismo problema, no vuelve a avisar');
+    assert.deepStrictEqual(rv.nuevas(rv.revisar(sana()), a), []);
+    const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
+    assert.ok(yml.includes("if: steps.copia.outputs.raro == 'si'") && yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.raro'), 'primero guarda la copia limpia, después avisa');
+    assert.ok(fs.readFileSync(path.join(raiz, 'robot', 'servidor.js'), 'utf8').includes("'raro=si"));
+  });
+  prueba('datos imposibles: la página los rechaza aunque lleguen sin pasar por el robot', () => {
+    const d = sana().datos, F = (k, v) => S(`FORMA.${k}(${JSON.stringify(v)})`);
+    for (const k of ['rio', 'puertos', 'pluvio', 'localidades', 'prono']) assert.ok(F(k, d[k]), 'sano: ' + k);
+    assert.ok(!F('rio', { obs: [['2026-11-21', 45]] }));
+    assert.ok(!F('puertos', { est: [['X', 'Paraná', 999, '2026-11-21T12:00:00Z', null, 0]] }));
+    assert.ok(!F('pluvio', Object.assign({}, d.pluvio, { lug: [['X', -27, -59, [0, 0, 9999, 0, 0, 0, 0]]] })));
+    assert.ok(!F('localidades', { dia: '2026-11-20', loc: [['X', 3, 40, 2, 'río']] }));
+    assert.ok(!F('prono', { emitido: '2026-11-20T03:00:00Z', p: [['2026-11-24', 5, 99, 6]] }));
+    assert.ok(!F('lluvia', { dias: ['2026-11-21'], mm: S('LOCS').map(() => [-1]) }));
+    assert.ok(!F('medida', { t: '2026-11-21T12:00:00Z', e: [['X', -27, -59, '2026-11-21T12:00:00Z', 9999, 9999, 0]] }));
+    const smn = { areas: S('GEO.mun').map((m, i) => i), alertas: {}, fechas: ['2026-11-21'], capturado: '2026-11-21T12:00:00Z', emitido: '2026-11-21T12:00:00Z' };
+    assert.ok(S(`smnVale(${JSON.stringify(smn)})`));
+    assert.ok(!S(`smnVale(${JSON.stringify(Object.assign({}, smn, { fechas: ['<img>'] }))})`), 'fechas raras');
+    assert.ok(!S(`smnVale(${JSON.stringify(Object.assign({}, smn, { alertas: { 0: [['2026-11-21', '<b>x</b>', 3]] } }))})`), 'renglones con texto');
+  });
   prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
     for (const f of ['lluvia.yml', 'pruebas.yml']) {
       const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');

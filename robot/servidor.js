@@ -5,6 +5,7 @@
 // Si el script no responde, responde algo roto o una copia más vieja que la anterior, queda la anterior.
 // Uso: node robot/servidor.js anterior.json servidor.json
 const fs = require('fs'), path = require('path');
+const { revisar, nuevas } = require('./revisar.js');   // saca los valores imposibles antes de guardar
 
 // La dirección del script sale de la página, para no tenerla escrita en dos lugares.
 function urlScript() {
@@ -57,7 +58,8 @@ async function armarCopia(anterior, url, pausa) {
   try { j = await pedir(url, pausa); } catch (e) { return { salida: prev, bien: false, motivo: String(e.message || e) }; }
   if (!vale(j)) return { salida: prev, bien: false, motivo: 'respuesta sin la forma esperada' };
   if (prev && hora(j) <= hora(prev)) return { salida: prev, bien: true, motivo: 'sin novedades' };
-  return { salida: j, bien: true, motivo: 'copia renovada' };
+  const limpia = revisar(j);
+  return { salida: limpia, bien: true, motivo: 'copia renovada', nuevas: nuevas(limpia, prev) };
 }
 
 module.exports = { urlScript, hora, vale, armarCopia, atrasada, AVISO_H };
@@ -68,6 +70,11 @@ if (require.main === module) (async () => {
   console.log('Copia del servidor: ' + r.motivo + '.');
   if (r.salida) fs.writeFileSync(process.argv[3], JSON.stringify(r.salida));
   // La tarea de GitHub lee "atrasada" y, después de guardar, termina con error (así llega el aviso por correo).
+  // Valores imposibles: se guardó la copia sin ellos. Si el problema es nuevo, la tarea termina con error (llega el correo de GitHub).
+  if (r.nuevas && r.nuevas.length) {
+    console.log('Atención: se sacaron datos imposibles de la copia: ' + r.salida.revision.detalle.join('; ') + '. La página muestra lo último bueno.');
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'raro=si\n');
+  }
   if (atrasada(r.salida, new Date())) {
     console.log('Atención: la copia del script de Google tiene más de ' + AVISO_H + ' horas. Puede estar detenido: mirar en script.google.com sus Ejecuciones y Activadores.');
     if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, 'atrasada=si\n');
