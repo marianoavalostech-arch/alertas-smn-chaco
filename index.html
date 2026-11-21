@@ -3001,9 +3001,11 @@ function abrirLoc(i,enLista){
 // con Firebase Cloud Messaging. Solo en el celular (app de Google Play o navegador), nunca en la computadora ni dentro del portal.
 // Durante la prueba cerrada de Google Play, el botón se ve solo en la app de Play o con el enlace ?avisos=1 (queda recordado).
 // La biblioteca de Firebase (copia en firebase/) se carga solo al tocar "Avisarme" o "Dejar de avisarme". El identificador del
-// celular que entrega Firebase no se guarda: solo la localidad y las opciones elegidas (anc-avisos).
+// celular que entrega Firebase no se guarda: solo la localidad, las opciones elegidas y una huella del identificador (anc-avisos).
+// Renovación (21/11/2026): una vez por semana se mira si el identificador cambió (comparando la huella) y solo entonces se le pide
+// al script; si no cambió, se confirma igual cada 60 días. Así casi no se gasta el tope diario de pedidos (TOPE_PEDIDOS).
 const AVISOS_TODOS=false;   // true: el botón para todos (cuando termine la prueba)
-const AV_K='anc-avisos',AV_PRUEBA_K='anc-avisos-prueba',AV_SEMANA=7*864e5;
+const AV_K='anc-avisos',AV_PRUEBA_K='anc-avisos-prueba',AV_SEMANA=7*864e5,AV_CONFIRMA=60*864e5;
 const FB_CONF={apiKey:'AIzaSyBUFcscmDx-RSA3huGBnEBxRkedHDjFs-A',authDomain:'rios-y-clima-chaco.firebaseapp.com',projectId:'rios-y-clima-chaco',storageBucket:'rios-y-clima-chaco.firebasestorage.app',messagingSenderId:'755067985516',appId:'1:755067985516:web:a12ad085fdf6750ae40249'};
 const FB_VAPID='BOt_eK-pVmXgGY-soUcC3uXWWLKWc9PSFOcmk7KdsLc79eJJt8GoiyCIfu2eHvU59IZFyBwd4Nfjr5S9JrnOeQE';
 const AV_ERR={tope:'Hoy se anotaron muchos celulares. Probá de nuevo mañana.',bloqueado:'Tu celular no deja que este sitio muestre avisos. Para activarlos, permití las notificaciones de este sitio (o de la app) en la configuración del celular.',
@@ -3011,6 +3013,8 @@ const AV_ERR={tope:'Hoy se anotaron muchos celulares. Probá de nuevo mañana.',
 const avTema=(m,a)=>'m'+m+(a?'a':'');
 function avEstado(){try{const e=JSON.parse(localStorage.getItem(AV_K)||'null');return e&&Number.isInteger(e.m)&&e.m>=0&&e.m<GEO.mun.length&&e.t===avTema(e.m,e.a)?e:null}catch(x){return null}}
 function avGuardar(e){try{if(e)localStorage.setItem(AV_K,JSON.stringify(e));else localStorage.removeItem(AV_K)}catch(x){}}
+// Huella del identificador: los primeros 16 caracteres de su SHA-256. Sirve para saber si cambió; no permite reconstruirlo.
+async function avHuella(id){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(id));return [...new Uint8Array(b)].slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(x){return ''}}
 // ¿Se muestra el botón? Celular o tablet, fuera del portal, con un navegador que recibe avisos (en iPhone: el sitio agregado a inicio, iOS 16.4 o más).
 function avPuede(){
   if(EMB||typeof navigator==='undefined'||!('serviceWorker' in navigator)||typeof PushManager==='undefined'||typeof Notification==='undefined')return false;
@@ -3043,7 +3047,7 @@ async function avAlta(m,a,pedir){
     const id=await avToken(),ant=avEstado(),t=avTema(m,a);
     const j=await avPedido({accion:'alta',id,tema:t,antes:ant&&ant.t!==t?ant.t:''});
     if(!j||!j.ok)return j&&j.error==='tope'?'tope':'red';
-    avGuardar({m,a:!!a,t,f:Date.now()});return '';
+    const ahora=Date.now();avGuardar({m,a:!!a,t,f:ahora,k:ahora,h:await avHuella(id)});return '';
   }catch(e){console.warn('Avisos:',e);return 'red'}
 }
 // Deja de avisar: borra del tema, borra el identificador de Firebase y el service worker de avisos. Aunque falle la red,
@@ -3053,11 +3057,15 @@ async function avBaja(){
   try{if(e&&Notification.permission==='granted'){const id=await avToken();await avPedido({accion:'baja',id,tema:e.t});await (await avCargar()).deleteToken()}}catch(x){console.warn('Avisos:',x)}
   try{const r=await navigator.serviceWorker.getRegistration('/avisos-sw/');if(r)await r.unregister()}catch(x){}
 }
-// Una vez por semana, quien está anotado confirma su anotación (Firebase puede cambiar el identificador). Si sacó el permiso, se olvida.
+// Una vez por semana, quien está anotado mira si Firebase le cambió el identificador. Solo si cambió (o si pasaron 60 días
+// desde la última confirmación) se le pide al script. Si sacó el permiso, se olvida.
 async function avRenovar(){
   const e=avEstado();if(!e||EMB||typeof Notification==='undefined')return;
   if(Notification.permission==='denied'){avGuardar(null);return}
-  if(Notification.permission==='granted'&&Date.now()-(e.f||0)>AV_SEMANA)await avAlta(e.m,e.a,false);
+  if(Notification.permission!=='granted'||Date.now()-(e.k||e.f||0)<=AV_SEMANA)return;
+  const h=await avHuella(await avToken());
+  if(!h||h!==e.h||Date.now()-(e.f||0)>AV_CONFIRMA)await avAlta(e.m,e.a,false);
+  else avGuardar(Object.assign({},e,{k:Date.now()}));
 }
 // Bloque de avisos dentro de la ventana "Tu localidad" (i = localidad de la ventana).
 function avPintar(i){

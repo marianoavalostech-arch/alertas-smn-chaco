@@ -2,7 +2,11 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar (cambios bruscos, `[skip netlify]`)
+## Sin publicar (renovación de los avisos)
+
+- **La renovación semanal de los avisos ya casi no pide al script** (21/11, pedido de Mariano, punto 2 de la revisión de ataques). Antes, cada celular anotado volvía a pedir una vez por semana aunque nada hubiera cambiado, y eso gastaba el tope diario de anotaciones (`TOPE_PEDIDOS`, 3.000). Ahora la página guarda una huella del identificador (`avHuella`, 16 caracteres de su SHA-256, no el identificador) y por semana solo compara; pide al script si el identificador cambió o si pasaron 60 días (`AV_CONFIRMA`). Las anotaciones de antes (sin huella) confirman una vez y quedan con huella. Privacidad actualizada al 21/11 (la huella y cuándo se pasa el identificador). Huella nueva del código.
+
+## Subido el 21/11 sin publicar (cambios bruscos, `bfccec4`, `[skip netlify]`)
 
 - **Aviso por cambio brusco** (21/11, pedido de Mariano). `comparar` en `robot/revisar.js` mira la copia nueva contra la anterior: 10 o más municipios que cambian de nivel oficial juntos (o 3 que saltan 2 niveles), el Paraná o el Paraguay con 50 cm o más de un día al otro, el Paraná por hora con 30 cm o más en 6 h, 200 mm o más en un día en un pluviómetro o una estación. No saca nada (puede ser real): anota en `revision.cambios` y, si es nuevo, la corrida de "Lluvia" termina con error y GitHub manda el correo ("Avisar si hubo un cambio brusco en los datos"). Una vez por cambio. No toca la página ni el script de Google. 102 pruebas.
 

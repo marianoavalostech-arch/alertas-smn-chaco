@@ -1682,6 +1682,36 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     const yml = fs.readFileSync(path.join(raiz, '.github', 'workflows', 'lluvia.yml'), 'utf8');
     assert.ok(yml.includes("if: steps.copia.outputs.brusco == 'si'") && yml.indexOf('name: Guardar en la rama datos') < yml.indexOf('steps.copia.outputs.brusco'));
   });
+  // Avisos: la renovación semanal solo pide al script si cambió el identificador o pasaron 60 días (21/11/2026).
+  {
+    const guardado = {}, pedidos = [], dia = 864e5, antes = Object.assign({}, { ls: sitio.localStorage });
+    Object.assign(sitio, { crypto: require('crypto').webcrypto, TextEncoder, Notification: { permission: 'granted' },
+      localStorage: { getItem: k => guardado[k] ?? null, setItem: (k, v) => { guardado[k] = String(v) }, removeItem: k => { delete guardado[k] } } });
+    let id = 'identificador-de-prueba-0001:APA91bxxxxxxxxxxxxxxxx';
+    sitio.__id = () => id; sitio.__pedidos = pedidos;
+    S("avToken=async()=>__id();avPedido=async q=>{__pedidos.push(q);return {ok:true}}");
+    const estado = () => JSON.parse(guardado['anc-avisos']);
+    assert.strictEqual(await S('avAlta(3,false,false)'), '');
+    const h0 = estado().h;
+    const atrasar = d => { const e = estado(); e.k -= d * dia; e.f -= d * dia; guardado['anc-avisos'] = JSON.stringify(e); };
+    await S('avRenovar()'); const p1 = pedidos.length;
+    atrasar(8); await S('avRenovar()'); const p2 = pedidos.length, k2 = estado().k;
+    for (let i = 0; i < 7; i++) { atrasar(8); await S('avRenovar()'); }
+    const p3 = pedidos.length;
+    atrasar(8); id = 'identificador-nuevo-0002:APA91byyyyyyyyyyyyyyyyy'; await S('avRenovar()'); const p4 = pedidos.length;
+    delete guardado['anc-avisos']; guardado['anc-avisos'] = JSON.stringify({ m: 3, a: false, t: 'm3', f: Date.now() - 8 * dia }); await S('avRenovar()'); const p5 = pedidos.length;
+    sitio.localStorage = antes.ls; delete sitio.Notification;
+    prueba('avisos: la renovación semanal solo pide al script si cambió el identificador o cada 60 días', () => {
+      assert.strictEqual(pedidos.length && pedidos[0].accion, 'alta');
+      assert.ok(/^[0-9a-f]{16}$/.test(h0), 'guarda una huella de 16 caracteres');
+      assert.ok(!JSON.stringify(guardado).includes('identificador'), 'nunca el identificador');
+      assert.strictEqual(p1, 1, 'antes de la semana no hace nada');
+      assert.strictEqual(p2, 1, 'a la semana, con el mismo identificador, no pide'); assert.ok(Date.now() - k2 < 1e4, 'anota que ya miró');
+      assert.strictEqual(p3, 2, 'a los 60 días confirma una vez');
+      assert.strictEqual(p4, 3, 'si cambió el identificador, pide'); assert.notStrictEqual(estado().h, h0);
+      assert.strictEqual(p5, 4, 'una anotación de antes (sin huella) confirma una vez');
+    });
+  }
   prueba('tareas de GitHub: herramientas fijadas por huella y en versiones que corren con Node 24', () => {
     for (const f of ['lluvia.yml', 'pruebas.yml']) {
       const y = fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');
