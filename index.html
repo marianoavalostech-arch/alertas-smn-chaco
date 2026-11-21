@@ -2999,12 +2999,12 @@ function abrirLoc(i,enLista){
 // Avisos por alertas del SMN: naranja y roja (y amarilla, si se pide), para una localidad. De noche (22 a 7) llegan solo las de esa noche
 // y la mañana siguiente; las demás, a las 7 (igual para todos: sin casilla "de noche", decisión del 5/11/2026). Los manda el script de Google
 // con Firebase Cloud Messaging. Solo en el celular (app de Google Play o navegador), nunca en la computadora ni dentro del portal.
-// Durante la prueba cerrada de Google Play, el botón se ve solo en la app de Play o con el enlace ?avisos=1 (queda recordado).
+// Del 5/11 al 21/11/2026 (prueba cerrada) el botón se veía solo en la app de Play o con el enlace ?avisos=1. Desde el 21/11 es para todos los celulares.
 // La biblioteca de Firebase (copia en firebase/) se carga solo al tocar "Avisarme" o "Dejar de avisarme". El identificador del
 // celular que entrega Firebase no se guarda: solo la localidad, las opciones elegidas y una huella del identificador (anc-avisos).
 // Renovación (21/11/2026): una vez por semana se mira si el identificador cambió (comparando la huella) y solo entonces se le pide
 // al script; si no cambió, se confirma igual cada 60 días. Así casi no se gasta el tope diario de pedidos (TOPE_PEDIDOS).
-const AVISOS_TODOS=false;   // true: el botón para todos (cuando termine la prueba)
+const AVISOS_TODOS=true;   // true: el botón para todos los celulares (desde el 21/11/2026); false: solo app de Play o ?avisos=1
 const AV_K='anc-avisos',AV_PRUEBA_K='anc-avisos-prueba',AV_SEMANA=7*864e5,AV_CONFIRMA=60*864e5;
 const FB_CONF={apiKey:'AIzaSyBUFcscmDx-RSA3huGBnEBxRkedHDjFs-A',authDomain:'rios-y-clima-chaco.firebaseapp.com',projectId:'rios-y-clima-chaco',storageBucket:'rios-y-clima-chaco.firebasestorage.app',messagingSenderId:'755067985516',appId:'1:755067985516:web:a12ad085fdf6750ae40249'};
 const FB_VAPID='BOt_eK-pVmXgGY-soUcC3uXWWLKWc9PSFOcmk7KdsLc79eJJt8GoiyCIfu2eHvU59IZFyBwd4Nfjr5S9JrnOeQE';

@@ -564,7 +564,10 @@ function decidirAviso(t, ahora, avisado) {
 // Es igual para todos (sin casilla "de noche", decisión del 5/11). Las alertas salen del mismo resultado que el mapa.
 var FCM_PROYECTO = 'rios-y-clima-chaco';
 var SITIO = 'https://panel-alertas-chaco.netlify.app/';
-var TOPE_PEDIDOS = 3000;   // pedidos por día a la dirección para anotarse (doPost): cuida la cuota diaria del script
+var TOPE_PEDIDOS = 6000;   // pedidos por día a la dirección para anotarse (doPost): cuida la cuota diaria del script (21/11/2026: de 3.000 a 6.000 al abrir los avisos a todos)
+// Alarma por correo (21/11/2026), una vez por día: el contador pasó la mitad del tope, o Firebase rechazó muchos identificadores
+// (señal de que alguien manda identificadores inventados para llenar el tope).
+var ALARMA_RECHAZOS = 100;
 var MUNICIPIOS = ["Avia Terai","Barranqueras","Basail","Campo Largo","Capitán Solari","Charadai","Charata","Chorotis","Ciervo Petiso","Colonia Aborigen","Colonia Benítez","Colonia Elisa","Colonia Popular","Colonias Unidas","Concepción del Bermejo","Coronel Du Graty","Corzuela","Cote Lai","El Sauzalito","Enrique Urién","Fontana","Fuerte Esperanza","Gancedo","General Capdevila","General Pinedo","General San Martín","General Vedia","Hermoso Campo","Isla del Cerrito","Juan José Castelli","La Clotilde","La Eduvigis","La Escondida","La Leonesa","La Tigra","La Verde","Laguna Blanca","Laguna Limpia","Lapachito","Las Breñas","Las Garcitas","Las Palmas","Los Frentones","Machagai","Makallé","Margarita Belén","Miraflores","Misión Nueva Pompeya","Napenay","Pampa Almirón","Pampa del Indio","Pampa del Infierno","Presidencia de la Plaza","Presidencia Roca","Presidencia Roque Sáenz Peña","Puerto Bermejo","Puerto Eva Perón","Puerto Tirol","Puerto Vilelas","Quitilipi","Resistencia","Samuhú","San Bernardo","Santa Sylvina","Taco Pozo","Tres Isletas","Villa Ángela","Villa Berthet","Villa Río Bermejito","El Espinillo"];
 // Nombre de cada fenómeno: los mismos que SMN_EV en el sitio.
 var EV_NOMBRE = { 41: 'tormentas', 37: 'lluvias', 42: 'nevadas', 39: 'viento', 47: 'viento zonda', 101: 'calor extremo', 102: 'frío extremo', 103: 'niebla', 104: 'humo', 105: 'polvo' };
@@ -665,7 +668,7 @@ function mensajeFcm(x, hoy) {
     data: { loc: String(x.m) },
     webpush: {
       headers: { Urgency: 'high', TTL: '43200' },
-      notification: { icon: SITIO + 'iconos/icono-192.png', badge: SITIO + 'iconos/badge-96.png', tag: 'smn-' + x.m, renotify: true, lang: 'es' },
+      notification: { icon: SITIO + 'iconos/icono-192.png', badge: SITIO + 'iconos/badge-96.png', lang: 'es' },   // sin tag: los avisos se acumulan
       fcm_options: { link: SITIO + '?loc=' + x.m }
     }
   };
@@ -696,8 +699,14 @@ function pedidosTemas(v) {
 // Cuenta un pedido del día. cuenta = 'AAAA-MM-DD|n' guardado. Devuelve { cuenta, paso } (paso = false si ya se llegó al tope).
 function contarPedido(cuenta, hoy) {
   var p = String(cuenta || '').split('|'), n = p[0] === hoy ? +p[1] || 0 : 0;
-  if (n >= TOPE_PEDIDOS) return { cuenta: hoy + '|' + n, paso: false };
-  return { cuenta: hoy + '|' + (n + 1), paso: true };
+  if (n >= TOPE_PEDIDOS) return { cuenta: hoy + '|' + n, paso: false, n: n };
+  return { cuenta: hoy + '|' + (n + 1), paso: true, n: n + 1 };
+}
+// Motivo de la alarma por correo, o '' si no hace falta. pedidos = pedidos de hoy; rechazos = identificadores que Firebase rechazó hoy.
+function motivoAlarma(pedidos, rechazos) {
+  if (rechazos >= ALARMA_RECHAZOS) return 'Firebase rechazó ' + rechazos + ' identificadores hoy: puede ser alguien mandando identificadores inventados para llenar el tope.';
+  if (pedidos >= TOPE_PEDIDOS / 2) return 'Hoy hubo ' + pedidos + ' pedidos para anotarse a los avisos, más de la mitad del tope (' + TOPE_PEDIDOS + ').';
+  return '';
 }
 
 /* ---------- parte que usa los servicios de Google ---------- */
@@ -883,10 +892,11 @@ function anotar(q) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return { ok: false, error: 'ocupado' };
   try {
-    var p = PropertiesService.getScriptProperties(), c = contarPedido(p.getProperty('pedidos'), Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'));
-    if (!c.paso) return { ok: false, error: 'tope' };
+    var p = PropertiesService.getScriptProperties(), hoy = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), c = contarPedido(p.getProperty('pedidos'), hoy);
+    if (!c.paso) { alarmaPedidos(p, hoy, c.n); return { ok: false, error: 'tope' }; }
     p.setProperty('pedidos', c.cuenta);
   } finally { lock.releaseLock(); }
+  alarmaPedidos(p, hoy, c.n);
   var clave = ScriptApp.getOAuthToken();
   var rs = UrlFetchApp.fetchAll(pedidosTemas(v).map(function (x) {
     return { url: x.url, method: x.method, muteHttpExceptions: true, headers: { Authorization: 'Bearer ' + clave } };
@@ -894,7 +904,28 @@ function anotar(q) {
   var c0 = rs[0].getResponseCode();   // alta: 200 = anotado, 409 = ya estaba; baja: 200 = borrado
   if (c0 === 200 || (v.accion === 'alta' && c0 === 409)) return { ok: true };
   console.warn('Firebase respondió ' + c0 + ' al pedido de ' + v.accion + ': ' + rs[0].getContentText().slice(0, 300));
-  return { ok: false, error: c0 === 400 || c0 === 404 ? 'id' : 'firebase' };
+  if (c0 === 400 || c0 === 404) {
+    if (lock.tryLock(5000)) try {
+      var r0 = String(p.getProperty('rechazos') || '').split('|'), nr = (r0[0] === hoy ? +r0[1] || 0 : 0) + 1;
+      p.setProperty('rechazos', hoy + '|' + nr);
+    } finally { lock.releaseLock(); }
+    alarmaPedidos(p, hoy, c.n);
+    return { ok: false, error: 'id' };
+  }
+  return { ok: false, error: 'firebase' };
+}
+// Manda la alarma por correo, como mucho una vez por día. Nunca frena la anotación.
+function alarmaPedidos(p, hoy, pedidos) {
+  try {
+    if (p.getProperty('alarmaPedidos') === hoy) return;
+    var r0 = String(p.getProperty('rechazos') || '').split('|'), motivo = motivoAlarma(pedidos, r0[0] === hoy ? +r0[1] || 0 : 0);
+    if (!motivo) return;
+    p.setProperty('alarmaPedidos', hoy);
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Ríos y Clima del Chaco: muchos pedidos para anotarse a los avisos',
+      motivo + '\n\nQuien ya está anotado sigue recibiendo los avisos: esto solo puede trabar las anotaciones nuevas hasta la medianoche.\n' +
+      'Qué mirar: en el editor del script, Ejecuciones (doPost). Si es gente real (por ejemplo, un día de alerta), subir TOPE_PEDIDOS y volver a pegar el script.\n\n' +
+      'Este correo se manda una sola vez por día.');
+  } catch (e) { console.warn('Alarma de pedidos: ' + e); }
 }
 
 // Prueba: manda un aviso que dice "prueba" a quienes estén anotados en un municipio (por defecto, Resistencia),

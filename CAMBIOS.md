@@ -2,7 +2,12 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar (renovación de los avisos)
+## Sin publicar (avisos para todos los celulares)
+
+- **Avisos para todos los celulares** (21/11, decisión de Mariano; los avisos reales le siguen llegando después de la copia guardada del 18/11, así que los dos *service workers* conviven). `AVISOS_TODOS=true`: el botón «Avisarme» se ve en cualquier celular (app de Play, navegador y sitio agregado a inicio; en iPhone, solo agregado a inicio, iOS 16.4 o más), sin el enlace `?avisos=1`. Nunca en la computadora ni en el portal. Privacidad actualizada (dónde se ofrecen).
+- **Script de Google** (hay que pegarlo y crear una versión nueva de la implementación web): `TOPE_PEDIDOS` de 3.000 a 6.000; alarma por correo una vez por día si los pedidos pasan la mitad del tope o Firebase rechaza 100 identificadores (`alarmaPedidos`, `motivoAlarma`, `ALARMA_RECHAZOS`); los avisos sin `tag` ni `renotify` (se acumulan, como ya hacía `avisos-sw.js`).
+
+## Sin publicar (renovación de los avisos, `9b9bd03`)
 
 - **La renovación semanal de los avisos ya casi no pide al script** (21/11, pedido de Mariano, punto 2 de la revisión de ataques). Antes, cada celular anotado volvía a pedir una vez por semana aunque nada hubiera cambiado, y eso gastaba el tope diario de anotaciones (`TOPE_PEDIDOS`, 3.000). Ahora la página guarda una huella del identificador (`avHuella`, 16 caracteres de su SHA-256, no el identificador) y por semana solo compara; pide al script si el identificador cambió o si pasaron 60 días (`AV_CONFIRMA`). Las anotaciones de antes (sin huella) confirman una vez y quedan con huella. Privacidad actualizada al 21/11 (la huella y cuándo se pasa el identificador). Huella nueva del código.
 

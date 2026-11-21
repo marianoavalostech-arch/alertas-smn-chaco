@@ -1252,7 +1252,7 @@ prueba('avisos al celular: texto del aviso y mensaje para Firebase (abre la loca
   const uno = gs.mensajeFcm({ m: 1, temas: ['m1a'], items: [{ m: 1, dia: hoy, ev: 41, nivel: 3, extra: 0, franjas: [3, 0, 0, 0] }] }, hoy).message;
   assert.strictEqual(uno.topic, 'm1a'); assert.strictEqual(uno.condition, undefined);
   assert.strictEqual(uno.webpush.fcm_options.link, 'https://panel-alertas-chaco.netlify.app/?loc=1');
-  assert.strictEqual(uno.data.loc, '1'); assert.strictEqual(uno.webpush.notification.tag, 'smn-1');
+  assert.strictEqual(uno.data.loc, '1'); assert.ok(!('tag' in uno.webpush.notification) && !('renotify' in uno.webpush.notification), 'sin tag: los avisos se acumulan');
   assert.strictEqual(uno.webpush.notification.badge, 'https://panel-alertas-chaco.netlify.app/iconos/badge-96.png');
   const bd = fs.readFileSync(path.join(raiz, 'iconos', 'badge-96.png'));
   assert.ok(bd.toString('latin1', 1, 4) === 'PNG' && bd.readUInt32BE(16) === 96 && bd.readUInt32BE(20) === 96 && bd[25] === 6, 'ícono de la barra: 96 × 96, con transparencia');
@@ -1273,9 +1273,20 @@ prueba('avisos al celular: la dirección para anotarse revisa todo y tiene tope 
   assert.deepStrictEqual(JSON.parse(JSON.stringify(gs.pedidosTemas(gs.revisarPedido({ accion: 'baja', id, tema: 'm3a' })))), [{ url: base + '/m3a?allowMissing=true', method: 'delete' }]);
   assert.ok(!/iid\.googleapis/.test(fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8')), 'nunca la vía vieja (Instance ID), que se cierra en 2027');
   let c = gs.contarPedido(null, '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|1', true]);
-  c = gs.contarPedido('2026-11-05|2999', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|3000', true]);
-  c = gs.contarPedido('2026-11-05|3000', '2026-11-05'); assert.strictEqual(c.paso, false, 'pasado el tope, no');
-  c = gs.contarPedido('2026-11-04|3000', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|1', true], 'al otro día empieza de nuevo');
+  c = gs.contarPedido('2026-11-05|5999', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|6000', true]);
+  c = gs.contarPedido('2026-11-05|6000', '2026-11-05'); assert.strictEqual(c.paso, false, 'pasado el tope, no');
+  assert.strictEqual(gs.motivoAlarma(2999, 99), '', 'sin alarma');
+  assert.ok(gs.motivoAlarma(3000, 0).includes('más de la mitad del tope'));
+  assert.ok(gs.motivoAlarma(10, 100).includes('identificadores inventados'));
+  { const pr = {}, p = { getProperty: k => pr[k] ?? null, setProperty: (k, v) => { pr[k] = v } }, mails = [], antes = gs.MailApp, su = gs.Session;
+    gs.MailApp = { sendEmail: (d, asunto, texto) => mails.push(asunto + ' ' + texto) }; gs.Session = { getEffectiveUser: () => ({ getEmail: () => 'x@y' }) };
+    gs.alarmaPedidos(p, '2026-11-21', 100); const m0 = mails.length;
+    gs.alarmaPedidos(p, '2026-11-21', 3000); gs.alarmaPedidos(p, '2026-11-21', 3001); const m1 = mails.length;
+    pr.rechazos = '2026-11-22|150'; gs.alarmaPedidos(p, '2026-11-22', 5);
+    gs.MailApp = antes; gs.Session = su;
+    assert.strictEqual(m0, 0, 'pocos pedidos: sin correo'); assert.strictEqual(m1, 1, 'una sola vez por día');
+    assert.strictEqual(mails.length, 2, 'al otro día, por los rechazados, otra vez'); assert.ok(mails[1].includes('identificadores inventados') && mails[1].includes('Quien ya está anotado sigue recibiendo')); }
+  c = gs.contarPedido('2026-11-04|6000', '2026-11-05'); assert.deepStrictEqual([c.cuenta, c.paso], ['2026-11-05|1', true], 'al otro día empieza de nuevo');
   const man = JSON.parse(fs.readFileSync(path.join(raiz, 'apps-script', 'appsscript.json'), 'utf8'));
   for (const s of ['script.external_request', 'script.send_mail', 'script.scriptapp', 'userinfo.email', 'firebase.messaging']) assert.ok(man.oauthScopes.includes('https://www.googleapis.com/auth/' + s), s);
   const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
@@ -2180,8 +2191,8 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     assert.ok(!S(`pT('#t-rio','rio','Río Paraná','2,10 m','verde')`).includes('c-verde'), 'en verde, sin color');
     assert.ok(codigo.includes("const n=por&&por.getClientRects().length?por:ind0;"), '"↑ Índice" sube hasta la portada cuando es la que se ve');
   });
-  prueba('avisos al celular (5/11): página — botón solo en el celular, fuera del portal y, durante la prueba, solo para verificadores', () => {
-    assert.ok(codigo.includes('const AVISOS_TODOS=false;'), 'durante la prueba cerrada, no para todos');
+  prueba('avisos al celular (5/11, para todos desde el 21/11): página — botón solo en el celular y fuera del portal', () => {
+    assert.ok(codigo.includes('const AVISOS_TODOS=true;'), 'desde el 21/11, para todos los celulares');
     assert.ok(html.includes('<div class="dAv" id="dAv" hidden></div>'), 'el bloque va en la ventana "Tu localidad"');
     const guardado = {}, ls = { getItem: k => k in guardado ? guardado[k] : null, setItem: (k, v) => { guardado[k] = String(v) }, removeItem: k => { delete guardado[k] } };
     const antes = { ls: sitio.localStorage, mm: sitio.matchMedia, loc: sitio.location };
@@ -2189,11 +2200,7 @@ prueba('Yacyretá: el último valor en una frase (sin gráfico) y cómo pesa en 
     let compu = false; sitio.matchMedia = q => ({ matches: q.includes('hover:hover') ? compu : false });
     sitio.location = { search: '', hash: '' };
     try {
-      assert.strictEqual(S('avPuede()'), false, 'sin ser verificador, no');
-      sitio.location = { search: '?avisos=1', hash: '' };
-      assert.strictEqual(S('avPuede()'), true, 'con el enlace especial, sí');
-      sitio.location = { search: '', hash: '' };
-      assert.strictEqual(S('avPuede()'), true, 'y queda recordado');
+      assert.strictEqual(S('avPuede()'), true, 'cualquier celular, sin enlace especial');
       compu = true; assert.strictEqual(S('avPuede()'), false, 'en la computadora, no'); compu = false;
       delete sitio.PushManager; assert.strictEqual(S('avPuede()'), false, 'navegador sin avisos (iPhone sin agregar a inicio), no'); sitio.PushManager = function () {};
       delete guardado['anc-avisos-prueba'];
