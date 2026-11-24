@@ -1185,27 +1185,33 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, por correo', () => {
   assert.strictEqual(gs.decidirAviso('basura', ahora, false), '');
 });
 
-prueba('correo al equipo técnico del Centro de Monitoreo (24/11): a las 6 horas, una vez por caída y otra al volver, sin direcciones', () => {
+prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuente, [CAÍDA] a las 6 horas y [RESTABLECIDA] al volver, con lo que consulta el sitio', () => {
   const ahora = new Date('2026-11-24T17:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
-  const J = x => JSON.parse(JSON.stringify(x));
-  const d = { oficial: { t: hace(100) }, puertos: { t: hace(1) }, localidades: { t: hace(5) }, lluvia: { t: hace(50) }, errores: { oficial: 'Address unavailable: (dirección)' } };
-  let r = J(gs.decidirMonitoreo(d, ahora, []));
-  assert.deepStrictEqual(r.nuevas.map(x => x.k), ['oficial']);              // la lluvia (Open-Meteo) no es del Centro de Monitoreo
-  assert.deepStrictEqual(r.avisadas, ['oficial']);
-  assert.ok(!r.nuevas.concat(r.siguen).some(x => x.k === 'pluvio'), 'sin dirección cargada (sin dato ni error) no se avisa');
-  r = J(gs.decidirMonitoreo(d, ahora, ['oficial']));
-  assert.deepStrictEqual([r.nuevas.length, r.siguen.length, r.volvieron.length], [0, 1, 0]);   // ya avisada: no se repite
-  r = J(gs.decidirMonitoreo({ oficial: { t: hace(1) }, errores: {} }, ahora, ['oficial']));
-  assert.deepStrictEqual([r.nuevas.length, r.volvieron.map(x => x.k), r.avisadas], [0, ['oficial'], []]);
-  r = J(gs.decidirMonitoreo({ localidades: { t: hace(7) }, errores: {} }, ahora, []));
-  assert.deepStrictEqual(r.nuevas.map(x => x.k), ['localidades']);
-  r = J(gs.decidirMonitoreo({ errores: { pluvio: 'HTTP 504' } }, ahora, []));
-  assert.deepStrictEqual([r.nuevas.map(x => x.k), r.nuevas[0].t], [['pluvio'], null]);       // nunca se leyó y da error
-  const m = gs.textoMonitoreo(gs.decidirMonitoreo(d, ahora, []), t => t.slice(0, 16));
-  assert.ok(m.asunto.startsWith('Centro de Monitoreo: una fuente no responde') && m.cuerpo.includes('Alertas y evacuados por municipio'));
-  assert.ok(!/https?:/.test(m.cuerpo), 'el correo no lleva direcciones de las fuentes');
+  const J = x => JSON.parse(JSON.stringify(x)), hora = t => t.slice(5, 16);
+  const d = { oficial: { t: hace(100) }, puertos: { t: hace(1) }, localidades: { t: hace(7) }, lluvia: { t: hace(50) }, errores: { oficial: 'Address unavailable: (dirección)' } };
+  let r = J(gs.decidirMonitoreo(d, ahora, {}));
+  assert.deepStrictEqual(r.caidas.map(x => x.k), ['oficial', 'localidades']);        // la lluvia (Open-Meteo) no es del Centro de Monitoreo
+  assert.deepStrictEqual(r.avisadas, { oficial: hace(100), localidades: hace(7) });
+  r = J(gs.decidirMonitoreo(d, ahora, r.avisadas));
+  assert.deepStrictEqual([r.caidas.length, r.volvieron.length], [0, 0]);             // ya avisadas: no se repite
+  r = J(gs.decidirMonitoreo({ oficial: { t: hace(1) }, errores: {} }, ahora, { oficial: hace(100) }));
+  assert.deepStrictEqual([r.volvieron.map(x => [x.k, x.desde]), r.avisadas], [[['oficial', hace(100)]], {}]);
+  r = J(gs.decidirMonitoreo({ errores: { pluvio: 'no respondió ningún pedido (7)' } }, ahora, {}));
+  assert.deepStrictEqual([r.caidas.map(x => x.k), r.caidas[0].desde], [['pluvio'], '']);   // nunca se leyó y da error
+  assert.deepStrictEqual(J(gs.decidirMonitoreo({ errores: {} }, ahora, {})).caidas, []);       // sin dirección cargada: no cuenta
+  assert.deepStrictEqual(J(gs.leerAvisadas(gs.guardarAvisadas({ oficial: hace(100), pluvio: '' }))), { oficial: hace(100), pluvio: '' });
+  assert.strictEqual(gs.errorEnPalabras('Address unavailable: (dirección)'), 'no se pudo conectar con el servidor (Address unavailable: (dirección))');
+  assert.ok(gs.errorEnPalabras('HTTP 504').startsWith('el servidor tardó demasiado'));
+  assert.strictEqual(gs.lapso(hace(100), ahora), '4 días'); assert.strictEqual(gs.lapso(hace(7), ahora), '7 horas');
+  const x = J(gs.decidirMonitoreo(d, ahora, {})).caidas[0];
+  let m = gs.textoMonitoreo(x, false, ahora, 'https://ejemplo.test/municipios', hora);
+  assert.strictEqual(m.asunto, '[CAÍDA] Nivel de alerta por municipio – Centro de Monitoreo');
+  assert.ok(m.cuerpo.includes('hace 4 días') && m.cuerpo.includes('no se pudo conectar') && m.cuerpo.includes('Qué consulta el sitio: https://ejemplo.test/municipios.'));
+  m = gs.textoMonitoreo(Object.assign({}, x, { t: hace(1) }), true, ahora, 'https://ejemplo.test/municipios', hora);
+  assert.strictEqual(m.asunto, '[RESTABLECIDA] Nivel de alerta por municipio – estuvo caída 4 días – Centro de Monitoreo');
   const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
-  assert.ok(gsTxt.includes("getProperty('CORREO_MONITOREO')") && !/sit\.chaco|@chaco\.gob/.test(gsTxt), 'la dirección del correo va en las propiedades, no en el archivo');
+  assert.ok(gsTxt.includes("getProperty('CORREO_MONITOREO')") && !/sit\.chaco|@chaco\.gob|marianoavalos\.tech@/.test(gsTxt), 'direcciones en las propiedades, no en el archivo');
+  assert.ok(/urls\[URL_MONITOREO\[x\.k\]\]/.test(gsTxt), 'la dirección consultada sale de las propiedades del script');
   assert.ok(/try \{ console\.log\('Correo al Centro de Monitoreo: ' \+ avisarMonitoreo/.test(gsTxt), 'nunca frena la renovación');
 });
 

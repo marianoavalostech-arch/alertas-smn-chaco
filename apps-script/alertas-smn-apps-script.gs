@@ -40,7 +40,7 @@ var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del siti
 var HORAS_AVISO = 24;               // horas sin lluvia nueva para mandar el correo de aviso
 var HORAS_MONITOREO = 6;            // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
 // Fuentes del Centro de Monitoreo que se avisan a su equipo técnico (24/11/2026), con el nombre que va en el correo.
-var FUENTES_MONITOREO = { oficial: 'Nivel de alerta por municipio (capa "Alertas y evacuados por municipio")', puertos: 'Altura de los ríos por hora en los puertos', localidades: 'Localidades con alerta', pluvio: 'Pluviómetros' };
+var FUENTES_MONITOREO = { oficial: 'Nivel de alerta por municipio', puertos: 'Altura de los ríos por hora en los puertos', localidades: 'Localidades con alerta', pluvio: 'Lluvia de los pluviómetros' };
 
 // Punto central de cada municipio [lat, lon], en el mismo orden que GEO.mun en el mapa.
 var CENTROS = [[-26.58,-60.73],[-27.48,-58.92],[-27.87,-59.18],[-26.85,-60.8],[-26.8,-59.44],[-27.64,-59.96],[-27.12,-61.31],[-27.88,-61.54],[-26.57,-59.62],[-27.01,-60.13],[-27.31,-58.85],[-26.92,-59.41],[-27.29,-59.13],[-26.7,-59.62],[-26.44,-60.91],[-27.75,-60.89],[-26.85,-61.07],[-27.69,-59.57],[-24.65,-61.65],[-27.8,-60.45],[-27.42,-59.05],[-25.04,-61.99],[-27.41,-61.63],[-27.41,-61.47],[-27.27,-61.37],[-26.52,-59.28],[-26.82,-58.73],[-27.62,-61.33],[-27.3,-58.68],[-25.92,-60.66],[-27.17,-60.68],[-26.73,-58.94],[-27.1,-59.49],[-26.99,-58.85],[-27.08,-60.62],[-27.07,-59.33],[-27.23,-59.19],[-26.42,-59.68],[-27.26,-59.47],[-26.94,-61.26],[-26.62,-59.78],[-27.12,-58.68],[-26.04,-61.47],[-26.68,-59.97],[-27.11,-59.23],[-27.09,-59.02],[-25.48,-61.04],[-24.99,-61.55],[-26.68,-60.63],[-26.64,-59.04],[-26.02,-59.97],[-26.4,-61.14],[-27.04,-59.77],[-26.18,-59.68],[-26.79,-60.46],[-26.89,-58.52],[-26.71,-58.64],[-27.38,-59.3],[-27.71,-58.91],[-26.66,-60.17],[-27.59,-59.14],[-27.61,-60.35],[-27.34,-60.7],[-27.85,-61.12],[-25.33,-62.58],[-26.32,-60.45],[-27.68,-60.76],[-27.26,-60.37],[-25.69,-60.32],[-25.35,-60.61]];
@@ -558,35 +558,66 @@ function decidirAviso(t, ahora, avisado) {
   return viejo && !avisado ? 'avisar' : !viejo && avisado ? 'limpiar' : '';
 }
 
-// Correo al equipo técnico del Centro de Monitoreo (24/11/2026, pedido de Mariano). d = datos de la copia (con t y errores de cada
-// fuente); avisadas = claves ya avisadas en esta caída. Una fuente está caída si su última lectura buena tiene más de HORAS_MONITOREO
-// horas, o si nunca se leyó y dio error. Una fuente sin dirección en las propiedades (sin dato y sin error) no cuenta.
-// Devuelve { nuevas: [{ k, nombre, t, error }], siguen: [...], volvieron: [{ k, nombre, t }], avisadas: [claves] }.
+// Correo al equipo técnico del Centro de Monitoreo (24/11/2026, pedido de Mariano). Un correo por fuente: [CAÍDA] cuando pasa
+// HORAS_MONITOREO horas sin una lectura buena (o nunca se leyó y da error) y [RESTABLECIDA] cuando vuelve. Una fuente sin dirección
+// cargada (sin dato y sin error) no cuenta. d = datos de la copia (con t y errores de cada fuente); avisadas = { clave: última lectura
+// buena al avisar (ISO, o '' si nunca se leyó) } de las que ya se avisaron. Devuelve { caidas: [...], volvieron: [...], avisadas: {...} };
+// cada elemento: { k, nombre, desde, t, error } (desde = última lectura buena antes de caerse; t = lectura de ahora).
 function decidirMonitoreo(d, ahora, avisadas) {
-  d = d || {}; avisadas = avisadas || [];
-  var err = d.errores || {}, out = { nuevas: [], siguen: [], volvieron: [], avisadas: [] };
+  d = d || {}; avisadas = avisadas || {};
+  var err = d.errores || {}, out = { caidas: [], volvieron: [], avisadas: {} };
   Object.keys(FUENTES_MONITOREO).forEach(function (k) {
     var f = d[k], t = f && f.t ? new Date(f.t) : null, e = err[k] || '';
     if (!f && !e) return;
-    var caida = t && !isNaN(t) ? ahora - t > HORAS_MONITOREO * 3600000 : !!e;
-    var x = { k: k, nombre: FUENTES_MONITOREO[k], t: t && !isNaN(t) ? t.toISOString() : null, error: e };
-    if (caida) { out.avisadas.push(k); (avisadas.indexOf(k) < 0 ? out.nuevas : out.siguen).push(x); }
-    else if (avisadas.indexOf(k) >= 0) out.volvieron.push(x);
+    if (t && isNaN(t)) t = null;
+    var caida = t ? ahora - t > HORAS_MONITOREO * 3600000 : !!e, ya = Object.prototype.hasOwnProperty.call(avisadas, k);
+    var x = { k: k, nombre: FUENTES_MONITOREO[k], desde: ya ? avisadas[k] : t ? t.toISOString() : '', t: t ? t.toISOString() : '', error: e };
+    if (caida) { out.avisadas[k] = x.desde; if (!ya) out.caidas.push(x); }
+    else if (ya) out.volvieron.push(x);
   });
   return out;
 }
-// Texto del correo. hora(t) = fecha y hora argentina de un instante ISO.
-function textoMonitoreo(r, hora) {
-  var renglon = function (x) { return '- ' + x.nombre + ': ' + (x.t ? 'última lectura buena ' + hora(x.t) + ' h' : 'sin lecturas buenas') + (x.error ? ' (error: ' + x.error + ')' : '') + '.'; };
-  var partes = [];
-  if (r.nuevas.length) partes.push('Dejaron de responder (más de ' + HORAS_MONITOREO + ' horas sin una lectura buena):\n' + r.nuevas.map(renglon).join('\n'));
-  if (r.siguen.length) partes.push('Siguen sin responder (ya avisado):\n' + r.siguen.map(renglon).join('\n'));
-  if (r.volvieron.length) partes.push('Volvieron a responder:\n' + r.volvieron.map(function (x) { return '- ' + x.nombre + (x.t ? ': lectura buena ' + hora(x.t) + ' h' : '') + '.'; }).join('\n'));
-  var asunto = r.nuevas.length ? 'Centro de Monitoreo: ' + (r.nuevas.length === 1 ? 'una fuente no responde' : r.nuevas.length + ' fuentes no responden')
-    : 'Centro de Monitoreo: ' + (r.volvieron.length === 1 ? 'volvió a responder una fuente' : 'volvieron a responder ' + r.volvieron.length + ' fuentes');
-  return { asunto: asunto + ' (Ríos y Clima del Chaco)', cuerpo: 'Hola. Este es un aviso automático de Ríos y Clima del Chaco, que lee cada hora los datos del Centro de Monitoreo del Niño.\n\n' +
-    partes.join('\n\n') + '\n\nMientras una fuente no responde, el sitio muestra su última lectura buena con la fecha.\n' +
-    'Se avisa una vez cuando una fuente se cae y otra cuando vuelve. Las horas son de Argentina.\n\nMariano Avalos - Ríos y Clima del Chaco' };
+// Avisadas guardadas en una propiedad: 'clave|ISO,clave|ISO'.
+function leerAvisadas(t) { var o = {}; String(t || '').split(',').forEach(function (p) { var i = p.indexOf('|'); if (i > 0) o[p.slice(0, i)] = p.slice(i + 1); }); return o; }
+function guardarAvisadas(o) { return Object.keys(o).map(function (k) { return k + '|' + o[k]; }).join(','); }
+// El error en palabras, con el original entre paréntesis (sirve para buscarlo en los registros del servidor).
+function errorEnPalabras(e) {
+  e = String(e || ''); if (!e) return '';
+  var m = e.match(/HTTP (\d{3})/), c = m && +m[1];
+  var dicho = /Address unavailable|DNS|resolve/i.test(e) ? 'no se pudo conectar con el servidor'
+    : /timeout|timed out|tiempo/i.test(e) || c === 504 ? 'el servidor tardó demasiado en responder'
+    : c >= 500 ? 'el servidor respondió con un error'
+    : c === 404 ? 'la dirección ya no existe en el servidor'
+    : c === 401 || c === 403 ? 'el servidor no deja leer los datos (permiso)'
+    : c ? 'el servidor respondió con un código inesperado'
+    : /ningún pedido/.test(e) ? 'no respondió ninguno de los pedidos'
+    : /JSON|Unexpected|municipios|reconoce/i.test(e) ? 'el servidor respondió, pero con datos que no tienen la forma de siempre'
+    : 'error al leer los datos';
+  return dicho + ' (' + e + ')';
+}
+// Cuánto tiempo entre dos instantes, en palabras: '7 horas', '4 días'.
+function lapso(desde, hasta) {
+  var h = Math.floor((hasta - new Date(desde)) / 3600000);
+  if (!isFinite(h) || h < 0) return '';
+  return h < 48 ? h + (h === 1 ? ' hora' : ' horas') : Math.floor(h / 24) + ' días';
+}
+// Texto de un correo. x = elemento de caidas o volvieron; vuelve = true para [RESTABLECIDA]; url = lo que consulta el sitio
+// (la dirección, guardada en las propiedades del script; nunca en este archivo); hora(ISO) = fecha y hora argentina.
+function textoMonitoreo(x, vuelve, ahora, url, hora) {
+  var desde = x.desde ? hora(x.desde) + ' h' : 'nunca se pudo leer', dura = x.desde ? lapso(x.desde, ahora) : '';
+  var asunto = (vuelve ? '[RESTABLECIDA] ' : '[CAÍDA] ') + x.nombre + (vuelve && dura ? ' – estuvo caída ' + dura : '') + ' – Centro de Monitoreo';
+  var r = ['Hola. Es un aviso automático de Ríos y Clima del Chaco, que lee cada hora datos del Centro de Monitoreo del Niño.', ''];
+  if (vuelve) {
+    r.push('Volvió a responder: ' + x.nombre + '.', 'Lectura buena: ' + hora(x.t) + ' h.', 'Estuvo caída desde: ' + desde + (dura ? ' (' + dura + ')' : '') + '.');
+  } else {
+    r.push('Qué falla: ' + x.nombre + '.', 'Desde: ' + desde + (dura ? ' (última lectura buena), hace ' + dura : '') + '.');
+    if (x.error) r.push('Error: ' + errorEnPalabras(x.error) + '.');
+  }
+  r.push('Qué consulta el sitio: ' + (url || '(la dirección cargada en el script)') + (x.k === 'pluvio' ? ' (un pedido por día, con ?fecha=AAAA-MM-DD)' : '') + '.');
+  if (!vuelve) r.push('Cómo lo vemos: lo consultamos cada hora desde los servidores de Google, no desde una sola computadora.',
+    'Mientras tanto: el sitio muestra la última lectura buena, con su fecha.', '', 'Les va a llegar otro correo cuando vuelva a responder.');
+  r.push('', 'Para responder, contestá este correo.', 'Mariano Avalos – Ríos y Clima del Chaco');
+  return { asunto: asunto, cuerpo: r.join('\n') };
 }
 
 /* ---------- avisos al celular: funciones puras ---------- */
@@ -856,21 +887,28 @@ function avisarLluvia(ahora, robot) {
   return que;
 }
 
-// Correo al equipo técnico del Centro de Monitoreo cuando una de sus fuentes se cae o vuelve (ver decidirMonitoreo).
-// Las direcciones van en la propiedad del script CORREO_MONITOREO (varias, separadas por coma), nunca en este archivo.
-// Sin esa propiedad no hace nada. Con copia a la cuenta dueña del script. Guarda las fuentes ya avisadas en avisoMonitoreo.
+// Correo al equipo técnico del Centro de Monitoreo cuando una de sus fuentes se cae o vuelve (ver decidirMonitoreo y textoMonitoreo).
+// Destinatarios en la propiedad del script CORREO_MONITOREO (varias, separadas por coma), nunca en este archivo; sin ella no hace nada.
+// Con copia a la cuenta dueña del script y respuesta al correo de contacto del sitio. Lo ya avisado queda en avisoMonitoreo.
+var URL_MONITOREO = { oficial: 'oficial', puertos: 'rios', localidades: 'loc', pluvio: 'pluvio' };   // clave del dato → de urlsPropias()
+function correoContacto() { return ['marianoavalos', 'tech'].join('.') + '@' + 'gmail.com'; }
 function avisarMonitoreo(d, ahora) {
   var p = PropertiesService.getScriptProperties(), a = String(p.getProperty('CORREO_MONITOREO') || '').trim();
   if (!a) return 'sin dirección';
-  var antes = String(p.getProperty('avisoMonitoreo') || '').split(',').filter(String);
-  var r = decidirMonitoreo(d, ahora, antes);
-  if (r.nuevas.length || r.volvieron.length) {
-    var m = textoMonitoreo(r, function (t) { return Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm'); });
-    MailApp.sendEmail({ to: a, cc: Session.getEffectiveUser().getEmail(), subject: m.asunto, body: m.cuerpo });
-  }
-  if (r.avisadas.join(',') !== antes.join(',')) p.setProperty('avisoMonitoreo', r.avisadas.join(','));
-  return r.nuevas.length + ' nuevas, ' + r.volvieron.length + ' volvieron';
+  var antes = leerAvisadas(p.getProperty('avisoMonitoreo')), r = decidirMonitoreo(d, ahora, antes), urls = urlsPropias();
+  var hora = function (t) { return Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm'); }, n = 0;
+  var mandar = function (x, vuelve) {
+    var m = textoMonitoreo(x, vuelve, ahora, urls[URL_MONITOREO[x.k]], hora);
+    MailApp.sendEmail({ to: a, cc: Session.getEffectiveUser().getEmail(), replyTo: correoContacto(), subject: m.asunto, body: m.cuerpo });
+    n++;
+  };
+  r.caidas.forEach(function (x) { mandar(x, false); });
+  r.volvieron.forEach(function (x) { mandar(x, true); });
+  var g = guardarAvisadas(r.avisadas);
+  if (g !== (p.getProperty('avisoMonitoreo') || '')) p.setProperty('avisoMonitoreo', g);
+  return n + ' correos (' + r.caidas.length + ' caídas, ' + r.volvieron.length + ' restablecidas)';
 }
+
 
 /* ---------- avisos al celular: parte que usa los servicios de Google ---------- */
 // El script está vinculado al proyecto de Firebase (Configuración del proyecto > Proyecto de Google Cloud: 755067985516),
@@ -998,12 +1036,13 @@ function probarCorreo() {
   Logger.log('Correo de prueba enviado a ' + a);
 }
 
-// Muestra a quién iría el correo del Centro de Monitoreo y qué diría hoy, sin mandarlo ni tocar lo ya avisado.
+// Muestra a quién irían los correos del Centro de Monitoreo y qué dirían hoy, sin mandarlos ni tocar lo ya avisado.
 function probarCorreoMonitoreo() {
-  var p = PropertiesService.getScriptProperties(), d = JSON.parse(leerGuardado() || '{}').datos || {};
-  var r = decidirMonitoreo(d, new Date(), []);
-  var m = textoMonitoreo(r, function (t) { return Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm'); });
-  Logger.log('Para: ' + (p.getProperty('CORREO_MONITOREO') || '(falta la propiedad CORREO_MONITOREO)') + '\nYa avisadas: ' + (p.getProperty('avisoMonitoreo') || 'ninguna') + '\n\n' + m.asunto + '\n\n' + m.cuerpo);
+  var p = PropertiesService.getScriptProperties(), d = JSON.parse(leerGuardado() || '{}').datos || {}, ahora = new Date(), urls = urlsPropias();
+  var r = decidirMonitoreo(d, ahora, {}), hora = function (t) { return Utilities.formatDate(new Date(t), TZ, 'd/M HH:mm'); };
+  var txt = r.caidas.map(function (x) { var m = textoMonitoreo(x, false, ahora, urls[URL_MONITOREO[x.k]], hora); return m.asunto + '\n\n' + m.cuerpo; });
+  Logger.log('Para: ' + (p.getProperty('CORREO_MONITOREO') || '(falta la propiedad CORREO_MONITOREO)') + '\nYa avisadas: ' + (p.getProperty('avisoMonitoreo') || 'ninguna') +
+    '\n\n' + (txt.length ? txt.join('\n\n----------\n\n') : 'Hoy no hay fuentes caídas: no se mandaría nada.'));
 }
 
 // Prueba de la clave: lanza el robot una vez y muestra qué respondió GitHub.
