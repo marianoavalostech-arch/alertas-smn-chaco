@@ -158,6 +158,8 @@ Para apagar los avisos sin tocar el código: propiedad del script `AVISOS` = `no
 
 Si la lluvia lleva más de 24 horas sin renovarse, el script manda un correo a la cuenta de Google dueña del script, una sola vez por caída, y el sitio muestra la franja de datos viejos (ver "Sitio"). Para dar el permiso de enviar correo hay que ejecutar una vez `probarCorreo()`: Google pide autorización y llega un correo de prueba. Las horas se cambian en `HORAS_AVISO`.
 
+**Correo al equipo técnico del Centro de Monitoreo** (24/11/2026). Si una de sus fuentes (nivel por municipio, lectura por hora de los puertos, localidades con alerta o pluviómetros) pasa más de 6 horas sin una lectura buena (`HORAS_MONITOREO`), el script les manda un correo en castellano con qué fuente se cayó, desde cuándo y el error, sin direcciones; y otro cuando vuelve. Una vez por caída, a cualquier hora, con copia a la cuenta dueña del script. Las direcciones van en la propiedad del script `CORREO_MONITOREO` (varias, separadas por coma), nunca en el repositorio; sin esa propiedad no manda nada. Lo ya avisado queda en la propiedad `avisoMonitoreo` (borrarla hace que vuelva a avisar lo que siga caído). `probarCorreoMonitoreo()` muestra en el registro a quién iría y qué diría hoy, sin mandarlo.
+
 ## Formato de los datos
 
 Respuesta del script de Google:

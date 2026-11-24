@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (correo al Centro de Monitoreo, solo el script, `[skip netlify]`)
+
+- **Correo al equipo técnico del Centro de Monitoreo** (24/11, pedido de Mariano, con el nivel por municipio caído desde el 20/11 09:51). `decidirMonitoreo`, `textoMonitoreo` y `avisarMonitoreo` en el script: si el nivel por municipio, los puertos, las localidades o los pluviómetros pasan más de 6 horas sin una lectura buena (`HORAS_MONITOREO`), correo a las direcciones de la propiedad `CORREO_MONITOREO` (con copia a la cuenta dueña del script), una vez por caída y otra al volver, a cualquier hora. Sin direcciones de las fuentes en el correo ni en el repositorio. `probarCorreoMonitoreo()` para ver el texto sin mandarlo. No toca la página. 106 pruebas. **Hay que pegar el script** (no hace falta versión nueva de la implementación web: no cambia `doGet` ni `doPost`) y cargar `CORREO_MONITOREO`.
+
 ## Publicado el 21/11 (límite de pedidos)
 
 - **Límite de pedidos por conexión** (21/11, pedido de Mariano; plan gratuito de Netlify: si se acaban los créditos, el sitio se pausa). Regla en `netlify.toml` (`[redirects.rate_limit]`, la de la documentación de Netlify para todo el sitio): más de 120 pedidos en un minuto desde la misma conexión → 429 hasta que pase el minuto. Generosa porque las compañías de celular sacan a muchos clientes por la misma conexión. Frena a quien carga el sitio miles de veces desde una máquina; no a un ataque desde muchas. Netlify no dice si los pedidos frenados gastan créditos. `copia-sw.js` toma el 429 como una caída y muestra la copia guardada. **Hay que comprobarlo en el sitio real después de publicar** (pedir la página más de 120 veces en un minuto y ver el 429). 105 pruebas.
