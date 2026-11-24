@@ -38,7 +38,7 @@ var DIAS = 4;                       // hoy y los tres días siguientes
 var TZ = 'America/Argentina/Buenos_Aires';
 var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del sitio, donde vive el robot de la lluvia
 var HORAS_AVISO = 24;               // horas sin lluvia nueva para mandar el correo de aviso
-var HORAS_MONITOREO = 6;            // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
+var HORAS_MONITOREO = 12;           // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
 // Fuentes del Centro de Monitoreo que se avisan a su equipo técnico (24/11/2026), con el nombre que va en el correo.
 var FUENTES_MONITOREO = { oficial: 'Nivel de alerta por municipio', puertos: 'Altura de los ríos por hora en los puertos', localidades: 'Localidades con alerta', pluvio: 'Lluvia de los pluviómetros' };
 

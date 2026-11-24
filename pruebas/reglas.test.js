@@ -1185,13 +1185,13 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, por correo', () => {
   assert.strictEqual(gs.decidirAviso('basura', ahora, false), '');
 });
 
-prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuente, [CAÍDA] a las 6 horas y [RESTABLECIDA] al volver, con lo que consulta el sitio', () => {
+prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuente, [CAÍDA] a las 12 horas y [RESTABLECIDA] al volver, con lo que consulta el sitio', () => {
   const ahora = new Date('2026-11-24T17:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
   const J = x => JSON.parse(JSON.stringify(x)), hora = t => t.slice(5, 16);
-  const d = { oficial: { t: hace(100) }, puertos: { t: hace(1) }, localidades: { t: hace(7) }, lluvia: { t: hace(50) }, errores: { oficial: 'Address unavailable: (dirección)' } };
+  const d = { oficial: { t: hace(100) }, puertos: { t: hace(1) }, localidades: { t: hace(13) }, lluvia: { t: hace(50) }, errores: { oficial: 'Address unavailable: (dirección)' } };
   let r = J(gs.decidirMonitoreo(d, ahora, {}));
   assert.deepStrictEqual(r.caidas.map(x => x.k), ['oficial', 'localidades']);        // la lluvia (Open-Meteo) no es del Centro de Monitoreo
-  assert.deepStrictEqual(r.avisadas, { oficial: hace(100), localidades: hace(7) });
+  assert.deepStrictEqual(r.avisadas, { oficial: hace(100), localidades: hace(13) });
   r = J(gs.decidirMonitoreo(d, ahora, r.avisadas));
   assert.deepStrictEqual([r.caidas.length, r.volvieron.length], [0, 0]);             // ya avisadas: no se repite
   r = J(gs.decidirMonitoreo({ oficial: { t: hace(1) }, errores: {} }, ahora, { oficial: hace(100) }));
@@ -1202,7 +1202,8 @@ prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuent
   assert.deepStrictEqual(J(gs.leerAvisadas(gs.guardarAvisadas({ oficial: hace(100), pluvio: '' }))), { oficial: hace(100), pluvio: '' });
   assert.strictEqual(gs.errorEnPalabras('Address unavailable: (dirección)'), 'no se pudo conectar con el servidor (Address unavailable: (dirección))');
   assert.ok(gs.errorEnPalabras('HTTP 504').startsWith('el servidor tardó demasiado'));
-  assert.strictEqual(gs.lapso(hace(100), ahora), '4 días'); assert.strictEqual(gs.lapso(hace(7), ahora), '7 horas');
+  assert.strictEqual(gs.lapso(hace(100), ahora), '4 días'); assert.strictEqual(gs.lapso(hace(13), ahora), '13 horas');
+  assert.deepStrictEqual(J(gs.decidirMonitoreo({ puertos: { t: hace(11) }, errores: {} }, ahora, {})).caidas, []);   // 11 horas: todavía no
   const x = J(gs.decidirMonitoreo(d, ahora, {})).caidas[0];
   let m = gs.textoMonitoreo(x, false, ahora, 'https://ejemplo.test/municipios', hora);
   assert.strictEqual(m.asunto, '[CAÍDA] Nivel de alerta por municipio – Centro de Monitoreo');
