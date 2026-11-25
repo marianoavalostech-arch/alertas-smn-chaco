@@ -38,6 +38,8 @@ var DIAS = 4;                       // hoy y los tres días siguientes
 var TZ = 'America/Argentina/Buenos_Aires';
 var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del sitio, donde vive el robot de la lluvia
 var HORAS_AVISO = 24;               // horas sin lluvia nueva para mandar el correo de aviso
+var VACIO_H = 3;                    // horas que se siguen usando las alertas anteriores si el canal del SMN viene vacío para todo el país (ver seguirConAnterior)
+var REINTENTO_MIN = 10;             // minutos para volver a leer el canal cuando vino vacío
 var PUENTE_H = 3;                   // horas que vale una lectura del nivel por municipio que llega por el puente (ver recibirOficial)
 var HORAS_MONITOREO = 12;           // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
 // Fuentes del Centro de Monitoreo que se avisan a su equipo técnico (24/11/2026), con el nombre que va en el correo.
@@ -830,9 +832,19 @@ function juntar(anterior, hoy, ahora, leer, pedir) {
   var falla = null, datos;
   anterior = anterior || {};
   try { datos = leer(hoy, ahora); } catch (e) { falla = e; datos = anterior; delete datos.error; }
-  var previo = anterior.datos || {};
+  var previo = anterior.datos || {}, vacio = false;
+  // Canal vacío para todo el país justo después de una lectura con alertas (pasa unos minutos cuando el SMN cambia de informe, 25/11/2026):
+  // se siguen usando las alertas anteriores, con su hora de lectura, hasta VACIO_H horas. vacio = hora de la lectura vacía.
+  if (!falla && seguirConAnterior(datos, anterior, ahora)) { datos = anterior; delete datos.error; datos.vacio = ahora.toISOString(); vacio = true; }
   try { datos.datos = leerExtras(hoy, ahora, previo, pedir); } catch (e) { datos.datos = previo; }
-  return { datos: datos, falla: falla };
+  return { datos: datos, falla: falla, vacio: vacio };
+}
+
+// true si el canal vino sin ninguna alerta en todo el país, la lectura anterior sí tenía y es de hace menos de VACIO_H horas.
+function seguirConAnterior(nuevo, anterior, ahora) {
+  if (!nuevo || nuevo.leidas !== 0 || !anterior || !(anterior.leidas > 0)) return false;
+  var t = new Date(anterior.capturado).getTime();
+  return !isNaN(t) && ahora.getTime() - t < VACIO_H * 36e5;
 }
 
 // El robot de GitHub se lanza después de guardar: así copia a la rama "datos" el resultado recién armado (servidor.json),
@@ -850,9 +862,22 @@ function actualizar() {
   try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
   try { console.log('Correo al Centro de Monitoreo: ' + avisarMonitoreo(r.datos.datos, ahora)); } catch (e) { console.warn('Correo al Centro de Monitoreo: ' + (e.message || e)); }   // nunca frena la renovación
   // Avisos al celular por alertas del SMN: solo con el canal recién leído (si falló, no se avisa con datos viejos).
-  if (!r.falla) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e) { console.warn('Avisos al celular: ' + (e.message || e)); } }   // nunca frena la renovación
+  if (r.vacio) { try { console.warn('El canal del SMN vino vacío: quedan las alertas anteriores. ' + programarReintento()); } catch (e) { console.warn('Reintento: ' + (e.message || e)); } }
+  if (!r.falla && !r.vacio) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e) { console.warn('Avisos al celular: ' + (e.message || e)); } }   // nunca frena la renovación
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
   return r.datos;
+}
+
+// Vuelve a leer en REINTENTO_MIN minutos, sin esperar la hora. Un solo reintento pendiente por vez.
+function programarReintento() {
+  var hay = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'reintentarSmn'; });
+  if (hay) return 'Ya hay un reintento pendiente.';
+  ScriptApp.newTrigger('reintentarSmn').timeBased().after(REINTENTO_MIN * 60000).create();
+  return 'Se vuelve a leer en ' + REINTENTO_MIN + ' minutos.';
+}
+function reintentarSmn() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'reintentarSmn') ScriptApp.deleteTrigger(t); });
+  actualizar();
 }
 
 // Guarda el resultado en partes (p0, p1, ...). Solo toca esas propiedades: la clave de GitHub queda como está.

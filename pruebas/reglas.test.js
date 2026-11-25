@@ -1013,6 +1013,21 @@ prueba('script: si falla el canal del SMN quedan las alertas anteriores y lo dem
   assert.strictEqual(b.falla, null); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(b.datos.datos.yacy);
 });
 
+prueba('script: si el canal del SMN viene vacío para todo el país quedan las alertas anteriores hasta 3 horas', () => {
+  const pedir = () => ({ codigo: 500, texto: '' }), ahora = new Date('2026-11-25T22:51:00Z');
+  const antes = () => ({ capturado: '2026-11-25T21:51:00Z', leidas: 35, alertas: { 0: [[1]] }, datos: {} });
+  const r = gs.juntar(antes(), '2026-11-25', ahora, () => ({ capturado: '2026-11-25T22:51:00Z', leidas: 0, alertas: { 0: [] } }), pedir);
+  assert.strictEqual(r.falla, null); assert.strictEqual(r.vacio, true);
+  assert.strictEqual(r.datos.capturado, '2026-11-25T21:51:00Z'); assert.strictEqual(r.datos.leidas, 35); assert.strictEqual(r.datos.vacio, ahora.toISOString());
+  const viejo = antes(); viejo.capturado = '2026-11-25T19:00:00Z';   // más de 3 horas: se usa la lectura vacía (el mapa queda en gris)
+  const v = gs.juntar(viejo, '2026-11-25', ahora, () => ({ capturado: 'ahora', leidas: 0 }), pedir);
+  assert.strictEqual(v.vacio, false); assert.strictEqual(v.datos.leidas, 0);
+  const b = gs.juntar(antes(), '2026-11-25', ahora, () => ({ capturado: 'ahora', leidas: 2 }), pedir);   // con alertas: la lectura nueva
+  assert.strictEqual(b.vacio, false); assert.strictEqual(b.datos.capturado, 'ahora'); assert.ok(!('vacio' in b.datos));
+  const c = gs.juntar({ capturado: '2026-11-25T22:00:00Z', leidas: 0, datos: {} }, '2026-11-25', ahora, () => ({ capturado: 'ahora', leidas: 0 }), pedir);
+  assert.strictEqual(c.vacio, false);   // la anterior también vacía: no hay nada que guardar
+});
+
 prueba('script: una alerta que no cubre el centro del municipio igual lo alcanza por sus puntos interiores', () => {
   const { puntos, leerGeo, anillos, dentro } = require('../herramientas/puntos.js'), mun = leerGeo().mun;
   const P = JSON.parse(JSON.stringify(vm.runInContext('PUNTOS', gs)));
@@ -1353,7 +1368,7 @@ prueba('avisos al celular: la dirección para anotarse revisa todo y tiene tope 
   const man = JSON.parse(fs.readFileSync(path.join(raiz, 'apps-script', 'appsscript.json'), 'utf8'));
   for (const s of ['script.external_request', 'script.send_mail', 'script.scriptapp', 'userinfo.email', 'firebase.messaging']) assert.ok(man.oauthScopes.includes('https://www.googleapis.com/auth/' + s), s);
   const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
-  assert.ok(gsTxt.includes("if (!r.falla) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e)"), 'aislado: nunca frena la renovación ni avisa con datos viejos');
+  assert.ok(gsTxt.includes("if (!r.falla && !r.vacio) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e)"), 'aislado: nunca frena la renovación ni avisa con datos viejos');
 });
 
 (async () => {

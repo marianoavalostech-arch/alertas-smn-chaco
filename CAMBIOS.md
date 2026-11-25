@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (canal del SMN vacío, solo el script, `[skip netlify]`)
+
+- **Canal del SMN vacío** (25/11, pedido de Mariano). A las 19:51 el canal salió sin ninguna alerta para todo el país mientras el SMN cambiaba de informe (a las 20:00 ya tenía 35) y el mapa del SMN quedó en gris una hora. Ahora, si la lectura anterior tenía alertas y es de hace menos de 3 horas, el script sigue con ellas (`seguirConAnterior`, `VACIO_H`, campo `vacio`), no manda avisos con esos datos y vuelve a leer a los 10 minutos (`programarReintento`, `reintentarSmn`). La página no cambia. 108 pruebas. **Hay que pegar el script** (no cambia `doGet` ni `doPost`: no hace falta versión nueva de la implementación web).
+
 ## Sin publicar (puente del nivel por municipio, `[skip netlify]`)
 
 - **Puente del nivel por municipio** (25/11, pedido de Mariano). La ruta del Centro de Monitoreo volvió a andar el 25/11 pero solo desde Argentina (comprobado desde la red del Gobierno y desde datos móviles); desde Google sigue "Dirección no disponible", y las otras tres fuentes del Centro sí responden. Una máquina en Argentina la lee cada hora y se la pasa al script: `herramientas/puente-oficial.ps1` (Windows, tarea programada) y `herramientas/puente-oficial.sh` (VPS Linux, cron). Script: `doPost` deriva `accion: 'oficial'` a `recibirOficial` (clave `CLAVE_PUENTE`, pasa por `normOficial`, guarda en `oficialPuente`); `conPuente` en `leerExtras` la usa solo si la directa falló y tiene menos de 3 h; `decidirMonitoreo` mira la lectura directa (`tDirecto`). Configuración en `privado/puente.json`, fuera del repositorio. 107 pruebas. **Hay que pegar el script y hacer una versión nueva de la implementación web** (cambia `doPost`), cargar `CLAVE_PUENTE` y crear la tarea programada.
