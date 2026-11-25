@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (puente del nivel por municipio, `[skip netlify]`)
+
+- **Puente del nivel por municipio** (25/11, pedido de Mariano). La ruta del Centro de Monitoreo volvió a andar el 25/11 pero solo desde Argentina (comprobado desde la red del Gobierno y desde datos móviles); desde Google sigue "Dirección no disponible", y las otras tres fuentes del Centro sí responden. Una máquina en Argentina la lee cada hora y se la pasa al script: `herramientas/puente-oficial.ps1` (Windows, tarea programada) y `herramientas/puente-oficial.sh` (VPS Linux, cron). Script: `doPost` deriva `accion: 'oficial'` a `recibirOficial` (clave `CLAVE_PUENTE`, pasa por `normOficial`, guarda en `oficialPuente`); `conPuente` en `leerExtras` la usa solo si la directa falló y tiene menos de 3 h; `decidirMonitoreo` mira la lectura directa (`tDirecto`). Configuración en `privado/puente.json`, fuera del repositorio. 107 pruebas. **Hay que pegar el script y hacer una versión nueva de la implementación web** (cambia `doPost`), cargar `CLAVE_PUENTE` y crear la tarea programada.
+
 ## Sin publicar (correo al Centro de Monitoreo, solo el script, `[skip netlify]`)
 
 - **Correo al equipo técnico del Centro de Monitoreo** (24/11, pedido de Mariano, con el nivel por municipio caído desde el 20/11 09:51). En el script: `decidirMonitoreo`, `textoMonitoreo`, `errorEnPalabras`, `lapso`, `avisarMonitoreo`. Un correo por fuente: `[CAÍDA]` a las 12 horas sin lectura buena (decisión de Mariano) (`HORAS_MONITOREO`) y `[RESTABLECIDA]` al volver, con desde cuándo, el error en palabras y qué consulta el sitio (la dirección sale de las propiedades del script, no del repositorio). Destinatarios en `CORREO_MONITOREO`, copia a la cuenta dueña, respuesta al correo de contacto. `probarCorreoMonitoreo()` para ver el texto sin mandarlo. No toca la página. 106 pruebas. **Hay que pegar el script** (no hace falta versión nueva de la implementación web: no cambia `doGet` ni `doPost`) y cargar `CORREO_MONITOREO`.

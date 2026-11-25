@@ -1185,6 +1185,38 @@ prueba('aviso: lluvia sin renovar por más de 24 horas, por correo', () => {
   assert.strictEqual(gs.decidirAviso('basura', ahora, false), '');
 });
 
+prueba('puente del nivel por municipio (25/11): se usa solo si la lectura directa falló, con menos de 3 horas, y el correo sigue viendo la ruta caída', () => {
+  const ahora = new Date('2026-11-25T17:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString(), J = x => JSON.parse(JSON.stringify(x));
+  const mun = { Resistencia: 1 }, viejo = { mun: { Resistencia: 2 }, t: hace(120) };
+  let o = J(gs.conPuente({ oficial: viejo }, { oficial: 'Address unavailable' }, { mun, t: hace(1) }, ahora));
+  assert.deepStrictEqual(o.oficial, { mun, t: hace(1), puente: true, tDirecto: hace(120) });
+  // la corrida siguiente: lo anterior ya venía del puente; se mantiene la última lectura directa
+  o = J(gs.conPuente({ oficial: o.oficial }, { oficial: 'x' }, { mun, t: hace(0.1) }, ahora));
+  assert.deepStrictEqual([o.oficial.t, o.oficial.tDirecto], [hace(0.1), hace(120)]);
+  // la lectura directa anduvo: el puente no se usa
+  o = J(gs.conPuente({ oficial: { mun, t: hace(0) } }, {}, { mun: { Resistencia: 3 }, t: hace(0.5) }, ahora));
+  assert.ok(!o.oficial.puente);
+  // puente viejo (más de 3 horas), sin datos o con hora del futuro: queda lo anterior
+  assert.deepStrictEqual(J(gs.conPuente({ oficial: viejo }, { oficial: 'x' }, { mun, t: hace(4) }, ahora)).oficial, viejo);
+  assert.deepStrictEqual(J(gs.conPuente({ oficial: viejo }, { oficial: 'x' }, null, ahora)).oficial, viejo);
+  assert.deepStrictEqual(J(gs.conPuente({ oficial: viejo }, { oficial: 'x' }, { mun, t: new Date(+ahora + 36e5).toISOString() }, ahora)).oficial, viejo);
+  // correo al Centro de Monitoreo: con el puente cuenta la lectura directa (sigue caída); al volver la directa, [RESTABLECIDA]
+  const pu = gs.conPuente({ oficial: viejo }, { oficial: 'Address unavailable' }, { mun, t: hace(1) }, ahora);
+  let r = J(gs.decidirMonitoreo({ oficial: pu.oficial, errores: { oficial: 'Address unavailable' } }, ahora, {}));
+  assert.deepStrictEqual([r.caidas.map(x => [x.k, x.desde])], [[['oficial', hace(120)]]]);
+  r = J(gs.decidirMonitoreo({ oficial: { mun, t: hace(0) }, errores: {} }, ahora, { oficial: hace(120) }));
+  assert.deepStrictEqual(r.volvieron.map(x => x.k), ['oficial']);
+  // el script: doPost deriva 'oficial' al puente con clave; diagnosticoDatos muestra la lectura directa sin el puente
+  const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
+  assert.ok(gsTxt.includes("q && q.accion === 'oficial' ? recibirOficial(q) : anotar(q)") && gsTxt.includes("getProperty('CLAVE_PUENTE')") && gsTxt.includes('clave.length < 20'));
+  assert.ok(gsTxt.includes('leerExtras(hoy, ahora, {}, pedirUrl, undefined, null)'));
+  // los programas del puente leen la dirección y la clave de privado/, nunca del repositorio
+  for (const f of ['puente-oficial.ps1', 'puente-oficial.sh']) {
+    const t = fs.readFileSync(path.join(raiz, 'herramientas', f), 'utf8');
+    assert.ok(t.includes('puente.json') && !/https?:\/\//.test(t), f);
+  }
+});
+
 prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuente, [CAÍDA] a las 12 horas y [RESTABLECIDA] al volver, con lo que consulta el sitio', () => {
   const ahora = new Date('2026-11-24T17:00:00Z'), hace = h => new Date(ahora - h * 36e5).toISOString();
   const J = x => JSON.parse(JSON.stringify(x)), hora = t => t.slice(5, 16);

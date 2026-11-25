@@ -38,6 +38,7 @@ var DIAS = 4;                       // hoy y los tres días siguientes
 var TZ = 'America/Argentina/Buenos_Aires';
 var REPO = 'marianoavalostech-arch/alertas-smn-chaco';   // repositorio del sitio, donde vive el robot de la lluvia
 var HORAS_AVISO = 24;               // horas sin lluvia nueva para mandar el correo de aviso
+var PUENTE_H = 3;                   // horas que vale una lectura del nivel por municipio que llega por el puente (ver recibirOficial)
 var HORAS_MONITOREO = 12;           // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
 // Fuentes del Centro de Monitoreo que se avisan a su equipo técnico (24/11/2026), con el nombre que va en el correo.
 var FUENTES_MONITOREO = { oficial: 'Nivel de alerta por municipio', puertos: 'Altura de los ríos por hora en los puertos', localidades: 'Localidades con alerta', pluvio: 'Lluvia de los pluviómetros' };
@@ -518,7 +519,7 @@ function fuentesExtra(hoy, ahora, urls, previo) {
 // Pide cada fuente por separado. Si una falla, queda la copia anterior (con su hora) y se anota el error.
 // pedir(url) devuelve { codigo, texto }.
 function sinDirecciones(t) { return String(t).replace(/https?:\/\/[^\s"'<>)]+/g, '(dirección)').slice(0, 200); }
-function leerExtras(hoy, ahora, previo, pedir, urls) {
+function leerExtras(hoy, ahora, previo, pedir, urls, puente) {
   var out = {}, errores = {};
   fuentesExtra(hoy, ahora, urls, previo).forEach(function (f) {
     try {
@@ -544,8 +545,25 @@ function leerExtras(hoy, ahora, previo, pedir, urls) {
       if (previo && previo[f.k]) out[f.k] = previo[f.k];
     }
   });
+  out = conPuente(out, errores, puente === undefined ? leerPuente() : puente, ahora);
   if (out.rio && out.puertos) out.rio = aplicarPuerto(out.rio, out.puertos, ahora);
   out.errores = errores;
+  return out;
+}
+
+// Puente (25/11/2026, pedido de Mariano): desde el 25/11 la ruta del nivel por municipio responde solo desde Argentina, y Google
+// consulta desde afuera. Una máquina en Argentina (la notebook de Mariano o un VPS; herramientas/puente-oficial.*) la lee cada hora
+// y se la pasa al script (doPost, accion 'oficial', con la clave CLAVE_PUENTE). Se usa solo si la lectura directa no anduvo en esta
+// corrida y la del puente tiene menos de PUENTE_H horas. Queda marcada (puente: true) y con la última lectura directa buena (tDirecto),
+// para que el correo al Centro de Monitoreo siga diciendo que su ruta no responde desde afuera.
+function conPuente(out, errores, puente, ahora) {
+  if (!puente || !puente.mun || !puente.t) return out;
+  if (!errores.oficial && out.oficial) return out;                       // la lectura directa anduvo
+  var t = new Date(puente.t);
+  if (isNaN(t) || ahora - t > PUENTE_H * 3600000 || t - ahora > 600000) return out;
+  var ant = out.oficial;
+  if (ant && !ant.puente && new Date(ant.t) >= t) return out;
+  out.oficial = { mun: puente.mun, t: t.toISOString(), puente: true, tDirecto: ant ? (ant.puente ? ant.tDirecto || null : ant.t) : null };
   return out;
 }
 
@@ -567,7 +585,7 @@ function decidirMonitoreo(d, ahora, avisadas) {
   d = d || {}; avisadas = avisadas || {};
   var err = d.errores || {}, out = { caidas: [], volvieron: [], avisadas: {} };
   Object.keys(FUENTES_MONITOREO).forEach(function (k) {
-    var f = d[k], t = f && f.t ? new Date(f.t) : null, e = err[k] || '';
+    var f = d[k], tf = f && (f.puente ? f.tDirecto : f.t), t = tf ? new Date(tf) : null, e = err[k] || '';   // con el puente cuenta la lectura directa
     if (!f && !e) return;
     if (t && isNaN(t)) t = null;
     var caida = t ? ahora - t > HORAS_MONITOREO * 3600000 : !!e, ya = Object.prototype.hasOwnProperty.call(avisadas, k);
@@ -972,8 +990,22 @@ function avisarAlertas(datos, ahora) {
 // Tope diario de pedidos (TOPE_PEDIDOS): si alguien llena la dirección de pedidos, no se gasta la cuota del script y el sitio se sigue renovando.
 function doPost(e) {
   var r;
-  try { r = anotar(JSON.parse(e.postData.contents)); } catch (x) { r = { ok: false, error: 'formato' }; }
+  try { var q = JSON.parse(e.postData.contents); r = q && q.accion === 'oficial' ? recibirOficial(q) : anotar(q); } catch (x) { r = { ok: false, error: 'formato' }; }
   return ContentService.createTextOutput(JSON.stringify(r)).setMimeType(ContentService.MimeType.JSON);
+}
+// Puente: recibe el nivel por municipio leído desde Argentina (ver conPuente). Solo con la clave de la propiedad CLAVE_PUENTE
+// (sin esa propiedad, el puente está apagado). Guarda solo el nivel de cada municipio y la hora, en la propiedad oficialPuente.
+function recibirOficial(q) {
+  var p = PropertiesService.getScriptProperties(), clave = String(p.getProperty('CLAVE_PUENTE') || '');
+  if (clave.length < 20 || String(q.clave || '') !== clave) return { ok: false, error: 'clave' };
+  var d;
+  try { d = normOficial(typeof q.datos === 'string' ? JSON.parse(q.datos) : q.datos); } catch (x) { return { ok: false, error: 'datos: ' + String(x.message || x).slice(0, 100) }; }
+  d.t = new Date().toISOString();
+  p.setProperty('oficialPuente', JSON.stringify(d));
+  return { ok: true, municipios: Object.keys(d.mun).length, conAlerta: Object.keys(d.mun).filter(function (m) { return d.mun[m] > 0; }).length };
+}
+function leerPuente() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('oficialPuente') || 'null'); } catch (e) { return null; }
 }
 function anotar(q) {
   var v = revisarPedido(q);
@@ -1078,7 +1110,9 @@ function diagnostico() {
 // Diagnóstico de la copia horaria: muestra qué fuentes responden a los servidores de Google.
 function diagnosticoDatos() {
   var ahora = new Date(), hoy = Utilities.formatDate(ahora, TZ, 'yyyy-MM-dd');
-  var d = leerExtras(hoy, ahora, {}, pedirUrl);
+  var d = leerExtras(hoy, ahora, {}, pedirUrl, undefined, null);   // sin el puente: muestra lo que Google lee directo
+  var pu = leerPuente();
+  Logger.log('Puente (nivel por municipio desde Argentina): ' + (pu && pu.t ? 'última lectura ' + Utilities.formatDate(new Date(pu.t), TZ, 'd/M HH:mm') : 'sin lecturas'));
   ['lluvia', 'municipios', 'rio', 'paraguay', 'bermejo', 'prono', 'pronoPy', 'medida', 'yacy', 'oni', 'oficial', 'puertos', 'localidades', 'pluvio'].forEach(function (k) {
     Logger.log(k + ': ' + (d[k] ? 'bien' : 'FALLA: ' + (d.errores[k] || 'sin dirección en las propiedades')));
   });
