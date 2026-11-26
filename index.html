@@ -2026,7 +2026,7 @@ function pintarModo(){
     est('mEstSmn',GEO.mun.map((x,i)=>{const s=pisoSMN(i);return s?s.n:0}),smnOk(),'Sin informe')}catch(err){console.error(err)}
   const n=$('modoNota');if(!n)return;
   if(e==='nino')n.textContent='Alerta oficial de cada municipio, en general por la crecida. Última lectura: '+fFechaHora(D.oficial.t)+'.';
-  else if(e==='smn')n.textContent=smnOk()?'Alerta más alta del SMN para hoy y los 2 días siguientes.':'No se pudo confirmar el informe del SMN: los municipios quedan en gris.';
+  else if(e==='smn')n.textContent=smnOk()?'Color de la alerta más fuerte del SMN entre hoy y pasado mañana.':'No se pudo confirmar el informe del SMN: los municipios quedan en gris.';
   else n.textContent=!LISTO&&!D.oficial?'Consultando el Monitoreo del Niño…':'No se pudo leer el Monitoreo del Niño: el color lo calcula este sitio con la altura del Paraná, la lluvia y las alertas del SMN.';
 }
 function iniciarModo(){
@@ -2175,7 +2175,7 @@ function pintarInfo(){
   // Con el Monitoreo del Niño o el SMN elegidos (13/11/2026): el criterio del mapa arriba; la alerta del SMN y la lluvia, como información.
   if(k.modo==='nino'||k.modo==='smn')h='<p><span class="estado">'+(k.modo==='nino'?'Monitoreo del Niño':'Servicio Meteorológico')+'</span><b>'+ETQ[k.c]+'</b></p>'
     +(k.modo==='nino'?(k.rio?rioInfo(k):'<p>Sin alerta en el Monitoreo del Niño (última lectura: '+fFechaHora(D.oficial.t)+').</p>'):'')
-    +(k.modo==='smn'?(k.c==='gris'?'<p>No se pudo confirmar el informe del SMN.</p>':k.c==='verde'?'<p>Sin alerta del SMN para hoy ni los 2 días siguientes.</p>':''):'')
+    +(k.modo==='smn'?(k.c==='gris'?'<p>No se pudo confirmar el informe del SMN.</p>':k.c==='verde'?'<p>Sin alerta del SMN entre hoy y pasado mañana.</p>':''):'')
     +rioCosta(i,k)+smnDetTxt(i)+lluviaTxt(i,k);
   else if(k.tipo==='seg')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Lluvia y alerta oficial':'Lluvia y río Paraná'):'Lluvia y alertas del SMN')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);
   else if(k.tipo==='gran')h='<p><span class="estado">'+(k.rio?(k.rio.ofi?'Alerta oficial':'Costa del Paraná'):'Gran Resistencia')+'</span><b>'+ETQ[k.c]+'</b></p>'+lluviaTxt(i,k)+smnDetTxt(i);

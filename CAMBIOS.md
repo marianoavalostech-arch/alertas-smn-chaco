@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (frase del mapa del SMN, sale con la próxima publicación)
+
+- **Frase del mapa del SMN más simple** (25/11, pedido de Mariano). Debajo del mapa, con "Servicio Meteorológico" elegido: "Color de la alerta más fuerte del SMN entre hoy y pasado mañana." (antes "Alerta más alta del SMN para hoy y los 2 días siguientes."). En la tarjeta del municipio en verde: "Sin alerta del SMN entre hoy y pasado mañana.". Huella nueva del código (CSP): `sha256-cj9jxt+P0RrXc2/brT0CEj82loCEpLxMp7MubzG+SiY=`. 108 pruebas. Commit con `[skip netlify]`: se publica con lo próximo que se suba.
+
 ## Sin publicar (canal del SMN vacío, solo el script, `[skip netlify]`)
 
 - **Canal del SMN vacío** (25/11, pedido de Mariano). A las 19:51 el canal salió sin ninguna alerta para todo el país mientras el SMN cambiaba de informe (a las 20:00 ya tenía 35) y el mapa del SMN quedó en gris una hora. Ahora, si la lectura anterior tenía alertas y es de hace menos de 3 horas, el script sigue con ellas (`seguirConAnterior`, `VACIO_H`, campo `vacio`), no manda avisos con esos datos y vuelve a leer a los 10 minutos (`programarReintento`, `reintentarSmn`). La página no cambia. 108 pruebas. **Hay que pegar el script** (no cambia `doGet` ni `doPost`: no hace falta versión nueva de la implementación web).
