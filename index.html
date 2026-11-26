@@ -3768,8 +3768,12 @@ function acoplar(suave){if(FIJO&&VISTA&&Math.abs(VISTA.top-VISTA.cab)>1)pasarAlP
 function recibirVista(){
   if(!EMB||window.parent===window)return;
   addEventListener('message',e=>{const d=e.data;if(e.origin!==PORTAL||e.source!==window.parent||!d)return;
-    if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;
-    const n=x=>typeof x==='number'&&isFinite(x);if(!n(d.top)||!n(d.height)||d.height<200)return;
+    const n=x=>typeof x==='number'&&isFinite(x);
+    // Rueda girada en el portal fuera del marco, con el marco ya arriba: baja o sube el sitio por dentro (arriba de todo o al final, vuelve al portal).
+    if(d.channel===CANAL&&d.type==='wheel'){if(!FIJO||!n(d.dy)||Math.abs(d.dy)>5000)return;
+      const si=scrollY,mx=document.documentElement.scrollHeight-innerHeight;
+      if(d.dy<0&&si<=0||d.dy>0&&si>=mx-1)pasarAlPortal(d.dy);else scrollBy({top:d.dy,behavior:'instant'});return}
+    if(!(d.channel===CANAL&&d.type==='viewport'||d.tipo==='rios-y-clima:vista'))return;if(!n(d.top)||!n(d.height)||d.height<200)return;
     VISTA={top:d.top,h:d.height,cab:n(d.header)?Math.max(0,Math.min(d.height/2,d.header)):0,fijo:d.fijo===true};
     ponerFijo();revisarQuieto();if(A.cercaPortal)seguro(A.cercaPortal)});
   addEventListener('scroll',()=>{if(FIJO)revisarQuieto()},{passive:true});
