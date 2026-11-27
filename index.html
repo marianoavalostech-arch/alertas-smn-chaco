@@ -2883,6 +2883,7 @@ function pModo(){
   const b=(m,t,c)=>'<button type="button" role="radio" data-pmodo="'+m+'" aria-checked="'+(MODO===m)+'">'+t+(c?'<span class="pSr">'+c+'</span>':'')+'</button>';
   return '<div class="pModo" role="radiogroup" aria-label="Alertas según">'+b('nino','Centro de Monitoreo del Niño')+b('smn','Serv. Meteorológico',' (Servicio Meteorológico Nacional)')+'</div>';
 }
+const LOC_MANANA_H=20;
 function pLoc(){
   const PLOC_NIV={verde:'Sin alerta',amarillo:'Alerta amarilla',naranja:'Alerta naranja',rojo:'Alerta roja'};
   const g=miLocGuardada(),i=g>=0?g:GEO.mun.findIndex(m=>m[0]==='Resistencia');if(i<0)return '';
@@ -2892,9 +2893,11 @@ function pLoc(){
   try{k=colorDe(i);let src,r;
     if((k.tipo==='seg'||k.tipo==='gran')&&D.lluvia&&D.lluvia.datos&&M.R[k.j]&&M.R[k.j].c!=='gris'){src=D.lluvia.datos;r=k.j}
     else if(k.tipo==='est'&&M.dMun){src=M.dMun;r=i}
-    const a=src&&src.dias?src.dias.indexOf(hoy):-1,mm=src&&src.mm&&src.mm[r];
+    // Desde las 20 (26/11/2026, pedido de Mariano): muestra la lluvia de mañana con "Mañana:" a la vista; a la noche "Sin lluvia" de hoy confundía.
+    const a0=src&&src.dias?src.dias.indexOf(hoy):-1,mm=src&&src.mm&&src.mm[r];
+    const man=a0>=0&&horaAR()>=LOC_MANANA_H&&mm&&mm[a0+1]!=null,a=man?a0+1:a0;
     if(a>=0&&mm&&mm[a]!=null){const v=Math.round(Number(mm[a])),cd=src.cod&&src.cod[r]&&src.cod[r][a]!=null?Number(src.cod[r][a]):null;
-      dato='<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+'<span class="pSr"> hoy</span>'}}catch(e){}
+      dato=(man?'Mañana: ':'')+'<span aria-hidden="true">'+icoDia(v,cd)[0]+'</span> '+(v>=1?nf(v)+'\u00a0mm':'Sin lluvia')+(man?'':'<span class="pSr"> hoy</span>')}}catch(e){}
   const niv=k.c&&k.c!=='gris'?'<span class="pLocNiv"><i style="background:var(--'+cMapa(k.c)+')"></i>'+(PLOC_NIV[k.c]||ETQ[k.c])+'</span>':'';
   // Dos botones (13/11/2026, pedido de Mariano): el recuadro grande lleva a la tarjeta de tu localidad; "Cambiar", al lado, abre la lista
   // (o la ventana con los avisos y "Elegir otra localidad", si se pueden pedir avisos).
