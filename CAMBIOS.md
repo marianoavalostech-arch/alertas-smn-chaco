@@ -2,15 +2,15 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
-## Sin publicar (lluvia de mañana en tu localidad, `506b0d4`, `[skip netlify]`)
+## Publicado el 26/11 (lluvia de mañana en tu localidad, `506b0d4`)
 
-- **Tu localidad en la portada del celular** (26/11, pedido de Mariano: a la noche decía "Sin lluvia" y el gráfico marcaba lluvia para la madrugada). El recuadro mostraba la lluvia del día entero de hoy, con "hoy" solo para lectores de pantalla. Desde las 20 (`LOC_MANANA_H`) muestra la de mañana con "Mañana:" a la vista (por ejemplo "Mañana: 🌧️ 18 mm"); antes de las 20, como siempre. Huella nueva del código (CSP): `sha256-I1ysUq3L0i90GDipKkHvg44fUmksjpZHC6GYXgwmnMY=`. 108 pruebas. Se publica con lo próximo que se suba.
+- **Tu localidad en la portada del celular** (26/11, pedido de Mariano: a la noche decía "Sin lluvia" y el gráfico marcaba lluvia para la madrugada). El recuadro mostraba la lluvia del día entero de hoy, con "hoy" solo para lectores de pantalla. Desde las 20 (`LOC_MANANA_H`) muestra la de mañana con "Mañana:" a la vista (por ejemplo "Mañana: 🌧️ 18 mm"); antes de las 20, como siempre. Huella nueva del código (CSP): `sha256-I1ysUq3L0i90GDipKkHvg44fUmksjpZHC6GYXgwmnMY=`. 108 pruebas.
 
-## Sin publicar (rueda del mouse dentro del portal, publica junto con la frase del mapa)
+## Publicado el 26/11 (rueda del mouse dentro del portal, `98e3fd9`)
 
 - **Dentro del portal de Gobierno Abierto, en la computadora** (26/11, pedido de Mariano: "cuando la página baja mucho se traba"). Si la rueda se giraba sobre la parte del portal de arriba o de abajo del sitio, el portal se iba hasta el pie y el sitio quedaba corrido y cortado. Ahora el sitio también se puede bajar y subir cuando el portal le pasa el giro de la rueda (aviso `wheel`; al principio o al final del sitio, sigue el portal). Hace falta además una versión nueva del código del portal (la tiene Mariano). Huella nueva del código (CSP): `sha256-uhGmOG0+FUNwXujXtnLTzUcm/jpL0NrvBWJyUXtBloY=`. 108 pruebas.
 
-## Sin publicar (frase del mapa del SMN, sale con la próxima publicación; `cf1765f`)
+## Publicado el 26/11 (frase del mapa del SMN, `cf1765f`, con `98e3fd9`)
 
 - **Frase del mapa del SMN más simple** (25/11, pedido de Mariano). Debajo del mapa, con "Servicio Meteorológico" elegido: "Color de la alerta más fuerte del SMN entre hoy y pasado mañana." (antes "Alerta más alta del SMN para hoy y los 2 días siguientes."). En la tarjeta del municipio en verde: "Sin alerta del SMN entre hoy y pasado mañana.". Huella nueva del código (CSP): `sha256-cj9jxt+P0RrXc2/brT0CEj82loCEpLxMp7MubzG+SiY=`. 108 pruebas. Commit con `[skip netlify]`: se publica con lo próximo que se suba.
 
