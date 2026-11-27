@@ -42,6 +42,8 @@ var VACIO_H = 3;                    // horas que se siguen usando las alertas an
 var REINTENTO_MIN = 10;             // minutos para volver a leer el canal cuando vino vacío
 var PUENTE_H = 3;                   // horas que vale una lectura del nivel por municipio que llega por el puente (ver recibirOficial)
 var HORAS_MONITOREO = 12;           // horas sin una lectura buena de una fuente del Centro de Monitoreo para avisarle a su equipo técnico
+var PUENTES = { CLAVE_PUENTE: 'la Raspberry', CLAVE_PUENTE_2: 'el equipo de Windows' };   // equipos puente y su clave (27/11/2026: se turnan, la Raspberry en las horas pares y el de Windows en las impares)
+var PUENTE_FALTA_H = 5;              // horas sin noticias de un equipo puente para avisar por correo (cada uno manda cada 2 horas: dos turnos perdidos)
 // Fuentes del Centro de Monitoreo que se avisan a su equipo técnico (24/11/2026), con el nombre que va en el correo.
 var FUENTES_MONITOREO = { oficial: 'Nivel de alerta por municipio', puertos: 'Altura de los ríos por hora en los puertos', localidades: 'Localidades con alerta', pluvio: 'Lluvia de los pluviómetros' };
 
@@ -862,6 +864,7 @@ function actualizar() {
   try { avisarLluvia(ahora, robot); } catch (e) { console.warn('Aviso de la lluvia: ' + (e.message || e)); }   // nunca frena la renovación
   try { console.log('Correo al Centro de Monitoreo: ' + avisarMonitoreo(r.datos.datos, ahora)); } catch (e) { console.warn('Correo al Centro de Monitoreo: ' + (e.message || e)); }   // nunca frena la renovación
   // Avisos al celular por alertas del SMN: solo con el canal recién leído (si falló, no se avisa con datos viejos).
+  try { console.log('Equipos puente: ' + avisarPuentes(ahora)); } catch (e) { console.warn('Equipos puente: ' + (e.message || e)); }   // nunca frena la renovación
   if (r.vacio) { try { console.warn('El canal del SMN vino vacío: quedan las alertas anteriores. ' + programarReintento()); } catch (e) { console.warn('Reintento: ' + (e.message || e)); } }
   if (!r.falla && !r.vacio) { try { console.log('Avisos al celular: ' + avisarAlertas(r.datos, ahora)); } catch (e) { console.warn('Avisos al celular: ' + (e.message || e)); } }   // nunca frena la renovación
   if (r.falla) throw r.falla;   // el fallo del canal queda en el registro de ejecuciones de Google
@@ -1018,16 +1021,62 @@ function doPost(e) {
   try { var q = JSON.parse(e.postData.contents); r = q && q.accion === 'oficial' ? recibirOficial(q) : anotar(q); } catch (x) { r = { ok: false, error: 'formato' }; }
   return ContentService.createTextOutput(JSON.stringify(r)).setMimeType(ContentService.MimeType.JSON);
 }
-// Puente: recibe el nivel por municipio leído desde Argentina (ver conPuente). Solo con la clave de la propiedad CLAVE_PUENTE
-// (sin esa propiedad, el puente está apagado). Guarda solo el nivel de cada municipio y la hora, en la propiedad oficialPuente.
+// Puente: recibe el nivel por municipio leído desde Argentina (ver conPuente). Solo con la clave de uno de los equipos de PUENTES
+// (propiedades CLAVE_PUENTE y CLAVE_PUENTE_2; sin ninguna, el puente está apagado; borrar una apaga solo ese equipo).
+// Guarda solo el nivel de cada municipio y la hora, en la propiedad oficialPuente, y la hora de cada equipo en puentesVistos.
 function recibirOficial(q) {
-  var p = PropertiesService.getScriptProperties(), clave = String(p.getProperty('CLAVE_PUENTE') || '');
-  if (clave.length < 20 || String(q.clave || '') !== clave) return { ok: false, error: 'clave' };
+  var p = PropertiesService.getScriptProperties(), k = claveDePuente(q.clave, p.getProperties());
+  if (!k) return { ok: false, error: 'clave' };
   var d;
   try { d = normOficial(typeof q.datos === 'string' ? JSON.parse(q.datos) : q.datos); } catch (x) { return { ok: false, error: 'datos: ' + String(x.message || x).slice(0, 100) }; }
   d.t = new Date().toISOString();
   p.setProperty('oficialPuente', JSON.stringify(d));
+  var vistos = leerJson(p.getProperty('puentesVistos')); vistos[k] = d.t;
+  p.setProperty('puentesVistos', JSON.stringify(vistos));
   return { ok: true, municipios: Object.keys(d.mun).length, conAlerta: Object.keys(d.mun).filter(function (m) { return d.mun[m] > 0; }).length };
+}
+// Nombre de la propiedad (de PUENTES) cuya clave coincide con la recibida, o '' si ninguna. Una clave de menos de 20 caracteres no vale.
+function claveDePuente(clave, props) {
+  clave = String(clave || ''); props = props || {};
+  var ks = Object.keys(PUENTES);
+  for (var i = 0; i < ks.length; i++) { var c = String(props[ks[i]] || ''); if (c.length >= 20 && clave === c) return ks[i]; }
+  return '';
+}
+function leerJson(t) { try { var o = JSON.parse(t || '{}'); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+// Equipos puente que dejaron de mandar (27/11/2026). vistos = { CLAVE: hora (ISO) de su última lectura recibida }; avisados = { CLAVE: hora
+// de esa lectura al avisar }; configuradas = claves cargadas. Solo cuenta un equipo que mandó alguna vez (así no avisa mientras se instala).
+// Devuelve { caidos: [...], volvieron: [...], avisados: {...} }; cada elemento: { k, nombre, t }.
+function decidirPuentes(vistos, ahora, avisados, configuradas) {
+  vistos = vistos || {}; avisados = avisados || {};
+  var out = { caidos: [], volvieron: [], avisados: {} };
+  (configuradas || []).forEach(function (k) {
+    var t = vistos[k] ? new Date(vistos[k]) : null;
+    if (!t || isNaN(t)) return;
+    var x = { k: k, nombre: PUENTES[k] || k, t: t.toISOString() }, ya = Object.prototype.hasOwnProperty.call(avisados, k);
+    if (ahora - t > PUENTE_FALTA_H * 3600000) { out.avisados[k] = x.t; if (!ya) out.caidos.push(x); }
+    else if (ya) out.volvieron.push(x);
+  });
+  return out;
+}
+// Correo a la cuenta dueña del script cuando un equipo puente deja de mandar y cuando vuelve (una vez por caída).
+function avisarPuentes(ahora) {
+  var p = PropertiesService.getScriptProperties(), props = p.getProperties();
+  var conf = Object.keys(PUENTES).filter(function (k) { return String(props[k] || '').length >= 20; });
+  var r = decidirPuentes(leerJson(props.puentesVistos), ahora, leerJson(props.puentesAvisados), conf);
+  var a = Session.getEffectiveUser().getEmail(), hora = function (t) { return Utilities.formatDate(new Date(t), TZ, 'dd/MM HH:mm'); };
+  r.caidos.forEach(function (x) {
+    MailApp.sendEmail(a, 'Ríos y Clima del Chaco: ' + x.nombre + ' no manda el nivel por municipio',
+      'La última lectura del nivel por municipio que mandó ' + x.nombre + ' llegó el ' + hora(x.t) + ' (hace ' + lapso(x.t, ahora) + ').\n\n' +
+      'Los dos equipos puente se turnan: mientras el otro ande, el sitio sigue al día con una lectura cada 2 horas. Si los dos fallan, ' +
+      'el mapa del Centro de Monitoreo muestra la última lectura con su fecha.\n\nRevisá que ' + x.nombre + ' esté prendido, conectado a internet y en hora, ' +
+      'y mirá su archivo puente.log. Este correo llega una sola vez por caída; cuando vuelva a mandar, llega otro.');
+  });
+  r.volvieron.forEach(function (x) {
+    MailApp.sendEmail(a, 'Ríos y Clima del Chaco: ' + x.nombre + ' volvió a mandar el nivel por municipio',
+      x.nombre.charAt(0).toUpperCase() + x.nombre.slice(1) + ' volvió a mandar el nivel por municipio: última lectura el ' + hora(x.t) + '.');
+  });
+  p.setProperty('puentesAvisados', JSON.stringify(r.avisados));
+  return r.caidos.length + ' sin mandar, ' + r.volvieron.length + ' volvieron';
 }
 function leerPuente() {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('oficialPuente') || 'null'); } catch (e) { return null; }

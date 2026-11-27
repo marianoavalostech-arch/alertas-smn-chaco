@@ -1223,13 +1223,50 @@ prueba('puente del nivel por municipio (25/11): se usa solo si la lectura direct
   assert.deepStrictEqual(r.volvieron.map(x => x.k), ['oficial']);
   // el script: doPost deriva 'oficial' al puente con clave; diagnosticoDatos muestra la lectura directa sin el puente
   const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
-  assert.ok(gsTxt.includes("q && q.accion === 'oficial' ? recibirOficial(q) : anotar(q)") && gsTxt.includes("getProperty('CLAVE_PUENTE')") && gsTxt.includes('clave.length < 20'));
+  assert.ok(gsTxt.includes("q && q.accion === 'oficial' ? recibirOficial(q) : anotar(q)") && gsTxt.includes('claveDePuente(q.clave, p.getProperties())') && gsTxt.includes('c.length >= 20'));
   assert.ok(gsTxt.includes('leerExtras(hoy, ahora, {}, pedirUrl, undefined, null)'));
   // los programas del puente leen la dirección y la clave de privado/, nunca del repositorio
   for (const f of ['puente-oficial.ps1', 'puente-oficial.sh']) {
     const t = fs.readFileSync(path.join(raiz, 'herramientas', f), 'utf8');
     assert.ok(t.includes('puente.json') && !/https?:\/\//.test(t), f);
   }
+});
+
+prueba('dos equipos puente (27/11): cada uno con su clave, y correo si uno pasa 5 horas sin mandar y cuando vuelve', () => {
+  const J = x => JSON.parse(JSON.stringify(x));
+  const k1 = 'a'.repeat(24), k2 = 'b'.repeat(30), props = { CLAVE_PUENTE: k1, CLAVE_PUENTE_2: k2 };
+  assert.strictEqual(gs.claveDePuente(k1, props), 'CLAVE_PUENTE');
+  assert.strictEqual(gs.claveDePuente(k2, props), 'CLAVE_PUENTE_2');
+  assert.strictEqual(gs.claveDePuente('otra'.repeat(6), props), '');
+  assert.strictEqual(gs.claveDePuente('', { CLAVE_PUENTE: '' }), '', 'sin clave cargada no entra nadie');
+  assert.strictEqual(gs.claveDePuente('corta', { CLAVE_PUENTE: 'corta' }), '', 'una clave de menos de 20 caracteres no vale');
+  assert.strictEqual(gs.claveDePuente(k1, { CLAVE_PUENTE_2: k2 }), '', 'borrar una propiedad apaga solo ese equipo');
+  assert.deepStrictEqual(J(gs.leerJson('nada')), {}); assert.deepStrictEqual(J(gs.leerJson('{"a":1}')), { a: 1 });
+  const ahora = new Date('2026-11-27T15:51:00Z'), hace = h => new Date(+ahora - h * 36e5).toISOString(), conf = ['CLAVE_PUENTE', 'CLAVE_PUENTE_2'];
+  // los dos al día: nada
+  let r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(1.2), CLAVE_PUENTE_2: hace(0.2) }, ahora, {}, conf));
+  assert.deepStrictEqual([r.caidos, r.volvieron, r.avisados], [[], [], {}]);
+  // la Raspberry perdió dos turnos (más de 5 h): un correo, una sola vez
+  r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(6), CLAVE_PUENTE_2: hace(0.2) }, ahora, {}, conf));
+  assert.deepStrictEqual(r.caidos.map(x => [x.k, x.nombre, x.t]), [['CLAVE_PUENTE', 'la Raspberry', hace(6)]]);
+  assert.deepStrictEqual(r.avisados, { CLAVE_PUENTE: hace(6) });
+  r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(7), CLAVE_PUENTE_2: hace(0.2) }, ahora, r.avisados, conf));
+  assert.strictEqual(r.caidos.length, 0); assert.deepStrictEqual(Object.keys(r.avisados), ['CLAVE_PUENTE']);
+  // vuelve: correo de que volvió y se limpia
+  r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(0.1), CLAVE_PUENTE_2: hace(1) }, ahora, r.avisados, conf));
+  assert.deepStrictEqual(r.volvieron.map(x => x.k), ['CLAVE_PUENTE']); assert.deepStrictEqual(r.avisados, {});
+  // un equipo que nunca mandó (se está instalando) o sin clave cargada no avisa
+  r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(1) }, ahora, {}, conf));
+  assert.deepStrictEqual([r.caidos, r.volvieron], [[], []]);
+  r = J(gs.decidirPuentes({ CLAVE_PUENTE: hace(1), CLAVE_PUENTE_2: hace(9) }, ahora, {}, ['CLAVE_PUENTE']));
+  assert.strictEqual(r.caidos.length, 0);
+  // el script: avisarPuentes corre en cada renovación sin frenarla; recibirOficial anota la hora de cada equipo
+  const gsTxt = fs.readFileSync(path.join(raiz, 'apps-script', 'alertas-smn-apps-script.gs'), 'utf8');
+  assert.ok(gsTxt.includes("try { console.log('Equipos puente: ' + avisarPuentes(ahora)); } catch (e)"));
+  assert.ok(gsTxt.includes("vistos[k] = d.t;") && gsTxt.includes("p.setProperty('puentesVistos', JSON.stringify(vistos));"));
+  // el programa de Windows acepta dónde está su configuración (otro equipo)
+  const ps1 = fs.readFileSync(path.join(raiz, 'herramientas', 'puente-oficial.ps1'), 'utf8');
+  assert.ok(/^param\(\[string\]\$Conf = ''\)$/m.test(ps1) && ps1.includes("Join-Path (Split-Path -Parent $Conf) 'puente.log'"));
 });
 
 prueba('correo al equipo técnico del Centro de Monitoreo (24/11): uno por fuente, [CAÍDA] a las 12 horas y [RESTABLECIDA] al volver, con lo que consulta el sitio', () => {

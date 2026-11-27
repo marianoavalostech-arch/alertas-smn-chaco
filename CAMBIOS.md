@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (dos equipos puente, solo el script y el programa de Windows, `[skip netlify]`)
+
+- **Dos equipos puente** (27/11, acordado por Mariano con el Centro de Monitoreo). El nivel por municipio lo traen dos equipos que se turnan: la Raspberry a los :40 de las horas pares y un equipo de Windows a los :40 de las impares. Cada uno tiene su clave (`PUENTES`: propiedades `CLAVE_PUENTE` y `CLAVE_PUENTE_2`; `claveDePuente`), y el script anota la hora de cada uno (`puentesVistos`). Si un equipo pasa más de 5 horas sin mandar (`PUENTE_FALTA_H`), llega un correo a la cuenta dueña del script, y otro cuando vuelve (`avisarPuentes`, `decidirPuentes`, `puentesAvisados`). `herramientas/puente-oficial.ps1` acepta `-Conf` con la ruta de su `puente.json` (deja el `puente.log` al lado). 109 pruebas. **Hay que pegar el script y hacer una versión nueva de la implementación web** (cambia `recibirOficial`, que usa `doPost`), cambiar el cron de la Raspberry a `40 */2 * * *` e instalar el equipo de Windows (README, "Puente del nivel por municipio").
+
 ## Publicado el 26/11 (lluvia de mañana en tu localidad, `506b0d4`)
 
 - **Tu localidad en la portada del celular** (26/11, pedido de Mariano: a la noche decía "Sin lluvia" y el gráfico marcaba lluvia para la madrugada). El recuadro mostraba la lluvia del día entero de hoy, con "hoy" solo para lectores de pantalla. Desde las 20 (`LOC_MANANA_H`) muestra la de mañana con "Mañana:" a la vista (por ejemplo "Mañana: 🌧️ 18 mm"); antes de las 20, como siempre. Huella nueva del código (CSP): `sha256-I1ysUq3L0i90GDipKkHvg44fUmksjpZHC6GYXgwmnMY=`. 108 pruebas.
