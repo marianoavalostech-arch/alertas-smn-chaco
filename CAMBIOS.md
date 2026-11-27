@@ -2,6 +2,10 @@
 
 Lo más nuevo va arriba. Cada renglón es una subida a `main`.
 
+## Sin publicar (lluvia de mañana en tu localidad, `506b0d4`, `[skip netlify]`)
+
+- **Tu localidad en la portada del celular** (26/11, pedido de Mariano: a la noche decía "Sin lluvia" y el gráfico marcaba lluvia para la madrugada). El recuadro mostraba la lluvia del día entero de hoy, con "hoy" solo para lectores de pantalla. Desde las 20 (`LOC_MANANA_H`) muestra la de mañana con "Mañana:" a la vista (por ejemplo "Mañana: 🌧️ 18 mm"); antes de las 20, como siempre. Huella nueva del código (CSP): `sha256-I1ysUq3L0i90GDipKkHvg44fUmksjpZHC6GYXgwmnMY=`. 108 pruebas. Se publica con lo próximo que se suba.
+
 ## Sin publicar (rueda del mouse dentro del portal, publica junto con la frase del mapa)
 
 - **Dentro del portal de Gobierno Abierto, en la computadora** (26/11, pedido de Mariano: "cuando la página baja mucho se traba"). Si la rueda se giraba sobre la parte del portal de arriba o de abajo del sitio, el portal se iba hasta el pie y el sitio quedaba corrido y cortado. Ahora el sitio también se puede bajar y subir cuando el portal le pasa el giro de la rueda (aviso `wheel`; al principio o al final del sitio, sigue el portal). Hace falta además una versión nueva del código del portal (la tiene Mariano). Huella nueva del código (CSP): `sha256-uhGmOG0+FUNwXujXtnLTzUcm/jpL0NrvBWJyUXtBloY=`. 108 pruebas.
